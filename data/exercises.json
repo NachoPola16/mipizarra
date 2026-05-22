@@ -1,0 +1,465 @@
+[
+  {
+    "id": "ej_001",
+    "nombre": "Tiro desde codo tras pase",
+    "categoria": "tiro",
+    "subcategoria": "media_distancia",
+    "edades": ["U14", "U16", "U18", "Senior", "Infantil", "Cadete", "Junior"],
+    "duracion_min": 8,
+    "intensidad": 3,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 2,
+    "objetivos": {
+      "tacticos": ["recepcion en movimiento", "lectura de defensor"],
+      "tecnicos": ["tiro de suspension", "parada 1-2"],
+      "fisicos":  ["desplazamiento corto"]
+    },
+    "descripcion": "A1 base con balon en cabecera. A2 sale del poste alto al codo TL derecho. A1 hace pase y A2 tira de media distancia desde el codo. Rotacion: tirador a rebote, rebote a base, base a cola.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "rol": "base",   "x": 50, "y": 65},
+        {"id": "A2", "rol": "alero",  "x": 50, "y": 50}
+      ],
+      "jugadores_defensa": [],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A2", "a_pos": {"x": 35, "y": 41}, "tipo": "desplazamiento", "orden": 1},
+        {"de": "A1", "a": "A2", "tipo": "pase",   "orden": 2},
+        {"de": "A2", "tipo": "tiro", "orden": 3}
+      ],
+      "conos": []
+    }
+  },
+  {
+    "id": "ej_002",
+    "nombre": "Bloqueo directo base-pivot central",
+    "categoria": "bloqueo_directo",
+    "subcategoria": "pick_and_roll",
+    "edades": ["U16", "U18", "Senior", "Cadete", "Junior"],
+    "duracion_min": 12,
+    "intensidad": 3,
+    "carga_cognitiva": 4,
+    "jugadores_minimos": 2,
+    "objetivos": {
+      "tacticos": ["bloqueo directo", "lectura del bloqueo", "continuacion"],
+      "tecnicos": ["bote de salida", "pase al continuador"],
+      "fisicos":  []
+    },
+    "descripcion": "A1 base en cabecera con balon. A2 pivot sube desde poste bajo derecho a poner bloqueo al base. A1 lee el bloqueo y decide: continuar al codo o pasar a A2 que rola a canasta.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "rol": "base",  "x": 50, "y": 65},
+        {"id": "A2", "rol": "pivot", "x": 38, "y": 18}
+      ],
+      "jugadores_defensa": [],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A2", "a_pos": {"x": 50, "y": 55}, "tipo": "desplazamiento", "orden": 1},
+        {"de": "A1", "a_pos": {"x": 35, "y": 41}, "tipo": "desplazamiento", "orden": 2},
+        {"de": "A2", "a_pos": {"x": 50, "y": 18}, "tipo": "desplazamiento", "orden": 3}
+      ],
+      "conos": []
+    }
+  },
+  {
+    "id": "ej_003",
+    "nombre": "Corte en V desde esquina",
+    "categoria": "juego_equipo",
+    "subcategoria": "movimientos_sin_balon",
+    "edades": ["U14", "U16", "U18", "Infantil", "Cadete", "Junior"],
+    "duracion_min": 8,
+    "intensidad": 3,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 2,
+    "objetivos": {
+      "tacticos": ["corte sin balon", "creacion de espacio", "recepcion"],
+      "tecnicos": ["cambio de ritmo", "recepcion en movimiento"],
+      "fisicos":  ["aceleracion"]
+    },
+    "descripcion": "A2 alero en esquina derecha hace corte en V: baja hacia baseline y sube al 45 derecho para recibir pase de A1 base en cabecera. Tras recibir, tira o entra a canasta.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "rol": "base",  "x": 50, "y": 65},
+        {"id": "A2", "rol": "alero", "x": 6,  "y": 22}
+      ],
+      "jugadores_defensa": [],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A2", "a_pos": {"x": 10, "y": 10}, "tipo": "desplazamiento", "orden": 1},
+        {"de": "A2", "a_pos": {"x": 25, "y": 50}, "tipo": "desplazamiento", "orden": 2},
+        {"de": "A1", "a": "A2", "tipo": "pase",   "orden": 3}
+      ],
+      "conos": []
+    }
+  },
+  {
+    "id": "ej_004",
+    "nombre": "2 contra 1 desde medio campo",
+    "categoria": "ventaja_numerica",
+    "subcategoria": "contraataque",
+    "edades": ["U12", "U14", "U16", "U18", "Senior", "Alevin", "Infantil", "Cadete", "Junior"],
+    "duracion_min": 10,
+    "intensidad": 4,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 3,
+    "objetivos": {
+      "tacticos": ["contraataque", "lectura del defensor", "ventaja numerica"],
+      "tecnicos": ["bote de progresion", "pase en carrera", "bandeja"],
+      "fisicos":  ["sprint"]
+    },
+    "descripcion": "A1 y A2 salen de medio campo en contraataque. D1 defiende solo en zona de TL. A1 bota hacia el centro fijando al defensor; cuando D1 ataca a A1, pasa a A2 en el lado libre para bandeja sin oposicion.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "rol": "base",  "x": 35, "y": 95},
+        {"id": "A2", "rol": "alero", "x": 75, "y": 95}
+      ],
+      "jugadores_defensa": [
+        {"id": "D1", "rol": "defensor", "x": 50, "y": 45}
+      ],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A1", "a_pos": {"x": 50, "y": 55}, "tipo": "desplazamiento", "orden": 1},
+        {"de": "A2", "a_pos": {"x": 75, "y": 35}, "tipo": "desplazamiento", "orden": 2},
+        {"de": "A1", "a": "A2", "tipo": "pase",   "orden": 3},
+        {"de": "A2", "tipo": "tiro", "orden": 4}
+      ],
+      "conos": []
+    }
+  },
+  {
+    "id": "ej_005",
+    "nombre": "Pivot en poste bajo con giro",
+    "categoria": "1c1",
+    "subcategoria": "juego_interior",
+    "edades": ["U14", "U16", "U18", "Senior", "Infantil", "Cadete", "Junior"],
+    "duracion_min": 10,
+    "intensidad": 3,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 2,
+    "objetivos": {
+      "tacticos": ["juego interior", "recepcion en poste bajo"],
+      "tecnicos": ["giro de poder", "tiro de gancho", "pase al alero que recorta"],
+      "fisicos":  ["dominio fisico"]
+    },
+    "descripcion": "A2 pivot en poste bajo derecho. A1 base en cabecera. A1 pasa al pivot en poste bajo. A2 puede girar hacia canasta (giro de poder) y tirar, o pasar al alero A3 que recorta desde el 45.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "rol": "base",  "x": 50, "y": 65},
+        {"id": "A2", "rol": "pivot", "x": 38, "y": 18},
+        {"id": "A3", "rol": "alero", "x": 25, "y": 50}
+      ],
+      "jugadores_defensa": [],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A1", "a": "A2", "tipo": "pase",   "orden": 1},
+        {"de": "A3", "a_pos": {"x": 15, "y": 22}, "tipo": "desplazamiento", "orden": 2},
+        {"de": "A2", "tipo": "tiro", "orden": 3}
+      ],
+      "conos": []
+    }
+  },
+  {
+    "id": "ej_006",
+    "nombre": "3 contra 0 con rotaciones",
+    "categoria": "juego_equipo",
+    "subcategoria": "rotaciones",
+    "edades": ["U12", "U14", "U16", "Alevin", "Infantil", "Cadete"],
+    "duracion_min": 8,
+    "intensidad": 3,
+    "carga_cognitiva": 4,
+    "jugadores_minimos": 3,
+    "objetivos": {
+      "tacticos": ["espacio", "rotacion ofensiva", "vision de juego"],
+      "tecnicos": ["pase de pecho", "corte a canasta"],
+      "fisicos":  []
+    },
+    "descripcion": "A1 en cabecera con balon, A2 en 45 derecho, A3 en 45 izquierdo. A1 pasa a A2, A1 corta a canasta, A3 sube a cabecera ocupando el hueco. A2 decide: tira, pasa a A1 en corte, o reversa a A3.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "rol": "base",  "x": 50, "y": 65},
+        {"id": "A2", "rol": "alero", "x": 25, "y": 50},
+        {"id": "A3", "rol": "alero", "x": 75, "y": 50}
+      ],
+      "jugadores_defensa": [],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A1", "a": "A2", "tipo": "pase",   "orden": 1},
+        {"de": "A1", "a_pos": {"x": 50, "y": 11}, "tipo": "desplazamiento", "orden": 2},
+        {"de": "A3", "a_pos": {"x": 50, "y": 65}, "tipo": "desplazamiento", "orden": 3}
+      ],
+      "conos": []
+    }
+  },
+  {
+    "id": "ej_007",
+    "nombre": "Entrada en banda desde 45",
+    "categoria": "1c1",
+    "subcategoria": "penetracion",
+    "edades": ["U12", "U14", "U16", "U18", "Alevin", "Infantil", "Cadete", "Junior"],
+    "duracion_min": 8,
+    "intensidad": 4,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 1,
+    "objetivos": {
+      "tacticos": ["penetracion exterior", "uso del pie de pivote"],
+      "tecnicos": ["bote de progresion", "bandeja a contrapie"],
+      "fisicos":  ["cambio de ritmo"]
+    },
+    "descripcion": "A1 en 45 izquierdo recibe pase del entrenador. Bota hacia la linea de fondo, entra por debajo del aro y bandeja por el lado contrario protegiendo el balon con el cuerpo.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "rol": "alero", "x": 75, "y": 50}
+      ],
+      "jugadores_defensa": [],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A1", "a_pos": {"x": 90, "y": 20}, "tipo": "desplazamiento", "orden": 1},
+        {"de": "A1", "a_pos": {"x": 50, "y": 11}, "tipo": "desplazamiento", "orden": 2},
+        {"de": "A1", "tipo": "tiro", "orden": 3}
+      ],
+      "conos": [
+        {"x": 90, "y": 20}
+      ]
+    }
+  },
+  {
+    "id": "ej_008",
+    "nombre": "Defensa de bloqueo directo 2c2",
+    "categoria": "bloqueo_directo",
+    "subcategoria": "defensa_pick_and_roll",
+    "edades": ["U16", "U18", "Senior", "Cadete", "Junior"],
+    "duracion_min": 15,
+    "intensidad": 4,
+    "carga_cognitiva": 5,
+    "jugadores_minimos": 4,
+    "objetivos": {
+      "tacticos": ["defensa del bloqueo directo", "ayuda y recuperacion", "comunicacion"],
+      "tecnicos": ["paso por delante", "salto al bloqueador"],
+      "fisicos":  ["desplazamiento defensivo"]
+    },
+    "descripcion": "A1 con balon en cabecera, A2 pivot pone bloqueo directo. D1 y D2 defienden: D2 (defensor del bloqueador) decide saltar y presionar o hundir y dejar el tiro de media. D1 lucha por pasar por delante del bloqueo.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "rol": "base",  "x": 50, "y": 65},
+        {"id": "A2", "rol": "pivot", "x": 50, "y": 55}
+      ],
+      "jugadores_defensa": [
+        {"id": "D1", "rol": "defensor base",  "x": 50, "y": 58},
+        {"id": "D2", "rol": "defensor pivot", "x": 50, "y": 48}
+      ],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A1", "a_pos": {"x": 35, "y": 50}, "tipo": "desplazamiento", "orden": 1}
+      ],
+      "conos": []
+    }
+  },
+  {
+    "id": "ej_009",
+    "nombre": "Circuito de bote en zigzag",
+    "categoria": "calentamiento",
+    "subcategoria": "tecnica_individual",
+    "edades": ["U8", "U10", "U12", "Prebenjamin", "Benjamin", "Alevin"],
+    "duracion_min": 12,
+    "intensidad": 3,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 1,
+    "objetivos": {
+      "tacticos": [],
+      "tecnicos": ["bote de proteccion", "cambio de mano", "cambio de ritmo"],
+      "fisicos":  ["coordinacion", "agilidad"]
+    },
+    "descripcion": "Filas en una esquina. Cada jugador zigzaguea entre 5 conos cambiando de mano en cada cono. Al llegar al ultimo cono, bandeja a canasta. Rotacion: tirador a rebote, rebote a cola.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "rol": "jugador", "x": 6, "y": 95}
+      ],
+      "jugadores_defensa": [],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A1", "a_pos": {"x": 50, "y": 11}, "tipo": "desplazamiento", "orden": 1},
+        {"de": "A1", "tipo": "tiro", "orden": 2}
+      ],
+      "conos": [
+        {"x": 20, "y": 80},
+        {"x": 35, "y": 65},
+        {"x": 20, "y": 50},
+        {"x": 35, "y": 35},
+        {"x": 50, "y": 20}
+      ]
+    }
+  },
+  {
+    "id": "ej_010",
+    "nombre": "Tiro libre con consecuencia",
+    "categoria": "tiro",
+    "subcategoria": "concentracion",
+    "edades": ["U14", "U16", "U18", "Infantil", "Cadete", "Junior"],
+    "duracion_min": 6,
+    "intensidad": 1,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 2,
+    "objetivos": {
+      "tacticos": ["concentracion bajo presion"],
+      "tecnicos": ["mecanica de tiro libre", "rutina pre-tiro"],
+      "fisicos":  []
+    },
+    "descripcion": "Por parejas en cada canasta. Cada jugador hace 5 tiros libres. Si fallas tu tiro, tu pareja hace 5 flexiones. Suma equipo: el grupo que mas tiros encesta gana."
+  },
+  {
+    "id": "ej_011",
+    "nombre": "5 contra 0 ataque posicional",
+    "categoria": "juego_equipo",
+    "subcategoria": "ataque_posicional",
+    "edades": ["U16", "U18", "Senior", "Cadete", "Junior"],
+    "duracion_min": 15,
+    "intensidad": 3,
+    "carga_cognitiva": 5,
+    "jugadores_minimos": 5,
+    "objetivos": {
+      "tacticos": ["ataque posicional", "espaciado", "lectura colectiva"],
+      "tecnicos": ["pase y corte", "reversas"],
+      "fisicos":  []
+    },
+    "descripcion": "5 jugadores en posiciones iniciales: base en cabecera, dos aleros en 45 derecho e izquierdo, dos interiores en poste alto y poste bajo. Ejecutan sistema de pase y corte sin oposicion, buscando siempre tiro abierto o entrada limpia. Cambian de lado al cabo de 3 pases.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "rol": "base",  "x": 50, "y": 65},
+        {"id": "A2", "rol": "alero", "x": 25, "y": 50},
+        {"id": "A3", "rol": "alero", "x": 75, "y": 50},
+        {"id": "A4", "rol": "ala-pivot", "x": 35, "y": 41},
+        {"id": "A5", "rol": "pivot", "x": 62, "y": 18}
+      ],
+      "jugadores_defensa": [],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A1", "a": "A2", "tipo": "pase", "orden": 1},
+        {"de": "A1", "a_pos": {"x": 50, "y": 50}, "tipo": "desplazamiento", "orden": 2}
+      ],
+      "conos": []
+    }
+  },
+  {
+    "id": "ej_012",
+    "nombre": "Recorte desde esquina a canasta",
+    "categoria": "juego_equipo",
+    "subcategoria": "cortes",
+    "edades": ["U14", "U16", "U18", "Infantil", "Cadete", "Junior"],
+    "duracion_min": 6,
+    "intensidad": 3,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 2,
+    "objetivos": {
+      "tacticos": ["backdoor cut", "creacion de espacio", "timing"],
+      "tecnicos": ["pase de lob", "bandeja en carrera"],
+      "fisicos":  ["aceleracion"]
+    },
+    "descripcion": "A2 alero en esquina izquierda. Hace amago hacia el poste y corta directamente a canasta por la linea de fondo para recibir lob de A1 base en cabecera.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "rol": "base",  "x": 50, "y": 65},
+        {"id": "A2", "rol": "alero", "x": 94, "y": 22}
+      ],
+      "jugadores_defensa": [],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A2", "a_pos": {"x": 80, "y": 35}, "tipo": "desplazamiento", "orden": 1},
+        {"de": "A2", "a_pos": {"x": 50, "y": 11}, "tipo": "desplazamiento", "orden": 2},
+        {"de": "A1", "a": "A2", "tipo": "pase",   "orden": 3}
+      ],
+      "conos": []
+    }
+  },
+  {
+    "id": "ej_013",
+    "nombre": "1 contra 1 desde codo",
+    "categoria": "1c1",
+    "subcategoria": "ataque_individual",
+    "edades": ["U14", "U16", "U18", "Senior", "Infantil", "Cadete", "Junior"],
+    "duracion_min": 10,
+    "intensidad": 4,
+    "carga_cognitiva": 4,
+    "jugadores_minimos": 2,
+    "objetivos": {
+      "tacticos": ["1 contra 1 ofensivo", "lectura de defensor"],
+      "tecnicos": ["amago", "cambio de mano", "salida en bote"],
+      "fisicos":  ["explosividad"]
+    },
+    "descripcion": "A1 recibe pase del entrenador en el codo TL derecho. D1 sale desde el aro a defender. A1 decide: tiro inmediato, salida en bote a canasta, o salida atras para tirar.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "rol": "jugador", "x": 35, "y": 41}
+      ],
+      "jugadores_defensa": [
+        {"id": "D1", "rol": "defensor", "x": 50, "y": 11}
+      ],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "D1", "a_pos": {"x": 35, "y": 36}, "tipo": "desplazamiento", "orden": 1}
+      ],
+      "conos": []
+    }
+  },
+  {
+    "id": "ej_014",
+    "nombre": "Juego de pillar con balon",
+    "categoria": "calentamiento",
+    "subcategoria": "juego_dinamico",
+    "edades": ["U8", "U10", "U12", "Prebenjamin", "Benjamin", "Alevin"],
+    "duracion_min": 8,
+    "intensidad": 4,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 6,
+    "objetivos": {
+      "tacticos": ["proteccion del balon"],
+      "tecnicos": ["bote de proteccion", "cambio de mano"],
+      "fisicos":  ["coordinacion", "resistencia"]
+    },
+    "descripcion": "Todos los jugadores botan en media pista. Hay 2 jugadores designados como pilladores que intentan robar el balon a los demas. Quien pierde el balon o sale de la pista pasa a ser pillador."
+  },
+  {
+    "id": "ej_015",
+    "nombre": "Reversas en triangulo",
+    "categoria": "juego_equipo",
+    "subcategoria": "pase",
+    "edades": ["U12", "U14", "U16", "Alevin", "Infantil", "Cadete"],
+    "duracion_min": 8,
+    "intensidad": 2,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 3,
+    "objetivos": {
+      "tacticos": ["circulacion del balon", "cambio de lado"],
+      "tecnicos": ["pase reversa", "pase de pecho"],
+      "fisicos":  []
+    },
+    "descripcion": "A1 en cabecera, A2 en 45 derecho, A3 en 45 izquierdo. Pase en triangulo: A1 a A2, A2 reversa a A1, A1 a A3. A los 3 minutos cambian sentido. Trabajar pases precisos.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "rol": "base",  "x": 50, "y": 65},
+        {"id": "A2", "rol": "alero", "x": 25, "y": 50},
+        {"id": "A3", "rol": "alero", "x": 75, "y": 50}
+      ],
+      "jugadores_defensa": [],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A1", "a": "A2", "tipo": "pase", "orden": 1},
+        {"de": "A2", "a": "A1", "tipo": "pase", "orden": 2},
+        {"de": "A1", "a": "A3", "tipo": "pase", "orden": 3}
+      ],
+      "conos": []
+    }
+  }
+]

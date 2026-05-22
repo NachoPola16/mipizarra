@@ -1,0 +1,11 @@
+fastapi==0.111.0
+uvicorn==0.29.0
+requests==2.31.0
+Pillow==10.3.0
+llama-index-core
+llama-index-readers-file
+llama-index-embeddings-ollama
+llama-index-vector-stores-chroma
+chromadb
+pypdf
+slowapi==0.1.9

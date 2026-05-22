@@ -1,0 +1,81 @@
+# ~/docker/mipizarra/docker-compose.yml
+
+services:
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: mipizarra-ollama
+    restart: unless-stopped
+    ports:
+      - "${BIND_IP:-0.0.0.0}:11434:11434"
+    volumes:
+      - ./ollama:/root/.ollama
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  api:
+    build: ./api
+    container_name: mipizarra-api
+    restart: unless-stopped
+    ports:
+      - "${BIND_IP:-0.0.0.0}:8090:8090"
+    volumes:
+      - ./data:/app/data
+      - ./api:/app
+      - ./tools:/app/tools
+    environment:
+      - OLLAMA_URL=http://ollama:11434
+      - OLLAMA_MODEL=mipizarra
+      - EXERCISES_PATH=/app/data/exercises.json
+      - CHROMA_DB_DIR=/app/data/chroma_db
+      # Si se setea, la API exige header X-Internal-Secret en cada request.
+      # NPM lo añade en la config Advanced del proxy host (ver SEGURIDAD.md).
+      - INTERNAL_SECRET=${MIPIZARRA_INTERNAL_SECRET:-}
+    depends_on:
+      - ollama
+
+  frontend:
+    build: ./frontend
+    container_name: mipizarra-frontend
+    restart: unless-stopped
+    ports:
+      - "${BIND_IP:-0.0.0.0}:8501:8000"
+    environment:
+      - API_URL=http://mipizarra-api:8090
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-change-me-in-production}
+      - DJANGO_ALLOWED_HOSTS=mipizarra.polacabezon.com localhost 127.0.0.1 192.168.1.72
+      # El frontend llama a la API dentro de la misma red Docker; debe enviar el secret.
+      - INTERNAL_SECRET=${MIPIZARRA_INTERNAL_SECRET:-}
+    depends_on:
+      - api
+
+  finetune:
+    build:
+      context: ./docker/finetune
+      dockerfile: Dockerfile
+    container_name: mipizarra-finetune
+    profiles: ["training"]
+    user: "0:0"                # root para evitar problemas de permisos
+    volumes:
+      - ./:/workspace
+      - ./cache:/workspace/.cache   # caché de HuggingFace escribible
+    working_dir: /workspace
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    command: ["bash"]
+
+networks:
+  default:
+    name: mipizarra-net

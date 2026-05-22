@@ -1,0 +1,28 @@
+# Entorno
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+venv/
+
+# Docker (datos locales que no van al repo)
+ollama/
+data/sessions/*.json
+
+# Modelos y outputs
+*.gguf
+*.bin
+outputs/
+
+# Fine-tuning cache (autogenerado)
+unsloth_compiled_cache/
+
+# Herramientas de scraping (fuera del repo público)
+tools/scraper_isportcoach.py
+
+# Sistema
+.DS_Store
+Thumbs.db
+cache/
+repomix-output.xml

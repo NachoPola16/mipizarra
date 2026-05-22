@@ -1,0 +1,552 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiPizarra — Asistente de entrenamiento</title>
+<link rel="stylesheet" href="{% static 'pizarra/css/fonts.css' %}">
+<style>
+/* ── Reset & variables ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --accent:   #4f8ef7;
+    --accent-d: #3a7ae0;
+    --bg:       #0d1117;
+    --bg2:      #161b22;
+    --bg3:      #1c2333;
+    --border:   #21262d;
+    --text:     #e6edf3;
+    --text2:    #c9d1d9;
+    --muted:    #7d8590;
+    --sidebar-w: 280px;
+}
+
+[data-theme="light"] {
+    --bg:     #f6f8fa;
+    --bg2:    #ffffff;
+    --bg3:    #dbeafe;
+    --border: #d0d7de;
+    --text:   #1c1c1e;
+    --text2:  #24292f;
+    --muted:  #6e7781;
+}
+
+html, body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100%;
+    font-size: 15px;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── Layout ── */
+.app { display: flex; min-height: 100vh; }
+
+.sidebar {
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    background: var(--bg);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 1.25rem;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    gap: .9rem;
+}
+
+.main {
+    flex: 1;
+    padding: 2rem 2.5rem;
+    overflow-y: auto;
+}
+
+/* ── Logo ── */
+.logo { border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: .25rem; }
+.logo-main { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1.9rem; letter-spacing: -.03em; line-height: 1; color: var(--text); }
+.logo-main em { font-style: normal; color: var(--accent); }
+.logo-sub { font-size: .72rem; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; margin-top: 4px; }
+
+/* ── Field label ── */
+.field-label { font-size: .68rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; margin-top: 4px; }
+
+/* ── Form controls ── */
+select, textarea, input[type="range"] {
+    width: 100%;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 6px;
+    padding: .5rem .75rem;
+    font-family: 'Inter', sans-serif;
+    font-size: .88rem;
+    outline: none;
+    transition: border-color .15s;
+}
+select:focus, textarea:focus { border-color: var(--accent); }
+textarea { resize: vertical; min-height: 120px; line-height: 1.6; }
+select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237d8590' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .75rem center; padding-right: 2rem; }
+
+/* Duration toggle */
+.dur-toggle { display: flex; align-items: center; gap: .5rem; cursor: pointer; font-size: .88rem; color: var(--text2); }
+.dur-toggle input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+.dur-slider { display: none; margin-top: .5rem; }
+.dur-slider.visible { display: block; }
+.dur-val { text-align: center; font-size: .85rem; font-weight: 600; color: var(--accent); margin-top: .25rem; }
+input[type="range"] { padding: 0; border: none; background: var(--border); height: 4px; border-radius: 2px; accent-color: var(--accent); cursor: pointer; }
+
+/* ── Button ── */
+.btn-generar {
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: .9rem;
+    letter-spacing: .04em;
+    border: none;
+    border-radius: 8px;
+    padding: .7rem 1.5rem;
+    cursor: pointer;
+    transition: background .15s;
+    margin-top: .25rem;
+}
+.btn-generar:hover { background: var(--accent-d); }
+.btn-generar:disabled { opacity: .5; cursor: not-allowed; }
+.btn-hint { text-align: center; font-size: .68rem; color: var(--muted); margin-top: 5px; }
+
+/* ── Theme toggle ── */
+.theme-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: .3rem .6rem; font-size: .78rem; cursor: pointer; align-self: flex-start; transition: color .15s, border-color .15s; }
+.theme-btn:hover { color: var(--text); border-color: var(--text); }
+
+/* ── Loading ── */
+.loading { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 40vh; gap: 1.5rem; }
+.loading.visible { display: flex; }
+.spinner { width: 48px; height: 48px; border: 4px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { color: var(--muted); font-size: .9rem; }
+
+/* ── Empty state ── */
+.empty { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; text-align: center; padding: 2rem; gap: .75rem; }
+.empty-icon { font-size: 3.5rem; }
+.empty-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.3rem; }
+.empty-sub { font-size: .88rem; color: var(--muted); line-height: 1.7; max-width: 360px; }
+
+/* ── Results ── */
+.results { display: none; }
+.results.visible { display: block; }
+
+.badge { display: inline-block; border-radius: 6px; padding: 3px 12px; font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 1.25rem; }
+.badge-ok { background: #0d2218; color: #3fb950; border: 1px solid #1a7f37; }
+.badge-warn { background: #1c1a10; color: #d29922; border: 1px solid #6e451d; }
+[data-theme="light"] .badge-ok { background: #d4edda; color: #155724; border-color: #c3e6cb; }
+[data-theme="light"] .badge-warn { background: #fff3cd; color: #856404; border-color: #ffd576; }
+
+.ejercicio-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.1rem; border-left: 3px solid var(--accent); padding-left: .75rem; margin: 1.5rem 0 .75rem; }
+.diagrama-label { font-size: .68rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.diagrama-wrap { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 1.5rem; }
+.diagrama-wrap svg { width: 100%; height: auto; display: block; }
+.sesion-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; font-size: .92rem; line-height: 1.8; white-space: pre-wrap; color: var(--text2); margin-bottom: .75rem; }
+.section-title { font-weight: 700; font-size: 1rem; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: .5rem; margin: 1.5rem 0 .75rem; }
+
+/* ── Consultados ── */
+.consultados { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; margin: 1.5rem 0; }
+.consultados summary { padding: .75rem 1.25rem; cursor: pointer; font-size: .88rem; color: var(--muted); font-weight: 500; list-style: none; display: flex; align-items: center; gap: .5rem; }
+.consultados summary::before { content: '▶'; font-size: .7rem; transition: transform .2s; }
+.consultados[open] summary::before { transform: rotate(90deg); }
+.consultados-body { padding: .5rem 1.25rem 1rem; font-size: .88rem; line-height: 2; color: var(--text2); }
+
+/* ── Downloads ── */
+.downloads { display: flex; gap: .75rem; margin: 1.5rem 0; flex-wrap: wrap; }
+.btn-dl { display: inline-flex; align-items: center; gap: .4rem; padding: .55rem 1.25rem; border-radius: 8px; font-size: .88rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--bg2); color: var(--text); transition: border-color .15s, background .15s; text-decoration: none; }
+.btn-dl:hover { border-color: var(--accent); background: var(--bg3); }
+
+/* ── Feedback ── */
+.feedback { border-top: 1px solid var(--border); margin-top: 2rem; padding-top: 1.5rem; }
+.feedback-title { font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+.feedback-row { display: flex; gap: .75rem; align-items: flex-start; }
+.feedback-row textarea { flex: 1; }
+.feedback-row select { width: 110px; min-width: 110px; }
+.btn-fb { margin-top: .75rem; background: var(--bg2); border: 1px solid var(--border); color: var(--text); font-family: 'Inter', sans-serif; font-weight: 600; font-size: .88rem; border-radius: 8px; padding: .55rem 1.25rem; cursor: pointer; transition: border-color .15s; }
+.btn-fb:hover { border-color: var(--accent); }
+.feedback-msg { font-size: .85rem; margin-top: .5rem; }
+.feedback-msg.ok { color: #3fb950; }
+.feedback-msg.err { color: #f85149; }
+
+/* ── Responsive ── */
+@media (max-width: 680px) {
+    .app { flex-direction: column; }
+    .sidebar { width: 100%; min-width: 0; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border); }
+    .main { padding: 1.25rem; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+    <div class="logo">
+        <div class="logo-main">Mi<em>Pizarra</em></div>
+        <div class="logo-sub">Asistente de entrenamiento</div>
+    </div>
+
+    <div>
+        <div class="field-label">Categoría</div>
+        <select id="edad">
+            <option value="">-- No especificar --</option>
+            <option value="U8">Prebenjamín</option>
+            <option value="U10">Benjamín</option>
+            <option value="U12">Alevín</option>
+            <option value="U14">Infantil</option>
+            <option value="U16">Cadete</option>
+            <option value="U18">Junior</option>
+            <option value="Senior">Senior</option>
+        </select>
+    </div>
+
+    <div>
+        <div class="field-label">Duración</div>
+        <label class="dur-toggle">
+            <input type="checkbox" id="usar-dur"> Especificar duración
+        </label>
+        <div class="dur-slider" id="dur-slider">
+            <input type="range" id="duracion" min="45" max="120" step="15" value="90">
+            <div class="dur-val" id="dur-val">90 min</div>
+        </div>
+    </div>
+
+    <div>
+        <div class="field-label">Descripción del entrenamiento</div>
+        <textarea id="objetivo" placeholder="¿Qué quieres trabajar hoy?&#10;&#10;Ejemplos:&#10;• Tiro en suspensión&#10;• Defensa bloqueo directo&#10;• Transición rápida"></textarea>
+    </div>
+
+    <div>
+        <label class="dur-toggle">
+            <input type="checkbox" id="gen-diagramas" checked> Generar diagramas
+        </label>
+    </div>
+
+    <button class="btn-generar" id="btn-generar">⚡ Generar sesión</button>
+    <div class="btn-hint">Enter para generar · Shift+Enter para nueva línea</div>
+
+    <button class="theme-btn" id="theme-btn" title="Cambiar tema">☀ Tema claro</button>
+</aside>
+
+<!-- ── Main ── -->
+<main class="main">
+
+    <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <div class="loading-text">Generando sesión… (puede tardar hasta 2 minutos)</div>
+    </div>
+
+    <div class="empty" id="empty">
+        <div class="empty-icon">🏀</div>
+        <div class="empty-title">Diseña tu próximo entrenamiento</div>
+        <div class="empty-sub">Selecciona categoría y duración en el panel izquierdo, describe el objetivo y pulsa <strong>Generar sesión</strong>.</div>
+    </div>
+
+    <div class="results" id="results">
+        <div id="resultado-contenido"></div>
+
+        <details class="consultados" id="consultados-wrap" style="display:none">
+            <summary id="consultados-title">📋 Ejercicios consultados</summary>
+            <div class="consultados-body" id="consultados-body"></div>
+        </details>
+
+        <div class="downloads">
+            <button class="btn-dl" id="btn-txt">⬇ Descargar .txt</button>
+            <button class="btn-dl" id="btn-pdf">📄 Descargar PDF</button>
+        </div>
+
+        <div class="feedback">
+            <div class="feedback-title">¿Usaste esta sesión en un entrenamiento real?</div>
+            <div class="feedback-row">
+                <textarea id="fb-cambios" placeholder="Ej: Quité el 3c2 porque solo había 8 jugadores." rows="3"></textarea>
+                <select id="fb-rating">
+                    <option value="1">⭐ 1</option>
+                    <option value="2">⭐⭐ 2</option>
+                    <option value="3" selected>⭐⭐⭐ 3</option>
+                    <option value="4">⭐⭐⭐⭐ 4</option>
+                    <option value="5">⭐⭐⭐⭐⭐ 5</option>
+                </select>
+            </div>
+            <button class="btn-fb" id="btn-feedback">💾 Guardar sesión usada</button>
+            <div class="feedback-msg" id="fb-msg"></div>
+        </div>
+    </div>
+
+</main>
+</div>
+
+<form style="display:none">{% csrf_token %}</form>
+
+<script>
+const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+let currentResult = null;
+let currentObjetivo = '';
+let currentEdad = '';
+let currentDuracion = 0;
+
+// ── Theme ──────────────────────────────────────────────────────────────────
+const themeBtn = document.getElementById('theme-btn');
+const html = document.documentElement;
+if (localStorage.getItem('theme') === 'light') setTheme('light');
+
+function setTheme(t) {
+    html.setAttribute('data-theme', t);
+    themeBtn.textContent = t === 'dark' ? '☀ Tema claro' : '🌙 Tema oscuro';
+    localStorage.setItem('theme', t);
+}
+themeBtn.addEventListener('click', () => {
+    setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+});
+
+// ── Duration slider ────────────────────────────────────────────────────────
+const usarDur = document.getElementById('usar-dur');
+const durSlider = document.getElementById('dur-slider');
+const durInput = document.getElementById('duracion');
+const durVal = document.getElementById('dur-val');
+usarDur.addEventListener('change', () => durSlider.classList.toggle('visible', usarDur.checked));
+durInput.addEventListener('input', () => { durVal.textContent = durInput.value + ' min'; });
+
+// ── Enter to submit ────────────────────────────────────────────────────────
+document.getElementById('objetivo').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); generar(); }
+});
+
+// ── Generar ────────────────────────────────────────────────────────────────
+document.getElementById('btn-generar').addEventListener('click', generar);
+
+async function generar() {
+    const objetivo = document.getElementById('objetivo').value.trim();
+    if (!objetivo) { alert('Describe qué quieres trabajar en el entrenamiento.'); return; }
+
+    const edad = document.getElementById('edad').value;
+    const genDiagramas = document.getElementById('gen-diagramas').checked;
+    const duracion = usarDur.checked ? parseInt(durInput.value) : null;
+
+    currentObjetivo = objetivo;
+    currentEdad = document.getElementById('edad').options[document.getElementById('edad').selectedIndex].text;
+    currentDuracion = duracion || 0;
+
+    showLoading();
+
+    const payload = { objetivo, generar_diagramas: genDiagramas };
+    if (edad) payload.edad = edad;
+    if (duracion) payload.duracion = duracion;
+
+    try {
+        const resp = await fetch('/generar/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+            body: JSON.stringify(payload),
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Error desconocido');
+        currentResult = data;
+        renderResults(data);
+    } catch (e) {
+        hideLoading();
+        showEmpty();
+        alert('Error: ' + e.message);
+    }
+}
+
+// ── Render ─────────────────────────────────────────────────────────────────
+function renderResults(data) {
+    const texto = (data.sesion || data.texto || '').replace(/\[ej_\d+\]\s*/g, '');
+    const diagramas = data.diagramas || [];
+
+    // Badge
+    let html = data.teoria_usada
+        ? "<span class='badge badge-ok'>✓ Enriquecido con teoría</span>"
+        : "<span class='badge badge-warn'>⚠ Sin teoría adicional</span>";
+
+    // Parse into blocks
+    const lineas = texto.split('\n');
+    let bloques = [];
+    let bloque = [];
+    let ejIdx = -1;
+
+    for (const linea of lineas) {
+        if (/^\s*Ejercicio \d+/.test(linea)) {
+            if (bloque.length) bloques.push({ tipo: ejIdx >= 0 ? 'ej' : 'text', texto: bloque.join('\n'), idx: ejIdx });
+            ejIdx++;
+            bloque = [linea];
+        } else {
+            bloque.push(linea);
+        }
+    }
+    if (bloque.length) bloques.push({ tipo: ejIdx >= 0 ? 'ej' : 'text', texto: bloque.join('\n'), idx: ejIdx });
+
+    let ejercicioNum = 0;
+    for (const b of bloques) {
+        if (/^\s*Ejercicio \d+/.test(b.texto)) {
+            const ls = b.texto.split('\n');
+            const titulo = ls[0].trim();
+            const resto = ls.slice(1).join('\n').trim();
+
+            html += `<div class='ejercicio-title'>${escHtml(titulo)}</div>`;
+
+            if (ejercicioNum < diagramas.length) {
+                const d = diagramas[ejercicioNum];
+                html += `<div class='diagrama-label'>${escHtml(d.nombre || '')}</div>`;
+                html += `<div class='diagrama-wrap'>${d.svg}</div>`;
+            }
+
+            if (resto) html += `<div class='sesion-card'>${escHtml(resto)}</div>`;
+            ejercicioNum++;
+        } else {
+            const contenido = b.texto.trim();
+            if (contenido) {
+                // Detect section headers (**texto**)
+                const formatted = contenido.replace(/\*\*(.+?)\*\*/g, (_, t) =>
+                    `<div class='section-title'>${escHtml(t)}</div>`
+                );
+                if (formatted !== contenido) {
+                    html += formatted;
+                } else {
+                    html += `<div class='sesion-card'>${escHtml(contenido)}</div>`;
+                }
+            }
+        }
+    }
+
+    document.getElementById('resultado-contenido').innerHTML = html;
+
+    // Ejercicios consultados
+    const ids = data.ejercicios_usados || [];
+    if (ids.length) {
+        document.getElementById('consultados-title').textContent = `📋 Ejercicios consultados (${ids.length})`;
+        document.getElementById('consultados-body').innerHTML = ids.map(ej => {
+            if (typeof ej === 'object') {
+                const icono = ej.diagrama ? '📐 ' : '';
+                return `<div>${icono}<strong>${escHtml(ej.nombre || '?')}</strong> (${ej.duracion_min || '?'} min)</div>`;
+            }
+            return `<div>${escHtml(String(ej))}</div>`;
+        }).join('');
+        document.getElementById('consultados-wrap').style.display = '';
+    } else {
+        document.getElementById('consultados-wrap').style.display = 'none';
+    }
+
+    document.getElementById('fb-msg').textContent = '';
+    showResults();
+}
+
+function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Downloads ──────────────────────────────────────────────────────────────
+document.getElementById('btn-txt').addEventListener('click', () => {
+    if (!currentResult) return;
+    const texto = currentResult.sesion || currentResult.texto || '';
+    const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `sesion_${currentEdad.toLowerCase().replace(/\s/g,'_')}.txt`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+});
+
+document.getElementById('btn-pdf').addEventListener('click', async () => {
+    if (!currentResult) return;
+    const btn = document.getElementById('btn-pdf');
+    btn.textContent = '⏳ Generando PDF…';
+    btn.disabled = true;
+    try {
+        const resp = await fetch('/pdf/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+            body: JSON.stringify({
+                sesion: currentResult.sesion || currentResult.texto || '',
+                edad: currentEdad,
+                objetivo: currentObjetivo,
+                duracion: currentDuracion,
+                diagramas: currentResult.diagramas || [],
+            }),
+        });
+        if (!resp.ok) throw new Error('Error generando PDF');
+        const blob = await resp.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `sesion_${currentEdad.toLowerCase().replace(/\s/g,'_')}.pdf`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+    } catch (e) {
+        alert('Error generando PDF: ' + e.message);
+    } finally {
+        btn.textContent = '📄 Descargar PDF';
+        btn.disabled = false;
+    }
+});
+
+// ── Feedback ───────────────────────────────────────────────────────────────
+document.getElementById('btn-feedback').addEventListener('click', async () => {
+    const cambios = document.getElementById('fb-cambios').value.trim();
+    if (!cambios) { alert('Describe brevemente qué cambiaste.'); return; }
+    const rating = parseInt(document.getElementById('fb-rating').value);
+    const ts = new Date().toISOString().replace(/[:.]/g,'').slice(0,15);
+    try {
+        const resp = await fetch('/feedback/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+            body: JSON.stringify({
+                timestamp: ts,
+                edad: currentEdad,
+                duracion: currentDuracion,
+                objetivo: currentObjetivo,
+                sesion_generada: currentResult?.sesion || '',
+                cambios_realizados: cambios,
+                rating,
+                ejercicios_usados: currentResult?.ejercicios_usados || [],
+            }),
+        });
+        if (resp.ok) {
+            const msg = document.getElementById('fb-msg');
+            msg.textContent = '✓ Sesión guardada. ¡Gracias!';
+            msg.className = 'feedback-msg ok';
+        } else {
+            throw new Error();
+        }
+    } catch {
+        const msg = document.getElementById('fb-msg');
+        msg.textContent = 'Error guardando. Inténtalo de nuevo.';
+        msg.className = 'feedback-msg err';
+    }
+});
+
+// ── State helpers ──────────────────────────────────────────────────────────
+function showLoading() {
+    document.getElementById('empty').style.display = 'none';
+    document.getElementById('results').classList.remove('visible');
+    document.getElementById('loading').classList.add('visible');
+    document.getElementById('btn-generar').disabled = true;
+}
+function hideLoading() {
+    document.getElementById('loading').classList.remove('visible');
+    document.getElementById('btn-generar').disabled = false;
+}
+function showEmpty() {
+    document.getElementById('empty').style.display = '';
+}
+function showResults() {
+    hideLoading();
+    document.getElementById('empty').style.display = 'none';
+    document.getElementById('results').classList.add('visible');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.index, name='index'),
+    path('generar/', views.generar, name='generar'),
+    path('pdf/', views.descargar_pdf, name='pdf'),
+    path('feedback/', views.guardar_feedback, name='feedback'),
+]

@@ -1,0 +1,11 @@
+{
+  "ignore": {
+    "customPatterns": [
+      "unsloth_compiled_cache/**",
+      "**/*.txt",
+      "**/__pycache__/**",
+      "**/*.pyc",
+      "**/*.xml"
+    ]
+  }
+}
