@@ -29,8 +29,15 @@ Asistente local de entrenamiento de baloncesto. Genera sesiones (texto) y diagra
 1. **Verificar visualmente los 13 SVG** generados desde `exercises.json` con
    `api/diagram_renderer.py`. Comando en `ENTRENAMIENTO_MODELO.md`. Si algún diagrama es raro,
    editar el JSON antes de entrenar.
-2. (Opcional pero recomendado) Añadir más ejercicios reales propios a `data/exercises.json`
-   hasta ≥30. Más vale 30 verificados que 200 sintéticos.
+2. **Añadir ejercicios reales a `data/exercises.json` hasta ≥30** (ahora hay 15, 13 con diagrama).
+   Hacerlo poco a poco: añadir ejercicios reales propios, verificar el SVG de cada uno con el
+   renderer, y solo entonces continuar con el siguiente. Más vale 30 verificados que 200 sintéticos.
+   Categorías que faltan o tienen pocos ejemplos:
+   - Defensa en zona (2-3, 3-2, match-up)
+   - Presión full-court / half-court
+   - Bloqueos alejamiento y cruzados
+   - Situaciones 3c3 / 4c4
+   - Más variedad de tiro (movimiento, catch-and-shoot, midrange)
 3. **Pull en el servidor**:
    ```bash
    docker exec -it mipizarra-ollama ollama pull qwen2.5:7b-instruct-q4_K_M
