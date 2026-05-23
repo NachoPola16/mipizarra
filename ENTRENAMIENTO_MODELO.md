@@ -1,13 +1,14 @@
 # Entrenamiento y re-entrenamiento del modelo MiPizarra
 
-> ⚠️ **Conflicto GPU obligatorio de gestionar**: Ollama y el contenedor `finetune` comparten la GTX 1060.
-> No pueden tener un modelo cargado en VRAM a la vez. Para el fine-tuning, usa siempre el wrapper
-> `./tools/finetune.sh` (para Ollama, entrena, lo reinicia) o, manualmente:
+> ⚠️ **Conflicto GPU (solo si entrenas en el servidor)**: Ollama y el contenedor `finetune`
+> comparten la GTX 1060 y no pueden tener un modelo cargado a la vez.
+> Usa siempre el wrapper `./tools/finetune.sh` o, manualmente:
 > ```bash
 > docker compose stop ollama
 > docker compose run --rm finetune python tools/finetune_qwen.py --steps 200
 > docker compose start ollama
 > ```
+> Si entrenas en local (RTX 5060 Ti) no hay conflicto — el servidor sigue funcionando.
 
 ## Estructura de carpetas
 
@@ -136,7 +137,7 @@ docker compose run --rm finetune python tools/finetune_qwen.py
 docker compose start ollama
 
 Qué hace:
-- Entrena Qwen2.5-3B-Instruct con QLoRA 4-bit en la GTX 1060
+- Entrena Qwen3-4B con QLoRA 4-bit en la GTX 1060
 - fp16 activo (Pascal sm_61 lo soporta; bf16 no)
 - LoRA rank 8 por defecto, alpha 16, dropout 0.05 (anti-overfitting en datasets pequeños)
 - Batch efectivo 8 (1 × grad_acc 8), optimizador paged_adamw_8bit
@@ -199,6 +200,7 @@ PARAMETER num_thread 4
 PARAMETER num_batch 256
 PARAMETER stop "<|im_end|>"
 PARAMETER stop "<|endoftext|>"
+PARAMETER stop "<|im_start|>think"
 EOF
 
 ollama create mipizarra -f /tmp/Modelfile
@@ -213,7 +215,7 @@ docker exec -it mipizarra-ollama ollama list
 Antes de promover el modelo, mide si realmente mejora:
 
 docker exec -it mipizarra-api python /app/tools/evaluar_modelo.py \
-  --base qwen2.5:3b-instruct-q4_K_M \
+  --base qwen3:4b \
   --finetuned mipizarra \
   --n 15
 
@@ -238,7 +240,7 @@ docker compose up -d api
 Antes de dar por bueno el nuevo modelo, mide objetivamente si mejora respecto al base:
 
 docker exec -it mipizarra-api python /app/tools/evaluar_modelo.py \
-  --base qwen2.5:3b-instruct-q4_K_M \
+  --base qwen3:4b \
   --finetuned mipizarra \
   --n 20
 
@@ -301,6 +303,114 @@ Añadir PDFs → ejecutar indexar_* dentro de mipizarra-api
            → copiar GGUF y crear modelo en Ollama
            → actualizar OLLAMA_MODEL y docker compose up -d api
 
+
+---
+
+## Entrenamiento local (sin Docker, GPU con ≥12 GB VRAM)
+
+Con una GPU como la RTX 5060 Ti (16 GB) puedes entrenar directamente en tu PC sin el
+contenedor `finetune`. El split óptimo:
+
+| Paso | Dónde | Por qué |
+|------|-------|---------|
+| Generar dataset | local (llama al Ollama del servidor) | no llena RAM del servidor |
+| **Fine-tuning** | **local con `--no-quantize`** | bf16 puro, más rápido, mejor calidad |
+| Exportar GGUF | servidor (dentro del contenedor `finetune`) | llama.cpp ya compilado allí |
+| Inferencia | servidor (Ollama + GTX 1060) | siempre encendido |
+
+### 1. Configurar entorno Python (una sola vez)
+
+```bash
+# Crea el entorno (Windows CMD, PowerShell o WSL2)
+conda create -n mipizarra python=3.11 -y
+conda activate mipizarra
+
+# PyTorch ≥2.6 con CUDA 12.6 (Blackwell RTX 5000 lo necesita)
+pip install torch --index-url https://download.pytorch.org/whl/cu126
+
+# Unsloth: 2× más rápido que TRL, -70% VRAM, soporte nativo Qwen3
+pip install unsloth
+
+# Resto de dependencias (bitsandbytes NO necesario con --no-quantize)
+pip install transformers>=4.40 peft>=0.10 trl>=0.8 datasets accelerate
+```
+
+> **Nota Blackwell**: la RTX 5060 Ti usa arquitectura Blackwell (sm_100).
+> PyTorch 2.6+ y CUDA 12.6+ son mínimo para soporte completo.
+> Con la rueda `cu126` anterior, bf16 se activa automáticamente.
+>
+> **Unsloth**: el script `finetune_qwen.py` detecta Unsloth automáticamente al arrancar.
+> Si está instalado lo usa; si no, cae en TRL estándar. No requiere cambios de comandos.
+
+### 2. Generar el dataset (apuntando al Ollama del servidor)
+
+Desde la carpeta `mipizarra/` del repo (en tu PC):
+
+```bash
+# Indexar PDFs de entrenamientos (necesita PDFs en data/pdfs/coleccion_entrenamientos/)
+python tools/indexar_entrenamientos.py \
+  --ollama http://192.168.1.72:11434 \
+  --model qwen2.5:7b-instruct-q4_K_M
+
+# Generar dataset final
+python tools/generar_dataset.py --todo
+# Revisar data/dataset/para_revisar.jsonl antes de continuar
+```
+
+O si prefieres generar el dataset en el servidor y copiarlo:
+
+```bash
+# En el servidor:
+docker exec -it mipizarra-api python /app/tools/generar_dataset.py --todo
+
+# En tu PC:
+scp usuario@192.168.1.72:~/docker/mipizarra/data/dataset/train.jsonl data/dataset/
+```
+
+### 3. Entrenar localmente
+
+```bash
+# Desde la carpeta mipizarra/ (con el entorno mipizarra activado):
+conda activate mipizarra
+python tools/finetune_qwen.py --no-quantize
+
+# Opciones útiles con 16 GB VRAM:
+python tools/finetune_qwen.py --no-quantize --rank 16 --steps 150
+```
+
+El script auto-detecta bf16 (activado en Blackwell), elige `adamw_torch_fused` y muestra
+la VRAM disponible. Estimado: ~3-5 min por 100 pasos en la RTX 5060 Ti.
+
+### 4. Copiar adaptadores al servidor y exportar
+
+```bash
+# Desde tu PC — copia lora_adapters/ al servidor
+scp -r outputs/mipizarra-v1/lora_adapters \
+    usuario@192.168.1.72:~/docker/mipizarra/outputs/mipizarra-v1/
+
+# En el servidor — exportar a GGUF dentro del contenedor finetune
+docker compose run --rm finetune python tools/exportar_a_ollama.py \
+  --lora outputs/mipizarra-v1/lora_adapters \
+  --nombre mipizarra
+```
+
+Desde aquí, sigue los pasos 6.2-6.3 del flujo normal (copiar GGUF, crear modelo en Ollama).
+
+### Comparativa de modos
+
+| | GTX 1060 (servidor) | RTX 5060 Ti (local) |
+|-|---------------------|---------------------|
+| Modelo | Qwen3-4B | Qwen3-4B |
+| Framework | TRL SFTTrainer | Unsloth + TRL |
+| Modo | QLoRA 4-bit | LoRA puro bf16 |
+| Flag | *(ninguno)* | `--no-quantize` |
+| bitsandbytes | requerido (0.42.0 fijo) | no necesario |
+| Precisión | fp16 | bf16 |
+| ~100 pasos | ~12-22 min | ~2-4 min |
+| VRAM usada | ~5.5 GB | ~9-11 GB |
+| Calidad gradientes | buena | mejor |
+
+---
 
 ## Notas técnicas
 

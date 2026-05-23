@@ -7,8 +7,8 @@
 Asistente local de entrenamiento de baloncesto. Genera sesiones (texto) y diagramas tácticos
 (JSON → SVG via renderer determinista). Corre en LXC Proxmox con GTX 1060 6GB.
 
-- LLM base: **Qwen2.5-3B-Instruct** en Ollama (Q4_K_M).
-- Fine-tuning: **QLoRA** sobre el base con dataset propio.
+- LLM base: **Qwen3-4B** en Ollama (Q4_K_M, ~2.5 GB VRAM). Equivale en calidad a Qwen2.5-7B.
+- Fine-tuning: **LoRA puro bf16** en local (RTX 5060 Ti) con Unsloth; **QLoRA 4-bit** en servidor (GTX 1060).
 - Modelo "profesor" para destilar dataset sintético: **qwen2.5:7b-instruct-q4_K_M**.
 - Carpeta canónica del servicio: **`mipizarra/`** (antes `hoops-coach`).
 
@@ -34,10 +34,10 @@ Asistente local de entrenamiento de baloncesto. Genera sesiones (texto) y diagra
 3. **Pull en el servidor**:
    ```bash
    docker exec -it mipizarra-ollama ollama pull qwen2.5:7b-instruct-q4_K_M
-   docker exec -it mipizarra-ollama ollama pull qwen2.5:3b-instruct-q4_K_M
+   docker exec -it mipizarra-ollama ollama pull qwen3:4b
    docker exec -it mipizarra-ollama ollama pull nomic-embed-text
    ```
-4. **Rebuild imagen finetune** (cambió el pin de bitsandbytes):
+4. **Rebuild imagen finetune** (si vas a entrenar en el servidor con QLoRA):
    ```bash
    docker compose build finetune
    ```
@@ -46,6 +46,8 @@ Asistente local de entrenamiento de baloncesto. Genera sesiones (texto) y diagra
 
 ## Flujo completo cuando todo esté listo
 
+### Opción A — todo en el servidor (GTX 1060, QLoRA 4-bit)
+
 ```bash
 docker exec -it mipizarra-api python /app/tools/generar_dataset.py --todo   # ~15-25 min
 # revisar data/dataset/para_revisar.jsonl y borrar ejemplos malos de train.jsonl
@@ -53,21 +55,47 @@ docker exec -it mipizarra-api python /app/tools/generar_dataset.py --todo   # ~1
 docker compose run --rm finetune python tools/exportar_a_ollama.py \
   --lora outputs/mipizarra-v1/lora_adapters --nombre mipizarra              # ~15-20 min
 docker exec -it mipizarra-api python /app/tools/evaluar_modelo.py \
-  --base qwen2.5:3b-instruct-q4_K_M --finetuned mipizarra --n 15            # ~10 min
+  --base qwen3:4b --finetuned mipizarra --n 15                              # ~10 min
 ```
+
+### Opción B — entrenar en local (RTX 5060 Ti 16 GB, LoRA puro bf16, recomendado)
+
+```bash
+# 1. Dataset: en el servidor o en local apuntando al Ollama del servidor
+docker exec -it mipizarra-api python /app/tools/generar_dataset.py --todo
+scp usuario@192.168.1.72:~/docker/mipizarra/data/dataset/train.jsonl data/dataset/
+
+# 2. Entrenar en local (conda activate mipizarra, desde carpeta mipizarra/)
+python tools/finetune_qwen.py --no-quantize            # ~3-5 min por 100 pasos
+# Con más capacidad (16 GB lo permite):
+python tools/finetune_qwen.py --no-quantize --rank 16 --steps 150
+
+# 3. Copiar lora_adapters al servidor y exportar allí
+scp -r outputs/mipizarra-v1/lora_adapters usuario@192.168.1.72:~/docker/mipizarra/outputs/mipizarra-v1/
+# En el servidor:
+docker compose run --rm finetune python tools/exportar_a_ollama.py \
+  --lora outputs/mipizarra-v1/lora_adapters --nombre mipizarra
+```
+
+Ver setup del entorno Python local en `ENTRENAMIENTO_MODELO.md → Entrenamiento local`.
 
 Regla: si `evaluar_modelo.py` reporta "⚠ no mejora claramente", **no** activar
 `OLLAMA_MODEL=mipizarra`. Iterar sobre el dataset, no sobre `--steps`.
 
 ## Decisiones ya tomadas (no re-debatir)
 
-- **Modelo base**: Qwen2.5-3B-Instruct (Qwen3-4B descartado: queda al filo de VRAM).
+- **Modelo base**: Qwen3-4B (equivale a Qwen2.5-7B en calidad; Q4_K_M ~2.5 GB en la GTX 1060).
 - **LoRA rank 8** mientras dataset < 500 ejemplos.
 - **Modelo profesor 7B** en lugar de Llama3.2-3B (mejor destilación).
 - **Diagramas = JSON → SVG**, no imágenes generativas. El modelo solo aprende coordenadas;
   el renderer (`api/diagram_renderer.py`) ya pinta pista FIBA + minibasket bien.
 - **Conflicto GPU**: Ollama y el contenedor `finetune` no pueden tener un modelo cargado a
   la vez. El wrapper `tools/finetune.sh` lo gestiona automáticamente.
+- **Entrenamiento local**: RTX 5060 Ti 16 GB, Unsloth + `--no-quantize` (LoRA bf16).
+  PyTorch ≥2.6 + CUDA 12.6. ~4× más rápido que el servidor con QLoRA.
+  Los `lora_adapters/` se copian al servidor para la exportación GGUF.
+- **Unsloth**: framework de fine-tuning 2× más rápido que TRL en GPU local.
+  `pip install unsloth`. El script lo detecta automáticamente y lo usa si está disponible.
 
 ## Riesgos vivos
 

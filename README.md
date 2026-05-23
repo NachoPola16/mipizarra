@@ -10,12 +10,12 @@ No usa ninguna API externa: el LLM, los embeddings y la base de datos vectorial 
 
 1. El usuario describe el objetivo del entrenamiento (ej. "bloqueo directo Cadete, 90 minutos").
 2. El RAG recupera ejercicios relevantes de la biblioteca JSON + ChromaDB.
-3. Un LLM fine-tuned (`mipizarra`, QLoRA sobre Qwen2.5-3B) redacta la sesión.
+3. Un LLM fine-tuned (`mipizarra`, LoRA sobre Qwen3-4B) redacta la sesión.
 4. El renderer SVG determinista genera los diagramas tácticos (media pista / pista completa).
 
 ## Stack
 
-- **LLM fine-tuned:** `mipizarra` (QLoRA sobre Qwen2.5-3B-Instruct via Ollama)
+- **LLM fine-tuned:** `mipizarra` (LoRA sobre Qwen3-4B via Ollama)
 - **LLM profesor (dataset sintético):** `qwen2.5:7b-instruct-q4_K_M`
 - **Embeddings:** `nomic-embed-text` via Ollama
 - **RAG:** biblioteca de ejercicios en JSON + ChromaDB
@@ -32,7 +32,7 @@ Requiere Docker con soporte NVIDIA y Ollama.
 cp .env.example .env
 # Edita .env si quieres restringir BIND_IP a tu LAN
 docker compose up -d
-docker exec -it mipizarra-ollama ollama pull qwen2.5:3b-instruct-q4_K_M
+docker exec -it mipizarra-ollama ollama pull qwen3:4b
 docker exec -it mipizarra-ollama ollama pull nomic-embed-text
 ```
 

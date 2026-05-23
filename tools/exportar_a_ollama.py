@@ -49,7 +49,7 @@ def main():
     parser = argparse.ArgumentParser(description="Exporta LoRA a Ollama via GGUF")
     parser.add_argument("--lora",   required=True,
                         help="Carpeta con adaptadores LoRA")
-    parser.add_argument("--base",   default="Qwen/Qwen2.5-3B-Instruct",
+    parser.add_argument("--base",   default="Qwen/Qwen3-4B",
                         help="Modelo base HuggingFace")
     parser.add_argument("--nombre", default="mipizarra",
                         help="Nombre del modelo en Ollama")

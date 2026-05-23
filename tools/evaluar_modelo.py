@@ -16,8 +16,8 @@ Métricas para DIAGRAMAS (JSON):
   - tiene movimientos
 
 Uso (desde el contenedor mipizarra-api):
-  python /app/tools/evaluar_modelo.py --base qwen2.5:3b-instruct-q4_K_M --finetuned mipizarra
-  python /app/tools/evaluar_modelo.py --base qwen2.5:3b-instruct-q4_K_M --finetuned mipizarra --n 20
+  python /app/tools/evaluar_modelo.py --base qwen3:4b --finetuned mipizarra
+  python /app/tools/evaluar_modelo.py --base qwen3:4b --finetuned mipizarra --n 20
   python /app/tools/evaluar_modelo.py --base mipizarra --finetuned mipizarra-v2 --solo sesiones
 """
 import argparse
