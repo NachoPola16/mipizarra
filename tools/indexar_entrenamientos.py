@@ -11,7 +11,7 @@ las coordenadas del diagrama usando el LLM.
 
 Uso:
   python tools/indexar_entrenamientos.py
-  python tools/indexar_entrenamientos.py --ollama http://192.168.1.72:11434 --model llama3.2:3b
+  python tools/indexar_entrenamientos.py --ollama http://<SERVER_IP>:11434 --model llama3.2:3b
   python tools/indexar_entrenamientos.py --dry-run   # Solo muestra qué encontraría
 """
 import json
@@ -326,7 +326,7 @@ def procesar_como_ejercicios(texto_pdf: str, pdf_path: Path,
 # ─── Main ────────────────────────────────────────────────────────────────────
 def main():
     parser = argparse.ArgumentParser(description="Indexa PDFs de entrenamientos para fine-tuning")
-    parser.add_argument("--ollama",  default="http://192.168.1.72:11434")
+    parser.add_argument("--ollama",  default="http://<SERVER_IP>:11434")
     parser.add_argument("--model",   default="llama3.2:3b")
     parser.add_argument("--dir",     default=str(PDF_DIR), help="Carpeta con PDFs")
     parser.add_argument("--dry-run", action="store_true",  help="Solo muestra qué encontraría, sin procesar")

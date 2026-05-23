@@ -5,7 +5,7 @@ para enriquecer el dataset de fine-tuning con conocimiento de baloncesto.
 
 Uso:
   python tools/indexar_conocimiento.py
-  python tools/indexar_conocimiento.py --ollama http://192.168.1.72:11434 --model llama3.2:3b
+  python tools/indexar_conocimiento.py --ollama http://<SERVER_IP>:11434 --model llama3.2:3b
 """
 import json
 import argparse
@@ -204,7 +204,7 @@ def procesar_coleccion(nombre: str, config: dict, ollama_url: str, model: str,
 
 def main():
     parser = argparse.ArgumentParser(description="Extrae Q&A de PDFs de conocimiento")
-    parser.add_argument("--ollama",           default="http://192.168.1.72:11434")
+    parser.add_argument("--ollama",           default="http://<SERVER_IP>:11434")
     parser.add_argument("--model",            default="llama3.2:3b")
     parser.add_argument("--chunks-por-pdf",   type=int, default=4,
                         help="Máximo de fragmentos a procesar por PDF (default: 4)")

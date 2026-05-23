@@ -349,7 +349,7 @@ Desde la carpeta `mipizarra/` del repo (en tu PC):
 ```bash
 # Indexar PDFs de entrenamientos (necesita PDFs en data/pdfs/coleccion_entrenamientos/)
 python tools/indexar_entrenamientos.py \
-  --ollama http://192.168.1.72:11434 \
+  --ollama http://<SERVER_IP>:11434 \
   --model qwen2.5:7b-instruct-q4_K_M
 
 # Generar dataset final
@@ -364,7 +364,7 @@ O si prefieres generar el dataset en el servidor y copiarlo:
 docker exec -it mipizarra-api python /app/tools/generar_dataset.py --todo
 
 # En tu PC:
-scp usuario@192.168.1.72:~/docker/mipizarra/data/dataset/train.jsonl data/dataset/
+scp usuario@<SERVER_IP>:~/docker/mipizarra/data/dataset/train.jsonl data/dataset/
 ```
 
 ### 3. Entrenar localmente
@@ -386,7 +386,7 @@ la VRAM disponible. Estimado: ~3-5 min por 100 pasos en la RTX 5060 Ti.
 ```bash
 # Desde tu PC — copia lora_adapters/ al servidor
 scp -r outputs/mipizarra-v1/lora_adapters \
-    usuario@192.168.1.72:~/docker/mipizarra/outputs/mipizarra-v1/
+    usuario@<SERVER_IP>:~/docker/mipizarra/outputs/mipizarra-v1/
 
 # En el servidor — exportar a GGUF dentro del contenedor finetune
 docker compose run --rm finetune python tools/exportar_a_ollama.py \

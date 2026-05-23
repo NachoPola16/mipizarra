@@ -305,7 +305,7 @@ def generar_ejemplo_ejercicio(descripcion: str, ollama_url: str, model: str) -> 
 # ─── Main ────────────────────────────────────────────────────────────────────
 def main():
     parser = argparse.ArgumentParser(description="Genera dataset para fine-tuning de MiPizarra")
-    parser.add_argument("--ollama",         default="http://192.168.1.72:11434", help="URL de Ollama")
+    parser.add_argument("--ollama",         default="http://<SERVER_IP>:11434", help="URL de Ollama")
     parser.add_argument("--model",          default="qwen2.5:7b-instruct-q4_K_M",
                         help="Modelo Ollama 'profesor' que destila ejemplos. Recomendado: 7B+ para calidad.")
     parser.add_argument("--sesiones",       type=int, default=60,               help="Número de ejemplos de sesión")

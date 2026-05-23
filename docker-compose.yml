@@ -50,7 +50,7 @@ services:
     environment:
       - API_URL=http://mipizarra-api:8090
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-change-me-in-production}
-      - DJANGO_ALLOWED_HOSTS=mipizarra.polacabezon.com localhost 127.0.0.1 192.168.1.72
+      - DJANGO_ALLOWED_HOSTS=mipizarra.polacabezon.com localhost 127.0.0.1 <SERVER_IP>
       # El frontend llama a la API dentro de la misma red Docker; debe enviar el secret.
       - INTERNAL_SECRET=${MIPIZARRA_INTERNAL_SECRET:-}
     depends_on:

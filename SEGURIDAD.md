@@ -49,12 +49,12 @@ Verifica que la API ya exige el secret:
 
 ```bash
 # Sin header → 401
-curl -s -o /dev/null -w "%{http_code}\n" -X POST http://192.168.1.72:8090/generar \
+curl -s -o /dev/null -w "%{http_code}\n" -X POST http://<SERVER_IP>:8090/generar \
   -H "Content-Type: application/json" -d '{"objetivo":"test"}'
 # → 401
 
 # Con header correcto → 200/429 (según rate limit)
-curl -s -o /dev/null -w "%{http_code}\n" -X POST http://192.168.1.72:8090/generar \
+curl -s -o /dev/null -w "%{http_code}\n" -X POST http://<SERVER_IP>:8090/generar \
   -H "Content-Type: application/json" -H "X-Internal-Secret: ${SECRET}" \
   -d '{"objetivo":"test"}'
 # → 200
@@ -64,7 +64,7 @@ curl -s -o /dev/null -w "%{http_code}\n" -X POST http://192.168.1.72:8090/genera
 
 ## Paso 2 — Configurar Basic Auth en NPM
 
-Entra a NPM: <http://192.168.1.72:81>.
+Entra a NPM: <http://<SERVER_IP>:81>.
 
 ### 2.1 — Crear la Access List
 
@@ -112,7 +112,7 @@ credenciales no se pasa.
 
 ## Paso 3 — (Opcional) Cerrar el puerto a LAN
 
-Por defecto la API y el frontend escuchan en `192.168.1.72:8090` y `:8501`.
+Por defecto la API y el frontend escuchan en `<SERVER_IP>:8090` y `:8501`.
 Eso significa que **cualquier dispositivo de tu LAN** puede llamar
 directamente a esos puertos. El secret de NPM ya bloquea los abusos contra
 la API, pero el frontend queda accesible.
@@ -142,7 +142,7 @@ Si quieres que **solo NPM** pueda acceder (defensa total):
    ```
 
 **Trade-off**: pierdes acceso directo desde tu portátil en la LAN a
-`http://192.168.1.72:8501` (Streamlit dev). Solo puedes entrar por el
+`http://<SERVER_IP>:8501` (Streamlit dev). Solo puedes entrar por el
 dominio público. Si haces dev habitualmente, déjalo abierto a LAN.
 
 ---
@@ -152,12 +152,12 @@ dominio público. Si haces dev habitualmente, déjalo abierto a LAN.
 ```bash
 # 1. API directa sin secret → 401
 curl -s -o /dev/null -w "API sin secret: %{http_code}\n" \
-  -X POST http://192.168.1.72:8090/generar \
+  -X POST http://<SERVER_IP>:8090/generar \
   -H "Content-Type: application/json" -d '{"objetivo":"x"}'
 
 # 2. API directa con secret correcto → 200/429
 curl -s -o /dev/null -w "API con secret: %{http_code}\n" \
-  -X POST http://192.168.1.72:8090/generar \
+  -X POST http://<SERVER_IP>:8090/generar \
   -H "Content-Type: application/json" \
   -H "X-Internal-Secret: $(grep MIPIZARRA_INTERNAL_SECRET ~/docker/mipizarra/.env | cut -d= -f2)" \
   -d '{"objetivo":"x"}'
@@ -172,7 +172,7 @@ curl -s -o /dev/null -w "Dominio con auth: %{http_code}\n" \
 
 # 5. Frontend en LAN sin proxy → 200 si no cerraste el puerto (paso 3 opcional)
 curl -s -o /dev/null -w "Frontend LAN directo: %{http_code}\n" \
-  http://192.168.1.72:8501/
+  http://<SERVER_IP>:8501/
 ```
 
 Resultado esperado:

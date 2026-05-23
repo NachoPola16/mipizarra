@@ -63,7 +63,7 @@ docker exec -it mipizarra-api python /app/tools/evaluar_modelo.py \
 ```bash
 # 1. Dataset: en el servidor o en local apuntando al Ollama del servidor
 docker exec -it mipizarra-api python /app/tools/generar_dataset.py --todo
-scp usuario@192.168.1.72:~/docker/mipizarra/data/dataset/train.jsonl data/dataset/
+scp usuario@<SERVER_IP>:~/docker/mipizarra/data/dataset/train.jsonl data/dataset/
 
 # 2. Entrenar en local (conda activate mipizarra, desde carpeta mipizarra/)
 python tools/finetune_qwen.py --no-quantize            # ~3-5 min por 100 pasos
@@ -71,7 +71,7 @@ python tools/finetune_qwen.py --no-quantize            # ~3-5 min por 100 pasos
 python tools/finetune_qwen.py --no-quantize --rank 16 --steps 150
 
 # 3. Copiar lora_adapters al servidor y exportar allí
-scp -r outputs/mipizarra-v1/lora_adapters usuario@192.168.1.72:~/docker/mipizarra/outputs/mipizarra-v1/
+scp -r outputs/mipizarra-v1/lora_adapters usuario@<SERVER_IP>:~/docker/mipizarra/outputs/mipizarra-v1/
 # En el servidor:
 docker compose run --rm finetune python tools/exportar_a_ollama.py \
   --lora outputs/mipizarra-v1/lora_adapters --nombre mipizarra

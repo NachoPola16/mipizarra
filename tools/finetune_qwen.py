@@ -270,7 +270,7 @@ def main():
     print(f"   Adaptadores LoRA: {lora_path}")
     if args.no_quantize:
         print(f"\nSi entrenaste en local, copia lora_adapters/ al servidor:")
-        print(f"  scp -r {lora_path} usuario@192.168.1.72:~/docker/mipizarra/{lora_path}")
+        print(f"  scp -r {lora_path} usuario@<SERVER_IP>:~/docker/mipizarra/{lora_path}")
     print(f"\nPróximo paso — exportar a Ollama (dentro del contenedor finetune en el servidor):")
     print(f"  python tools/exportar_a_ollama.py --lora {lora_path} --output {output_path}/gguf")
 

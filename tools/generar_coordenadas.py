@@ -7,7 +7,7 @@ import json
 import sys
 import requests
 
-OLLAMA_URL = "http://192.168.1.72:11434"
+OLLAMA_URL = "http://<SERVER_IP>:11434"
 MODEL = "llama3.2:3b"
 
 # ─── TRADUCCIÓN DE TÉRMINOS A COORDENADAS APROXIMADAS (x, y) ─────────────────
