@@ -1,0 +1,199 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Política de Privacidad — MiPizarra</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="{% static 'pizarra/css/fonts.css' %}">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+    --accent:   #4f8ef7;
+    --accent-d: #3a7ae0;
+    --bg:       #0d1117;
+    --bg2:      #161b22;
+    --bg3:      #1c2333;
+    --border:   #21262d;
+    --text:     #e6edf3;
+    --text2:    #c9d1d9;
+    --muted:    #7d8590;
+}
+html, body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100%;
+    font-size: 15px;
+    line-height: 1.7;
+}
+.page-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 5rem;
+}
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: .82rem;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    opacity: .8;
+    transition: opacity .2s;
+    margin-bottom: 2rem;
+}
+.back-link:hover { opacity: 1; }
+.back-link svg { width: 14px; height: 14px; flex-shrink: 0; }
+h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: .25rem;
+}
+.meta {
+    font-size: .8rem;
+    color: var(--muted);
+    margin-bottom: 2.5rem;
+}
+h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-top: 2rem;
+    margin-bottom: .5rem;
+}
+p { color: var(--text2); margin-bottom: .75rem; }
+ul {
+    color: var(--text2);
+    padding-left: 1.4rem;
+    margin-bottom: .75rem;
+}
+ul li { margin-bottom: .25rem; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+.highlight-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: .9rem 1.1rem;
+    margin: 1rem 0 1.25rem;
+    font-size: .88rem;
+    color: var(--text2);
+}
+hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2.5rem 0;
+}
+footer {
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: .78rem;
+    color: var(--muted);
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+footer a { color: var(--muted); }
+footer a:hover { color: var(--text2); }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+    <a href="/" class="back-link">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M10.5 2L5 8l5.5 6"/></svg>
+        Volver a MiPizarra
+    </a>
+
+    <h1>Política de Privacidad</h1>
+    <p class="meta">Última actualización: mayo de 2026</p>
+
+    <div class="highlight-box">
+        MiPizarra es una herramienta de uso personal. No recoge datos personales identificables,
+        no usa cookies de terceros y no envía ningún dato a servicios externos de IA.
+        El modelo de lenguaje se ejecuta íntegramente en el servidor propio.
+    </div>
+
+    <h2>1. Responsable del tratamiento</h2>
+    <p>
+        José Ignacio Pola Cabezón — NIF: 25209275X<br>
+        Contacto: <a href="mailto:nachopolac@gmail.com">nachopolac@gmail.com</a>
+    </p>
+
+    <h2>2. Datos que se recopilan</h2>
+    <p>
+        Al guardar una sesión de entrenamiento (botón "Guardar sesión"), se almacenan los siguientes datos técnicos:
+    </p>
+    <ul>
+        <li>Categoría de edad del equipo (ej. "U12", "Senior")</li>
+        <li>Duración de la sesión en minutos</li>
+        <li>Objetivo de entrenamiento introducido por el usuario</li>
+        <li>Sesión generada por la IA</li>
+        <li>Cambios o notas añadidos manualmente</li>
+        <li>Valoración numérica (1–5)</li>
+        <li>Fecha y hora del guardado</li>
+    </ul>
+    <p>
+        No se recopilan nombre, apellidos, correo electrónico, dirección IP visible ni
+        ningún otro dato directamente identificable.
+    </p>
+
+    <h2>3. Finalidad</h2>
+    <p>
+        Los datos guardados sirven para conservar un historial de sesiones de entrenamiento
+        y mejorar la calidad de las sugerencias de la herramienta. No se utilizan con fines
+        comerciales ni publicitarios.
+    </p>
+
+    <h2>4. Almacenamiento y destinatarios</h2>
+    <p>
+        Los datos se guardan como archivos JSON en el servidor doméstico propio del titular,
+        ubicado en España. No se ceden a terceros ni se transfieren fuera de la infraestructura
+        propia. No se utilizan servicios de cloud externo para el almacenamiento ni para la
+        inferencia del modelo de IA.
+    </p>
+
+    <h2>5. Inteligencia artificial</h2>
+    <p>
+        Las sesiones y diagramas son generados por el modelo <strong>Qwen3-4B</strong>, ejecutado
+        localmente en el servidor. Los textos que introduces (objetivo, notas) se procesan
+        únicamente dentro del servidor propio y no se envían a ningún servicio externo de IA
+        (OpenAI, Anthropic, Google, etc.).
+    </p>
+
+    <h2>6. Cookies</h2>
+    <p>
+        Esta herramienta utiliza únicamente la <strong>cookie CSRF</strong>
+        (<code>csrftoken</code>), necesaria para proteger los formularios contra ataques de
+        falsificación de solicitudes entre sitios. Es una cookie técnica de sesión que no
+        almacena datos personales y no requiere consentimiento según el RGPD y la LSSI.
+        No se usan cookies de terceros, de analítica ni publicitarias.
+    </p>
+
+    <h2>7. Tus derechos</h2>
+    <p>
+        Puedes ejercer en cualquier momento los derechos de acceso, rectificación y supresión
+        de los datos guardados contactando con el titular en
+        <a href="mailto:nachopolac@gmail.com">nachopolac@gmail.com</a>.
+        También tienes derecho a presentar una reclamación ante la
+        <a href="https://www.aepd.es" target="_blank" rel="noopener">Agencia Española de Protección de Datos (AEPD)</a>.
+    </p>
+
+    <hr>
+
+    <footer>
+        <span>MiPizarra &copy; 2026 José Ignacio Pola Cabezón</span>
+        <a href="{% url 'aviso_legal' %}">Aviso legal</a>
+        <a href="/">Inicio</a>
+    </footer>
+
+</div>
+</body>
+</html>

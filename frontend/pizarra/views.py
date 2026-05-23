@@ -18,6 +18,14 @@ def index(request):
     return render(request, 'pizarra/index.html')
 
 
+def privacidad(request):
+    return render(request, 'pizarra/privacidad.html')
+
+
+def aviso_legal(request):
+    return render(request, 'pizarra/aviso_legal.html')
+
+
 @require_POST
 def generar(request):
     try:

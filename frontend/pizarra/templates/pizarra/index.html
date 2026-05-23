@@ -188,6 +188,22 @@ input[type="range"] { padding: 0; border: none; background: var(--border); heigh
     .sidebar { width: 100%; min-width: 0; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border); }
     .main { padding: 1.25rem; }
 }
+
+/* ── Footer legal ── */
+.legal-footer {
+    text-align: center;
+    padding: .75rem 1rem;
+    font-size: .72rem;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+}
+.legal-footer a {
+    color: var(--muted);
+    text-decoration: none;
+    margin: 0 .5rem;
+}
+.legal-footer a:hover { color: var(--text2); }
 </style>
 </head>
 <body>
@@ -548,5 +564,11 @@ function showResults() {
     document.getElementById('results').classList.add('visible');
 }
 </script>
+
+<footer class="legal-footer">
+    <span>MiPizarra &copy; 2026</span>
+    <a href="{% url 'privacidad' %}">Política de privacidad</a>
+    <a href="{% url 'aviso_legal' %}">Aviso legal</a>
+</footer>
 </body>
 </html>

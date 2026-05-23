@@ -6,4 +6,6 @@ urlpatterns = [
     path('generar/', views.generar, name='generar'),
     path('pdf/', views.descargar_pdf, name='pdf'),
     path('feedback/', views.guardar_feedback, name='feedback'),
+    path('privacidad/', views.privacidad, name='privacidad'),
+    path('aviso-legal/', views.aviso_legal, name='aviso_legal'),
 ]

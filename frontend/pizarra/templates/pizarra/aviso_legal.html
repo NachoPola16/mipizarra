@@ -1,0 +1,160 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aviso Legal — MiPizarra</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="{% static 'pizarra/css/fonts.css' %}">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+    --accent:   #4f8ef7;
+    --accent-d: #3a7ae0;
+    --bg:       #0d1117;
+    --bg2:      #161b22;
+    --bg3:      #1c2333;
+    --border:   #21262d;
+    --text:     #e6edf3;
+    --text2:    #c9d1d9;
+    --muted:    #7d8590;
+}
+html, body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100%;
+    font-size: 15px;
+    line-height: 1.7;
+}
+.page-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 5rem;
+}
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: .82rem;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    opacity: .8;
+    transition: opacity .2s;
+    margin-bottom: 2rem;
+}
+.back-link:hover { opacity: 1; }
+.back-link svg { width: 14px; height: 14px; flex-shrink: 0; }
+h1 {
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: .25rem;
+}
+.meta {
+    font-size: .8rem;
+    color: var(--muted);
+    margin-bottom: 2.5rem;
+}
+h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-top: 2rem;
+    margin-bottom: .5rem;
+}
+p { color: var(--text2); margin-bottom: .75rem; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2.5rem 0;
+}
+footer {
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+    font-size: .78rem;
+    color: var(--muted);
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+footer a { color: var(--muted); }
+footer a:hover { color: var(--text2); }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+    <a href="/" class="back-link">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M10.5 2L5 8l5.5 6"/></svg>
+        Volver a MiPizarra
+    </a>
+
+    <h1>Aviso Legal</h1>
+    <p class="meta">Última actualización: mayo de 2026</p>
+
+    <h2>1. Titular del sitio</h2>
+    <p>
+        José Ignacio Pola Cabezón — NIF: 25209275X<br>
+        Contacto: <a href="mailto:nachopolac@gmail.com">nachopolac@gmail.com</a>
+    </p>
+
+    <h2>2. Objeto</h2>
+    <p>
+        MiPizarra es una herramienta de asistencia al entrenamiento de baloncesto de uso personal y no comercial.
+        Su propósito es generar sugerencias de sesiones y diagramas tácticos mediante inteligencia artificial.
+        No realiza transacciones económicas de ningún tipo.
+    </p>
+
+    <h2>3. Contenido generado por inteligencia artificial</h2>
+    <p>
+        Las sesiones, ejercicios y diagramas que genera esta herramienta son <strong>sugerencias automáticas</strong>
+        producidas por un modelo de lenguaje local (Qwen3-4B). No constituyen asesoramiento
+        deportivo profesional certificado. El entrenador o usuario es el único responsable de las
+        decisiones que tome basándose en el contenido generado. La herramienta puede cometer errores,
+        omisiones o producir contenido inadecuado para determinadas situaciones o categorías.
+    </p>
+
+    <h2>4. Propiedad intelectual</h2>
+    <p>
+        El código fuente, el diseño y la infraestructura de MiPizarra son propiedad de
+        José Ignacio Pola Cabezón y están protegidos por la legislación española de propiedad intelectual
+        (Real Decreto Legislativo 1/1996). Los contenidos introducidos por el usuario
+        (objetivos de entrenamiento, feedback) son de su exclusiva titularidad.
+    </p>
+    <p>
+        El modelo de IA base (Qwen3-4B) es propiedad de Alibaba Cloud y se distribuye bajo su
+        licencia correspondiente. Los pesos del modelo se ejecutan localmente y no se comparten
+        con terceros.
+    </p>
+
+    <h2>5. Exención de responsabilidad</h2>
+    <p>
+        El titular no se responsabiliza de los daños que puedan derivarse del uso del contenido
+        generado por la herramienta, ni de la disponibilidad o continuidad del servicio, al tratarse
+        de un proyecto personal en infraestructura doméstica.
+    </p>
+
+    <h2>6. Ley aplicable</h2>
+    <p>
+        Este aviso legal se rige por la legislación española. Para cualquier controversia, las partes
+        se someten a los juzgados y tribunales del domicilio del titular.
+    </p>
+
+    <hr>
+
+    <footer>
+        <span>MiPizarra &copy; 2026 José Ignacio Pola Cabezón</span>
+        <a href="{% url 'privacidad' %}">Política de privacidad</a>
+        <a href="/">Inicio</a>
+    </footer>
+
+</div>
+</body>
+</html>
