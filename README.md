@@ -8,7 +8,7 @@ No usa ninguna API externa: el LLM, los embeddings y la base de datos vectorial 
 
 ## Funcionamiento
 
-1. El usuario describe el objetivo del entrenamiento (ej. "bloqueo directo Cadete, 90 minutos").
+1. El usuario describe el objetivo del entrenamiento (ej. "Entrenamiento de tiro, tipos de salidas y contrataque, 90 minutos").
 2. El RAG recupera ejercicios relevantes de la biblioteca JSON + ChromaDB.
 3. Un LLM fine-tuned (`mipizarra`, LoRA sobre Qwen3-4B) redacta la sesión.
 4. El renderer SVG determinista genera los diagramas tácticos (media pista / pista completa).
