@@ -127,11 +127,11 @@ def _half_court_elements(svg: list, cx: float, base_y: float, pad_x: float,
     svg.append(f'<rect x="{cx-40:.1f}" y="{base_y - s*6:.1f}" width="80" height="{s*6:.1f}" fill="#1a202c"/>')
     svg.append(f'<circle cx="{cx:.1f}" cy="{canasta_y:.1f}" r="13" fill="none" stroke="#e53e3e" stroke-width="3.5"/>')
 
-    # Tacos rebote
+    # Tacos rebote — simétricos: ambos pegados al exterior de la línea del área
     for d in [0.85, 1.70, 2.55]:
         ty = base_y - s * d * ESCALA
-        svg.append(f'<rect x="{zona_x-6:.1f}" y="{ty-12:.1f}" width="4" height="24" fill="#2d3748"/>')
-        svg.append(f'<rect x="{zona_x+zona_w+2:.1f}" y="{ty-12:.1f}" width="4" height="24" fill="#2d3748"/>')
+        svg.append(f'<rect x="{zona_x-5:.1f}" y="{ty-12:.1f}" width="5" height="24" fill="#2d3748"/>')
+        svg.append(f'<rect x="{zona_x+zona_w:.1f}" y="{ty-12:.1f}" width="5" height="24" fill="#2d3748"/>')
 
     # Triple FIBA (siempre, todas las categorías)
     r3  = 6.75 * ESCALA
@@ -297,12 +297,15 @@ def _render_media_pista(data: dict, edad: str) -> str:
     def to_px(xp, yp):
         return pad + (xp/100)*W, SVG_H - pad - (yp/100)*H
 
+    r_centro = 1.8 * ESCALA
     svg = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SVG_W} {SVG_H}">',
         ARROW_DEFS,
         f'<rect width="{SVG_W}" height="{SVG_H}" fill="#faf8f0"/>',
         f'<rect x="{pad}" y="{pad}" width="{W}" height="{H}" fill="none" stroke="#2d3748" stroke-width="3.5"/>',
-        # En media pista no se dibuja la línea ni el círculo de medio campo
+        # Solo el semiciclo inferior del centro (la mitad que queda dentro de la media pista)
+        f'<path d="M {cx-r_centro:.1f},{pad} A {r_centro:.1f},{r_centro:.1f} 0 0 1 {cx+r_centro:.1f},{pad}" '
+        f'fill="none" stroke="#2d3748" stroke-width="2.5"/>',
     ]
 
     _half_court_elements(svg, cx, baseline_y, pad, W, edad, flip=False)
@@ -353,27 +356,27 @@ def _render_pista_completa(data: dict, edad: str) -> str:
 if __name__ == "__main__":
     import sys
 
-    # Jugada simple: A3 corta al aro mientras A1 bota y pasa a A2 para tiro.
-    # Muestra los 3 tipos de flecha + curva.
+    # A1 pasa al alero, que bota hacia el codo y tira.
+    # D2 defiende a A2 (entre A2 y la canasta). A3 baja a la esquina para abrir espacio.
     _test = {
         "tipo": "media_pista",
         "jugadores_ataque": [
-            {"id": "A1", "x": 50, "y": 65},   # base, cabecera triple
-            {"id": "A2", "x": 75, "y": 50},   # alero derecho
-            {"id": "A3", "x": 25, "y": 50},   # alero izquierdo
+            {"id": "A1", "x": 50, "y": 65},   # base, cabecera
+            {"id": "A2", "x": 78, "y": 50},   # alero derecho
+            {"id": "A3", "x": 22, "y": 50},   # alero izquierdo
         ],
         "jugadores_defensa": [
-            {"id": "D2", "x": 78, "y": 48},
+            {"id": "D2", "x": 72, "y": 38},   # entre A2 y la canasta
         ],
         "balon_inicio": {"portador": "A1"},
         "movimientos": [
-            # A3 corta hacia el aro (desplazamiento: línea continua)
-            {"de": "A3", "a_pos": {"x": 40, "y": 20}, "tipo": "desplazamiento", "orden": 1},
-            # A1 bota hacia la derecha (bote: línea ondulada)
-            {"de": "A1", "a_pos": {"x": 65, "y": 55}, "tipo": "bote", "orden": 2},
+            # A3 baja a la esquina para abrir espacio (desplazamiento: línea continua)
+            {"de": "A3", "a_pos": {"x": 8, "y": 22}, "tipo": "desplazamiento", "orden": 1},
             # A1 pasa a A2 (pase: línea punteada)
-            {"de": "A1", "a": "A2", "tipo": "pase", "orden": 3},
-            # A2 tira al aro (flecha verde)
+            {"de": "A1", "a": "A2", "tipo": "pase", "orden": 2},
+            # A2 bota hacia el codo por encima de D2 (bote: línea ondulada)
+            {"de": "A2", "a_pos": {"x": 62, "y": 36}, "tipo": "bote", "orden": 3},
+            # A2 tira desde el codo (tiro: flecha verde al aro)
             {"de": "A2", "tipo": "tiro", "orden": 4},
         ],
     }
