@@ -16,7 +16,7 @@ ARROW_DEFS = """<defs>
 <marker id="arr"  markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
   <path d="M0,0 L0,6 L7,3 z" fill="#2d3748"/></marker>
 <marker id="arrs" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
-  <path d="M0,0 L0,6 L7,3 z" fill="#16a34a"/></marker>
+  <path d="M0,0 L0,6 L7,3 z" fill="#15803d"/></marker>
 </defs>"""
 
 
@@ -263,11 +263,11 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
             if curvature is not None:
                 cx_ctrl, cy_ctrl = _bezier_ctrl_pt(a, b, c, d2, curvature)
                 path_d = f"M {a:.1f},{b:.1f} Q {cx_ctrl:.1f},{cy_ctrl:.1f} {c:.1f},{d2:.1f}"
-                svg.append(f'<path d="{path_d}" fill="none" stroke="#16a34a" stroke-width="3.5" '
+                svg.append(f'<path d="{path_d}" fill="none" stroke="#15803d" stroke-width="3.5" '
                            f'marker-end="url(#arrs)"/>')
             else:
                 svg.append(f'<line x1="{a:.1f}" y1="{b:.1f}" x2="{c:.1f}" y2="{d2:.1f}" '
-                           f'stroke="#16a34a" stroke-width="3.5" marker-end="url(#arrs)"/>')
+                           f'stroke="#15803d" stroke-width="3.5" marker-end="url(#arrs)"/>')
 
         elif tipo == "bloqueo" and "a_pos" in mov:
             p = mov["a_pos"]
