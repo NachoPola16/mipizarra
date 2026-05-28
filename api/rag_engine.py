@@ -399,10 +399,10 @@ def generar_coordenadas_ejercicio(descripcion: str, nombre: str) -> dict | None:
         {
             "tipo": "media_pista",
             "jugadores_ataque": [
-                {"id": "A1", "rol": "base", "x": 6, "y": 22},    # Esquina derecha triple
-                {"id": "A2", "rol": "ala", "x": 35, "y": 41},     # Codo TL izquierdo
-                {"id": "A3", "rol": "alero", "x": 65, "y": 41},   # Codo TL derecho
-                {"id": "A4", "rol": "pivot", "x": 94, "y": 22}    # Esquina izquierda triple
+                {"id": "A1", "rol": "base", "x": 6, "y": 22},
+                {"id": "A2", "rol": "ala", "x": 35, "y": 41},
+                {"id": "A3", "rol": "alero", "x": 65, "y": 41},
+                {"id": "A4", "rol": "pivot", "x": 94, "y": 22}
             ],
             "jugadores_defensa": [],
             "balon_inicio": {"portador": "A1"},
@@ -410,24 +410,37 @@ def generar_coordenadas_ejercicio(descripcion: str, nombre: str) -> dict | None:
                 {"de": "A1", "a_pos": {"x": 35, "y": 41}, "tipo": "desplazamiento", "orden": 1},
                 {"de": "A1", "tipo": "tiro", "orden": 2}
             ],
-            "conos": [
-                {"x": 25, "y": 50},
-                {"x": 75, "y": 50}
-            ]
+            "conos": [{"x": 25, "y": 50}, {"x": 75, "y": 50}]
         },
         {
             "tipo": "media_pista",
             "jugadores_ataque": [
-                {"id": "A1", "rol": "base", "x": 38, "y": 75},
-                {"id": "A2", "rol": "escolta", "x": 62, "y": 75}
+                {"id": "A1", "rol": "base", "x": 50, "y": 65},
+                {"id": "A2", "rol": "escolta", "x": 75, "y": 50}
             ],
             "jugadores_defensa": [
-                {"id": "D1", "rol": "defensor", "x": 50, "y": 50}
+                {"id": "D1", "rol": "defensor", "x": 50, "y": 55}
             ],
             "balon_inicio": {"portador": "A1"},
             "movimientos": [
-                {"de": "A1", "a_pos": {"x": 35, "y": 45}, "tipo": "desplazamiento", "orden": 1},
-                {"de": "A1", "a": "A2", "tipo": "pase", "orden": 2},
+                {"de": "A1", "a": "A2", "tipo": "pase", "orden": 1},
+                {"de": "A2", "tipo": "tiro", "orden": 2}
+            ],
+            "conos": []
+        },
+        {
+            "tipo": "media_pista",
+            "jugadores_ataque": [
+                {"id": "A1", "rol": "base", "x": 50, "y": 65},
+                {"id": "A2", "rol": "alero", "x": 78, "y": 50}
+            ],
+            "jugadores_defensa": [
+                {"id": "D2", "rol": "defensor", "x": 74, "y": 43}
+            ],
+            "balon_inicio": {"portador": "A1"},
+            "movimientos": [
+                {"de": "A1", "a": "A2", "tipo": "pase", "orden": 1},
+                {"de": "A2", "a_pos": {"x": 62, "y": 28}, "tipo": "bote", "curva": True, "orden": 2},
                 {"de": "A2", "tipo": "tiro", "orden": 3}
             ],
             "conos": []
@@ -456,6 +469,16 @@ POSICIONES CANÓNICAS:
 - Cabecera triple: (50, 65)
 - Centro medio campo: (50, 100)
 
+TIPOS DE MOVIMIENTO:
+- desplazamiento: jugador se mueve SIN balón (de + a_pos). Línea continua.
+- pase: jugador pasa el balón a otro (de + a id). Línea punteada.
+- bote: jugador avanza BOTANDO (de + a_pos). Línea ondulada. Actualiza su posición.
+- tiro: jugador lanza al aro (solo de). Flecha verde.
+- bloqueo: jugador coloca pantalla (de + a_pos). Línea roja gruesa.
+
+Campo opcional "curva" (en cualquier movimiento): true o número de píxeles.
+Usar "curva" cuando el jugador rodea a un defensor o el trayecto no es recto.
+
 REGLAS CRÍTICAS:
 1. jugadores_ataque = TODOS los jugadores atacantes/pasadores/tiradores (personas)
 2. jugadores_defensa = TODOS los jugadores defensores (personas)
@@ -465,7 +488,9 @@ REGLAS CRÍTICAS:
 6. Si dice "codo TL" → usa (35,41) o (65,41)
 7. Si un jugador tira, añade movimiento tipo "tiro" desde ese jugador
 8. Si hay pase, añade movimiento tipo "pase"
-9. NUNCA uses conos para representar jugadores en espera
+9. Si un jugador bota hacia delante, usa "bote" (no "desplazamiento")
+10. Si el jugador rodea un defensor al botar, añade "curva": true al bote
+11. NUNCA uses conos para representar jugadores en espera
 
 EJEMPLOS:
 {json.dumps(ejemplos[0], indent=2, ensure_ascii=False)}

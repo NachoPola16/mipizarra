@@ -51,8 +51,15 @@ SYSTEM_DIAGRAMA = (
     "centro medio campo (50,100). "
     "Roles ataque: A1 base, A2 escolta/alero, A3 alero, A4 ala-pívot, A5 pívot. "
     "Defensa: D1..D5 (mismo número que el atacante). "
-    "Movimientos: 'desplazamiento' (de + a_pos), 'pase' (de + a id), 'tiro' (de), "
-    "'bloqueo' (de + a_pos). Todos con campo 'orden'."
+    "Tipos de movimiento (campo 'tipo', todos con 'orden'): "
+    "'desplazamiento' (de + a_pos, línea continua, jugador se mueve sin balón), "
+    "'pase' (de + a id, línea punteada), "
+    "'bote' (de + a_pos, línea ondulada, jugador bota y avanza — actualiza su posición), "
+    "'tiro' (de, flecha verde al aro), "
+    "'bloqueo' (de + a_pos, línea roja gruesa). "
+    "Campo opcional 'curva' en cualquier movimiento: "
+    "true (desviación 50 px) o número entero (px). "
+    "Usar 'curva' cuando el jugador rodea un defensor o el trayecto no es recto."
 )
 
 SYSTEM_EJERCICIO = (
