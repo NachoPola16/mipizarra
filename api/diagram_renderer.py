@@ -20,6 +20,76 @@ ARROW_DEFS = """<defs>
 </defs>"""
 
 
+def _bezier_ctrl_pt(x1, y1, x2, y2, curvature):
+    """Quadratic bezier control point offset perpendicular to the line midpoint."""
+    mx, my = (x1 + x2) / 2, (y1 + y2) / 2
+    dx, dy = x2 - x1, y2 - y1
+    L = math.sqrt(dx**2 + dy**2)
+    if L < 1:
+        return mx, my
+    px, py = -dy / L, dx / L   # perpendicular unit vector (left of direction)
+    return mx + curvature * px, my + curvature * py
+
+
+def _wavy_path(x1, y1, x2, y2, amplitude=8.0, cx=None, cy=None):
+    """
+    SVG path string for a sinusoidal wave from (x1,y1) to (x2,y2).
+    If cx,cy given the wave follows the quadratic bezier through that control point.
+    The last half-arc's control point sits on the axis so orient="auto" on
+    marker-end points in the correct forward direction.
+    """
+    if cx is None:
+        def _pos(t):
+            return x1 + t * (x2 - x1), y1 + t * (y2 - y1)
+        def _tang(_):
+            dx, dy = x2 - x1, y2 - y1
+            L = math.sqrt(dx**2 + dy**2) or 1.0
+            return dx / L, dy / L
+    else:
+        def _pos(t):
+            bx = (1 - t)**2 * x1 + 2 * (1 - t) * t * cx + t**2 * x2
+            by = (1 - t)**2 * y1 + 2 * (1 - t) * t * cy + t**2 * y2
+            return bx, by
+        def _tang(t):
+            tdx = 2 * (1 - t) * (cx - x1) + 2 * t * (x2 - cx)
+            tdy = 2 * (1 - t) * (cy - y1) + 2 * t * (y2 - cy)
+            L = math.sqrt(tdx**2 + tdy**2) or 1.0
+            return tdx / L, tdy / L
+
+    N_ARC = 20
+    arc = sum(
+        math.sqrt(
+            (_pos((i + 1) / N_ARC)[0] - _pos(i / N_ARC)[0])**2 +
+            (_pos((i + 1) / N_ARC)[1] - _pos(i / N_ARC)[1])**2
+        )
+        for i in range(N_ARC)
+    )
+
+    n_waves = max(2, round(arc / 35))
+    n_segs  = n_waves * 2   # 2 quadratic half-arcs per full wave
+
+    p0x, p0y = _pos(0)
+    parts = [f"M {p0x:.1f},{p0y:.1f}"]
+
+    for i in range(n_segs):
+        t_end = (i + 1) / n_segs
+        t_mid = (i + 0.5) / n_segs
+        ex, ey = _pos(t_end)
+
+        if i == n_segs - 1:
+            cp_x, cp_y = _pos(t_mid)   # on-axis → arrowhead aligned with direction
+        else:
+            amp = amplitude if i % 2 == 0 else -amplitude
+            tang_x, tang_y = _tang(t_mid)
+            mx, my = _pos(t_mid)
+            cp_x = mx + amp * (-tang_y)
+            cp_y = my + amp * tang_x
+
+        parts.append(f"Q {cp_x:.1f},{cp_y:.1f} {ex:.1f},{ey:.1f}")
+
+    return " ".join(parts)
+
+
 def _half_court_elements(svg: list, cx: float, base_y: float, pad_x: float,
                           width: float, edad: str, flip: bool = False) -> None:
     """Añade los elementos de media pista al SVG (zona, TL, triple, aro).
@@ -135,30 +205,70 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
 
     movimientos = sorted(data.get("movimientos", []), key=lambda m: m.get("orden", 0))
     for mov in movimientos:
-        tipo = mov.get("tipo", "desplazamiento")
-        de   = mov.get("de")
+        tipo      = mov.get("tipo", "desplazamiento")
+        de        = mov.get("de")
+        curva_raw = mov.get("curva", False)
         if not de or de not in posiciones:
             continue
+
+        curvature = None
+        if curva_raw is True:
+            curvature = 50.0
+        elif curva_raw and isinstance(curva_raw, (int, float)):
+            curvature = float(curva_raw)
+
         x1, y1 = to_px(*posiciones[de])
-        if tipo == "desplazamiento" and "a_pos" in mov:
+
+        if tipo in ("desplazamiento", "bote") and "a_pos" in mov:
             p = mov["a_pos"]
             x2, y2 = to_px(p["x"], p["y"])
             a, b, c, d2 = shorten(x1, y1, x2, y2, 26)
-            svg.append(f'<line x1="{a:.1f}" y1="{b:.1f}" x2="{c:.1f}" y2="{d2:.1f}" '
-                       f'stroke="#334155" stroke-width="3" stroke-dasharray="8,4" marker-end="url(#arr)"/>')
+            if tipo == "bote":
+                if curvature is not None:
+                    cx_ctrl, cy_ctrl = _bezier_ctrl_pt(a, b, c, d2, curvature)
+                    path_d = _wavy_path(a, b, c, d2, cx=cx_ctrl, cy=cy_ctrl)
+                else:
+                    path_d = _wavy_path(a, b, c, d2)
+                svg.append(f'<path d="{path_d}" fill="none" stroke="#334155" stroke-width="3" '
+                           f'marker-end="url(#arr)"/>')
+            else:  # desplazamiento — solid line
+                if curvature is not None:
+                    cx_ctrl, cy_ctrl = _bezier_ctrl_pt(a, b, c, d2, curvature)
+                    path_d = f"M {a:.1f},{b:.1f} Q {cx_ctrl:.1f},{cy_ctrl:.1f} {c:.1f},{d2:.1f}"
+                    svg.append(f'<path d="{path_d}" fill="none" stroke="#334155" stroke-width="3" '
+                               f'marker-end="url(#arr)"/>')
+                else:
+                    svg.append(f'<line x1="{a:.1f}" y1="{b:.1f}" x2="{c:.1f}" y2="{d2:.1f}" '
+                               f'stroke="#334155" stroke-width="3" marker-end="url(#arr)"/>')
             posiciones[de] = (p["x"], p["y"])
+
         elif tipo == "pase":
             a2 = mov.get("a")
             if a2 in posiciones:
                 x2, y2 = to_px(*posiciones[a2])
                 a, b, c, d2 = shorten(x1, y1, x2, y2, 26)
-                svg.append(f'<line x1="{a:.1f}" y1="{b:.1f}" x2="{c:.1f}" y2="{d2:.1f}" '
-                           f'stroke="#334155" stroke-width="3" marker-end="url(#arr)"/>')
+                if curvature is not None:
+                    cx_ctrl, cy_ctrl = _bezier_ctrl_pt(a, b, c, d2, curvature)
+                    path_d = f"M {a:.1f},{b:.1f} Q {cx_ctrl:.1f},{cy_ctrl:.1f} {c:.1f},{d2:.1f}"
+                    svg.append(f'<path d="{path_d}" fill="none" stroke="#334155" stroke-width="3" '
+                               f'stroke-dasharray="8,4" marker-end="url(#arr)"/>')
+                else:
+                    svg.append(f'<line x1="{a:.1f}" y1="{b:.1f}" x2="{c:.1f}" y2="{d2:.1f}" '
+                               f'stroke="#334155" stroke-width="3" stroke-dasharray="8,4" '
+                               f'marker-end="url(#arr)"/>')
+
         elif tipo == "tiro":
             x2, y2 = to_px(50, 11)
             a, b, c, d2 = shorten(x1, y1, x2, y2, 14)
-            svg.append(f'<line x1="{a:.1f}" y1="{b:.1f}" x2="{c:.1f}" y2="{d2:.1f}" '
-                       f'stroke="#16a34a" stroke-width="3.5" marker-end="url(#arrs)"/>')
+            if curvature is not None:
+                cx_ctrl, cy_ctrl = _bezier_ctrl_pt(a, b, c, d2, curvature)
+                path_d = f"M {a:.1f},{b:.1f} Q {cx_ctrl:.1f},{cy_ctrl:.1f} {c:.1f},{d2:.1f}"
+                svg.append(f'<path d="{path_d}" fill="none" stroke="#16a34a" stroke-width="3.5" '
+                           f'marker-end="url(#arrs)"/>')
+            else:
+                svg.append(f'<line x1="{a:.1f}" y1="{b:.1f}" x2="{c:.1f}" y2="{d2:.1f}" '
+                           f'stroke="#16a34a" stroke-width="3.5" marker-end="url(#arrs)"/>')
+
         elif tipo == "bloqueo" and "a_pos" in mov:
             p = mov["a_pos"]
             x2, y2 = to_px(p["x"], p["y"])
@@ -242,3 +352,38 @@ def _render_pista_completa(data: dict, edad: str) -> str:
 
     svg.append('</svg>')
     return "\n".join(svg)
+
+
+if __name__ == "__main__":
+    import sys
+
+    _test = {
+        "tipo": "media_pista",
+        "jugadores_ataque": [
+            {"id": "A1", "x": 50, "y": 65},
+            {"id": "A2", "x": 25, "y": 50},
+            {"id": "A3", "x": 75, "y": 50},
+        ],
+        "jugadores_defensa": [
+            {"id": "D1", "x": 50, "y": 55},
+        ],
+        "balon_inicio": {"portador": "A1"},
+        "conos": [{"x": 38, "y": 25}],
+        "movimientos": [
+            # desplazamiento: línea continua
+            {"de": "A2", "a_pos": {"x": 38, "y": 36}, "tipo": "desplazamiento", "orden": 1},
+            # pase: línea punteada
+            {"de": "A1", "a": "A3", "tipo": "pase", "orden": 2},
+            # bote: línea ondulada
+            {"de": "A3", "a_pos": {"x": 62, "y": 36}, "tipo": "bote", "orden": 3},
+            # desplazamiento con curva: bezier sólido
+            {"de": "A1", "a_pos": {"x": 35, "y": 41}, "tipo": "desplazamiento",
+             "curva": True, "orden": 4},
+            # pase con curva numérica: bezier punteado
+            {"de": "A3", "a": "A2", "tipo": "pase", "curva": 40, "orden": 5},
+            # tiro
+            {"de": "A2", "tipo": "tiro", "orden": 6},
+        ],
+    }
+
+    sys.stdout.write(render_diagram(_test, edad="U16") + "\n")

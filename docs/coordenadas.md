@@ -51,9 +51,19 @@ cambiarlo en los 3 SYSTEM prompts que ven al modelo:
 
 ## Tipos de movimiento
 
-| Tipo               | Campos obligatorios            | Descripción                          |
-|--------------------|--------------------------------|--------------------------------------|
-| `desplazamiento`   | `de`, `a_pos`, `orden`         | Movimiento sin balón (línea discontinua) |
-| `pase`             | `de`, `a` (id), `orden`        | Pase entre jugadores (flecha sólida) |
-| `tiro`             | `de`, `orden`                  | Tiro al aro desde la posición actual |
-| `bloqueo`          | `de`, `a_pos`, `orden`         | Coloca bloqueo en `a_pos` (línea gruesa roja) |
+| Tipo               | Campos obligatorios            | Visual                                        |
+|--------------------|--------------------------------|-----------------------------------------------|
+| `desplazamiento`   | `de`, `a_pos`, `orden`         | Línea continua con flecha (movimiento sin balón) |
+| `pase`             | `de`, `a` (id), `orden`        | Línea punteada con flecha                     |
+| `bote`             | `de`, `a_pos`, `orden`         | Línea ondulada (sinusoidal) con flecha        |
+| `tiro`             | `de`, `orden`                  | Flecha verde al aro                           |
+| `bloqueo`          | `de`, `a_pos`, `orden`         | Línea gruesa roja (sin flecha)                |
+
+## Campo opcional `curva`
+
+Cualquier tipo de movimiento acepta el campo `"curva"`:
+- `"curva": true` → curvatura por defecto (50 px de desviación perpendicular)
+- `"curva": 40` → curvatura de 40 px (positivo = curva a la izquierda de la dirección)
+
+Con `curva`, la línea se dibuja como bezier cuadrático en lugar de recta.
+Para `bote` con `curva`, la onda sigue la curva bezier.
