@@ -285,31 +285,27 @@ def render_diagram(data: dict, edad: str = "U16") -> str:
 
 
 def _render_media_pista(data: dict, edad: str) -> str:
+    pad = 30          # margen ajustado para media pista
     W = int(ANCHO_M * ESCALA)
     H = int(MEDIO_M * ESCALA)
-    SVG_W = W + 2 * PAD
-    SVG_H = H + 2 * PAD
+    SVG_W = W + 2 * pad
+    SVG_H = H + 2 * pad
 
-    baseline_y = PAD + H
-    medio_y    = PAD
-    cx         = PAD + W / 2
+    baseline_y = pad + H
+    cx         = pad + W / 2
 
     def to_px(xp, yp):
-        return PAD + (xp/100)*W, SVG_H - PAD - (yp/100)*H
+        return pad + (xp/100)*W, SVG_H - pad - (yp/100)*H
 
     svg = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SVG_W} {SVG_H}">',
         ARROW_DEFS,
         f'<rect width="{SVG_W}" height="{SVG_H}" fill="#faf8f0"/>',
-        # Perímetro
-        f'<rect x="{PAD}" y="{PAD}" width="{W}" height="{H}" fill="none" stroke="#2d3748" stroke-width="3.5"/>',
-        # Línea de medio campo
-        f'<line x1="{PAD}" y1="{medio_y}" x2="{PAD+W}" y2="{medio_y}" stroke="#2d3748" stroke-width="3.5"/>',
-        # Círculo central
-        f'<circle cx="{cx:.1f}" cy="{medio_y}" r="{1.8*ESCALA:.1f}" fill="none" stroke="#2d3748" stroke-width="2.5"/>',
+        f'<rect x="{pad}" y="{pad}" width="{W}" height="{H}" fill="none" stroke="#2d3748" stroke-width="3.5"/>',
+        # En media pista no se dibuja la línea ni el círculo de medio campo
     ]
 
-    _half_court_elements(svg, cx, baseline_y, PAD, W, edad, flip=False)
+    _half_court_elements(svg, cx, baseline_y, pad, W, edad, flip=False)
     _draw_players_and_moves(svg, data, to_px)
 
     svg.append('</svg>')
@@ -357,32 +353,28 @@ def _render_pista_completa(data: dict, edad: str) -> str:
 if __name__ == "__main__":
     import sys
 
+    # Jugada simple: A3 corta al aro mientras A1 bota y pasa a A2 para tiro.
+    # Muestra los 3 tipos de flecha + curva.
     _test = {
         "tipo": "media_pista",
         "jugadores_ataque": [
-            {"id": "A1", "x": 50, "y": 65},
-            {"id": "A2", "x": 25, "y": 50},
-            {"id": "A3", "x": 75, "y": 50},
+            {"id": "A1", "x": 50, "y": 65},   # base, cabecera triple
+            {"id": "A2", "x": 75, "y": 50},   # alero derecho
+            {"id": "A3", "x": 25, "y": 50},   # alero izquierdo
         ],
         "jugadores_defensa": [
-            {"id": "D1", "x": 50, "y": 55},
+            {"id": "D2", "x": 78, "y": 48},
         ],
         "balon_inicio": {"portador": "A1"},
-        "conos": [{"x": 38, "y": 25}],
         "movimientos": [
-            # desplazamiento: línea continua
-            {"de": "A2", "a_pos": {"x": 38, "y": 36}, "tipo": "desplazamiento", "orden": 1},
-            # pase: línea punteada
-            {"de": "A1", "a": "A3", "tipo": "pase", "orden": 2},
-            # bote: línea ondulada
-            {"de": "A3", "a_pos": {"x": 62, "y": 36}, "tipo": "bote", "orden": 3},
-            # desplazamiento con curva: bezier sólido
-            {"de": "A1", "a_pos": {"x": 35, "y": 41}, "tipo": "desplazamiento",
-             "curva": True, "orden": 4},
-            # pase con curva numérica: bezier punteado
-            {"de": "A3", "a": "A2", "tipo": "pase", "curva": 40, "orden": 5},
-            # tiro
-            {"de": "A2", "tipo": "tiro", "orden": 6},
+            # A3 corta hacia el aro (desplazamiento: línea continua)
+            {"de": "A3", "a_pos": {"x": 40, "y": 20}, "tipo": "desplazamiento", "orden": 1},
+            # A1 bota hacia la derecha (bote: línea ondulada)
+            {"de": "A1", "a_pos": {"x": 65, "y": 55}, "tipo": "bote", "orden": 2},
+            # A1 pasa a A2 (pase: línea punteada)
+            {"de": "A1", "a": "A2", "tipo": "pase", "orden": 3},
+            # A2 tira al aro (flecha verde)
+            {"de": "A2", "tipo": "tiro", "orden": 4},
         ],
     }
 
