@@ -31,7 +31,7 @@ def _bezier_ctrl_pt(x1, y1, x2, y2, curvature):
     return mx + curvature * px, my + curvature * py
 
 
-def _wavy_path(x1, y1, x2, y2, amplitude=8.0, cx=None, cy=None):
+def _wavy_path(x1, y1, x2, y2, amplitude=12.0, cx=None, cy=None):
     """
     SVG path string for a sinusoidal wave from (x1,y1) to (x2,y2).
     If cx,cy given the wave follows the quadratic bezier through that control point.
