@@ -367,8 +367,8 @@ if __name__ == "__main__":
             {"id": "A3", "x": 22, "y": 50},   # alero izquierdo
         ],
         "jugadores_defensa": [
-            # D2 justo en el camino directo de A2 hacia la canasta
-            {"id": "D2", "x": 68, "y": 38},
+            # D2 justo delante de A2, muy cerca, en el camino hacia la canasta
+            {"id": "D2", "x": 74, "y": 43},
         ],
         "balon_inicio": {"portador": "A1"},
         "movimientos": [
