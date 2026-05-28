@@ -304,7 +304,7 @@ def _render_media_pista(data: dict, edad: str) -> str:
         f'<rect width="{SVG_W}" height="{SVG_H}" fill="#faf8f0"/>',
         f'<rect x="{pad}" y="{pad}" width="{W}" height="{H}" fill="none" stroke="#2d3748" stroke-width="3.5"/>',
         # Solo el semiciclo inferior del centro (la mitad que queda dentro de la media pista)
-        f'<path d="M {cx-r_centro:.1f},{pad} A {r_centro:.1f},{r_centro:.1f} 0 0 1 {cx+r_centro:.1f},{pad}" '
+        f'<path d="M {cx-r_centro:.1f},{pad} A {r_centro:.1f},{r_centro:.1f} 0 0 0 {cx+r_centro:.1f},{pad}" '
         f'fill="none" stroke="#2d3748" stroke-width="2.5"/>',
     ]
 
@@ -356,8 +356,9 @@ def _render_pista_completa(data: dict, edad: str) -> str:
 if __name__ == "__main__":
     import sys
 
-    # A1 pasa al alero, que bota hacia el codo y tira.
-    # D2 defiende a A2 (entre A2 y la canasta). A3 baja a la esquina para abrir espacio.
+    # A1 pasa al alero, que rompe al defensor botando (curva) y tira desde el codo.
+    # D2 está justo delante de A2 en la línea directa hacia la canasta.
+    # La curva en el bote muestra cómo rodear al defensor.
     _test = {
         "tipo": "media_pista",
         "jugadores_ataque": [
@@ -366,7 +367,8 @@ if __name__ == "__main__":
             {"id": "A3", "x": 22, "y": 50},   # alero izquierdo
         ],
         "jugadores_defensa": [
-            {"id": "D2", "x": 72, "y": 38},   # entre A2 y la canasta
+            # D2 justo en el camino directo de A2 hacia la canasta
+            {"id": "D2", "x": 68, "y": 38},
         ],
         "balon_inicio": {"portador": "A1"},
         "movimientos": [
@@ -374,9 +376,9 @@ if __name__ == "__main__":
             {"de": "A3", "a_pos": {"x": 8, "y": 22}, "tipo": "desplazamiento", "orden": 1},
             # A1 pasa a A2 (pase: línea punteada)
             {"de": "A1", "a": "A2", "tipo": "pase", "orden": 2},
-            # A2 bota hacia el codo por encima de D2 (bote: línea ondulada)
-            {"de": "A2", "a_pos": {"x": 62, "y": 36}, "tipo": "bote", "orden": 3},
-            # A2 tira desde el codo (tiro: flecha verde al aro)
+            # A2 rompe a D2 botando: curva que rodea al defensor (bote + curva)
+            {"de": "A2", "a_pos": {"x": 60, "y": 28}, "tipo": "bote", "curva": True, "orden": 3},
+            # A2 tira desde el codo
             {"de": "A2", "tipo": "tiro", "orden": 4},
         ],
     }
