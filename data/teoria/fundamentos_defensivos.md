@@ -51,7 +51,7 @@ Opciones defensivas. La clave es decidir la opción **antes** del bloqueo y comu
 | Opción | Descripción | Cuándo usarla |
 |--------|-------------|---------------|
 | **Por debajo (under)** | El defensor del portador pasa por debajo del bloqueo | Solo si el portador es mal lanzador exterior |
-| **Mostrarse / saltar (hedge / show)** | El defensor del bloqueador sale a interceptar el bote brevemente y recupera | Contra portadores que atacan el bote; requiere buena recuperación |
+| **Flash / mostrarse / saltar (hedge / show)** | El defensor del bloqueador sale a interceptar el bote brevemente y recupera | Contra portadores que atacan el bote; requiere buena recuperación |
 | **Cambio (switch)** | Los dos defensores cambian sus marcajes | Requiere similitud física; el cambio debe ser audible y anticipado |
 | **Hielo (ice / blue)** | Forzar al portador hacia la línea de fondo; el defensor del bloqueador corta el camino | Contra bloqueos laterales; requiere comunicación perfecta |
 | **Por encima (over / through)** | El defensor del portador pasa por encima del bloqueo | Contra portadores muy peligrosos; riesgo de perder posición |
