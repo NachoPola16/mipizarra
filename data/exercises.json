@@ -563,6 +563,203 @@
     }
   },
   {
+    "id": "ej_016",
+    "nombre": "SSG Finalización 1c1 — defensor decide cuándo activar",
+    "categoria": "1c1",
+    "subcategoria": "finalizacion",
+    "edades": ["U12", "U14", "U16", "U18", "Senior"],
+    "duracion_min": 8,
+    "intensidad": 4,
+    "carga_cognitiva": 4,
+    "jugadores_minimos": 2,
+    "objetivos": {
+      "tacticos": ["toma de decisión en finalización", "lectura del defensor", "tipos de finalización"],
+      "tecnicos": ["bote de penetración", "bombas", "bandeja", "finalización con contacto"],
+      "fisicos":  ["explosividad", "cambio de ritmo"]
+    },
+    "puntos_clave": [
+      "El atacante no decide cuándo salir — el defensor manda. El atacante debe leer y reaccionar.",
+      "Variar la distancia inicial defensor-atacante cambia radicalmente la decisión de finalización.",
+      "Progresar: primero el defensor decide cuándo activar, después el atacante decide el lado, después ambos reaccionan simultáneamente.",
+      "En las filas de espera se sigue botando."
+    ],
+    "descripcion": "Estructura de juego reducido (SSG) de 1c1 para trabajar la finalización. El defensor decide cuándo y cómo presionar al atacante con balón. El atacante debe leer el grado de contacto y decidir el tipo de finalización más adecuado (bombas, bandeja, tiro de media distancia).",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "x": 50, "y": 20}
+      ],
+      "jugadores_defensa": [
+        {"id": "D1", "x": 50, "y": 32}
+      ],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A1", "a_pos": {"x": 50, "y": 11}, "tipo": "bote", "orden": 1},
+        {"de": "A1", "tipo": "tiro", "orden": 2}
+      ],
+      "conos": []
+    }
+  },
+  {
+    "id": "ej_017",
+    "nombre": "SSG Finalización 1c1 — defensor pasa y defiende",
+    "categoria": "1c1",
+    "subcategoria": "finalizacion",
+    "edades": ["U12", "U14", "U16", "U18", "Senior"],
+    "duracion_min": 8,
+    "intensidad": 4,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 2,
+    "objetivos": {
+      "tacticos": ["reacción al pase-y-defiende", "finalización rápida", "lectura de contacto"],
+      "tecnicos": ["toma inmediata del balón", "primer paso explosivo", "finalización bajo presión"],
+      "fisicos":  ["explosividad", "reacción"]
+    },
+    "puntos_clave": [
+      "El atacante recibe y ataca de inmediato — el tiempo de reacción del defensor es mínimo.",
+      "El atacante debe decidir el tipo de finalización en función del contacto que hace el defensor al recuperar posición.",
+      "El defensor también trabaja: aprende a pasar y recuperar posición defensiva rápidamente."
+    ],
+    "descripcion": "El defensor le pasa el balón al atacante y sale inmediatamente a defender. El atacante ataca al instante, buscando finalizar antes de que el defensor se coloque. El objetivo es trabajar la finalización en base al contacto real y a la recuperación defensiva.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "x": 50, "y": 28}
+      ],
+      "jugadores_defensa": [
+        {"id": "D1", "x": 50, "y": 18}
+      ],
+      "balon_inicio": {"portador": "D1"},
+      "movimientos": [
+        {"de": "D1", "a": "A1", "tipo": "pase", "orden": 1},
+        {"de": "A1", "a_pos": {"x": 50, "y": 11}, "tipo": "bote", "orden": 2},
+        {"de": "A1", "tipo": "tiro", "orden": 3}
+      ],
+      "conos": []
+    }
+  },
+  {
+    "id": "ej_018",
+    "nombre": "SSG Finalización 1c1 — defensor elige cono, atacante va al lado contrario",
+    "categoria": "1c1",
+    "subcategoria": "finalizacion",
+    "edades": ["U14", "U16", "U18", "Senior"],
+    "duracion_min": 8,
+    "intensidad": 4,
+    "carga_cognitiva": 4,
+    "jugadores_minimos": 2,
+    "objetivos": {
+      "tacticos": ["lectura de la posición defensiva", "decisión de lado en finalización"],
+      "tecnicos": ["bote de penetración al lado libre", "finalización en el lado opuesto al defensor"],
+      "fisicos":  ["reacción", "cambio de dirección"]
+    },
+    "puntos_clave": [
+      "El atacante lee qué cono toca el defensor y ataca inmediatamente al cono contrario.",
+      "Cuanto más rápido lee el atacante la decisión del defensor, mayor es la ventaja.",
+      "Progresión: defensor elige cono → defensor decide side de salida sin cono → lectura de pies del defensor."
+    ],
+    "descripcion": "El defensor toca uno de los dos conos (derecho o izquierdo). El atacante debe reaccionar y sobrepasar el cono contrario para finalizar. La decisión de finalización depende del lado libre que deja el defensor.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "x": 50, "y": 15}
+      ],
+      "jugadores_defensa": [
+        {"id": "D1", "x": 50, "y": 28}
+      ],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A1", "a_pos": {"x": 35, "y": 11}, "tipo": "bote", "curva": true, "orden": 1},
+        {"de": "A1", "tipo": "tiro", "orden": 2}
+      ],
+      "conos": [
+        {"x": 35, "y": 28},
+        {"x": 65, "y": 28}
+      ]
+    }
+  },
+  {
+    "id": "ej_019",
+    "nombre": "SSG Finalización 2c1 con superioridad defensiva",
+    "categoria": "ventaja_numerica",
+    "subcategoria": "finalizacion",
+    "edades": ["U14", "U16", "U18", "Senior"],
+    "duracion_min": 10,
+    "intensidad": 4,
+    "carga_cognitiva": 5,
+    "jugadores_minimos": 3,
+    "objetivos": {
+      "tacticos": ["finalización contra superioridad defensiva", "lectura de dos defensores", "decisión de lado"],
+      "tecnicos": ["penetración leída", "tipos de finalización según contacto"],
+      "fisicos":  ["explosividad"]
+    },
+    "puntos_clave": [
+      "El atacante decide el lado de salida condicionando los movimientos de ambos defensores.",
+      "D1 va al cono contrario al lado del balón; D2 va al mismo lado que el balón.",
+      "La finalización del atacante depende de cuál de los dos defensores llega primero y cómo.",
+      "Nivel avanzado: 3c2, el atacante pasa a quien detecte libre tras el primer contacto."
+    ],
+    "descripcion": "SSG 2c1 donde el atacante tiene el balón y dos defensores salen a presionarle. D1 sale al cono contrario al balón; D2 al mismo lado que el balón. El atacante debe decidir el lado de salida y tipo de finalización leyendo la posición de ambos defensores.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "x": 50, "y": 15}
+      ],
+      "jugadores_defensa": [
+        {"id": "D1", "x": 35, "y": 30},
+        {"id": "D2", "x": 65, "y": 30}
+      ],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A1", "a_pos": {"x": 38, "y": 11}, "tipo": "bote", "curva": true, "orden": 1},
+        {"de": "A1", "tipo": "tiro", "orden": 2}
+      ],
+      "conos": [
+        {"x": 35, "y": 22},
+        {"x": 65, "y": 22}
+      ]
+    }
+  },
+  {
+    "id": "ej_020",
+    "nombre": "SSG Finalización — acción-reacción simultánea",
+    "categoria": "1c1",
+    "subcategoria": "finalizacion",
+    "edades": ["U14", "U16", "U18", "Senior"],
+    "duracion_min": 8,
+    "intensidad": 4,
+    "carga_cognitiva": 5,
+    "jugadores_minimos": 3,
+    "objetivos": {
+      "tacticos": ["reacción ante estímulo externo", "lectura inmediata", "decisión en fracción de segundo"],
+      "tecnicos": ["primer paso explosivo", "finalización en desequilibrio"],
+      "fisicos":  ["reacción", "velocidad de arranque"]
+    },
+    "puntos_clave": [
+      "Ninguno de los dos jugadores sabe quién va a recibir — solo el entrenador decide.",
+      "El que recibe el balón ataca; el que no lo recibe defiende. La reacción debe ser inmediata.",
+      "Trabajar la lectura del estímulo externo (pase del entrenador) como situación extrapolable al partido.",
+      "Variante: el entrenador señala en lugar de pasar; el jugador señalado ataca y el otro defiende."
+    ],
+    "descripcion": "Dos jugadores cara a cara. El entrenador decide a quién le pasa el balón — ninguno de los dos lo sabe. El que recibe ataca inmediatamente a canasta; el que no recibe debe defender. Trabaja la acción-reacción ante estímulos no predecibles.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "x": 38, "y": 20},
+        {"id": "A2", "x": 62, "y": 20}
+      ],
+      "jugadores_defensa": [],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A1", "a_pos": {"x": 44, "y": 11}, "tipo": "bote", "orden": 1},
+        {"de": "A1", "tipo": "tiro", "orden": 2}
+      ],
+      "conos": [
+        {"x": 50, "y": 35}
+      ]
+    }
+  },
+  {
     "id": "ej_014",
     "nombre": "Juego de pillar con balón",
     "categoria": "calentamiento",

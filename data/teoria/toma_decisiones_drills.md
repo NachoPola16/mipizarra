@@ -1,6 +1,5 @@
 # Ejercicios de toma de decisiones
 
-> Fuente: imágenes de ejercicios (autor desconocido).
 > Edades recomendadas: U12 en adelante (adaptar complejidad por categoría).
 
 ---

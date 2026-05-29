@@ -1,6 +1,5 @@
 # Jugadas tácticas — doble bloqueo para tirador y entrada a canasta
 
-> Fuente: diagrama táctico (autor desconocido).
 > Edades: U16 en adelante. Requiere comprensión previa del bloqueo indirecto.
 
 ---

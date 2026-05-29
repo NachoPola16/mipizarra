@@ -1,8 +1,6 @@
-# Tiro a canasta — requisitos y tipos de ejercicio (José L. Ereña)
+# Tiro a canasta — requisitos y tipos de ejercicio
 
-> Fuente: apuntes del curso de Ereña (Fundación Basket Zaragoza, 2026).
-> Ver también: `data/pdfs/coleccion_teoria/tiro_a_canasta_erena_2026.pdf` (139 páginas).
-> Edades: aplicable desde U10 (minibasket) hasta Senior, adaptando exigencia.
+> Edades: aplicable desde U10 (minibasket) hasta Senior, adaptando la exigencia.
 
 ---
 
@@ -25,7 +23,26 @@
 
 ---
 
-## Tipos de ejercicio de tiro (esquemas de Ereña)
+## Tiro en minibasket — reducir a lo esencial
+
+No hay dos jugadores que tiren igual, pero todos comparten componentes mecánicos comunes. La clave para enseñar el tiro en minibasket es **reducir a lo imprescindible**, para que el niño se centre en lo importante.
+
+**Errores específicos de minibasket con sus correcciones:**
+
+- **Pies mal orientados:** reciben con pies, cadera y hombros girados fuera del aro y tiran sin orientarse. Corrección: ejercicios de recepción orientada al aro y pivotes para girar antes de tirar.
+- **Resonancia (brazo encogido):** finalizan el tiro encogiendo el brazo como un látigo. Corrección: simular tirar una piedra muy fuerte a un punto lejano — notarán tensión en codo y muñeca, eso es lo que hay que reproducir.
+- **Balance incorrecto:** pies demasiado separados al aterrizar. Pies más juntos = mayor control y equilibrio al aterrizar.
+
+## Tiro en situaciones de juego
+
+Integrar el tiro en contextos competitivos es tan importante como el trabajo analítico. Regular el estímulo para forzar tiros en lugar de bandejas:
+
+- **Prohibir bandejas** en ejercicios de oposición → los jugadores buscan siempre el tiro. Útil en superioridades (2c1, 3c2).
+- **Puntuación diferencial:** tiro metido vale más que bandeja. Los jugadores buscan posiciones de tiro, no solo el camino más fácil.
+- **En igualdad numérica** (1c1, 2c2): los tiros cómodos son difíciles; el balón debe moverse rápido y los jugadores sin balón deben ocupar espacios con inteligencia.
+- **A partir de Cadete (U16):** tiro tras bloqueo directo o indirecto como situación específica de trabajo.
+
+## Tipos de ejercicio de tiro
 
 Clasificación de situaciones de tiro trabajadas en los diagramas del curso:
 
