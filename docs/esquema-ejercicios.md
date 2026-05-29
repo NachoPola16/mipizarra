@@ -24,6 +24,7 @@ Cada ejercicio en `data/exercises.json` sigue esta estructura.
 | `fase_temporada`   | string[] | pretemporada, temporada, playoffs                  |
 | `jugadores_minimos`| int      | Mínimo para ejecutarlo                             |
 | `variantes`        | string[] | IDs de ejercicios derivados                        |
+| `puntos_clave`     | string[] | Indicaciones técnicas para el entrenador durante el ejercicio (qué observar, qué corregir, qué enfatizar) |
 | `diagrama`         | object   | Un único diagrama (ejercicios simples)             |
 | `diagramas`        | object[] | Array de diagramas para ejercicios con varias fases. Cada objeto tiene `titulo` (string, breve) y los campos normales del diagrama. Usar cuando una sola imagen no es suficiente para explicar la jugada (ej. bloqueo directo: fase 1 = pantalla, fase 2 = continuación). |
 
