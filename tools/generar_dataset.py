@@ -175,8 +175,8 @@ def generar_ejemplo_sesion(ejercicios: list, edad: str, duracion: int, objetivo:
 # ─── Tarea 2: Generación de diagramas ───────────────────────────────────────
 EJERCICIOS_CON_POSICIONES = [
     # ── Bloqueos directos ────────────────────────────────────────────────────
-    ("Bloqueo directo central base-pivot", "A1 base en cabecera con balón. A2 pivot sube desde poste bajo derecho a poner bloqueo directo al base. A1 lee el bloqueo y decide: continuar al codo TL derecho o pasar a A2 que rola a canasta."),
-    ("Bloqueo directo lateral", "A1 base en 45 derecho con balón. A2 pivot sube desde poste bajo a poner bloqueo lateral. A1 bota hacia el centro buscando codo, A2 rola por línea de fondo."),
+    ("Bloqueo directo central base-pivot", "A1 base en cabecera con balón. A2 pivot sube desde poste bajo derecho a poner bloqueo directo al base. A1 lee el bloqueo y decide: continuar al codo TL derecho o pasar a A2 que cae hacia canasta."),
+    ("Bloqueo directo lateral", "A1 base en 45 derecho con balón. A2 pivot sube desde poste bajo a poner bloqueo lateral. A1 bota hacia el centro buscando codo, A2 cae por línea de fondo."),
     ("Pick and pop", "A1 base en cabecera. A2 ala-pívot sube a poner bloqueo. Tras el bloqueo, A2 sale (pops) a la línea de tiros libres en lugar de rolar. A1 puede tirar, penetrar o pasar a A2 en poste alto."),
     ("Rechazo de bloqueo", "A1 base en cabecera con balón. A2 sube a poner bloqueo desde la derecha. A1 rechaza el bloqueo y va al lado izquierdo (45 izquierdo) en bote, dejando al defensor descolocado."),
     # ── Bloqueos indirectos ──────────────────────────────────────────────────

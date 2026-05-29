@@ -24,15 +24,16 @@ Cada ejercicio en `data/exercises.json` sigue esta estructura.
 | `fase_temporada`   | string[] | pretemporada, temporada, playoffs                  |
 | `jugadores_minimos`| int      | Mínimo para ejecutarlo                             |
 | `variantes`        | string[] | IDs de ejercicios derivados                        |
-| `diagrama`         | object   | Ver sección Diagrama más abajo                     |
+| `diagrama`         | object   | Un único diagrama (ejercicios simples)             |
+| `diagramas`        | object[] | Array de diagramas para ejercicios con varias fases. Cada objeto tiene `titulo` (string, breve) y los campos normales del diagrama. Usar cuando una sola imagen no es suficiente para explicar la jugada (ej. bloqueo directo: fase 1 = pantalla, fase 2 = continuación). |
 
 ## Categorías
 
 - `ventaja_numerica` — 2c1, 3c2, fastbreak
-- `bloqueo_directo` — pick & roll, acción y reacción
-- `bloqueo_indirecto` — pantallas alejadas, flare
+- `bloqueo_directo` — pick & roll, acción y reacción. U14 solo de forma esporádica; pleno uso desde U16.
+- `bloqueo_indirecto` — bloqueos alejados, caída hacia canasta. Desde U14 en adelante.
 - `tiro` — mecánica, con oposición, en movimiento
-- `1c1` — individual ofensivo y defensivo
+- `1c1` — individual ofensivo y defensivo (mano a mano, penetración)
 - `juego_equipo` — 5c5, sistemas, sets
 - `fisico` — condición, pliometría, sprints
 - `calentamiento` — movilidad, activación

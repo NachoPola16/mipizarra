@@ -15,7 +15,7 @@ from slowapi.util import get_remote_address
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from rag_engine import generar_sesion, generar_coordenadas_ejercicio
-from diagram_renderer import render_diagram
+from diagram_renderer import render_diagram, render_all_diagrams
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -174,6 +174,25 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
             nombre = ej.get("nombre", f"Ejercicio {idx+1}")
             desc   = ej.get("descripcion", "")
 
+            FULL_COURT = ["transición", "contraataque", "campo a campo", "pista completa",
+                          "continuo", "salida rápida", "fastbreak", "2c1", "3c2", "2 contra 1",
+                          "3 contra 2", "presión", "campo completo", "toda la pista"]
+
+            # Ejercicio con múltiples diagramas (bloqueo directo, jugadas en fases, etc.)
+            if ej.get("diagramas"):
+                try:
+                    for d in render_all_diagrams(ej, edad=edad):
+                        diagramas.append({
+                            "id":     ej.get("id", f"ej_{idx}"),
+                            "nombre": nombre,
+                            "titulo": d["titulo"],
+                            "svg":    d["svg"],
+                        })
+                except Exception:
+                    logger.exception(f"Error renderizando diagramas de '{nombre}'")
+                continue
+
+            # Ejercicio con un único diagrama (o sin diagrama → generar automático)
             diagrama_data = ej.get("diagrama")
             if not diagrama_data:
                 texto_para_diagrama = desc if desc else nombre
@@ -181,9 +200,6 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
                 diagrama_data = generar_coordenadas_ejercicio(texto_para_diagrama, nombre)
 
             if diagrama_data:
-                FULL_COURT = ["transición", "contraataque", "campo a campo", "pista completa",
-                              "continuo", "salida rápida", "fastbreak", "2c1", "3c2", "2 contra 1",
-                              "3 contra 2", "presión", "campo completo", "toda la pista"]
                 if desc and any(word in desc.lower() for word in FULL_COURT):
                     diagrama_data["tipo"] = "pista_completa"
                 else:
@@ -194,6 +210,7 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
                     diagramas.append({
                         "id":     ej.get("id", f"ej_{idx}"),
                         "nombre": nombre,
+                        "titulo": "",
                         "svg":    svg,
                     })
                 except Exception:

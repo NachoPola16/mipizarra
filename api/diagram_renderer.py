@@ -272,13 +272,15 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
         elif tipo == "bloqueo" and "a_pos" in mov:
             p = mov["a_pos"]
             x2, y2 = to_px(p["x"], p["y"])
-            # Línea de recorrido del bloqueador (fina)
+            # Línea de recorrido del bloqueador: acortada para que termine en el borde
+            # del símbolo del defensor, no en su centro
+            a, b, c, d2 = shorten(x1, y1, x2, y2, RADIO_JUGADOR)
             if curvature is not None:
-                cx_ctrl, cy_ctrl = _bezier_ctrl_pt(x1, y1, x2, y2, curvature)
-                path_d = f"M {x1:.1f},{y1:.1f} Q {cx_ctrl:.1f},{cy_ctrl:.1f} {x2:.1f},{y2:.1f}"
+                cx_ctrl, cy_ctrl = _bezier_ctrl_pt(a, b, c, d2, curvature)
+                path_d = f"M {a:.1f},{b:.1f} Q {cx_ctrl:.1f},{cy_ctrl:.1f} {c:.1f},{d2:.1f}"
                 svg.append(f'<path d="{path_d}" fill="none" stroke="#dc2626" stroke-width="2.5"/>')
             else:
-                svg.append(f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
+                svg.append(f'<line x1="{a:.1f}" y1="{b:.1f}" x2="{c:.1f}" y2="{d2:.1f}" '
                            f'stroke="#dc2626" stroke-width="2.5"/>')
             # Barra perpendicular en el destino (la pantalla física)
             dx, dy = x2 - x1, y2 - y1
@@ -297,6 +299,23 @@ def render_diagram(data: dict, edad: str = "U16") -> str:
     if tipo == "pista_completa":
         return _render_pista_completa(data, edad)
     return _render_media_pista(data, edad)
+
+
+def render_all_diagrams(ejercicio: dict, edad: str = "U16") -> list:
+    """
+    Devuelve una lista de dicts {titulo, svg} para un ejercicio.
+    Soporta tanto 'diagrama' (objeto único) como 'diagramas' (array, cada uno con 'titulo').
+    """
+    if "diagramas" in ejercicio:
+        result = []
+        for d in ejercicio["diagramas"]:
+            titulo = d.get("titulo", "")
+            svg = render_diagram({k: v for k, v in d.items() if k != "titulo"}, edad)
+            result.append({"titulo": titulo, "svg": svg})
+        return result
+    if "diagrama" in ejercicio:
+        return [{"titulo": "", "svg": render_diagram(ejercicio["diagrama"], edad)}]
+    return []
 
 
 def _render_media_pista(data: dict, edad: str) -> str:
@@ -371,10 +390,10 @@ def _render_pista_completa(data: dict, edad: str) -> str:
 if __name__ == "__main__":
     import sys
 
-    # Bloqueo directo (pick & roll):
+    # Bloqueo directo:
     # A5 sube a bloquear a D1 que defiende a A1.
     # A1 bota hacia la derecha usando el bloqueo.
-    # A5 rola a canasta tras plantar la pantalla.
+    # A5 cae hacia canasta tras plantar el bloqueo.
     # A1 pasa a A5 que recibe en el poste bajo.
     _test = {
         "tipo": "media_pista",
@@ -393,9 +412,9 @@ if __name__ == "__main__":
             {"de": "A5", "a_pos": {"x": 48, "y": 62}, "tipo": "bloqueo", "orden": 1},
             # A1 bota hacia la derecha usando el bloqueo (curva que rodea la pantalla)
             {"de": "A1", "a_pos": {"x": 65, "y": 50}, "tipo": "bote", "curva": -40, "orden": 2},
-            # A5 rola a canasta tras plantar la pantalla (desde a_pos del bloqueo)
+            # A5 cae hacia canasta tras plantar el bloqueo (desde a_pos del bloqueo)
             {"de": "A5", "a_pos": {"x": 62, "y": 18}, "tipo": "desplazamiento", "orden": 3},
-            # A1 pasa a A5 que rola (pase)
+            # A1 pasa a A5 que cae hacia canasta (pase)
             {"de": "A1", "a": "A5", "tipo": "pase", "orden": 4},
         ],
     }

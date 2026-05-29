@@ -148,7 +148,7 @@ TERMINOLOGÍA TÉCNICA (usa siempre en las descripciones):
 - Tiro: suspensión, bandeja mano dominante/débil, entrada 1-2 con parada, floater, tiro de media distancia desde codo, tiro libre
 - Pase: pecho, picado, béisbol, por encima (overhead), pase en movimiento, pase de salida tras rebote
 - Defensa: posición básica (pies separados, rodillas flexionadas, manos activas), deslizamiento lateral, ayuda, rotación, negación, tapping, defensa al bloqueo directo (pasar por delante/detrás, cambio)
-- Conceptos: bloqueo directo (pick & roll), corte al aro (V-cut, backdoor cut), penetración, drive and kick, 1vs1 con bote\
+- Conceptos: bloqueo directo, caída hacia canasta, corte (en V, puerta atrás), penetración, 1vs1 con bote\
 """
 
 
@@ -474,7 +474,7 @@ TIPOS DE MOVIMIENTO:
 - pase: jugador pasa el balón a otro (de + a id). Línea punteada.
 - bote: jugador avanza BOTANDO (de + a_pos). Línea ondulada. Actualiza su posición.
 - tiro: jugador lanza al aro (solo de). Flecha verde.
-- bloqueo: jugador coloca pantalla (de + a_pos). Línea roja gruesa.
+- bloqueo: jugador planta bloqueo en a_pos (de + a_pos). Línea roja + barra perpendicular.
 
 Campo opcional "curva" (en cualquier movimiento): true o número de píxeles.
 Usar "curva" cuando el jugador rodea a un defensor o el trayecto no es recto.

@@ -122,6 +122,20 @@ no una posición. El jugador emisor no actualiza su posición tras el pase.
 El modelo puede reconocer "pantalla" en los prompts de entrada, pero en las respuestas
 y en el JSON siempre escribe `bloqueo`.
 
+**Restricciones de bloqueo por categoría de edad:**
+
+| Categoría            | Edades (~años) | Bloqueo directo  | Bloqueo indirecto | 1c1 / mano a mano |
+|----------------------|----------------|------------------|-------------------|-------------------|
+| Prebenjamín/Benjamín | U8, U10        | ✗                | ✗                 | ✓                 |
+| Alevín               | U12            | ✗                | ✗                 | ✓                 |
+| Infantil             | U14 (~13-14)   | esporádico       | ✓                 | ✓                 |
+| Cadete en adelante   | U16+ (~15+)    | ✓                | ✓                 | ✓                 |
+
+- **U12 e inferiores**: solo acciones individuales (1c1, mano a mano, bote).
+- **U14 (Infantil)**: bloqueos indirectos con normalidad; bloqueo directo solo de forma esporádica
+  y como introducción al concepto, nunca como base del ejercicio.
+- **U16 (Cadete) en adelante**: bloqueo directo e indirecto con plena normalidad.
+
 ## Campo opcional `curva`
 
 `desplazamiento`, `pase`, `bote` y `tiro` aceptan el campo `"curva"`.
