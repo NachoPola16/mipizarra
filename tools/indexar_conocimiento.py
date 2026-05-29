@@ -21,9 +21,24 @@ except ImportError:
 OUTPUT_DIR  = Path("data/dataset")
 OUTPUT_FILE = OUTPUT_DIR / "from_conocimiento.jsonl"
 
+TEORIA_MD_DIR = Path("data/teoria")   # documentos .md elaborados
+
 COLECCIONES = {
+    # ── Documentos .md de data/teoria/ (procesados con Claude o escritos a mano) ──
+    "teoria_md": {
+        "path": TEORIA_MD_DIR,
+        "ext": "*.md",
+        "system": (
+            "Eres MiPizarra, un asistente experto en entrenamiento de baloncesto. "
+            "Tienes profundos conocimientos de técnica, táctica y pedagogía del baloncesto. "
+            "Das respuestas claras, prácticas y adaptadas al nivel de formación."
+        ),
+        "tipo_qa": "metodologia",
+    },
+    # ── PDFs de las colecciones (si existen) ────────────────────────────────────
     "teoria": {
         "path": Path("data/pdfs/coleccion_teoria"),
+        "ext": "*.pdf",
         "system": (
             "Eres MiPizarra, un asistente experto en entrenamiento de baloncesto. "
             "Tienes profundos conocimientos de metodología, técnica, táctica y pedagogía del baloncesto. "
@@ -33,6 +48,7 @@ COLECCIONES = {
     },
     "reglamento": {
         "path": Path("data/pdfs/coleccion_reglamento"),
+        "ext": "*.pdf",
         "system": (
             "Eres MiPizarra, un asistente experto en baloncesto. "
             "Conoces en detalle el reglamento FIBA y las normativas de competición en categorías de formación. "
@@ -42,6 +58,7 @@ COLECCIONES = {
     },
     "planificacion": {
         "path": Path("data/pdfs/coleccion_planificacion"),
+        "ext": "*.pdf",
         "system": (
             "Eres MiPizarra, un asistente experto en planificación del entrenamiento de baloncesto. "
             "Ayudas a los entrenadores a estructurar temporadas, microciclos y sesiones. "
@@ -93,18 +110,21 @@ def llamar_ollama(ollama_url: str, model: str, messages: list, max_tokens: int =
         return ""
 
 
-def extraer_texto_pdf(pdf_path: Path, max_chars: int = 8000) -> list[str]:
-    """Extrae texto del PDF y lo divide en chunks de ~1500 chars."""
+def extraer_texto(doc_path: Path, max_chars: int = 8000) -> list[str]:
+    """Extrae texto de un PDF o .md y lo divide en chunks de ~1500 chars."""
     try:
-        reader = PdfReader(str(pdf_path))
-        texto_total = []
-        for page in reader.pages:
-            t = page.extract_text()
-            if t and t.strip():
-                texto_total.append(t.strip())
-        texto = "\n\n".join(texto_total)[:max_chars]
+        if doc_path.suffix.lower() == ".md":
+            texto = doc_path.read_text(encoding="utf-8")[:max_chars]
+        else:
+            reader = PdfReader(str(doc_path))
+            partes = []
+            for page in reader.pages:
+                t = page.extract_text()
+                if t and t.strip():
+                    partes.append(t.strip())
+            texto = "\n\n".join(partes)[:max_chars]
     except Exception as e:
-        print(f"    ✗ Error PDF: {e}")
+        print(f"    ✗ Error leyendo {doc_path.name}: {e}")
         return []
 
     # Dividir en chunks de ~1500 chars en límites de párrafo
@@ -161,30 +181,32 @@ def generar_qa_de_chunk(chunk: str, system: str, preguntas: list,
 
 
 def procesar_coleccion(nombre: str, config: dict, ollama_url: str, model: str,
-                        max_chunks_por_pdf: int = 4) -> list[dict]:
+                        max_chunks_por_doc: int = 4) -> list[dict]:
     col_path = config["path"]
+    ext      = config.get("ext", "*.pdf")
+
     if not col_path.exists():
         print(f"  ⚠ Carpeta no encontrada: {col_path}")
         return []
 
-    pdfs = sorted(col_path.glob("**/*.pdf"))
-    if not pdfs:
-        print(f"  ⚠ Sin PDFs en {col_path}")
+    docs = sorted(col_path.glob(f"**/{ext}"))
+    if not docs:
+        print(f"  ⚠ Sin ficheros {ext} en {col_path}")
         return []
 
-    print(f"\n── Colección '{nombre}': {len(pdfs)} PDFs ──")
+    tipo_label = "docs .md" if ext == "*.md" else "PDFs"
+    print(f"\n── Colección '{nombre}': {len(docs)} {tipo_label} ──")
     todos = []
 
-    for pdf_path in pdfs:
-        print(f"  · {pdf_path.name[:55]:<55} ", end="", flush=True)
-        chunks = extraer_texto_pdf(pdf_path)
+    for doc_path in docs:
+        print(f"  · {doc_path.name[:55]:<55} ", end="", flush=True)
+        chunks = extraer_texto(doc_path)
         if not chunks:
             print("(sin texto)")
             continue
 
-        # Limitar chunks por PDF para no tardar demasiado
-        chunks_a_usar = chunks[:max_chunks_por_pdf]
-        ejemplos_pdf = []
+        chunks_a_usar = chunks[:max_chunks_por_doc]
+        ejemplos_doc = []
 
         for chunk in chunks_a_usar:
             pares = generar_qa_de_chunk(
@@ -193,11 +215,11 @@ def procesar_coleccion(nombre: str, config: dict, ollama_url: str, model: str,
                 PREGUNTAS_TIPO[config["tipo_qa"]],
                 ollama_url, model,
             )
-            ejemplos_pdf.extend(pares)
+            ejemplos_doc.extend(pares)
             time.sleep(0.2)
 
-        todos.extend(ejemplos_pdf)
-        print(f"✓ {len(ejemplos_pdf)} Q&A")
+        todos.extend(ejemplos_doc)
+        print(f"✓ {len(ejemplos_doc)} Q&A")
 
     return todos
 
@@ -209,9 +231,9 @@ def main():
     parser.add_argument("--chunks-por-pdf",   type=int, default=4,
                         help="Máximo de fragmentos a procesar por PDF (default: 4)")
     parser.add_argument("--colecciones",      nargs="+",
-                        choices=["teoria", "reglamento", "planificacion"],
-                        default=["teoria", "reglamento", "planificacion"],
-                        help="Colecciones a procesar")
+                        choices=["teoria_md", "teoria", "reglamento", "planificacion"],
+                        default=["teoria_md", "teoria", "reglamento", "planificacion"],
+                        help="Colecciones a procesar (teoria_md lee data/teoria/*.md)")
     args = parser.parse_args()
 
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
