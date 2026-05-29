@@ -527,7 +527,92 @@ Genera SOLO el JSON (sin explicaciones):"""
             
         logger.info(f"  ✓ Coordenadas generadas: {len(diagrama.get('jugadores_ataque', []))} atacantes, {len(diagrama.get('jugadores_defensa', []))} defensores")
         return diagrama
-        
+
     except Exception as e:
         logger.warning(f"  ✗ Error generando coordenadas: {e}")
         return None
+
+
+# ── Modo 2: Ejercicio único ──────────────────────────────────────────────────
+
+SYSTEM_EJERCICIO = (
+    "Eres MiPizarra, asistente experto en baloncesto. Generas un único ejercicio de entrenamiento "
+    "con todos sus campos JSON y su diagrama. "
+    "Usas terminología española: codo, cabecera, línea de fondo, poste alto/bajo, caer hacia canasta, bloqueo. "
+    "NUNCA uses 'pantalla' en el output. "
+    "El JSON incluye: nombre, categoria, subcategoria, edades (array), duracion_min, intensidad (1-5), "
+    "carga_cognitiva (1-5), objetivos (tacticos, tecnicos, fisicos), puntos_clave (string[]) "
+    "y diagrama (tipo, jugadores_ataque, jugadores_defensa, balon_inicio, movimientos, conos). "
+    "Movimientos: 'desplazamiento' (sin balón), 'pase', 'bote' (con balón), 'tiro', 'bloqueo'. "
+    "Usa 'curva': true en bote cuando el jugador rodea a un defensor. "
+    "Bloqueo directo solo desde U14 (esporádico) y U16 (pleno uso)."
+)
+
+
+def generar_ejercicio_unico(edad: str, objetivo: str, descripcion: str = "") -> dict:
+    """Modo 2: genera un único ejercicio con diagrama."""
+    ctx = construir_contexto_ejercicios(
+        filtrar_ejercicios(cargar_ejercicios(), edad, objetivo)
+    )
+    prompt = (
+        f"Genera un ejercicio de baloncesto para la categoría {edad} con objetivo: {objetivo}.\n"
+        + (f"Descripción adicional: {descripcion}\n" if descripcion else "")
+        + f"\nEjercicios de referencia:\n{ctx}\n\n"
+        "Devuelve SOLO el JSON del ejercicio (sin texto adicional):"
+    )
+    try:
+        r = requests.post(
+            f"{OLLAMA_URL}/api/generate",
+            json={
+                "model": MODEL, "prompt": prompt, "format": "json",
+                "stream": False,
+                "options": {"temperature": 0.4, "num_predict": 900, "top_k": 40},
+            },
+            timeout=120,
+        )
+        r.raise_for_status()
+        ej = json.loads(r.json()["response"].strip())
+        logger.info(f"Ejercicio generado: {ej.get('nombre', '?')}")
+        return ej
+    except Exception as e:
+        logger.warning(f"Error generando ejercicio: {e}")
+        return {}
+
+
+# ── Modo 3: Reglamento y dudas técnicas ─────────────────────────────────────
+
+SYSTEM_REGLAMENTO = (
+    "Eres MiPizarra, asistente experto en reglas y fundamentos técnicos del baloncesto en España. "
+    "Respondes cualquier duda de un entrenador: reglamento FIBA, situaciones de juego concretas "
+    "(¿son pasos? ¿es doble? ¿es falta?), conceptos técnicos individuales (paso cero, parada en dos tiempos, "
+    "tipos de finalización, cambios de mano, pase picado, etc.), normativa de competición por categoría "
+    "y decisiones pedagógicas (¿puedo trabajar bloqueos directos en infantil?). "
+    "Usas terminología española: paso cero (gather step), parada en dos tiempos, "
+    "línea de fondo, caer hacia canasta, bloqueo (nunca 'pantalla' en el output). "
+    "Eres conciso y práctico. Cuando hay una situación de juego, explicas la regla aplicable "
+    "y el criterio para que el entrenador lo entienda y pueda explicárselo a sus jugadores. "
+    "No generas sesiones ni diagramas — solo respondes la duda planteada."
+)
+
+
+def responder_duda_reglamento(pregunta: str) -> str:
+    """Modo 3: responde una duda de reglamento o fundamento técnico."""
+    try:
+        r = requests.post(
+            f"{OLLAMA_URL}/api/chat",
+            json={
+                "model": MODEL,
+                "messages": [
+                    {"role": "system", "content": SYSTEM_REGLAMENTO},
+                    {"role": "user", "content": pregunta},
+                ],
+                "stream": False,
+                "options": {"temperature": 0.3, "num_predict": 500, "num_ctx": 4096},
+            },
+            timeout=90,
+        )
+        r.raise_for_status()
+        return r.json()["message"]["content"].strip()
+    except Exception as e:
+        logger.warning(f"Error en reglamento: {e}")
+        return "No se pudo responder la consulta. Inténtalo de nuevo."

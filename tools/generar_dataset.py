@@ -27,46 +27,70 @@ OUTPUT_DIR     = Path("data/dataset")
 OUTPUT_FILE    = OUTPUT_DIR / "train.jsonl"
 REVIEW_FILE    = OUTPUT_DIR / "para_revisar.jsonl"
 
+# ── Modo 1: Sesión completa ────────────────────────────────────────────────────
 SYSTEM_SESION = (
-    "Eres MiPizarra, un asistente experto en entrenamiento de baloncesto. "
-    "Diseñas sesiones de entrenamiento estructuradas, prácticas y adaptadas a cada categoría. "
-    "Usas terminología técnica española (codo, cabecera, TL, baseline, poste alto/bajo). "
-    "Siempre propones ejercicios concretos con posiciones claras."
+    "Eres MiPizarra, asistente experto en entrenamiento de baloncesto en España. "
+    "Diseñas sesiones de entrenamiento completas, estructuradas y adaptadas a cada categoría y edad. "
+    "Usas terminología española: codo, cabecera, línea de fondo, poste alto/bajo, 45°, caer hacia canasta, bloqueo. "
+    "NUNCA uses 'pantalla' en el output (sí puedes reconocerlo en el input). "
+    "Restricciones por edad: bloqueo directo solo desde U14 (esporádico) y U16 (pleno); "
+    "bloqueo indirecto desde U14; sin bloqueos en U12 e inferiores. "
+    "En U12 e inferiores: sin defensa zonal, sin presión full-court, sin sistemas de ataque reglados. "
+    "Siempre propones ejercicios concretos con posiciones claras y puntos clave técnicos."
 )
 
+# ── Modo 2: Ejercicio único con diagrama ───────────────────────────────────────
+SYSTEM_EJERCICIO = (
+    "Eres MiPizarra, asistente experto en baloncesto. Generas un único ejercicio de entrenamiento "
+    "con todos sus campos JSON y su diagrama. "
+    "Usas terminología española: codo, cabecera, línea de fondo, poste alto/bajo, caer hacia canasta, bloqueo. "
+    "NUNCA uses 'pantalla' en el output. "
+    "El JSON incluye: nombre, categoria, subcategoria, edades, duracion_min, intensidad (1-5), "
+    "carga_cognitiva (1-5), objetivos (tacticos, tecnicos, fisicos), puntos_clave (string[]) "
+    "y diagrama (tipo, jugadores_ataque, jugadores_defensa, balon_inicio, movimientos, conos). "
+    "Movimientos: 'desplazamiento' (sin balón, línea continua), 'pase' (línea punteada), "
+    "'bote' (con balón, línea ondulada), 'tiro' (flecha verde al aro), 'bloqueo' (línea roja). "
+    "Usa 'curva': true en bote cuando el jugador rodea un defensor. "
+    "Restricciones de edad: bloqueo directo solo U14+ (esporádico) y U16+ (pleno)."
+)
+
+# ── Modo 3: Diagrama desde descripción ────────────────────────────────────────
 SYSTEM_DIAGRAMA = (
     "Eres un asistente experto en diagramas de baloncesto. "
     "Conviertes descripciones de ejercicios en coordenadas JSON precisas. "
     "Sistema de coordenadas (media pista, normalizado 0-100): "
     "X=0 lateral izquierdo, X=100 lateral derecho, X=50 centro. "
-    "Y=0 baseline (bajo el aro), Y=100 línea de medio campo. "
-    "Posiciones canónicas: canasta (50,11); baseline centro (50,5); "
+    "Y=0 línea de fondo (bajo el aro), Y=100 línea de medio campo. "
+    "Izquierda/derecha en los nombres de posición es desde la perspectiva del jugador mirando al aro. "
+    "Posiciones canónicas: canasta (50,11); línea de fondo centro (50,5); "
     "poste bajo derecho (38,18), poste bajo izquierdo (62,18); "
     "esquina triple derecha (6,22), esquina triple izquierda (94,22); "
     "poste alto derecho (38,36), poste alto izquierdo (62,36); "
-    "codo TL derecho (35,41), codo TL izquierdo (65,41), línea TL centro (50,41); "
-    "ala derecha (15,50), ala izquierda (85,50); "
+    "codo derecho (35,41), codo izquierdo (65,41), línea TL centro (50,41); "
+    "media distancia derecha (15,50), media distancia izquierda (85,50); "
     "45° derecho (25,50), 45° izquierdo (75,50); "
-    "arco triple top (50,60); cabecera triple (50,65); "
+    "arco triple frontal (50,60); cabecera/frontal (50,65); "
     "centro medio campo (50,100). "
-    "Roles ataque: A1 base, A2 escolta/alero, A3 alero, A4 ala-pívot, A5 pívot. "
-    "Defensa: D1..D5 (mismo número que el atacante). "
+    "Identificadores: A1-A5 atacantes (sin rol fijo), D1-D5 defensores. "
     "Tipos de movimiento (campo 'tipo', todos con 'orden'): "
-    "'desplazamiento' (de + a_pos, línea continua, jugador se mueve sin balón), "
-    "'pase' (de + a id, línea punteada), "
-    "'bote' (de + a_pos, línea ondulada, jugador bota y avanza — actualiza su posición), "
-    "'tiro' (de, flecha verde al aro), "
-    "'bloqueo' (de + a_pos, línea roja gruesa). "
-    "Campo opcional 'curva' en cualquier movimiento: "
-    "true (desviación 50 px) o número entero (px). "
-    "Usar 'curva' cuando el jugador rodea un defensor o el trayecto no es recto."
+    "'desplazamiento' (de + a_pos, sin balón), "
+    "'pase' (de + a id), "
+    "'bote' (de + a_pos, jugador bota y avanza — actualiza su posición), "
+    "'tiro' (de, hacia el aro), "
+    "'bloqueo' (de + a_pos, línea roja con barra perpendicular al final). "
+    "Campo opcional 'curva' en cualquier movimiento: true o número de píxeles. "
+    "Usar 'curva' cuando el jugador rodea a un defensor o el trayecto no es recto."
 )
 
-SYSTEM_EJERCICIO = (
-    "Eres un asistente experto en baloncesto. "
-    "Estructuras ejercicios de baloncesto en formato JSON con todos sus campos: "
-    "nombre, categoria, subcategoria, edades, duracion_min, intensidad (1-5), "
-    "carga_cognitiva (1-5), objetivos (tacticos, tecnicos, fisicos) y diagrama si aplica."
+# ── Modo 4: Reglamento y dudas técnicas ───────────────────────────────────────
+SYSTEM_REGLAMENTO = (
+    "Eres MiPizarra, asistente experto en reglas y fundamentos técnicos del baloncesto en España. "
+    "Respondes preguntas sobre el reglamento FIBA, conceptos técnicos individuales, "
+    "dudas de entrenamiento y normativa de competición en categorías de formación. "
+    "Usas terminología española: paso cero (gather step), parada en dos tiempos, "
+    "bote de protección, línea de fondo, caer hacia canasta, bloqueo (nunca 'pantalla' en el output). "
+    "Eres conciso y práctico. Das ejemplos cuando ayudan a la comprensión. "
+    "No generas sesiones ni diagramas en este modo — solo respondes la duda planteada."
 )
 
 EDADES       = ["U8", "U10", "U12", "U14", "U16", "U18", "U20"]
@@ -309,6 +333,89 @@ def generar_ejemplo_ejercicio(descripcion: str, ollama_url: str, model: str) -> 
     }
 
 
+# ─── Tarea 4: Reglamento, situaciones de juego y fundamentos técnicos ────────
+PREGUNTAS_REGLAMENTO = [
+    # Paso cero y pasos
+    "¿Qué es el paso cero en baloncesto?",
+    "Un jugador recoge el balón del bote con un pie apoyado en el suelo y da tres apoyos más hasta tirar. ¿Son pasos?",
+    "El euroestep, ¿es legal o son pasos? Explícalo.",
+    "Un jugador corre hacia canasta y recibe el pase con los dos pies en el suelo. ¿Cuántos pasos puede dar?",
+    "Un jugador salta con el balón y aterriza con los dos pies a la vez sin haber botado. ¿Es violación?",
+    "¿Cuándo empieza a contar el paso cero al recibir un pase en carrera?",
+    "¿Se puede hacer un euroestep en categoría infantil? ¿Es legal según el reglamento FIBA?",
+    # Dobles y bote
+    "Un jugador bota, coge el balón con una mano y vuelve a botarlo. ¿Es doble?",
+    "¿Es doble si el jugador pierde el balón accidentalmente y lo recupera?",
+    "Un jugador bota con ambas manos a la vez. ¿Qué violación es?",
+    "¿Cuándo se considera que el bote ha terminado?",
+    # Tres segundos
+    "¿Cuánto tiempo puede estar un atacante en la zona pintada?",
+    "Un atacante lleva dos segundos en la zona, sale durante un segundo y vuelve a entrar. ¿Empieza de nuevo la cuenta?",
+    "¿Se aplica la regla de tres segundos en minibasket?",
+    # Faltas
+    "Un defensor está parado dentro del semicírculo bajo el aro y un atacante choca con él. ¿Es falta del atacante?",
+    "¿Cuántas faltas puede cometer un jugador antes de ser excluido?",
+    "¿Qué diferencia hay entre falta personal y falta antideportiva?",
+    "¿Cuándo se conceden dos tiros libres por falta en el reglamento FIBA?",
+    "Un defensor salta verticalmente para taponar y hay contacto con el atacante. ¿Es falta?",
+    # Bloqueos legales e ilegales
+    "¿Cuándo es legal un bloqueo?",
+    "Un bloqueador se mueve en el último momento antes del contacto. ¿Es falta del bloqueador?",
+    "El bloqueador tiene los pies en el suelo y está inmóvil pero el defensor choca con él. ¿Es falta?",
+    # Reglas de tiempo
+    "¿Cuántos segundos tiene un equipo para sacar el balón a pista delantera?",
+    "¿Qué es el reloj de posesión de 24 segundos? ¿Cuándo se restablece a 14?",
+    "¿Cuántos tiempos muertos tiene un equipo en un partido FIBA estándar?",
+    "¿Cuántos tiempos muertos tiene un equipo en categoría infantil en España?",
+    "¿En minibasket cuántos periodos hay y cuánto dura cada uno?",
+    "¿Cuál es la distancia de la línea de triple en categoría infantil en España?",
+    # Reglamento minibasket
+    "¿Está permitida la defensa en zona en minibasket?",
+    "¿Se puede presionar a todo campo en benjamines?",
+    "¿Pueden los benjamines hacer bloqueos directos?",
+    "¿A qué altura está la canasta en minibasket?",
+    "En categoría alevín, ¿cuánto tiempo mínimo debe jugar cada jugador?",
+    # Fundamentos técnicos
+    "¿Qué es la parada en dos tiempos?",
+    "¿Qué pie es el pie interior en una recepción en movimiento y por qué debe apoyar primero?",
+    "¿Qué es el pase picado y cuándo es más útil que el pase de pecho?",
+    "¿Qué es el 'in and out' (dentro-fuera) en el bote?",
+    "¿Qué diferencia hay entre una bomba (floater) y una bandeja?",
+    "¿Qué es el aro pasado y cómo se diferencia del euroestep?",
+    "¿Cómo progresa la enseñanza de los cambios de mano por categorías?",
+    "¿Qué es el dip en el tiro y por qué es importante para el tiro de larga distancia?",
+    "¿Cuándo es legal una pantalla y cuándo es falta del bloqueador?",
+    # Situaciones de partido
+    "Un entrenador da instrucciones verbales desde el banquillo durante el juego. ¿Está permitido?",
+    "Quedan dos minutos en el cuarto y el marcador es 40-38. ¿Puede el equipo que acaba de anotar pedir una sustitución?",
+    "Un jugador recibe un pase en la esquina, salta con un pie fuera y cae dentro. ¿Es fuera?",
+    "El balón toca a un árbitro y va a pies del atacante. ¿Qué se pita?",
+    "Un jugador tiene bote agotado y su defensor le presiona muy cerca. ¿Cuántos segundos tiene para pasar o tirar?",
+]
+
+
+def generar_ejemplo_reglamento(pregunta: str, ollama_url: str, model: str) -> dict | None:
+    response = llamar_ollama(
+        ollama_url, model,
+        [
+            {"role": "system", "content": SYSTEM_REGLAMENTO},
+            {"role": "user",   "content": pregunta},
+        ],
+        max_tokens=400,
+    )
+    if not response or len(response) < 30:
+        return None
+    return {
+        "task": "reglamento",
+        "conversations": [
+            {"role": "system",    "content": SYSTEM_REGLAMENTO},
+            {"role": "user",      "content": pregunta},
+            {"role": "assistant", "content": response},
+        ],
+        "meta": {"pregunta": pregunta[:80]},
+    }
+
+
 # ─── Main ────────────────────────────────────────────────────────────────────
 def main():
     parser = argparse.ArgumentParser(description="Genera dataset para fine-tuning de MiPizarra")
@@ -318,6 +425,7 @@ def main():
     parser.add_argument("--sesiones",       type=int, default=60,               help="Número de ejemplos de sesión")
     parser.add_argument("--diagramas",      type=int, default=20,               help="Número de ejemplos de diagrama")
     parser.add_argument("--ejercicios-json",type=int, default=15,               help="Número de ejemplos de estructuración")
+    parser.add_argument("--reglamento",     type=int, default=40,               help="Número de ejemplos de reglamento/técnica")
     parser.add_argument("--solo-estructura",action="store_true",                help="Solo crear estructura sin llamar al LLM")
     parser.add_argument("--incluir-pdfs",        action="store_true", help="Fusionar con data/dataset/from_pdfs.jsonl")
     parser.add_argument("--incluir-conocimiento", action="store_true", help="Fusionar con data/dataset/from_conocimiento.jsonl")
@@ -401,11 +509,29 @@ def main():
             print("✗")
         time.sleep(0.3)
 
+    # ── Reglamento / situaciones / técnica ───────────────────────────────────
+    n_regl = min(args.reglamento, len(PREGUNTAS_REGLAMENTO))
+    print(f"\n── Generando {n_regl} ejemplos de REGLAMENTO/TÉCNICA (sin reemplazo) ──")
+    muestra_regl = random.sample(PREGUNTAS_REGLAMENTO, n_regl)
+    for i, pregunta in enumerate(muestra_regl, 1):
+        print(f"  [{i}/{n_regl}] {pregunta[:60]}... ", end="", flush=True)
+        if args.solo_estructura:
+            print("(skip)")
+            continue
+        ej = generar_ejemplo_reglamento(pregunta, args.ollama, args.model)
+        if ej:
+            todos_ejemplos.append(ej)
+            print("✓")
+        else:
+            errores += 1
+            print("✗")
+        time.sleep(0.3)
+
     # ── Fusionar fuentes adicionales ──────────────────────────────────────────
     fuentes_extra = {
         "from_pdfs.jsonl":        (args.incluir_pdfs        or args.todo, "python tools/indexar_entrenamientos.py"),
         "from_conocimiento.jsonl":(args.incluir_conocimiento or args.todo, "python tools/indexar_conocimiento.py"),
-        "from_web.jsonl":         (args.incluir_web          or args.todo, "python tools/scraper_isportcoach.py"),
+        "from_web.jsonl":         (args.incluir_web          or args.todo, "(scraper no disponible)"),
     }
     for filename, (activado, cmd_previo) in fuentes_extra.items():
         extra_file = OUTPUT_DIR / filename

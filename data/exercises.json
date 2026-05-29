@@ -760,6 +760,205 @@
     }
   },
   {
+    "id": "ej_021",
+    "nombre": "Tiro con lectura de bloqueo directo (cono + defensor)",
+    "categoria": "tiro",
+    "subcategoria": "lectura_defensa",
+    "edades": ["U14", "U16", "U18", "Senior"],
+    "duracion_min": 10,
+    "intensidad": 3,
+    "carga_cognitiva": 4,
+    "jugadores_minimos": 2,
+    "objetivos": {
+      "tacticos": ["lectura del defensor del bloqueo", "tiro o penetración según defensa"],
+      "tecnicos": ["tiro de tres puntos", "salida de bote", "recepción en triple amenaza"],
+      "fisicos": []
+    },
+    "puntos_clave": [
+      "El jugador lee la posición del defensor ANTES de actuar: si el defensor cierra el tiro → penetrar; si el defensor flota → tirar.",
+      "El cono simula el bloqueador — el jugador debe rozarlo al salir, como en un bloqueo real.",
+      "Trabajar por ambos lados para dominar ambas lecturas."
+    ],
+    "descripcion": "El jugador en el 45° usa un cono como bloqueo directo. El defensor decide si cerrar el tiro (→ el jugador penetra al codo) o flotar (→ el jugador tira de tres). La lectura la hace el jugador antes del primer bote.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "x": 25, "y": 50}
+      ],
+      "jugadores_defensa": [
+        {"id": "D1", "x": 38, "y": 58}
+      ],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A1", "a_pos": {"x": 38, "y": 41}, "tipo": "desplazamiento", "orden": 1},
+        {"de": "A1", "tipo": "tiro", "orden": 2}
+      ],
+      "conos": [{"x": 38, "y": 55}]
+    }
+  },
+  {
+    "id": "ej_022",
+    "nombre": "Finalización según altura del defensor — bomba o euroestep",
+    "categoria": "1c1",
+    "subcategoria": "finalizacion",
+    "edades": ["U14", "U16", "U18", "Senior"],
+    "duracion_min": 8,
+    "intensidad": 4,
+    "carga_cognitiva": 5,
+    "jugadores_minimos": 2,
+    "objetivos": {
+      "tacticos": ["lectura del tipo de defensor en la penetración", "selección de finalización"],
+      "tecnicos": ["bomba (floater)", "euroestep", "pase por la espalda en bandeja"],
+      "fisicos": ["explosividad", "coordinación"]
+    },
+    "puntos_clave": [
+      "Si el defensor simula ser alto (brazos arriba) → bomba o pérdida de paso por encima.",
+      "Si el defensor simula ser bajo (brazos abajo) → euroestep o pase por la espalda terminando en bandeja.",
+      "La decisión se toma cuando el atacante ya está en penetración — no antes."
+    ],
+    "descripcion": "El jugador penetra botando. El defensor (o entrenador) adopta una postura antes del contacto: brazos arriba simulando un interior alto, o brazos abajo simulando un exterior pequeño. El atacante lee la postura y elige la finalización adecuada.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "x": 75, "y": 50}
+      ],
+      "jugadores_defensa": [
+        {"id": "D1", "x": 62, "y": 28}
+      ],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A1", "a_pos": {"x": 55, "y": 18}, "tipo": "bote", "curva": true, "orden": 1},
+        {"de": "A1", "tipo": "tiro", "orden": 2}
+      ],
+      "conos": []
+    }
+  },
+  {
+    "id": "ej_023",
+    "nombre": "1c1 competitivo desde triple — puntuación por defensa",
+    "categoria": "1c1",
+    "subcategoria": "defensa_individual",
+    "edades": ["U14", "U16", "U18", "Senior"],
+    "duracion_min": 10,
+    "intensidad": 4,
+    "carga_cognitiva": 4,
+    "jugadores_minimos": 2,
+    "objetivos": {
+      "tacticos": ["defensa individual competitiva", "1c1 ofensivo bajo presión"],
+      "tecnicos": ["posición defensiva", "salidas de bote", "tiro bajo presión"],
+      "fisicos": ["reacción", "explosividad"]
+    },
+    "puntos_clave": [
+      "El sistema de puntuación premia la defensa: si defiendes sin que te metan, ganas 1 punto.",
+      "Si te meten canasta, pierdes 1 punto — la defensa tiene consecuencia real.",
+      "El primero en llegar a 3 puntos gana el ejercicio.",
+      "Variante: limitar el número de botes del atacante."
+    ],
+    "descripcion": "1c1 desde el triple frontal. Si el defensor impide la canasta, suma 1 punto. Si el atacante encesta, el defensor pierde 1 punto. El primero en llegar a 3 puntos gana. Rotación: el que pierde se va a la fila.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "x": 50, "y": 65}
+      ],
+      "jugadores_defensa": [
+        {"id": "D1", "x": 50, "y": 57}
+      ],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A1", "a_pos": {"x": 35, "y": 41}, "tipo": "bote", "curva": true, "orden": 1},
+        {"de": "A1", "tipo": "tiro", "orden": 2}
+      ],
+      "conos": []
+    }
+  },
+  {
+    "id": "ej_024",
+    "nombre": "2c2 a pista completa — responsabilidad individual sin ayudas",
+    "categoria": "juego_equipo",
+    "subcategoria": "defensa",
+    "edades": ["U16", "U18", "Senior"],
+    "duracion_min": 12,
+    "intensidad": 4,
+    "carga_cognitiva": 4,
+    "jugadores_minimos": 4,
+    "objetivos": {
+      "tacticos": ["responsabilidad defensiva individual", "defensa individual sin ayuda", "presión en todo campo"],
+      "tecnicos": ["desplazamiento defensivo a todo campo", "bote de progresión bajo presión"],
+      "fisicos": ["resistencia", "velocidad"]
+    },
+    "puntos_clave": [
+      "Prohibido cambiar marcajes y prohibidas las ayudas — cada defensor es 100% responsable de su atacante.",
+      "Los atacantes tienen 6 segundos para pasar de campo. Obliga a decisiones rápidas.",
+      "Rotación: ataque → defensa → descanso."
+    ],
+    "descripcion": "2c2 a pista completa con presión desde el inicio. Los defensores deben evitar que los atacantes avancen. Sin cambios de marcaje ni ayudas defensivas. Los atacantes tienen 6 segundos para cruzar el campo. Variantes: 3c3, 4c4, 5c5.",
+    "diagrama": {
+      "tipo": "pista_completa",
+      "jugadores_ataque": [
+        {"id": "A1", "x": 30, "y": 5},
+        {"id": "A2", "x": 70, "y": 5}
+      ],
+      "jugadores_defensa": [
+        {"id": "D1", "x": 30, "y": 15},
+        {"id": "D2", "x": 70, "y": 15}
+      ],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A1", "a_pos": {"x": 35, "y": 50}, "tipo": "bote", "orden": 1},
+        {"de": "A2", "a_pos": {"x": 75, "y": 50}, "tipo": "desplazamiento", "orden": 2},
+        {"de": "A1", "a": "A2", "tipo": "pase", "orden": 3},
+        {"de": "A2", "tipo": "tiro", "orden": 4}
+      ],
+      "conos": []
+    }
+  },
+  {
+    "id": "ej_025",
+    "nombre": "5c5 desde el rebote — cerrar rebote bajo presión",
+    "categoria": "juego_equipo",
+    "subcategoria": "rebote",
+    "edades": ["U16", "U18", "Senior"],
+    "duracion_min": 12,
+    "intensidad": 4,
+    "carga_cognitiva": 4,
+    "jugadores_minimos": 10,
+    "objetivos": {
+      "tacticos": ["responsabilidad de rebote de todos los jugadores", "transición tras rebote", "rebote ofensivo y defensivo"],
+      "tecnicos": ["cierre de rebote", "salida rápida tras rebote defensivo"],
+      "fisicos": ["salto", "lucha física"]
+    },
+    "puntos_clave": [
+      "Todos los defensores cierran el rebote cuando se lanza — no solo los interiores.",
+      "Si hay rebote ofensivo: se sigue jugando en la misma canasta. Si hay rebote defensivo o canasta: 5c5 a la canasta contraria.",
+      "Los atacantes en círculo mueven el balón hasta que uno decide tirar un triple.",
+      "Variante: ventaja numérica en el rebote (5c4, 4c3)."
+    ],
+    "descripcion": "5 atacantes abiertos en círculo se pasan el balón hasta que uno decide tirar de triple. Al lanzar, los 5 defensores cierran el rebote. Si es rebote ofensivo: se sigue atacando la misma canasta. Si es rebote defensivo o canasta: 5c5 a la canasta contraria.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {"id": "A1", "x": 50, "y": 65},
+        {"id": "A2", "x": 25, "y": 50},
+        {"id": "A3", "x": 75, "y": 50},
+        {"id": "A4", "x": 10, "y": 30},
+        {"id": "A5", "x": 90, "y": 30}
+      ],
+      "jugadores_defensa": [
+        {"id": "D1", "x": 50, "y": 55},
+        {"id": "D2", "x": 30, "y": 42},
+        {"id": "D3", "x": 70, "y": 42},
+        {"id": "D4", "x": 38, "y": 25},
+        {"id": "D5", "x": 62, "y": 25}
+      ],
+      "balon_inicio": {"portador": "A1"},
+      "movimientos": [
+        {"de": "A1", "a": "A3", "tipo": "pase", "orden": 1},
+        {"de": "A3", "tipo": "tiro", "orden": 2}
+      ],
+      "conos": []
+    }
+  },
+  {
     "id": "ej_014",
     "nombre": "Juego de pillar con balón",
     "categoria": "calentamiento",

@@ -14,7 +14,10 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from rag_engine import generar_sesion, generar_coordenadas_ejercicio
+from rag_engine import (
+    generar_sesion, generar_coordenadas_ejercicio,
+    generar_ejercicio_unico, responder_duda_reglamento,
+)
 from diagram_renderer import render_diagram, render_all_diagrams
 
 logging.basicConfig(level=logging.INFO)
@@ -91,6 +94,17 @@ class SesionRequest(BaseModel):
     duracion:          int  = Field(default=90, ge=MIN_DURACION, le=MAX_DURACION)
     objetivo:          str  = Field(default="defensa", min_length=1, max_length=MAX_OBJETIVO_LEN)
     generar_diagramas: bool = True
+
+
+class EjercicioRequest(BaseModel):
+    categoria:  Optional[str] = None
+    edad:       Optional[str] = None
+    objetivo:   str = Field(default="tiro", min_length=1, max_length=MAX_OBJETIVO_LEN)
+    descripcion: Optional[str] = Field(default=None, max_length=1000)
+
+
+class ReglamentoRequest(BaseModel):
+    pregunta: str = Field(min_length=3, max_length=MAX_OBJETIVO_LEN)
 
 
 class FeedbackRequest(BaseModel):
@@ -224,6 +238,44 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
         "diagramas":          diagramas,
         "teoria_usada":       resultado.get("teoria_usada", False),
     }
+
+
+@app.post("/ejercicio")
+@limiter.limit("20/hour;5/minute")
+async def generar_ejercicio(request: Request, req: EjercicioRequest):
+    """Modo 2: genera un único ejercicio con diagrama."""
+    edad = req.edad or (CATEGORIA_A_EDAD.get(req.categoria, "U16") if req.categoria else "U16")
+    logger.info(f"Generando ejercicio: edad={edad}, objetivo={req.objetivo[:60]}")
+    try:
+        resultado = generar_ejercicio_unico(
+            edad=edad, objetivo=req.objetivo, descripcion=req.descripcion or ""
+        )
+    except Exception:
+        logger.exception("Error en generar_ejercicio_unico")
+        raise HTTPException(status_code=500, detail="No se pudo generar el ejercicio")
+
+    svgs = []
+    if resultado.get("diagrama") or resultado.get("diagramas"):
+        try:
+            for d in render_all_diagrams(resultado, edad=edad):
+                svgs.append(d)
+        except Exception:
+            logger.exception("Error renderizando diagrama del ejercicio")
+
+    return {"ejercicio": resultado, "diagramas": svgs}
+
+
+@app.post("/reglamento")
+@limiter.limit("30/hour;10/minute")
+async def consulta_reglamento(request: Request, req: ReglamentoRequest):
+    """Modo 3: responde dudas de reglamento y fundamentos técnicos."""
+    logger.info(f"Consulta reglamento: {req.pregunta[:80]}")
+    try:
+        respuesta = responder_duda_reglamento(req.pregunta)
+    except Exception:
+        logger.exception("Error en responder_duda_reglamento")
+        raise HTTPException(status_code=500, detail="No se pudo responder la consulta")
+    return {"pregunta": req.pregunta, "respuesta": respuesta}
 
 
 @app.post("/guardar_feedback")

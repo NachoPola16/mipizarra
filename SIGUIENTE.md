@@ -7,6 +7,14 @@
 Asistente local de entrenamiento de baloncesto. Genera sesiones (texto) y diagramas tácticos
 (JSON → SVG via renderer determinista). Corre en LXC Proxmox con GTX 1060 6GB.
 
+### Tres modos de chat previstos (pendiente de implementar)
+
+1. **Modo sesión** — el entrenador describe categoría, duración y objetivo → el modelo genera la sesión completa con ejercicios, tiempos y diagramas.
+2. **Modo ejercicio** — el entrenador pide un ejercicio concreto ("dame un 2c1 para alevín con diagrama") → el modelo genera solo ese ejercicio con su JSON y SVG.
+3. **Modo reglamento / dudas** — el entrenador pregunta sobre reglas, conceptos técnicos o situaciones de partido ("¿qué es el paso cero?", "¿cuántos tiempos muertos tiene infantil?") → respuesta directa sin generar sesión ni diagrama.
+
+Los tres modos comparten el mismo modelo pero con system prompts distintos. Pendiente: definir los tres SYSTEM prompts diferenciados y actualizar la API para enrutarlos.
+
 - LLM base: **Qwen3-4B** en Ollama (Q4_K_M, ~2.5 GB VRAM). Equivale en calidad a Qwen2.5-7B.
 - Fine-tuning: **LoRA puro bf16** en local (RTX 5060 Ti) con Unsloth; **QLoRA 4-bit** en servidor (GTX 1060).
 - Modelo "profesor" para destilar dataset sintético: **qwen2.5:7b-instruct-q4_K_M**.
