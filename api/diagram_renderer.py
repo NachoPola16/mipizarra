@@ -288,6 +288,8 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
             svg.append(f'<line x1="{x2 - bar*px_u:.1f}" y1="{y2 - bar*py_u:.1f}" '
                        f'x2="{x2 + bar*px_u:.1f}" y2="{y2 + bar*py_u:.1f}" '
                        f'stroke="#dc2626" stroke-width="7"/>')
+            # El bloqueador queda en a_pos para movimientos posteriores (rol a canasta, etc.)
+            posiciones[de] = (p["x"], p["y"])
 
 
 def render_diagram(data: dict, edad: str = "U16") -> str:
@@ -369,30 +371,32 @@ def _render_pista_completa(data: dict, edad: str) -> str:
 if __name__ == "__main__":
     import sys
 
-    # Bloqueo directo (pick & roll): A5 sube a bloquear al defensor de A1.
-    # A1 usa el bloqueo, bota con curva hacia el codo y tira.
-    # Muestra todos los tipos: bloqueo (línea + barra), bote+curva, tiro, desplazamiento, pase.
+    # Bloqueo directo (pick & roll):
+    # A5 sube a bloquear a D1 que defiende a A1.
+    # A1 bota hacia la derecha usando el bloqueo.
+    # A5 rola a canasta tras plantar la pantalla.
+    # A1 pasa a A5 que recibe en el poste bajo.
     _test = {
         "tipo": "media_pista",
         "jugadores_ataque": [
             {"id": "A1", "x": 50, "y": 65},   # base, cabecera con balón
-            {"id": "A2", "x": 25, "y": 50},   # alero izquierdo
-            {"id": "A5", "x": 38, "y": 36},   # pívot, poste alto derecho
+            {"id": "A2", "x": 25, "y": 50},   # alero izquierdo, abre espacio
+            {"id": "A5", "x": 62, "y": 36},   # pívot, poste alto izquierdo
         ],
         "jugadores_defensa": [
-            {"id": "D1", "x": 50, "y": 58},   # defiende a A1
-            {"id": "D5", "x": 40, "y": 34},   # defiende a A5
+            {"id": "D1", "x": 48, "y": 62},   # defiende a A1
+            {"id": "D5", "x": 64, "y": 34},   # defiende a A5
         ],
         "balon_inicio": {"portador": "A1"},
         "movimientos": [
-            # A2 baja a la esquina para abrir espacio (desplazamiento)
-            {"de": "A2", "a_pos": {"x": 8, "y": 22}, "tipo": "desplazamiento", "orden": 1},
-            # A5 sube a poner bloqueo directo sobre D1 (bloqueo: línea + barra perpendicular)
-            {"de": "A5", "a_pos": {"x": 50, "y": 58}, "tipo": "bloqueo", "orden": 2},
-            # A1 usa el bloqueo y bota hacia el codo con curva
-            {"de": "A1", "a_pos": {"x": 35, "y": 41}, "tipo": "bote", "curva": True, "orden": 3},
-            # A1 tira desde el codo derecho
-            {"de": "A1", "tipo": "tiro", "orden": 4},
+            # A5 sube a plantar bloqueo sobre D1 (línea fina roja + barra perpendicular)
+            {"de": "A5", "a_pos": {"x": 48, "y": 62}, "tipo": "bloqueo", "orden": 1},
+            # A1 bota hacia la derecha usando el bloqueo (curva que rodea la pantalla)
+            {"de": "A1", "a_pos": {"x": 65, "y": 50}, "tipo": "bote", "curva": -40, "orden": 2},
+            # A5 rola a canasta tras plantar la pantalla (desde a_pos del bloqueo)
+            {"de": "A5", "a_pos": {"x": 62, "y": 18}, "tipo": "desplazamiento", "orden": 3},
+            # A1 pasa a A5 que rola (pase)
+            {"de": "A1", "a": "A5", "tipo": "pase", "orden": 4},
         ],
     }
 
