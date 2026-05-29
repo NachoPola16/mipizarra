@@ -272,8 +272,21 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
         elif tipo == "bloqueo" and "a_pos" in mov:
             p = mov["a_pos"]
             x2, y2 = to_px(p["x"], p["y"])
-            a, b, c, d2 = shorten(x1, y1, x2, y2, 26)
-            svg.append(f'<line x1="{a:.1f}" y1="{b:.1f}" x2="{c:.1f}" y2="{d2:.1f}" '
+            # Línea de recorrido del bloqueador (fina)
+            if curvature is not None:
+                cx_ctrl, cy_ctrl = _bezier_ctrl_pt(x1, y1, x2, y2, curvature)
+                path_d = f"M {x1:.1f},{y1:.1f} Q {cx_ctrl:.1f},{cy_ctrl:.1f} {x2:.1f},{y2:.1f}"
+                svg.append(f'<path d="{path_d}" fill="none" stroke="#dc2626" stroke-width="2.5"/>')
+            else:
+                svg.append(f'<line x1="{x1:.1f}" y1="{y1:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
+                           f'stroke="#dc2626" stroke-width="2.5"/>')
+            # Barra perpendicular en el destino (la pantalla física)
+            dx, dy = x2 - x1, y2 - y1
+            L = math.sqrt(dx**2 + dy**2) or 1.0
+            px_u, py_u = -dy / L, dx / L   # perpendicular al movimiento
+            bar = 16                        # semilongitud ~0.7 m a esta escala
+            svg.append(f'<line x1="{x2 - bar*px_u:.1f}" y1="{y2 - bar*py_u:.1f}" '
+                       f'x2="{x2 + bar*px_u:.1f}" y2="{y2 + bar*py_u:.1f}" '
                        f'stroke="#dc2626" stroke-width="7"/>')
 
 
@@ -356,30 +369,30 @@ def _render_pista_completa(data: dict, edad: str) -> str:
 if __name__ == "__main__":
     import sys
 
-    # A1 pasa al alero, que rompe al defensor botando (curva) y tira desde el codo.
-    # D2 está justo delante de A2 en la línea directa hacia la canasta.
-    # La curva en el bote muestra cómo rodear al defensor.
+    # Bloqueo directo (pick & roll): A5 sube a bloquear al defensor de A1.
+    # A1 usa el bloqueo, bota con curva hacia el codo y tira.
+    # Muestra todos los tipos: bloqueo (línea + barra), bote+curva, tiro, desplazamiento, pase.
     _test = {
         "tipo": "media_pista",
         "jugadores_ataque": [
-            {"id": "A1", "x": 50, "y": 65},   # base, cabecera
-            {"id": "A2", "x": 78, "y": 50},   # alero derecho
-            {"id": "A3", "x": 22, "y": 50},   # alero izquierdo
+            {"id": "A1", "x": 50, "y": 65},   # base, cabecera con balón
+            {"id": "A2", "x": 25, "y": 50},   # alero izquierdo
+            {"id": "A5", "x": 38, "y": 36},   # pívot, poste alto derecho
         ],
         "jugadores_defensa": [
-            # D2 justo delante de A2, muy cerca, en el camino hacia la canasta
-            {"id": "D2", "x": 74, "y": 43},
+            {"id": "D1", "x": 50, "y": 58},   # defiende a A1
+            {"id": "D5", "x": 40, "y": 34},   # defiende a A5
         ],
         "balon_inicio": {"portador": "A1"},
         "movimientos": [
-            # A3 baja a la esquina para abrir espacio (desplazamiento: línea continua)
-            {"de": "A3", "a_pos": {"x": 8, "y": 22}, "tipo": "desplazamiento", "orden": 1},
-            # A1 pasa a A2 (pase: línea punteada)
-            {"de": "A1", "a": "A2", "tipo": "pase", "orden": 2},
-            # A2 rompe a D2 botando: curva que rodea al defensor (bote + curva)
-            {"de": "A2", "a_pos": {"x": 60, "y": 28}, "tipo": "bote", "curva": True, "orden": 3},
-            # A2 tira desde el codo
-            {"de": "A2", "tipo": "tiro", "orden": 4},
+            # A2 baja a la esquina para abrir espacio (desplazamiento)
+            {"de": "A2", "a_pos": {"x": 8, "y": 22}, "tipo": "desplazamiento", "orden": 1},
+            # A5 sube a poner bloqueo directo sobre D1 (bloqueo: línea + barra perpendicular)
+            {"de": "A5", "a_pos": {"x": 50, "y": 58}, "tipo": "bloqueo", "orden": 2},
+            # A1 usa el bloqueo y bota hacia el codo con curva
+            {"de": "A1", "a_pos": {"x": 35, "y": 41}, "tipo": "bote", "curva": True, "orden": 3},
+            # A1 tira desde el codo derecho
+            {"de": "A1", "tipo": "tiro", "orden": 4},
         ],
     }
 
