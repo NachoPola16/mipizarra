@@ -233,10 +233,18 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
         logger.info(f"Total diagramas generados: {len(diagramas)}")
 
     return {
-        "sesion":             resultado["texto"],
-        "ejercicios_usados":  [e.get("id", "") for e in resultado.get("ejercicios_usados", [])],
-        "diagramas":          diagramas,
-        "teoria_usada":       resultado.get("teoria_usada", False),
+        "sesion":    resultado["texto"],
+        "diagramas": diagramas,
+        "teoria_usada": resultado.get("teoria_usada", False),
+        "ejercicios_usados": [
+            {
+                "id":            e.get("id", ""),
+                "nombre":        e.get("nombre", ""),
+                "duracion_min":  e.get("duracion_min", 0),
+                "tiene_diagrama": ("diagrama" in e or "diagramas" in e),
+            }
+            for e in resultado.get("ejercicios_usados", [])
+        ],
     }
 
 

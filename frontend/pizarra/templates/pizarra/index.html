@@ -189,6 +189,14 @@ input[type="range"] { padding: 0; border: none; background: var(--border); heigh
     .main { padding: 1.25rem; }
 }
 
+/* ── Mode tabs ── */
+.mode-tabs { display: flex; gap: .4rem; margin-bottom: .25rem; }
+.mode-tab { flex: 1; padding: .4rem .5rem; font-size: .78rem; font-weight: 600; border: 1px solid var(--border); border-radius: 6px; background: var(--bg2); color: var(--muted); cursor: pointer; transition: all .15s; font-family: 'Inter', sans-serif; }
+.mode-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+/* ── Reglamento result ── */
+.reglamento-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; font-size: .95rem; line-height: 1.85; color: var(--text2); white-space: pre-wrap; }
+
 /* ── Footer legal ── */
 .legal-footer {
     text-align: center;
@@ -216,6 +224,13 @@ input[type="range"] { padding: 0; border: none; background: var(--border); heigh
         <div class="logo-sub">Asistente de entrenamiento</div>
     </div>
 
+    <div class="mode-tabs">
+        <button class="mode-tab active" data-mode="sesion">⚡ Sesión</button>
+        <button class="mode-tab" data-mode="reglamento">📖 Reglamento</button>
+    </div>
+
+    <!-- ── Formulario sesión ── -->
+    <div id="form-sesion">
     <div>
         <div class="field-label">Categoría</div>
         <select id="edad">
@@ -254,6 +269,17 @@ input[type="range"] { padding: 0; border: none; background: var(--border); heigh
 
     <button class="btn-generar" id="btn-generar">⚡ Generar sesión</button>
     <div class="btn-hint">Enter para generar · Shift+Enter para nueva línea</div>
+    </div><!-- /form-sesion -->
+
+    <!-- ── Formulario reglamento ── -->
+    <div id="form-reglamento" style="display:none">
+    <div>
+        <div class="field-label">Tu pregunta</div>
+        <textarea id="pregunta" placeholder="Ejemplos:&#10;• ¿Es falta técnica si el entrenador entra a la pista?&#10;• ¿Cuántos tiempos muertos tiene Cadete?&#10;• ¿En qué categorías aplica el saque rápido?&#10;• ¿Qué es el paso cero?" style="min-height:160px"></textarea>
+    </div>
+    <button class="btn-generar" id="btn-reglamento">🔍 Consultar</button>
+    <div class="btn-hint">Enter para consultar · Shift+Enter para nueva línea</div>
+    </div><!-- /form-reglamento -->
 
     <button class="theme-btn" id="theme-btn" title="Cambiar tema">☀ Tema claro</button>
 </aside>
@@ -313,6 +339,20 @@ let currentResult = null;
 let currentObjetivo = '';
 let currentEdad = '';
 let currentDuracion = 0;
+let currentMode = 'sesion';
+
+// ── Mode tabs ──────────────────────────────────────────────────────────────
+document.querySelectorAll('.mode-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+        currentMode = btn.dataset.mode;
+        document.querySelectorAll('.mode-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('form-sesion').style.display    = currentMode === 'sesion'    ? '' : 'none';
+        document.getElementById('form-reglamento').style.display = currentMode === 'reglamento' ? '' : 'none';
+        showEmpty();
+        document.getElementById('results').classList.remove('visible');
+    });
+});
 
 // ── Theme ──────────────────────────────────────────────────────────────────
 const themeBtn = document.getElementById('theme-btn');
@@ -340,9 +380,50 @@ durInput.addEventListener('input', () => { durVal.textContent = durInput.value +
 document.getElementById('objetivo').addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); generar(); }
 });
+document.getElementById('pregunta').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); consultarReglamento(); }
+});
 
-// ── Generar ────────────────────────────────────────────────────────────────
+// ── Generar sesión ─────────────────────────────────────────────────────────
 document.getElementById('btn-generar').addEventListener('click', generar);
+
+// ── Consultar reglamento ───────────────────────────────────────────────────
+document.getElementById('btn-reglamento').addEventListener('click', consultarReglamento);
+
+async function consultarReglamento() {
+    const pregunta = document.getElementById('pregunta').value.trim();
+    if (!pregunta) { alert('Escribe una pregunta.'); return; }
+
+    currentObjetivo = pregunta;
+    currentEdad = '';
+    currentDuracion = 0;
+    showLoading();
+
+    try {
+        const resp = await fetch('/reglamento/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+            body: JSON.stringify({ pregunta }),
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Error desconocido');
+        renderReglamento(data);
+    } catch (e) {
+        hideLoading();
+        showEmpty();
+        alert('Error: ' + e.message);
+    }
+}
+
+function renderReglamento(data) {
+    const respuesta = data.respuesta || data.texto || '';
+    const html = `<div class='reglamento-card'>${mdToHtml(respuesta)}</div>`;
+    document.getElementById('resultado-contenido').innerHTML = html;
+    document.getElementById('consultados-wrap').style.display = 'none';
+    document.querySelector('.downloads').style.display = 'none';
+    document.querySelector('.feedback').style.display = 'none';
+    showResults();
+}
 
 async function generar() {
     const objetivo = document.getElementById('objetivo').value.trim();
@@ -379,76 +460,91 @@ async function generar() {
     }
 }
 
-// ── Render ─────────────────────────────────────────────────────────────────
+// ── Markdown helper ────────────────────────────────────────────────────────
+function mdToHtml(s) {
+    return escHtml(s)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>');
+}
+
+// ── Render sesión ──────────────────────────────────────────────────────────
 function renderResults(data) {
     const texto = (data.sesion || data.texto || '').replace(/\[ej_\d+\]\s*/g, '');
     const diagramas = data.diagramas || [];
+
+    // Agrupar diagramas por nombre de ejercicio (para multifase)
+    const diagGroups = [];
+    let di = 0;
+    while (di < diagramas.length) {
+        const nom = diagramas[di].nombre;
+        const grp = [];
+        while (di < diagramas.length && diagramas[di].nombre === nom) grp.push(diagramas[di++]);
+        diagGroups.push(grp);
+    }
 
     // Badge
     let html = data.teoria_usada
         ? "<span class='badge badge-ok'>✓ Enriquecido con teoría</span>"
         : "<span class='badge badge-warn'>⚠ Sin teoría adicional</span>";
 
-    // Parse into blocks
+    // Parsear texto en bloques (secciones y ejercicios)
     const lineas = texto.split('\n');
-    let bloques = [];
-    let bloque = [];
-    let ejIdx = -1;
-
+    let bloques = [], bloque = [], ejIdx = -1;
     for (const linea of lineas) {
         if (/^\s*Ejercicio \d+/.test(linea)) {
-            if (bloque.length) bloques.push({ tipo: ejIdx >= 0 ? 'ej' : 'text', texto: bloque.join('\n'), idx: ejIdx });
+            if (bloque.length) bloques.push({ ejIdx, texto: bloque.join('\n') });
             ejIdx++;
             bloque = [linea];
         } else {
             bloque.push(linea);
         }
     }
-    if (bloque.length) bloques.push({ tipo: ejIdx >= 0 ? 'ej' : 'text', texto: bloque.join('\n'), idx: ejIdx });
+    if (bloque.length) bloques.push({ ejIdx, texto: bloque.join('\n') });
 
     let ejercicioNum = 0;
     for (const b of bloques) {
         if (/^\s*Ejercicio \d+/.test(b.texto)) {
             const ls = b.texto.split('\n');
             const titulo = ls[0].trim();
-            const resto = ls.slice(1).join('\n').trim();
+            const resto  = ls.slice(1).join('\n').trim();
 
             html += `<div class='ejercicio-title'>${escHtml(titulo)}</div>`;
 
-            if (ejercicioNum < diagramas.length) {
-                const d = diagramas[ejercicioNum];
-                html += `<div class='diagrama-label'>${escHtml(d.nombre || '')}</div>`;
-                html += `<div class='diagrama-wrap'>${d.svg}</div>`;
+            // Mostrar TODOS los diagramas del ejercicio (multifase)
+            if (ejercicioNum < diagGroups.length) {
+                for (const d of diagGroups[ejercicioNum]) {
+                    if (d.titulo) html += `<div class='diagrama-label'>${escHtml(d.titulo)}</div>`;
+                    html += `<div class='diagrama-wrap'>${d.svg}</div>`;
+                }
             }
 
-            if (resto) html += `<div class='sesion-card'>${escHtml(resto)}</div>`;
+            if (resto) html += `<div class='sesion-card'>${mdToHtml(resto)}</div>`;
             ejercicioNum++;
         } else {
             const contenido = b.texto.trim();
-            if (contenido) {
-                // Detect section headers (**texto**)
-                const formatted = contenido.replace(/\*\*(.+?)\*\*/g, (_, t) =>
-                    `<div class='section-title'>${escHtml(t)}</div>`
-                );
-                if (formatted !== contenido) {
-                    html += formatted;
-                } else {
-                    html += `<div class='sesion-card'>${escHtml(contenido)}</div>`;
-                }
-            }
+            if (!contenido) continue;
+            // Secciones (**TEXTO**) en línea propia → título de sección
+            const soloTitulo = contenido.replace(/\*\*(.+?)\*\*/g, (_, t) =>
+                `<div class='section-title'>${escHtml(t)}</div>`
+            );
+            html += (soloTitulo !== contenido) ? soloTitulo : `<div class='sesion-card'>${mdToHtml(contenido)}</div>`;
         }
     }
 
     document.getElementById('resultado-contenido').innerHTML = html;
 
+    // Restaurar secciones que el modo reglamento puede haber ocultado
+    document.querySelector('.downloads').style.display = '';
+    document.querySelector('.feedback').style.display = '';
+
     // Ejercicios consultados
-    const ids = data.ejercicios_usados || [];
-    if (ids.length) {
-        document.getElementById('consultados-title').textContent = `📋 Ejercicios consultados (${ids.length})`;
-        document.getElementById('consultados-body').innerHTML = ids.map(ej => {
+    const ejs = data.ejercicios_usados || [];
+    if (ejs.length) {
+        document.getElementById('consultados-title').textContent = `📋 Ejercicios consultados (${ejs.length})`;
+        document.getElementById('consultados-body').innerHTML = ejs.map(ej => {
             if (typeof ej === 'object') {
-                const icono = ej.diagrama ? '📐 ' : '';
-                return `<div>${icono}<strong>${escHtml(ej.nombre || '?')}</strong> (${ej.duracion_min || '?'} min)</div>`;
+                const icono = ej.tiene_diagrama ? '📐 ' : '';
+                return `<div>${icono}<strong>${escHtml(ej.nombre || ej.id || '?')}</strong>${ej.duracion_min ? ` (${ej.duracion_min} min)` : ''}</div>`;
             }
             return `<div>${escHtml(String(ej))}</div>`;
         }).join('');

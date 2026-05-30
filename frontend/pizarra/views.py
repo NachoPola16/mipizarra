@@ -45,6 +45,24 @@ def generar(request):
 
 
 @require_POST
+def reglamento(request):
+    try:
+        data = json.loads(request.body)
+        resp = requests.post(
+            f"{settings.API_URL}/reglamento",
+            json=data,
+            timeout=90,
+        )
+        resp.raise_for_status()
+        return JsonResponse(resp.json())
+    except requests.Timeout:
+        return JsonResponse({'error': 'Tiempo de espera agotado. Inténtalo de nuevo.'}, status=504)
+    except Exception as e:
+        logger.error('Error llamando API reglamento: %s', e)
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@require_POST
 def guardar_feedback(request):
     try:
         data = json.loads(request.body)
