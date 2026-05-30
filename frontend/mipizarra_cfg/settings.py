@@ -48,4 +48,5 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
-API_URL = os.environ.get('API_URL', 'http://mipizarra-api:8090')
+API_URL         = os.environ.get('API_URL', 'http://mipizarra-api:8090')
+INTERNAL_SECRET = os.environ.get('INTERNAL_SECRET', '')

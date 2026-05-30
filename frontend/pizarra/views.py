@@ -14,6 +14,15 @@ from django.views.decorators.http import require_POST
 logger = logging.getLogger(__name__)
 
 
+def _api_headers():
+    """Headers para llamadas internas a la API (incluye el secreto si está configurado)."""
+    h = {'Content-Type': 'application/json'}
+    secret = getattr(settings, 'INTERNAL_SECRET', '')
+    if secret:
+        h['X-Internal-Secret'] = secret
+    return h
+
+
 def index(request):
     return render(request, 'pizarra/index.html')
 
@@ -33,6 +42,7 @@ def generar(request):
         resp = requests.post(
             f"{settings.API_URL}/generar",
             json=data,
+            headers=_api_headers(),
             timeout=300,
         )
         resp.raise_for_status()
@@ -51,6 +61,7 @@ def reglamento(request):
         resp = requests.post(
             f"{settings.API_URL}/reglamento",
             json=data,
+            headers=_api_headers(),
             timeout=90,
         )
         resp.raise_for_status()
@@ -69,6 +80,7 @@ def guardar_feedback(request):
         resp = requests.post(
             f"{settings.API_URL}/guardar_feedback",
             json=data,
+            headers=_api_headers(),
             timeout=10,
         )
         resp.raise_for_status()
