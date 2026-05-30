@@ -376,6 +376,7 @@
     "categoria": "juego_equipo",
     "subcategoria": "movimientos_sin_balon",
     "edades": [
+      "U10",
       "U12",
       "U14",
       "U16",
@@ -729,6 +730,8 @@
     "categoria": "juego_equipo",
     "subcategoria": "rotaciones",
     "edades": [
+      "U8",
+      "U10",
       "U12",
       "U14",
       "U16",
@@ -829,6 +832,7 @@
     "categoria": "1c1",
     "subcategoria": "penetracion",
     "edades": [
+      "U10",
       "U12",
       "U14",
       "U16",
@@ -1137,6 +1141,7 @@
     "categoria": "tiro",
     "subcategoria": "concentracion",
     "edades": [
+      "U10",
       "U14",
       "U16",
       "U18",
@@ -1379,6 +1384,7 @@
     "categoria": "1c1",
     "subcategoria": "ataque_individual",
     "edades": [
+      "U10",
       "U12",
       "U14",
       "U16",
@@ -2339,6 +2345,8 @@
     "categoria": "juego_equipo",
     "subcategoria": "pase",
     "edades": [
+      "U8",
+      "U10",
       "U12",
       "U14",
       "U16"
@@ -5207,6 +5215,8 @@
     "categoria": "1c1",
     "subcategoria": "manejo_balon",
     "edades": [
+      "U8",
+      "U10",
       "U12",
       "U14",
       "U16",
