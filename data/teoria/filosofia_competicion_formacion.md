@@ -43,7 +43,7 @@ La competición es **un elemento más dentro del largo proceso de formación**. 
 ### Roles en partido
 
 - **Sacador:** prohibidos los roles fijos. Saca el más cercano a banda. Puede sacar cualquiera.
-- **"Bases" (portadores del balón):** entre tres jugadores sacan tras canasta recibida y suben el balón. Rotarlos en cada tiempo muerto y al inicio de cada período. Todos habrán pasado por este rol una o dos veces en cada partido.
+- **"Bases" (jugadores con balón):** entre tres jugadores sacan tras canasta recibida y suben el balón. Rotarlos en cada tiempo muerto y al inicio de cada período. Todos habrán pasado por este rol una o dos veces en cada partido.
 
 ### Cuando somos muy superiores al rival — imponer reglas
 

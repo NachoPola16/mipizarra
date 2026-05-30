@@ -31,7 +31,7 @@ El campo se divide en **5 carriles** (o 3 en versión simplificada). La ocupaci�
 
 | Carril | Jugador preferente |
 |--------|-------------------|
-| Carril central (3) | Portador del balón |
+| Carril central (3) | Jugador con balón |
 | Carriles interiores (2 y 4) | Segundo y tercer corredor |
 | Carriles de banda (1 y 5) | Tiradores exteriores en carrera |
 
@@ -45,8 +45,8 @@ La decisión debe tomarse antes de cruzar la línea de tres puntos.
 | Situación | Decisión |
 |-----------|----------|
 | **3 contra 0** | Entrada directa o tiro en carrera |
-| **2 contra 1** | Portador ataca al defensor y pasa si este se compromete; si no se mueve, entrada directa |
-| **3 contra 2** | Portador ataca el centro; si los dos defensores bajan, pase a uno de los dos extremos libres |
+| **2 contra 1** | El jugador con balón ataca al defensor y pasa si este se compromete; si no se mueve, entrada directa |
+| **3 contra 2** | El jugador con balón ataca el centro; si los dos defensores bajan, pase a uno de los dos extremos libres |
 | **Defensa organizada** | Frenar, organizar y atacar en juego posicional |
 
 Un contraataque que no se resuelve en menos de 6 segundos y con no más de 2 pases pierde eficacia estadísticamente.
@@ -59,19 +59,19 @@ Un contraataque que no se resuelve en menos de 6 segundos y con no más de 2 pas
 2. **Amplitud (spacing):** Los carriles exteriores se ocupan pegados a la banda.
 3. **Prioridad al pase largo:** Si hay un jugador libre adelantado, el primer pase va siempre hacia él.
 4. **No detener el contraataque sin motivo:** El bote de freno para esperar compañeros destruye la ventaja conseguida.
-5. **Lectura del número:** El portador identifica si es 3c0, 3c1, 3c2 o 2c1 y adapta la decisión.
+5. **Lectura del número:** El jugador con balón identifica si es 3c0, 3c1, 3c2 o 2c1 y adapta la decisión.
 
 ---
 
 ## El 2 contra 1 (2-on-1)
 
-**Para el portador:**
+**Para el jugador con balón:**
 - Atacar el **carril central** a máxima velocidad para que el defensor tenga que comprometerse.
 - No reducir la velocidad hasta tomar la decisión.
-- Cuando el defensor se compromete definitivamente: pase si carga sobre el portador; entrada directa si retrocede.
+- Cuando el defensor se compromete definitivamente: pase si carga sobre el jugador con balón; entrada directa si retrocede.
 
 **Para el acompañante:**
-- Correr por el **carril exterior**, a la altura del portador. Nunca por detrás.
+- Correr por el **carril exterior**, a la altura del jugador con balón. Nunca por detrás.
 - Siempre visible como opción de pase.
 - El pase va **adelantado y hacia el lado del aro**: el receptor no frena, termina en bandeja sin perder ritmo.
 
@@ -81,7 +81,7 @@ Un contraataque que no se resuelve en menos de 6 segundos y con no más de 2 pas
 
 - Al perder la posesión, el principio es "**primero la canasta**" (sprint back): el jugador más cercano a la canasta rival se lanza a defender aunque no sea su marcaje habitual.
 - Objetivo: igualar o superar numéricamente antes de que el contraataque llegue a su fase de finalización.
-- Un defensor en el carril central retrasa al portador y obliga a un pase lateral → tiempo de recuperación ganado.
+- Un defensor en el carril central retrasa al jugador con balón y obliga a un pase lateral → tiempo de recuperación ganado.
 
 ---
 
@@ -90,7 +90,7 @@ Un contraataque que no se resuelve en menos de 6 segundos y con no más de 2 pas
 - El reboteador bota en lugar de pasar → pérdida de tiempo, la defensa se reorganiza.
 - Jugadores que no salen hasta ver que su equipo tiene el balón → se pierde el factor sorpresa.
 - Tres jugadores convergen por el carril central → la defensa solo tiene que cubrir un punto.
-- En 2c1, el portador bota en lugar de pasar cuando el defensor se compromete → da tiempo al defensor a recuperarse.
+- En 2c1, el jugador con balón bota en lugar de pasar cuando el defensor se compromete → da tiempo al defensor a recuperarse.
 - Finalizar cuando la defensa ya está organizada por no haber leído la situación a tiempo.
 
 ---

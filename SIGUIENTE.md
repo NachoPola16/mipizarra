@@ -20,33 +20,64 @@ Los tres modos comparten el mismo modelo pero con system prompts distintos. Pend
 - Modelo "profesor" para destilar dataset sintético: **qwen2.5:7b-instruct-q4_K_M**.
 - Carpeta canónica del servicio: **`mipizarra/`** (antes `hoops-coach`).
 
-## Estado actual (2026-05-15)
+## Estado actual (2026-05-30)
+
+### Lo que está hecho y listo
+
+**Código:**
+- `api/main.py` — 3 endpoints: `/generar` (sesión), `/ejercicio` (ejercicio único), `/reglamento` (dudas)
+- `api/rag_engine.py` — lógica RAG + las 3 funciones de generación
+- `api/diagram_renderer.py` — renderer SVG mejorado (bote ondulado, bloqueo con barra perpendicular, curva bezier, semicírculo medio campo correcto, tacos simétricos)
+- `tools/generar_dataset.py` — genera 4 tipos de ejemplos: sesion, diagrama, ejercicio, reglamento (48+ preguntas de reglamento/técnica incluidas)
+- Tres SYSTEM prompts diferenciados implementados en los 3 ficheros que los necesitan
+
+**Conocimiento (data/teoria/ — 20 documentos):**
+- fundamentos_ofensivos.md, fundamentos_defensivos.md, bloqueos.md, transicion_y_contraataque.md
+- tiro_a_canasta_tecnica_completa.md, tiro_tecnica_requisitos_y_ejercicios.md
+- bote_finalizaciones_cambios_mano.md (paso cero en 2 contextos, cambios de mano progresión, finalizaciones, pase picado)
+- contenidos_por_edad_lineas_rojas.md, contenidos_tecnicos_por_categoria.md
+- metodologia_entrenamiento_formacion.md, filosofia_competicion_formacion.md
+- sistemas_defensivos.md, espaciado_preminibasket.md
+- minibasquet_skills_y_decisiones.md, habilidades_motrices_baloncesto.md
+- reglamento_fiba_normas_clave.md, reglamento_competicion_formacion_espana.md
+- jugadas_tacticas_doble_bloqueo.md, toma_decisiones_drills.md
+- ejercicios_propios_coleccion.md (365 ejercicios propios)
+
+**exercises.json:** 50 ejercicios completos con puntos_clave, descripción y diagrama (ej_001–ej_025 generales + ej_026–ej_050 del trabajo Cadete de Nacho: contraataque, transición ofensiva/defensiva, ataque posicional, rebote y defensa)
+
+**PDFs organizados en 4 subcarpetas** en `data/pdfs/` (ya indexables)
 
 **Configuración ya optimizada para la 1060 6GB y aplicada en el repo:**
 - num_ctx alineado a 4096/6144 según uso · fp16 activo · bitsandbytes==0.42.0 (Pascal-safe)
 - LoRA rank 8 (alpha 16, dropout 0.05) · grad_acc 8 · paged_adamw_8bit · filtrado por longitud
 - Wrapper `tools/finetune.sh` que libera Ollama durante el training
-- Tabla canónica de coordenadas en [docs/coordenadas.md](docs/coordenadas.md)
-- Dataset semilla: 15 ejercicios en [data/exercises.json](data/exercises.json) (13 con diagrama)
 - 28 patrones únicos de diagrama, 15 descripciones únicas, `random.sample` sin reemplazo
 - `--steps` default 100 (recalibrado para datasets pequeños)
 - Script de evaluación base vs fine-tuned: [tools/evaluar_modelo.py](tools/evaluar_modelo.py)
 
-**Pendiente del usuario antes de entrenar (en este orden):**
+**Pendiente — próxima sesión (en este orden):**
 
-1. **Verificar visualmente los 13 SVG** generados desde `exercises.json` con
-   `api/diagram_renderer.py`. Comando en `ENTRENAMIENTO_MODELO.md`. Si algún diagrama es raro,
-   editar el JSON antes de entrenar.
-2. **Añadir ejercicios reales a `data/exercises.json` hasta ≥30** (ahora hay 15, 13 con diagrama).
-   Hacerlo poco a poco: añadir ejercicios reales propios, verificar el SVG de cada uno con el
-   renderer, y solo entonces continuar con el siguiente. Más vale 30 verificados que 200 sintéticos.
-   Categorías que faltan o tienen pocos ejemplos:
-   - Defensa en zona (2-3, 3-2, match-up)
-   - Presión full-court / half-court
-   - Bloqueos alejamiento y cruzados
-   - Situaciones 3c3 / 4c4
-   - Más variedad de tiro (movimiento, catch-and-shoot, midrange)
-3. **Pull en el servidor**:
+1. ~~**Añadir ejercicios del trabajo Cadete a `exercises.json`** — hecho (ej_026–ej_050, 25 ejercicios nuevos).~~
+
+2. **Indexar data/teoria/ en ChromaDB** (en el servidor):
+   ```bash
+   docker exec -it mipizarra-api python /app/tools/indexar_pdfs.py
+   ```
+
+3. **Generar dataset** (desde local apuntando al servidor):
+   ```bash
+   python tools/generar_dataset.py --ollama http://192.168.1.72:11434 --todo
+   ```
+   Genera: sesiones (60), diagramas (20), ejercicios JSON (15), reglamento/técnica (40) + fuentes adicionales.
+
+4. **Revisar `data/dataset/para_revisar.jsonl`** — borrar ejemplos malos de `train.jsonl`.
+
+5. **Entrenar en local** (RTX 5060 Ti, recomendado):
+   ```bash
+   python tools/finetune_qwen.py --no-quantize --rank 16 --steps 150
+   ```
+
+6. **Pull en el servidor** (si no están descargados):
    ```bash
    docker exec -it mipizarra-ollama ollama pull qwen2.5:7b-instruct-q4_K_M
    docker exec -it mipizarra-ollama ollama pull qwen3:4b

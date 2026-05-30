@@ -38,7 +38,7 @@ Por parejas. Una jugadora bota hacia el aro dentro de una puerta delimitada por 
 
 La jugadora con balón finaliza en entrada a canasta.
 
-**Variante:** la jugadora con balón puede decidir si finalizar ella o pasar a la compañera. La compañera aprende que cuando la portadora penetra, ella debe moverse a recibir o abrirse.
+**Variante:** la jugadora con balón puede decidir si finalizar ella o pasar a la compañera. La compañera aprende que cuando la jugadora con balón penetra, ella debe moverse a recibir o abrirse.
 
 ---
 
@@ -61,7 +61,7 @@ Equipos de 3, 4 o 5 jugadoras. La jugadora con balón (JCB) no puede salir de su
 
 La jugadora con balón bota hacia el aro. Si puede, entra. Si no puede, pasa a la compañera que ha quedado libre por el movimiento.
 
-**Variante — Lectura del defensor:** si el entrenador (E) simula una ayuda sobre la portadora, la que estaba sin balón va inmediatamente al aro y pide el balón. Si el E defiende a la jugadora sin balón, la portadora ataca directamente.
+**Variante — Lectura del defensor:** si el entrenador (E) simula una ayuda sobre la jugadora con balón, la que estaba sin balón va inmediatamente al aro y pide el balón. Si el E defiende a la jugadora sin balón, la jugadora con balón ataca directamente.
 
 ---
 
@@ -70,7 +70,7 @@ La jugadora con balón bota hacia el aro. Si puede, entra. Si no puede, pasa a l
 Estos conceptos se trabajan en las tareas como guías, no como normas rígidas:
 
 - **"No me paro nunca."** Si mi defensora acude a una ayuda, voy inmediatamente debajo del aro y pido el balón.
-- **"Un 2c1 es un 1c1 más uno."** El 2c1 no es complicado: la portadora resuelve su 1c1 primero. Si la defensa ayuda, entonces pasa.
+- **"Un 2c1 es un 1c1 más uno."** El 2c1 no es complicado: la jugadora con balón resuelve su 1c1 primero. Si la defensa ayuda, entonces pasa.
 - **"Ataco al lado contrario de donde viene el pase."** Cuando recibo, el lado contrario al origen del pase suele estar más despejado porque el defensor viene desde ese lado.
 - **"El espacio bajo el aro no se puede usar para pivotar."** Se puede usar para recibir pero no para finalizar en bandeja directa desde ese ángulo (según categoría y reglamento).
 

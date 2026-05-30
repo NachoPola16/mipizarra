@@ -110,7 +110,7 @@ El atacante trabaja distintas salidas sobre su pie de pivote mientras el defenso
 **Objetivo:** pase, visión de campo y movimiento sin balón.
 **Edades:** U8-U12.
 
-Varios jugadores en pista con balón y uno sin balón. El que no tiene balón se mueve para recibir. El pasador debe identificar al receptor abierto. Tras recibir, el nuevo portador puede tirar o volver a pasar.
+Varios jugadores en pista con balón y uno sin balón. El que no tiene balón se mueve para recibir. El pasador debe identificar al receptor abierto. Tras recibir, el nuevo jugador con balón puede tirar o volver a pasar.
 
 **Variante:** añadir defensor sobre el receptor para trabajar la línea de pase.
 
@@ -150,7 +150,7 @@ Jugadores atacantes y defensores dentro de un área delimitada con conos. Los at
 **Objetivo:** toma de decisiones en el pase bajo presión defensiva.
 **Edades:** U10-U14.
 
-Un jugador bota dentro de un círculo. Su defensor intenta interceptar cualquier pase que haga. El portador decide cuándo y cómo pasar a los compañeros que esperan en el exterior.
+Un jugador bota dentro de un círculo. Su defensor intenta interceptar cualquier pase que haga. El jugador con balón decide cuándo y cómo pasar a los compañeros que esperan en el exterior.
 
 **Progresión:**
 - Defensor pasivo → semipasivo → activo.
@@ -186,7 +186,7 @@ Por parejas, 1c1. Cuando el defensor vuelve hacia el balón, el atacante arranca
 **Objetivo:** toma de decisiones ante ventaja numérica.
 **Edades:** U12-U14.
 
-1 defensor, 2 atacantes. El portador puede atacar directamente o pasar si el defensor le quita el camino. El compañero sin balón trabaja para ofrecerse en la línea de pase correcta.
+1 defensor, 2 atacantes. El jugador con balón puede atacar directamente o pasar si el defensor le quita el camino. El compañero sin balón trabaja para ofrecerse en la línea de pase correcta.
 
 **Variante:** 3c2 con las mismas reglas.
 
@@ -201,7 +201,7 @@ El atacante recibe un pase y debe atacar **al lado contrario de donde vino el pa
 
 **Conceptos complementarios a reforzar:**
 - "No me paro nunca" — si mi defensora ayuda, voy inmediatamente al aro.
-- "Un 2c1 es un 1c1 más uno" — el portador resuelve el 1c1 primero; si el defensor ayuda, pasa.
+- "Un 2c1 es un 1c1 más uno" — el jugador con balón resuelve el 1c1 primero; si el defensor ayuda, pasa.
 
 ---
 

@@ -63,7 +63,7 @@ verticales independientemente de la longitud (aplica igual a media pista y pista
 | 5  | Carril lateral izquierdo  | 90       | 80 – 100 |
 
 Ocupación típica en contraataque: carril central → reboteador/pívot;
-carriles 2 y 4 → portador del balón; carriles 1 y 5 → tiradores en carrera.
+carriles 2 y 4 → jugador con balón; carriles 1 y 5 → tiradores en carrera.
 
 ### 3 carriles (versión simplificada)
 

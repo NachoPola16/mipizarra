@@ -10,7 +10,7 @@
 El sistema se basa en una **defensa individual por hombre de zona de presión** (gap defense). Los principios son:
 
 1. **Todo el equipo comunica** — siempre, en todo momento.
-2. **Orgullo en defender sin pedir ayuda**: el defensor del portador del balón no necesita ayuda para parar el bote.
+2. **Orgullo en defender sin pedir ayuda**: el defensor del jugador con balón no necesita ayuda para parar el bote.
 3. **No permitir tiros cómodos en dos tiempos**: si el rival puede recibir, girar y tirar sin presión, la defensa ha fallado.
 4. Los cinco defensores se mueven como una unidad — "cinco en una cuerda".
 
@@ -25,9 +25,9 @@ El sistema se basa en una **defensa individual por hombre de zona de presión** 
 
 ## 1. Defensa individual por hombre
 
-### Principios del defensor del portador del balón
+### Principios del defensor del jugador con balón
 
-- Presión constante al portador sin comprometer la posición.
+- Presión constante al jugador con balón sin comprometer la posición.
 - Orientar al atacante hacia donde interesa (banda, mano débil).
 - **No dejar el pase de esquina**: cuando el balón va a esquina, el defensor cae detrás en diagonal ("codos a las orejas") para cubrir el ángulo de tiro.
 - Mantener visión de campo y del propio atacante al mismo tiempo.
@@ -64,7 +64,7 @@ El sistema se basa en una **defensa individual por hombre de zona de presión** 
 
 - **Al perder la posesión, no perseguir el balón**: cada defensor corre a cortar el carril de su hombre o a cubrir su zona.
 - Sprint para recuperar: alcanzar la posición antes de que la pelota llegue.
-- El defensor del portador presiona desde el primer momento — no esperar a que cruce el campo.
+- El defensor del jugador con balón presiona desde el primer momento — no esperar a que cruce el campo.
 
 ### Presión a todo campo — man to man (Carrera y salto)
 
@@ -72,8 +72,8 @@ El sistema se basa en una **defensa individual por hombre de zona de presión** 
 Defensa individual a todo campo con trampas (1c2) en el primer pase. Se usa para crear confusión y forzar pérdidas de balón nada más empezar la posesión rival.
 
 **Estructura:**
-- El defensor del portador presiona el saque desde fondo.
-- En el primer pase, el defensor más cercano al receptor salta a hacer trampa (1c2) junto al defensor del portador.
+- El defensor del jugador con balón presiona el saque desde fondo.
+- En el primer pase, el defensor más cercano al receptor salta a hacer trampa (1c2) junto al defensor del jugador con balón.
 - Los tres defensores restantes cubren carriles de pase y anticipan el siguiente pase.
 - Objetivo: forzar el error en los primeros tres pases o provocar una pérdida de paso.
 
@@ -93,7 +93,7 @@ Se activa a 3/4 de campo. Más conservadora que la presión total — permite qu
 
 **Estructura:**
 - Dos "planos" (defensores) sobre los codos, en posición de negación.
-- La trampa se activa cuando el portador cruza la línea de 3/4.
+- La trampa se activa cuando el jugador con balón cruza la línea de 3/4.
 - Rotación: el defensor que no está en la trampa cierra el carril del pase más cercano; los defensores de fondo cubren los carriles de banda y el interior.
 
 ### Presión 1/2 campo — Trampa en recepción
@@ -115,7 +115,7 @@ Defensa de presión en media pista que activa la trampa en el primer pase recibi
 ### Alineación inicial
 
 ```
-           1 (presión sobre el portador)
+           1 (presión sobre el jugador con balón)
       2          3 (laterales)
            4 (zona media)
            5 (último defensor, protege canasta)
@@ -123,7 +123,7 @@ Defensa de presión en media pista que activa la trampa en el primer pase recibi
 
 ### Principios
 
-- El defensor 1 presiona al portador en su propia línea de fondo.
+- El defensor 1 presiona al jugador con balón en su propia línea de fondo.
 - Los defensores 2 y 3 cubren los laterales y anticipan el primer pase.
 - El defensor 4 ("portero") **nunca abandona la zona central**. Es el seguro del sistema.
 - Cuando el balón va a esquina: trampa inmediata entre el defensor que estaba en ese lateral y el más cercano.
@@ -138,7 +138,7 @@ Defensa de presión en media pista que activa la trampa en el primer pase recibi
 
 ### Variante: trampa en la línea de medio campo
 
-- Cuando el portador cruza la línea de medio campo, el defensor más cercano salta a hacer trampa junto al defensor del portador.
+- Cuando el jugador con balón cruza la línea de medio campo, el defensor más cercano salta a hacer trampa junto al defensor del jugador con balón.
 - Los tres restantes cierran los tres pases de salida más probables.
 
 ---
@@ -149,7 +149,7 @@ Ver `fundamentos_defensivos.md` para principios generales.
 
 ### Principios adicionales de la 2-3
 
-- **El portador del balón en posición de base:** los dos defensores del perímetro presionan ambos codos (no dar el tiro fácil desde la cabecera).
+- **El jugador con balón en posición de base:** los dos defensores del perímetro presionan ambos codos (no dar el tiro fácil desde la cabecera).
 - **Balón en el interior:** los tres defensores de la línea de fondo convergen hacia el balón; los dos del perímetro bajan a cubrir los postes altos.
 - **Balón en esquina:** el defensor de fondo de ese lado sube a presionar; el del lado contrario se acerca al poste bajo del lado del balón; el defensor central cubre el interior.
 - **Rotación tras el pase cruzado (inversión):** todos rotan juntos en la dirección del balón, nunca individualmente.
@@ -157,18 +157,18 @@ Ver `fundamentos_defensivos.md` para principios generales.
 ### Señal de comunicación en zona
 
 - Todos los defensores deben comunicar cuándo el balón entra en su zona.
-- "¡Balón!" = el portador ha entrado en mi zona de responsabilidad.
+- "¡Balón!" = el jugador con balón ha entrado en mi zona de responsabilidad.
 - "¡Ayuda!" = hay penetración al interior — el central carga.
 
 ---
 
 ## 5. Zona 1-2-1-1 (cuarto de campo) — Defensa combinada
 
-**Alineación:** 1 en punta (presiona portador), 2 en medios (niegan laterales), 1 en el interior (bloquea el poste bajo), 1 en fondo (protege canasta).
+**Alineación:** 1 en punta (presiona jugador con balón), 2 en medios (niegan laterales), 1 en el interior (bloquea el poste bajo), 1 en fondo (protege canasta).
 
 ### Principios
 
-- El defensor de punta presiona al portador del balón.
+- El defensor de punta presiona al jugador con balón.
 - Los medios niegan los pases a los laterales exteriores.
 - El defensor interior cierra el poste bajo y el codo interior.
 - El defensor de fondo cubre el aro y actúa como último recurso.

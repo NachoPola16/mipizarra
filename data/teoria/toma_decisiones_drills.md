@@ -4,17 +4,17 @@
 
 ---
 
-## 1. Decisión pase — 1 portador con 4 pares atacante-defensor
+## 1. Decisión pase — 1 jugador con balón con 4 pares atacante-defensor
 
 **Organización:**
-- A1 (portador) dentro del área pintada, con balón.
+- A1 (jugador con balón) dentro del área pintada, con balón.
 - 4 pares de jugador-defensor distribuidos por el perímetro: uno a cada lado (45° derecho, 45° izquierdo) y dos más en posiciones de ala.
 - Cada defensor presiona a su atacante.
 
 **Desarrollo:**
-Cuando un defensor decide ir a presionar a A1 (el portador), el atacante que queda libre de su defensor deberá desmarcarse activamente para recibir el pase. A1 lee quién está libre y pasa. Luego intercambian posiciones.
+Cuando un defensor decide ir a presionar a A1 (el jugador con balón), el atacante que queda libre de su defensor deberá desmarcarse activamente para recibir el pase. A1 lee quién está libre y pasa. Luego intercambian posiciones.
 
-**Objetivo:** leer la ayuda defensiva y pasar a quien está libre. Trabajar la velocidad de decisión del portador y la capacidad de desmarcarse del atacante que queda liberado.
+**Objetivo:** leer la ayuda defensiva y pasar a quien está libre. Trabajar la velocidad de decisión del jugador con balón y la capacidad de desmarcarse del atacante que queda liberado.
 
 **Progresión:** empezar 1 defensor activo, ir añadiendo presión. Desde U14 se puede incluir rotación defensiva después del pase.
 
@@ -23,7 +23,7 @@ Cuando un defensor decide ir a presionar a A1 (el portador), el atacante que que
 ## 2. Bote de retirada con toma de decisiones — conos
 
 **Organización:**
-- A1 (portador) con balón cerca del aro.
+- A1 (jugador con balón) con balón cerca del aro.
 - 4 conos distribuidos por la media pista (esquinas y laterales).
 - A2, A3, A4 sin balón, cada uno junto a un cono.
 
@@ -39,7 +39,7 @@ A la señal del entrenador, todos los jugadores sin balón se mueven hacia el in
 ## 3. 1VS2 con puertas — penetración y finalización
 
 **Organización:**
-- A1 (portador) en cabecera, con balón.
+- A1 (jugador con balón) en cabecera, con balón.
 - Dos "puertas" abiertas en las bandas (delimitadas por conos a la altura de la línea de tiros libres extendida).
 - x4 y x5 como defensores en las zonas de las puertas.
 - Ayudante en la esquina contraria a la puerta que use A1.
@@ -60,7 +60,7 @@ A1 intenta pasar por cualquiera de las dos puertas usando finta desde bote. Una 
 - A1 puede botar, A2 puede moverse.
 
 **Desarrollo:**
-A1 busca a A2 libre a partir del movimiento sin balón de A2. Principio: **ser impredecible desde el pase**. El portador no telegrafía el pase — mirada al frente, decidir en el último momento.
+A1 busca a A2 libre a partir del movimiento sin balón de A2. Principio: **ser impredecible desde el pase**. El jugador con balón no telegrafía el pase — mirada al frente, decidir en el último momento.
 
 **Variante 3c2:** se añade A3. El defensor x2 puede decidir si ayudar sobre A1 si A1 no está presionado, lo que abre la opción de que A1 finalice directamente en lugar de pasar.
 

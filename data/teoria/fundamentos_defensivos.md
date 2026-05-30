@@ -92,15 +92,15 @@ La clave es decidir la opción **antes** del bloqueo y comunicarla verbalmente.
 
 | Opción | Término español | Término inglés | Cuándo usarla |
 |--------|----------------|----------------|---------------|
-| Pasar por debajo | Bajo / pasar por debajo | Under | Solo si el portador es mal lanzador exterior |
-| Flash / mostrarse / saltar | Flash / saltar / mostrar | Hedge / show | Contra portadores que atacan el bote; requiere buena recuperación |
+| Pasar por debajo | Bajo / pasar por debajo | Under | Solo si el jugador con balón es mal lanzador exterior |
+| Flash / mostrarse / saltar | Flash / saltar / mostrar | Hedge / show | Contra jugadores con balón que atacan el bote; requiere buena recuperación |
 | Contacto legal (retardo) | Golpe / retardo | Bump | Ver sección siguiente |
 | Cambia | Cambia | Switch | Requiere similitud física; debe ser audible y anticipado |
 | Hielo | Hielo / forzar a banda | Ice / blue | Contra bloqueos laterales; requiere comunicación perfecta |
-| Por encima | Por encima | Over / through | Contra portadores muy peligrosos |
+| Por encima | Por encima | Over / through | Contra jugadores con balón muy peligrosos |
 
 ### Bump (contacto legal de retardo)
-El defensor del bloqueador, al saltar a interceptar el bote del portador (hedge/show), hace un **breve contacto legal con el pecho** del portador del balón para frenarlo un instante. El objetivo es dar tiempo al defensor propio a recuperarse alrededor del bloqueo. El contacto debe ser:
+El defensor del bloqueador, al saltar a interceptar el bote del jugador con balón (hedge/show), hace un **breve contacto legal con el pecho** del jugador con balón para frenarlo un instante. El objetivo es dar tiempo al defensor propio a recuperarse alrededor del bloqueo. El contacto debe ser:
 - Con el pecho (no con los brazos ni lateralmente).
 - Breve — solo para retrasar, no para empujar.
 - Legal: el defensor debe tener los pies plantados antes del contacto.
@@ -134,7 +134,7 @@ El defensor intercepta la trayectoria del penetrador situándose **fuera del sem
 
 - El defensor sin hombre cerca se coloca en la "línea de balón" (ball line), equidistante entre su hombre y el balón.
 - "Ver balón y hombre" (ball-you-man): el defensor nunca tiene a su atacante a la espalda.
-- Cuando el compañero es batido: el defensor de ayuda **carga** sobre el portador; el defensor batido **recupera** hacia el nuevo hombre libre.
+- Cuando el compañero es batido: el defensor de ayuda **carga** sobre el jugador con balón; el defensor batido **recupera** hacia el nuevo hombre libre.
 - **Rotar (rotate):** cuando hay una ayuda, el resto de los defensores rotan para cubrir el espacio libre.
 
 ---
@@ -142,8 +142,8 @@ El defensor intercepta la trayectoria del penetrador situándose **fuera del sem
 ## 11. Defensa de transición (transition defense)
 
 - Al perder la posesión, principio de "primero la canasta" (sprint back): el jugador más cercano a la canasta rival se lanza a defender aunque no sea su marcaje.
-- Retrasar al portador para dar tiempo a los compañeros a regresar.
-- Nunca correr en paralelo con el portador → no frena el contraataque.
+- Retrasar al jugador con balón para dar tiempo a los compañeros a regresar.
+- Nunca correr en paralelo con el jugador con balón → no frena el contraataque.
 
 ---
 
