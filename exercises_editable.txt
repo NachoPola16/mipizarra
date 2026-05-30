@@ -1,0 +1,968 @@
+================================================================================
+EJ_001 | Rueda de media distancia
+[tiro/media_distancia] [U12 U14 U16 U18 Senior] [10 min] [Int:3/5 Cog:2/5] [Mín:4 jug]
+================================================================================
+
+DESCRIPCION:
+Dos filas en lados opuestos de la zona: Fila A a la altura de la línea de tiros libres en la banda, con balón; Fila B en la esquina inferior del lado contrario, el primero sin balón. El primero de Fila B corre en diagonal hacia el codo frente a Fila A, recibe el pase, para en dos tiempos con pie interior primero y tira de media distancia. Coge su rebote y cambia de canasta. Mientras tanto, quien pasó desde Fila A corre al codo del lado de Fila B y recibe pase del siguiente de Fila B para tirar. Rueda continua. Cambiar sentido a los pocos minutos para trabajar el pie interior contrario.
+
+PUNTOS_CLAVE:
+1. Parada en dos tiempos: pie interior primero (el más cercano a la canasta al recibir), pie exterior segundo. El pie interior se convierte en pivote y deja al jugador orientado al aro.
+2. Frenar la inercia lateral: el desplazamiento arrastra el cuerpo hacia el lado; absorber con el primer apoyo para saltar en vertical.
+3. Saltar hacia arriba, no hacia el lado. Si el salto va en diagonal, el tiro se desvía.
+4. Estabilización en el aire: torso recto, rodillas alineadas, balón estable a la altura del rostro durante el vuelo.
+5. Tipo de pase: el entrenador puede exigir pase de pecho, pase a una mano o pase picado. En todos los casos el balón debe llegar a la altura del pecho del receptor para facilitar la parada.
+6. En las filas de espera se sigue botando. Nadie espera parado — los que esperan mantienen el bote activo, trabajando protección y cambios de mano.
+7. Trabajar ambos sentidos para dominar la recepción con ambos pies de apoyo.
+
+
+================================================================================
+EJ_002 | Bloqueo directo a todo campo — pick & roll + 2c1 de vuelta
+[bloqueo_directo/pick_and_roll] [U14 U16 U18 Senior] [15 min] [Int:4/5 Cog:4/5] [Mín:3 jug]
+================================================================================
+
+DESCRIPCION:
+ORGANIZACIÓN: grupos de tres (A1/base con balón, A2/pívot, D1/defensor) en la línea de fondo propia. FASE 1 — ataque hacia la canasta contraria: (1) Los tres arrancan corriendo. D1 corre al lado de A1 defendiéndole. (2) Al llegar a la línea de triple de la canasta contraria, A2 planta el bloqueo directo sobre D1 — pies anchos, brazos cruzados. (3) A1 sale hombro con hombro hacia el codo. A2 hace el roll mirando el balón. (4) A1 lee a D1 y decide: pase a A2 en el roll o tiro desde el codo. FASE 2 — 2c1 de vuelta: (5) Tras la jugada (canasta o no), D1 coge el balón. A2 sprint hacia la canasta original. A1 queda como único defensor. (6) D1 pasa a A2 en carrera; D1 y A2 atacan 2c1 a la canasta original contra A1 solo. ROTACIÓN: quien fue defensor único en el 2c1 pasa a ser A1 (base) en la siguiente repetición.
+
+PUNTOS_CLAVE:
+1. A2 planta el bloqueo con pies anchos y brazos cruzados ANTES del contacto. Sin posición establecida es falta en ataque.
+2. A1 sale hombro con hombro rozando a A2. Si sale separado, D1 pasa por el hueco.
+3. A2 pivota inmediatamente mirando el balón y corre al aro (roll). No esperar parado.
+4. A1 lee a D1: si siguió a A1 hacia el codo → pase a A2 en el roll; si D1 ayudó al roll → A1 lanza.
+5. En la transición 2c1 de vuelta, D1 no espera: pasa a A2 en carrera y ambos atacan a máxima velocidad.
+6. Progresión: 2v0 (sin D1) para memorizar la mecánica → 2v1 con D1 pasivo → 2v1 con D1 activo.
+
+
+================================================================================
+EJ_003 | Corte en V + cierre defensivo 1c1
+[juego_equipo/movimientos_sin_balon] [U12 U14 U16 U18 Senior] [10 min] [Int:4/5 Cog:4/5] [Mín:4 jug]
+================================================================================
+
+DESCRIPCION:
+ORGANIZACIÓN: dos filas — fila de pasadores en cabecera con balón (A2) y fila de cortadores en esquina derecha sin balón (A1). SECUENCIA: (1) A1 da un paso lento hacia la línea de fondo — amago convincente. (2) A1 gira bruscamente y corta explosivamente hacia el 45° mostrando las manos. (3) A2 pasa cuando A1 tiene las manos arriba. (4) INMEDIATAMENTE tras pasar, A2 corre a cerrar (close-out) y defiende a A1 en 1c1. (5) A1 ataca el 1c1 con la ventaja que tiene sobre A2 que llega en movimiento. ROTACIÓN: si A1 anota → A1 a la fila de pasadores, A2 a la fila de cortadores. Si A2 para → A2 a la fila de pasadores, A1 vuelve a cortadores. Trabajar por ambos lados. PROGRESIÓN: sin A2 defendiendo (solo corte y tiro) → A2 defiende pasivo → A2 defiende activo.
+
+PUNTOS_CLAVE:
+1. El amago hacia línea de fondo es lento y con peso cargado — al menos un paso completo. Un amago rápido no engaña al defensor.
+2. El cambio de dirección al 45° es brusco y sin pasos extra. La limpieza del giro determina cuánto espacio se gana.
+3. Mostrar las manos en el 45° ANTES de que A2 lance. Si las manos no están arriba, el pase no sale.
+4. A2 cierra inmediatamente tras pasar: el que pasó siempre defiende. Así A1 aprende a cortar bien para llegar con ventaja real.
+5. A1 debe decidir al recibir: si A2 llega tarde → tiro o bote directo; si A2 llega pronto → cambio de dirección o pase de vuelta.
+
+
+================================================================================
+EJ_004 | Pases en carrera + 2 contra 1 desde saque de banda
+[ventaja_numerica/contraataque] [U12 U14 U16 U18 Senior] [12 min] [Int:4/5 Cog:3/5] [Mín:3 jug]
+================================================================================
+
+DESCRIPCION:
+ORGANIZACIÓN: tres jugadores en la línea de fondo — A1 en el centro con balón, A2 en la banda derecha, A3 en la banda izquierda. SECUENCIA FASE 1 — carrera con pases: (1) Los tres arrancan corriendo hacia la canasta contraria. (2) A1 pasa a A2 (centro a derecha); A2 pasa a A1 (derecha a centro); A1 pasa a A3 (centro a izquierda). Pases adelantados en diagonal — nadie para para recibir. (3) Cuando A3 llega a la línea de medio campo con el balón, lo planta en el suelo fuera de la pista (en la línea lateral) y se queda fuera. SECUENCIA FASE 2 — 2c1: (4) A3 pasa a defender: entra a la pista cuando uno de los dos comience el saque de banda. (5) A1 o A2 recoge el balón plantado y saca de banda desde la línea lateral; el otro se coloca en el carril opuesto. (6) A1 y A2 atacan 2c1 contra A3 hasta anotar o que la defensa recupere el balón. ROTACIÓN: en la siguiente repetición, quien defendió pasa a salir de centro (A1).
+
+PUNTOS_CLAVE:
+1. Los pases van siempre adelantados y en diagonal: el receptor no frena para recibir. Si alguien para, el ritmo del drill se rompe.
+2. La secuencia de pases es fija — centro→derecha→centro→izquierda — para memorizarla y ejecutarla a máxima velocidad sin pensar.
+3. Quien planta el balón fuera NO entra a la pista hasta que uno de los dos saca de banda. El saque simula una situación real de partido.
+4. En el 2c1: el que saca de banda ataca con bote directo al aro; el otro sale al carril libre. El defensor elige a quién presionar — la decisión la lee el que tiene el balón.
+5. El defensor arranca en desventaja de posición — los dos atacantes deben aprovechar esa ventaja sin ralentizar la acción.
+
+
+================================================================================
+EJ_005 | 1c1 en poste bajo — series competitivas con pívot y cierre
+[1c1/juego_interior] [U14 U16 U18 Senior] [12 min] [Int:4/5 Cog:3/5] [Mín:3 jug]
+================================================================================
+
+DESCRIPCION:
+ORGANIZACIÓN: A1 en el 45° derecho con balón, A2 en poste bajo derecho, D2 defendiendo a A2. SECUENCIA: (1) A2 pide el balón peleando la posición. A1 pasa cuando A2 está bien colocado. (2) A2 recibe y lee a D2: ejecuta el giro de poder (drop step) hacia la línea de fondo si D2 está por encima, o gira al interior si D2 está por abajo. (3) Finaliza con bandeja usando el tablero o tiro cercano. COMPETICIÓN: series de 5 posesiones. Quien mete más canastas de 5 gana. ROTACIÓN tras cada serie: A2 pasa a ser D2, D2 pasa a ser A1 (pasador), A1 pasa a ser A2 (atacante). Trabajar también el lado izquierdo del poste.
+
+PUNTOS_CLAVE:
+1. Antes de recibir: A2 lucha para ganar posición. Si el defensor está por la línea de fondo → recibir y girar hacia el interior; si está por el interior → recibir y girar hacia la línea de fondo (drop step).
+2. Drop step: el pie exterior cae en diagonal hacia el tablero, un bote bajo y protegido, dos apoyos firmes bajo el aro antes de saltar.
+3. Proteger el balón durante todo el giro: cuerpo entre el defensor y el balón. No extender los brazos para proteger — usar el torso.
+4. El tablero es el aliado desde los ángulos de poste bajo: apuntar al cuadrado blanco, no al aro.
+5. A1 como pasador: si D2 abandona el poste para ayudar en otra zona, el pase entra inmediatamente. El pasador no es pasivo.
+
+
+================================================================================
+EJ_006 | 3c0 pase y corte — regla de los 5 pases máximo
+[juego_equipo/rotaciones] [U12 U14 U16 U18 Senior] [10 min] [Int:3/5 Cog:4/5] [Mín:3 jug]
+================================================================================
+
+DESCRIPCION:
+ORGANIZACIÓN: A1 en cabecera con balón, A2 en 45° derecho, A3 en 45° izquierdo. REGLA: el trío tiene máximo 5 pases para anotar. Al 5º pase, si no hay tiro limpio, se reinicia la posesión y no cuenta. SECUENCIA: A1 pasa a A2 y corta al aro. A3 sube a cabecera. A2 decide: tira, pasa a A1 en el corte o reversa a A3. La acción continúa hasta que alguien tira (dentro del límite de 5 pases). COMPETICIÓN: contar cuántos triples o tiros abiertos se consiguen en 2 minutos. ROTACIÓN: los tres grupos de 3 se alternan cada 2 minutos. PROGRESIÓN: 3c0 → añadir 1 defensor en zona → 3c3 con defensores activos.
+
+PUNTOS_CLAVE:
+1. Regla: máximo 5 pases desde que comienza la posesión. Si no hay tiro en 5 pases → la posesión no cuenta. Crea urgencia real.
+2. Tras pasar, cortar inmediatamente al aro. No pausar ni reposicionarse antes de cortar.
+3. El receptor lee el corte del pasador: si está libre → devolverle el balón; si está cubierto → ocupar el espacio que dejó.
+4. El tercer jugador rellena siempre el espacio vacío que deja quien corta. Nadie se queda en la misma posición.
+5. Progresión: 3c0 con regla → 3c1 (defensor solo en zona) → 3c3 live. El patrón sin defensa debe verse igual con defensores.
+
+
+================================================================================
+EJ_007 | Penetración por línea de fondo desde el 45° — fila + 1c1
+[1c1/penetracion] [U12 U14 U16 U18 Senior] [10 min] [Int:4/5 Cog:3/5] [Mín:2 jug]
+================================================================================
+
+DESCRIPCION:
+ORGANIZACIÓN: fila en el 45° izquierdo (A2, A3... con balones). Cono en la posición del defensor imaginario (en el 45°). FASE 1 — sin defensa: cada jugador sale del 45°, da el primer paso PEGADO al cono y penetra por la línea de fondo. Entra por debajo del aro y hace bandeja por el lado contrario usando el tablero. Coge el rebote y va al final de la fila. FASE 2 — con defensa (D1 real): D1 espera en posición sobre el 45°. A1 recibe el balón (del anterior rebote o de la fila) y ataca 1c1 por la línea de fondo. D1 defiende activamente. ROTACIÓN: A1 → D1, D1 → final de la fila de atacantes. Trabajar el 45° derecho también.
+
+PUNTOS_CLAVE:
+1. El primer paso va pegado a la cadera del defensor (o del cono), no en arco. Pasar el hombro por delante de la cadera del defensor.
+2. El ángulo de bote va hacia el tablero, no al centro del aro. Así se usa el tablero y se evita la ayuda interior.
+3. Proteger el balón en todo el recorrido: cuerpo entre el defensor y el balón durante los botes.
+4. El último apoyo antes del aro: parada en dos tiempos para absorber el contacto o entrar equilibrado.
+5. En espera: los que no están actuando botan en el sitio. Nadie parado.
+
+
+================================================================================
+EJ_008 | Defensa del bloqueo directo 2c2 — competición defensiva
+[bloqueo_directo/defensa_pick_and_roll] [U16 U18 Senior] [15 min] [Int:4/5 Cog:5/5] [Mín:4 jug]
+================================================================================
+
+DESCRIPCION:
+ORGANIZACIÓN: A1 en cabecera con balón, A2 en el poste alto. D1 defiende a A1, D2 defiende a A2. SECUENCIA: A1 llama al bloqueo. D2 elige y comunica la opción defensiva a D1 ANTES de que A2 llegue. Se ejecuta el bloqueo y la acción sigue hasta finalización. MARCADOR COMPETITIVO:   - Defensa anota si para el play (turnover, tiro difícil o rebote defensivo).   - Ataque anota si consigue bandeja limpia o tiro abierto.   - Primero en llegar a 5 puntos gana la tanda. ROTACIÓN: el equipo perdedor sale; entra el siguiente grupo. El ganador se mantiene y cambia roles (ataque ↔ defensa). Trabajar las cuatro opciones defensivas en rondas separadas: una ronda hedge, una under, una cambio, una ice.
+
+PUNTOS_CLAVE:
+1. D1 y D2 comunican la opción defensiva (hedge, under, cambio, ice) ANTES de que A2 plante el bloqueo. No improvisar.
+2. Hedge/show: D2 sale a cortar el bote brevemente y recupera a su jugador. Si D2 tarda en recuperar → A2 queda libre en el roll.
+3. Under: solo válida si el jugador con balón es mal lanzador exterior. Regala espacio de tiro al perímetro.
+4. Cambio: debe ser audible y anticipado. Nunca reactivo. Requiere similitud física entre D1 y D2.
+5. Ice: D1 fuerza al jugador con balón hacia la línea de fondo antes del bloqueo; D2 corta ese camino. Requiere comunicación perfecta antes.
+
+
+================================================================================
+EJ_009 | Circuito de bote en zigzag
+[calentamiento/tecnica_individual] [U8 U10 U12] [12 min] [Int:3/5 Cog:2/5] [Mín:1 jug]
+================================================================================
+
+DESCRIPCION:
+Fila en una esquina. Cada jugador zigzaguea botando entre 5 conos, cambiando de mano al pasar cada cono. Al último cono, bandeja a canasta. Rotación: tirador a rebote, rebote a cola.
+
+PUNTOS_CLAVE:
+1. Cada cambio de mano va acompañado de cambio de dirección Y cambio de ritmo. Uno sin el otro no genera ventaja real.
+2. El bote del cambio debe ser bajo, rápido y controlado — no lanzar el balón hacia adelante. No perder el control en el punto de transferencia.
+3. Postura baja durante todo el recorrido: rodillas flexionadas, cabeza arriba con visión periférica. No erguirse entre conos.
+4. Dominar primero el cambio frontal antes de introducir entre piernas o por espalda en el circuito.
+5. En la fila de espera se sigue botando. Los que esperan trabajan bote de protección o cambios de mano en el sitio.
+
+
+================================================================================
+EJ_010 | Tiro libre con consecuencia
+[tiro/concentracion] [U14 U16 U18 Senior] [6 min] [Int:1/5 Cog:2/5] [Mín:2 jug]
+================================================================================
+
+DESCRIPCION:
+Por parejas en cada canasta. Cada jugador lanza 5 tiros libres seguidos. Si falla, el compañero hace 5 flexiones. El grupo que más tiros encesta al final gana. Sin diagrama — ejercicio sobre la línea de tiros libres.
+
+PUNTOS_CLAVE:
+1. Establecer una rutina fija antes de cada tiro libre: botes, respiración, visualización. Siempre la misma.
+2. Posición de pies consistente: alineados con el aro, pie dominante ligeramente adelantado.
+3. El tiro libre se gana en el entrenamiento, no en el partido. Repetir la rutina en el entrenamiento igual que en partido.
+4. La consecuencia (flexiones del compañero) simula la presión del partido — aprovecharla para trabajar la concentración, no para correr.
+
+
+================================================================================
+EJ_011 | 5c0 ataque posicional — límite de posesión + transición a 5c5
+[juego_equipo/ataque_posicional] [U16 U18 Senior] [15 min] [Int:3/5 Cog:5/5] [Mín:10 jug]
+================================================================================
+
+DESCRIPCION:
+ORGANIZACIÓN: cinco jugadores en posiciones base (cabecera, 45° derecho e izquierdo, poste alto, poste bajo). REGLA: 8 segundos para anotar desde que A1 cruza el medio campo. Si no se anota en 8 s → todos hacen sprint al fondo y vuelven (consecuencia). SECUENCIA: ejecutar el sistema de pase y corte buscando siempre tiro abierto o entrada limpia dentro del límite temporal. MARCADOR: contar canastas conseguidas dentro del límite en 5 minutos. ROTACIÓN de grupos: si hay dos grupos de 5, alternar cada 2 minutos. PROGRESIÓN: 5c0 con límite → 5c2 (dos defensores pasivos) → 5c5 live con el mismo límite de 8 s.
+
+PUNTOS_CLAVE:
+1. Límite de posesión: 8 segundos para anotar desde que se cruza el medio campo. El límite obliga a atacar con convicción, no a circular sin decisión.
+2. Tras pasar, acción inmediata: cortar al aro o reposicionarse. Nunca quedarse en el mismo sitio tras un pase.
+3. Espaciado mínimo: cada jugador a 4-5 metros del compañero más cercano. Sin espaciado, el 5c0 colapsa en 5c5.
+4. Cambiar el balón de lado obliga a la defensa (imaginaria) a reorganizarse. Las reversas abren el ataque.
+5. Cuando el ataque falla el límite de 8 segundos → los cinco hacen un sprint al fondo y vuelven a iniciar. Consecuencia física real.
+
+
+================================================================================
+EJ_012 | Corte puerta atrás + cierre defensivo 1c1
+[juego_equipo/cortes] [U12 U14 U16 U18 Senior] [10 min] [Int:4/5 Cog:4/5] [Mín:4 jug]
+================================================================================
+
+DESCRIPCION:
+ORGANIZACIÓN: dos filas — fila de pasadores en cabecera con balón (A2) y fila de cortadores en esquina izquierda sin balón (A1). SECUENCIA: (1) A1 da un paso hacia el balón (hacia A2), fingiendo pedir el pase. (2) Cuando A2 asiente o da la señal, A1 corta explosivamente a canasta por la línea de fondo (puerta atrás). (3) A2 pasa al espacio donde llegará A1 — pase adelantado al aro. (4) A1 recibe en carrera y termina en bandeja. (5) INMEDIATAMENTE tras pasar, A2 corre a cerrar (close-out) sobre A1 si no hubo bandeja limpia. A1 ataca el 1c1. ROTACIÓN: si A1 anota → A1 a pasadores, A2 a cortadores. Si A2 para → A2 a pasadores, A1 a cortadores. Trabajar por ambos lados. PROGRESIÓN: sin A2 defendiendo → A2 defiende pasivo → A2 defiende activo.
+
+PUNTOS_CLAVE:
+1. El amago hacia el balón debe ser creíble y comprometer al defensor — si el defensor no sigue el amago, no hay puerta atrás; cambiar al corte en V.
+2. El momento del corte lo dicta el defensor: cortar cuando el defensor carga el peso hacia el balón.
+3. A2 pasa al espacio donde va a llegar A1, no al cuerpo. Pase en lob o picado adelantado según la distancia.
+4. Si el pase llega → bandeja directa sin frenar. Si no llega → salir al perímetro y llamar de nuevo.
+5. A2 cierra inmediatamente tras el pase. A1 aprende a finalizar antes de que A2 llegue.
+
+
+================================================================================
+EJ_013 | 1 contra 1 desde el codo
+[1c1/ataque_individual] [U12 U14 U16 U18 Senior] [10 min] [Int:4/5 Cog:4/5] [Mín:2 jug]
+================================================================================
+
+DESCRIPCION:
+A1 recibe pase del entrenador en el codo derecho y parte de triple amenaza. D1 defiende en posición básica. A1 lee al defensor y decide: tiro inmediato, salida en bote hacia el interior o salida atrás. Rotación: atacante pasa a defender, defensor a cola.
+
+PUNTOS_CLAVE:
+1. Posición de triple amenaza: pies a la anchura de hombros, rodillas flexionadas, balón pegado al cuerpo protegido con los codos. Nunca el balón colgando.
+2. Leer los pies del defensor, no el balón: los pies del defensor indican qué salida está cediendo.
+3. Explotar las tres salidas reales: tiro directo si el defensor flota; salida de bote si cierra el tiro; pase si llega ayuda.
+4. Desde el codo, la salida de bote preferente es hacia el interior del poste (ventaja frente a la ayuda del perímetro).
+5. En las filas de espera se sigue botando o se trabaja el amago en el sitio.
+
+
+================================================================================
+EJ_016 | SSG Finalización 1c1 — defensor decide cuándo activar
+[1c1/finalizacion] [U12 U14 U16 U18 Senior] [8 min] [Int:4/5 Cog:4/5] [Mín:2 jug]
+================================================================================
+
+DESCRIPCION:
+Estructura de juego reducido (SSG) de 1c1 para trabajar la finalización. El defensor decide cuándo y cómo presionar al atacante con balón. El atacante debe leer el grado de contacto y decidir el tipo de finalización más adecuado (bombas, bandeja, tiro de media distancia).
+
+PUNTOS_CLAVE:
+1. El atacante no decide cuándo salir — el defensor manda. El atacante debe leer y reaccionar.
+2. Variar la distancia inicial defensor-atacante cambia radicalmente la decisión de finalización.
+3. Progresar: primero el defensor decide cuándo activar, después el atacante decide el lado, después ambos reaccionan simultáneamente.
+4. En las filas de espera se sigue botando.
+
+
+================================================================================
+EJ_017 | SSG Finalización 1c1 — defensor pasa y defiende
+[1c1/finalizacion] [U12 U14 U16 U18 Senior] [8 min] [Int:4/5 Cog:3/5] [Mín:2 jug]
+================================================================================
+
+DESCRIPCION:
+El defensor le pasa el balón al atacante y sale inmediatamente a defender. El atacante ataca al instante, buscando finalizar antes de que el defensor se coloque. El objetivo es trabajar la finalización en base al contacto real y a la recuperación defensiva.
+
+PUNTOS_CLAVE:
+1. El atacante recibe y ataca de inmediato — el tiempo de reacción del defensor es mínimo.
+2. El atacante debe decidir el tipo de finalización en función del contacto que hace el defensor al recuperar posición.
+3. El defensor también trabaja: aprende a pasar y recuperar posición defensiva rápidamente.
+
+
+================================================================================
+EJ_018 | SSG Finalización 1c1 — defensor elige cono, atacante va al lado contrario
+[1c1/finalizacion] [U14 U16 U18 Senior] [8 min] [Int:4/5 Cog:4/5] [Mín:2 jug]
+================================================================================
+
+DESCRIPCION:
+El defensor toca uno de los dos conos (derecho o izquierdo). El atacante debe reaccionar y sobrepasar el cono contrario para finalizar. La decisión de finalización depende del lado libre que deja el defensor.
+
+PUNTOS_CLAVE:
+1. El atacante lee qué cono toca el defensor y ataca inmediatamente al cono contrario.
+2. Cuanto más rápido lee el atacante la decisión del defensor, mayor es la ventaja.
+3. Progresión: defensor elige cono → defensor decide side de salida sin cono → lectura de pies del defensor.
+
+
+================================================================================
+EJ_019 | SSG Finalización 2c1 con superioridad defensiva
+[ventaja_numerica/finalizacion] [U14 U16 U18 Senior] [10 min] [Int:4/5 Cog:5/5] [Mín:3 jug]
+================================================================================
+
+DESCRIPCION:
+SSG 2c1 donde el atacante tiene el balón y dos defensores salen a presionarle. D1 sale al cono contrario al balón; D2 al mismo lado que el balón. El atacante debe decidir el lado de salida y tipo de finalización leyendo la posición de ambos defensores.
+
+PUNTOS_CLAVE:
+1. El atacante decide el lado de salida condicionando los movimientos de ambos defensores.
+2. D1 va al cono contrario al lado del balón; D2 va al mismo lado que el balón.
+3. La finalización del atacante depende de cuál de los dos defensores llega primero y cómo.
+4. Nivel avanzado: 3c2, el atacante pasa a quien detecte libre tras el primer contacto.
+
+
+================================================================================
+EJ_020 | SSG Finalización — acción-reacción simultánea
+[1c1/finalizacion] [U14 U16 U18 Senior] [8 min] [Int:4/5 Cog:5/5] [Mín:3 jug]
+================================================================================
+
+DESCRIPCION:
+Dos jugadores cara a cara. El entrenador decide a quién le pasa el balón — ninguno de los dos lo sabe. El que recibe ataca inmediatamente a canasta; el que no recibe debe defender. Trabaja la acción-reacción ante estímulos no predecibles.
+
+PUNTOS_CLAVE:
+1. Ninguno de los dos jugadores sabe quién va a recibir — solo el entrenador decide.
+2. El que recibe el balón ataca; el que no lo recibe defiende. La reacción debe ser inmediata.
+3. Trabajar la lectura del estímulo externo (pase del entrenador) como situación extrapolable al partido.
+4. Variante: el entrenador señala en lugar de pasar; el jugador señalado ataca y el otro defiende.
+
+
+================================================================================
+EJ_021 | Tiro con lectura de bloqueo directo (cono + defensor)
+[tiro/lectura_defensa] [U14 U16 U18 Senior] [10 min] [Int:3/5 Cog:4/5] [Mín:2 jug]
+================================================================================
+
+DESCRIPCION:
+El jugador en el 45° usa un cono como bloqueo directo. El defensor decide si cerrar el tiro (→ el jugador penetra al codo) o flotar (→ el jugador tira de tres). La lectura la hace el jugador antes del primer bote.
+
+PUNTOS_CLAVE:
+1. El jugador lee la posición del defensor ANTES de actuar: si el defensor cierra el tiro → penetrar; si el defensor flota → tirar.
+2. El cono simula el bloqueador — el jugador debe rozarlo al salir, como en un bloqueo real.
+3. Trabajar por ambos lados para dominar ambas lecturas.
+
+
+================================================================================
+EJ_022 | Finalización según altura del defensor — bomba o euroestep
+[1c1/finalizacion] [U14 U16 U18 Senior] [8 min] [Int:4/5 Cog:5/5] [Mín:2 jug]
+================================================================================
+
+DESCRIPCION:
+El jugador penetra botando. El defensor (o entrenador) adopta una postura antes del contacto: brazos arriba simulando un interior alto, o brazos abajo simulando un exterior pequeño. El atacante lee la postura y elige la finalización adecuada.
+
+PUNTOS_CLAVE:
+1. Si el defensor simula ser alto (brazos arriba) → bomba o pérdida de paso por encima.
+2. Si el defensor simula ser bajo (brazos abajo) → euroestep o pase por la espalda terminando en bandeja.
+3. La decisión se toma cuando el atacante ya está en penetración — no antes.
+
+
+================================================================================
+EJ_023 | 1c1 competitivo desde triple — puntuación por defensa
+[1c1/defensa_individual] [U14 U16 U18 Senior] [10 min] [Int:4/5 Cog:4/5] [Mín:2 jug]
+================================================================================
+
+DESCRIPCION:
+1c1 desde el triple frontal. Si el defensor impide la canasta, suma 1 punto. Si el atacante encesta, el defensor pierde 1 punto. El primero en llegar a 3 puntos gana. Rotación: el que pierde se va a la fila.
+
+PUNTOS_CLAVE:
+1. El sistema de puntuación premia la defensa: si defiendes sin que te metan, ganas 1 punto.
+2. Si te meten canasta, pierdes 1 punto — la defensa tiene consecuencia real.
+3. El primero en llegar a 3 puntos gana el ejercicio.
+4. Variante: limitar el número de botes del atacante.
+
+
+================================================================================
+EJ_024 | 2c2 a pista completa — responsabilidad individual sin ayudas
+[juego_equipo/defensa] [U16 U18 Senior] [12 min] [Int:4/5 Cog:4/5] [Mín:4 jug]
+================================================================================
+
+DESCRIPCION:
+2c2 a pista completa con presión desde el inicio. Los defensores deben evitar que los atacantes avancen. Sin cambios de marcaje ni ayudas defensivas. Los atacantes tienen 6 segundos para cruzar el campo. Variantes: 3c3, 4c4, 5c5.
+
+PUNTOS_CLAVE:
+1. Prohibido cambiar marcajes y prohibidas las ayudas — cada defensor es 100% responsable de su atacante.
+2. Los atacantes tienen 6 segundos para pasar de campo. Obliga a decisiones rápidas.
+3. Rotación: ataque → defensa → descanso.
+
+
+================================================================================
+EJ_025 | 5c5 desde el rebote — cerrar rebote bajo presión
+[juego_equipo/rebote] [U16 U18 Senior] [12 min] [Int:4/5 Cog:4/5] [Mín:10 jug]
+================================================================================
+
+DESCRIPCION:
+5 atacantes abiertos en círculo se pasan el balón hasta que uno decide tirar de triple. Al lanzar, los 5 defensores cierran el rebote. Si es rebote ofensivo: se sigue atacando la misma canasta. Si es rebote defensivo o canasta: 5c5 a la canasta contraria.
+
+PUNTOS_CLAVE:
+1. Todos los defensores cierran el rebote cuando se lanza — no solo los interiores.
+2. Si hay rebote ofensivo: se sigue jugando en la misma canasta. Si hay rebote defensivo o canasta: 5c5 a la canasta contraria.
+3. Los atacantes en círculo mueven el balón hasta que uno decide tirar un triple.
+4. Variante: ventaja numérica en el rebote (5c4, 4c3).
+
+
+================================================================================
+EJ_014 | Juego de pillar con balón
+[calentamiento/juego_dinamico] [U8 U10 U12] [8 min] [Int:4/5 Cog:2/5] [Mín:6 jug]
+================================================================================
+
+DESCRIPCION:
+Todos los jugadores botan en media pista. Dos jugadores designados como pilladores intentan robar el balón a los demás. Quien pierde el balón o sale de la pista pasa a ser pillador. Sin diagrama — se juega en todo el espacio de media pista.
+
+PUNTOS_CLAVE:
+1. El bote de protección: cuerpo entre el balón y el pillador, brazo libre como escudo.
+2. Cambiar de mano para alejarse del pillador, siempre con bote bajo y controlado.
+3. Mantener la visión periférica: ver el balón Y ver dónde están los pilladores al mismo tiempo.
+4. Si un jugador pierde el balón o sale de la pista, pasa automáticamente a ser pillador — la regla obliga a mantener el control siempre.
+
+
+================================================================================
+EJ_015 | Reversas en triángulo
+[juego_equipo/pase] [U12 U14 U16] [8 min] [Int:2/5 Cog:3/5] [Mín:3 jug]
+================================================================================
+
+DESCRIPCION:
+A1 en cabecera, A2 en 45° derecho, A3 en 45° izquierdo. Pase en triángulo: A1 a A2, A2 reversa a A1, A1 a A3. Cambiar sentido cada 3 minutos. Trabajar precisión, timing y velocidad de ejecución.
+
+PUNTOS_CLAVE:
+1. El pase de reversa debe hacerse ANTES de que el defensor cierre. Si llega tarde, pierde el sentido táctico.
+2. Tipo de pase: el entrenador puede alternar pase de pecho, picado o a una mano. En todos los casos el balón llega a la altura del pecho del receptor.
+3. El receptor prepara los pies ANTES de recibir, ya orientado para el siguiente pase. No recibir con los pies cruzados.
+4. Cambiar de sentido a los 3 minutos para trabajar la reversa con el otro pie de pivote y el otro ángulo.
+
+
+================================================================================
+EJ_026 | 3 contra 2 por carriles
+[ventaja_numerica/contraataque] [U14 U16 U18 Senior] [12 min] [Int:4/5 Cog:3/5] [Mín:5 jug]
+================================================================================
+
+DESCRIPCION:
+A1 en carril central, A2 en banda derecha y A3 en banda izquierda salen desde la línea de medio campo. D1 y D2 esperan entre la línea de tiros libres y el aro. A1 bota al centro fijando la defensa; cuando un defensor se compromete, pasa al atacante libre en la banda contraria para bandeja.
+
+PUNTOS_CLAVE:
+1. Tres carriles, tres jugadores: A2 banda derecha (x≈10), A1 centro (x≈50), A3 banda izquierda (x≈90). Nadie abandona su carril hasta la finalización.
+2. A1 ataca el carril central a máxima velocidad sin reducir el ritmo hasta que un defensor se compromete definitivamente.
+3. Con dos defensores y tres carriles siempre queda un lado libre: si D1 sale sobre A1 → pase al lado contrario donde no está D2.
+4. El pase va adelantado, no al cuerpo del receptor. A2 o A3 no frenan para recibirlo — terminan en bandeja sin perder ritmo.
+5. Progresión: 3x0 → 3x1 → 3x2 defensores pasivos → 3x2 competitivo.
+
+
+================================================================================
+EJ_027 | 3 contra 0 contraataque por carriles
+[ventaja_numerica/contraataque] [U12 U14 U16 U18 Senior] [8 min] [Int:3/5 Cog:2/5] [Mín:3 jug]
+================================================================================
+
+DESCRIPCION:
+A1 en carril central, A2 en banda derecha, A3 en banda izquierda arrancan desde la línea de medio campo sin defensa. A1 pasa a A2 en diagonal; A2 avanza botando y pasa a A3 que termina en bandeja. Rueda: A3 coge el rebote y los tres vuelven en sentido contrario alternando el jugador con balón en el centro.
+
+PUNTOS_CLAVE:
+1. Tres carriles desde el inicio: banda derecha (x≈10), centro (x≈50), banda izquierda (x≈90). El jugador con balón ocupa el centro.
+2. Los dos laterales corren a la misma altura que el jugador con balón o ligeramente por delante, nunca por detrás.
+3. Los pases van siempre en diagonal banda a banda. El balón viaja más rápido que cualquier jugador.
+4. Máximo 2 botes entre pases: quien bota más de 2 veces frena el ritmo del contraataque.
+5. Finalización: el que recibe el último pase va directo a bandeja sin bote extra. El jugador que tenía el balón entra a rebote ofensivo.
+
+
+================================================================================
+EJ_028 | 3 contra 2 con cruce de bandas — transición continua
+[ventaja_numerica/contraataque] [U14 U16 U18 Senior] [12 min] [Int:4/5 Cog:4/5] [Mín:5 jug]
+================================================================================
+
+DESCRIPCION:
+ORGANIZACIÓN: A1 en carril central con balón, A2 en banda derecha, A3 en banda izquierda. D1 y D2 en posición defensiva. FASE 1 — ataque con cruce: los tres salen en carrera. A2 y A3 cruzan sus carriles antes de la línea de tiros libres (A2 va a la izquierda, A3 a la derecha). A1 lee la respuesta de D1 y D2 y decide: pasa al lateral libre o entra por el centro. FASE 2 — transición: tras la jugada (canasta o no), D1 y D2 recogen el balón y salen en 2c1 a la canasta contraria. El último de A1/A2/A3 que tocó el balón queda como defensor único. Los otros dos se retiran. ROTACIÓN: el defensor único del 2c1 pasa a ser D1 en la siguiente repetición. PROGRESIÓN: 3c0 → 3c2 pasivos → 3c2 activos con transición.
+
+PUNTOS_CLAVE:
+1. El cruce ocurre antes de la línea de tiros libres: los bandas se cruzan por detrás del centro para no colisionar con el balón.
+2. El centro (A1) no se detiene durante el cruce: sigue botando al frente mientras A2 y A3 intercambian carriles.
+3. El cruce debe ser rápido y simultáneo. Si uno frena, la defensa recupera y el cruce no crea ventaja.
+4. A1 lee después del cruce: si la defensa siguió a cada lateral → hay vía abierta por el centro. Si la defensa no siguió → uno de los laterales está libre en la banda.
+5. TRANSICIÓN: los dos defensores recogen el balón y atacan 2c1 hacia la canasta contraria; el último atacante que tuvo el balón defiende solo.
+
+
+================================================================================
+EJ_029 | 2 contra 1 en media pista
+[ventaja_numerica/contraataque] [U12 U14 U16 U18 Senior] [10 min] [Int:4/5 Cog:3/5] [Mín:3 jug]
+================================================================================
+
+DESCRIPCION:
+A1 y A2 parten desde el perímetro en situación de 2c1. D1 defiende retrasado intentando frenar el ataque. A1 bota al centro forzando a D1 a decidir. Cuando D1 se compromete, A1 pasa a A2 para bandeja o entra directo según lectura. Rotación: A1 y A2 alternan roles; el atacante más eficaz pasa a defender.
+
+PUNTOS_CLAVE:
+1. A1 ataca el carril central sin frenar. La decisión se toma cuando D1 lleva su peso hacia A1 definitivamente.
+2. Si D1 carga sobre A1 → pase adelantado a A2 para bandeja sin tocar el suelo. Si D1 retrocede → A1 entra directo.
+3. A2 corre en paralelo por la banda a la misma altura que A1, nunca por detrás — debe ser un blanco visible en todo momento.
+4. El defensor trabaja ganar tiempo: no caer ni en la trampa del pase ni en la del bote. Forzar una decisión difícil.
+5. Rotación: el que mete canasta pasa a defender en la siguiente repetición.
+
+
+================================================================================
+EJ_030 | 3 contra 3 en transición
+[juego_equipo/transicion_ofensiva] [U14 U16 U18 Senior] [15 min] [Int:5/5 Cog:4/5] [Mín:6 jug]
+================================================================================
+
+DESCRIPCION:
+Dos equipos de 3. El equipo A ataca en media pista contra el equipo B. Al finalizar la posesión (canasta, robo o rebote defensivo de B), el equipo B transita inmediatamente a la canasta contraria en 3c3 y el equipo A repliega. Si hay un tercer grupo, rota entrando el grupo C mientras A descansa.
+
+PUNTOS_CLAVE:
+1. La transición empieza con el primer toque al balón, no al cruzar el medio campo: el que recupera mira primero el pase largo.
+2. El primer pase de salida va siempre al carril lateral contrario al rebote para abrir el campo.
+3. Los dos compañeros del reboteador salen inmediatamente por los carriles laterales, nunca los tres por el centro.
+4. El equipo que pierde el balón repliega a máxima velocidad orientado hacia el balón, no hacia la canasta propia.
+5. Rotar grupos de 3 cada 4-5 posesiones para mantener la intensidad del sprint.
+
+
+================================================================================
+EJ_031 | 3 contra 3 — movilidad según la dirección del balón
+[juego_equipo/transicion_ofensiva] [U14 U16 U18 Senior] [15 min] [Int:4/5 Cog:5/5] [Mín:6 jug]
+================================================================================
+
+DESCRIPCION:
+3c3 en media pista con regla de movimiento: cuando A1 bota hacia la derecha, A2 (mismo lado) sube al poste alto y A3 (lado contrario) se abre a la esquina izquierda. A1 decide si penetra, pasa al interior o revierte al exterior. La regla se aplica a cada cambio de dirección del balón.
+
+PUNTOS_CLAVE:
+1. Regla de dirección: cuando el balón va a un lado, el atacante del MISMO lado sube al poste alto (opción interior) y el del lado CONTRARIO se abre a la esquina (opción exterior).
+2. El jugador con balón ataca primero con el bote; solo si la defensa cierra pasa al interior o a la esquina.
+3. Nadie se queda estático mientras el balón se mueve. La defensa reacciona al balón, pero los sin balón crean opciones.
+4. Trabajar primero 3c0 hasta que el movimiento sea automático; luego defensores pasivos y después activos.
+5. El objetivo final es que los tres atacantes lean el balón simultáneamente sin comunicación verbal.
+
+
+================================================================================
+EJ_032 | 2 contra 2 — lectura del compañero sin balón
+[juego_equipo/transicion_ofensiva] [U14 U16 U18 Senior] [12 min] [Int:4/5 Cog:4/5] [Mín:4 jug]
+================================================================================
+
+DESCRIPCION:
+A1 en cabecera con balón, A2 en el 45° derecho. D1 defiende a A1, D2 a A2. A1 lee la posición de D2 e inicia bote hacia un lado. A2 reacciona: si A1 viene hacia su lado, A2 sale al perímetro contrario; si A1 va al lado contrario, A2 corta al aro. Ejercicio de lectura recíproca entre jugador con balón y sin balón.
+
+PUNTOS_CLAVE:
+1. El sin balón tiene DOS acciones posibles: cortar al aro (si su defensor está adelantado) o abrirse al perímetro contrario (si el jugador con balón penetra hacia su lado).
+2. La decisión la toma mirando al defensor de su compañero, no al suyo propio: si D1 sale sobre A1 → el carril está abierto para A2.
+3. Si A1 penetra hacia el lado de A2 → A2 sale al lado contrario liberando el carril de penetración.
+4. Si A1 penetra al lado contrario de A2 → A2 corta al aro por el lado vacío para recibir o recoger el rebote ofensivo.
+5. Comunicación mínima: el sin balón lee y actúa sin esperar instrucciones verbales del jugador con balón.
+
+
+================================================================================
+EJ_033 | 2 contra 2 con pasadores fijos en esquinas
+[juego_equipo/transicion_ofensiva] [U14 U16 U18 Senior] [12 min] [Int:4/5 Cog:4/5] [Mín:6 jug]
+================================================================================
+
+DESCRIPCION:
+A1 y A2 juegan 2c2 en la zona 45°/elbow contra D1 y D2. A3 y A4 son pasadores fijos sin defensor en las esquinas triples. Cuando A1 pasa a A3 (o A4), A1 corta inmediatamente al aro. A3 devuelve al cortador si está libre o a A2 si el corte está cubierto. Rotación: los defensores pasan a atacar.
+
+PUNTOS_CLAVE:
+1. Los pasadores fijos (A3, A4) en esquinas no son atacantes: solo reciben y devuelven. No tienen defensor.
+2. La acción clave: cuando A1 pasa a un esquinero, A1 corta inmediatamente al aro. El esquinero devuelve al cortador si está libre o al compañero A2 si el corte está cubierto.
+3. D1 y D2 deben comunicar quién sigue el balón al esquinero y quién cierra el corte — no pueden hacer los dos.
+4. Variante progresiva: añadir defensor sobre uno de los esquineros para aumentar la dificultad.
+5. Progresión: 2c2 con pasadores → 3c3 con pasadores → 5c5 completo.
+
+
+================================================================================
+EJ_034 | 3 contra 2 con el tráiler (pívot llega tarde)
+[ventaja_numerica/transicion_ofensiva] [U14 U16 U18 Senior] [12 min] [Int:4/5 Cog:5/5] [Mín:5 jug]
+================================================================================
+
+DESCRIPCION:
+A1 y A2 salen en contraataque 2c2 contra D1 y D2. A3 (el pívot) arranca unos segundos tarde y llega al poste alto como tráiler. Si D1 y D2 tapan el 2c2, A1 pasa al tráiler A3, libre en el poste alto, que decide: tiro de media distancia o entrada.
+
+PUNTOS_CLAVE:
+1. El tráiler (A3, jugador interior) sale unos segundos después y llega al poste alto DESPUÉS de que A1 y A2 hayan entrado en la zona defensiva.
+2. A1 y A2 crean primero la amenaza 2c2. Si la defensa colapsa para pararlo, el tráiler llega al poste alto libre.
+3. El pase al tráiler es la opción B, no la A: primero intentar la ventaja directa; si D1 y D2 la cubren, buscar al tráiler.
+4. El tráiler al recibir en el poste alto tiene triple amenaza: tiro de media distancia, entrada a canasta o pase de vuelta.
+5. Defensa: D1 y D2 deben decidir si defender el 2c2 y ceder el tiro al tráiler o cerrar al tráiler y ceder el 2c2.
+
+
+================================================================================
+EJ_035 | 3 contra 3 — inversión de lado
+[juego_equipo/transicion_ofensiva] [U14 U16 U18 Senior] [15 min] [Int:4/5 Cog:5/5] [Mín:6 jug]
+================================================================================
+
+DESCRIPCION:
+3c3 en media pista. A1 inicia el ataque hacia el lado derecho (A2). Si la defensa cierra, A2 devuelve a A1 que revierte a A3 en el lado izquierdo. A3 ataca inmediatamente el lado débil defensivo. El equipo atacante trabaja buscar ventaja en el lado con menor presión defensiva tras la inversión.
+
+PUNTOS_CLAVE:
+1. La inversión obliga a la defensa a reorganizarse: el balón debe llegar al lado contrario en DOS pases máximo para que la defensa no tenga tiempo de ajustar.
+2. Tras la inversión, el jugador que recibe en el lado débil ataca de inmediato — no espera más pases.
+3. El jugador central (base) es el pivote de la inversión y siempre debe ser opción de pase intermedio.
+4. No invertir por costumbre: si el lado original está abierto, atacar directamente sin esperar la reversa.
+5. La reversa tiene sentido cuando la defensa está concentrada en un lado y el lado débil tiene menos carga defensiva.
+
+
+================================================================================
+EJ_036 | 3 contra 3 en cuarto de pista
+[juego_equipo/ataque_posicional] [U14 U16 U18 Senior] [15 min] [Int:4/5 Cog:5/5] [Mín:6 jug]
+================================================================================
+
+DESCRIPCION:
+Juego 3c3 restringido al cuarto derecho del campo: desde el centro hasta la banda derecha, desde la línea de fondo hasta la línea del triple. A1 en el 45°, A2 en poste bajo, A3 en la cabecera del cuarto. D1, D2, D3 defienden. El ataque busca ventajas con pase y corte, bloqueos y juego interior en el espacio reducido.
+
+PUNTOS_CLAVE:
+1. El espacio reducido exige pases más rápidos y cortes más explosivos que en media pista completa: el defensor está más cerca.
+2. Con tres jugadores en un cuarto siempre hay triángulo: dos en el perímetro y uno en el interior. El interior es el pivote.
+3. En espacio reducido el bloqueo directo es más efectivo: el defensor tiene menos campo para hacer hedge o ice.
+4. Progresión: 3c0 → 3c1 → 3c3. Los patrones aprendidos en el cuarto se transfieren directamente al 5c5.
+5. El jugador del poste bajo lee siempre: si su defensor viene a ayudar → pide el balón; si su defensor le presiona → el compañero tiene el carril abierto.
+
+
+================================================================================
+EJ_037 | 2 contra 0 canasta a canasta
+[juego_equipo/ataque_posicional] [U12 U14 U16 U18 Senior] [8 min] [Int:3/5 Cog:2/5] [Mín:4 jug]
+================================================================================
+
+DESCRIPCION:
+A1 y A2 arrancan desde un extremo del campo en dos carriles distintos. Se pasan el balón en diagonal mientras corren (máximo 2 botes entre pases). Al llegar a la zona de ataque el último que recibe va directo a bandeja. Rueda continua de un extremo al otro.
+
+PUNTOS_CLAVE:
+1. Los dos jugadores nunca corren por el mismo carril: uno va por la banda, el otro por el carril interior o central.
+2. Los pases son siempre en diagonal (de un carril al otro) y adelantados: el receptor no para para recibir.
+3. Máximo 2 botes entre pases. Más de 2 botes frena el contraataque y le da tiempo a la defensa imaginaria.
+4. Finalización: el que recibe el último pase va directo a bandeja sin bote extra. El compañero entra a rebote ofensivo.
+5. Rueda de vuelta al origen: al terminar, ambos vuelven por los carriles contrarios y repiten en sentido inverso.
+
+
+================================================================================
+EJ_038 | 3 contra 0 canasta a canasta
+[juego_equipo/ataque_posicional] [U12 U14 U16 U18 Senior] [10 min] [Int:3/5 Cog:2/5] [Mín:3 jug]
+================================================================================
+
+DESCRIPCION:
+A1 en carril central, A2 en banda derecha, A3 en banda izquierda arrancan desde un extremo. Se pasan el balón de carril a carril mientras corren (el que lleva el balón siempre al centro). Al llegar al otro extremo, el jugador con balón finaliza en bandeja o da el último pase. Rueda continua de ida y vuelta.
+
+PUNTOS_CLAVE:
+1. Tres carriles desde el inicio y durante todo el recorrido. Quien no lleva el balón corre en carril propio sin cruzarse.
+2. El jugador con balón corre siempre por el carril central. Tras pasar, quien recibe se convierte en el nuevo jugador con balón en el centro.
+3. Pases en diagonal, adelantados. El receptor no para ni frena para recibir.
+4. El balón llega a la zona de tiros libres rival con tres pases máximo. Si se tarda más, el ritmo es demasiado lento.
+5. Finalización: el jugador con balón en el centro puede entrar directo o dar el último pase al lateral más libre.
+
+
+================================================================================
+EJ_039 | 5 contra 5 estático (sin bote)
+[juego_equipo/ataque_posicional] [U16 U18 Senior] [15 min] [Int:2/5 Cog:5/5] [Mín:10 jug]
+================================================================================
+
+DESCRIPCION:
+5c5 en media pista con la regla de prohibición de bote. Los atacantes solo pueden pasar y moverse. Tras cada pase, el pasador corta al aro o se reposiciona en el lado contrario. El ataque busca tiro abierto sin usar el bote. La defensa defiende normal. El entrenador penaliza cada bote con pérdida de posesión.
+
+PUNTOS_CLAVE:
+1. Prohibido el bote: toda acción se resuelve con pases y desplazamientos. La ausencia del bote obliga a cortar y a espaciarse correctamente.
+2. Tras pasar, acción inmediata obligatoria: cortar al aro o reposicionarse. Nunca quedarse en el mismo sitio tras un pase.
+3. Los cinco atacantes deben mantener siempre el espaciado mínimo (4-5 metros entre jugadores). Sin bote es más fácil amontonarse.
+4. Si no hay tiro abierto en 5 pases, cambiar el lado del balón y crear de nuevo.
+5. El ejercicio expone los defectos del spacing y el timing del corte: sin bote no hay 'escondite'.
+
+
+================================================================================
+EJ_040 | 2 contra 1 con +1 recuperando (transición defensiva)
+[juego_equipo/transicion_defensiva] [U14 U16 U18 Senior] [12 min] [Int:5/5 Cog:4/5] [Mín:4 jug]
+================================================================================
+
+DESCRIPCION:
+A1 y A2 atacan en 2c1 contra D1. D2 empieza en el lado contrario y hace sprint para ayudar. D1 defiende solo ganando tiempo sin arriesgar. Cuando D2 llega y se comunica con D1, asumen cada uno a su marcaje. Los atacantes deben finalizar antes de que D2 se posicione. Rotación continua de roles.
+
+PUNTOS_CLAVE:
+1. D1 defiende el 2c1 solo: no intenta robar, gana tiempo retrocediendo y obligando a los atacantes a tomar decisiones lentas.
+2. D1 no salta al pase ni al bote prematuramente: cada vez que se compromete, uno de los dos atacantes queda libre.
+3. D2 recupera en sprint por el carril central. Mientras no llega, D1 sacrifica el tiro exterior para proteger la canasta.
+4. Cuando D2 llega y comunica ('¡ya!'), D1 pasa a marcar al jugador sin balón más peligroso.
+5. Los atacantes deben finalizar ANTES de que D2 llegue, no esperarle para atacar.
+
+
+================================================================================
+EJ_041 | 2 contra 1 defensivo competitivo
+[juego_equipo/transicion_defensiva] [U14 U16 U18 Senior] [12 min] [Int:5/5 Cog:3/5] [Mín:3 jug]
+================================================================================
+
+DESCRIPCION:
+Un defensor D1 contra dos atacantes A1 y A2 en situación 2c1. D1 intenta impedir la canasta o forzar un tiro difícil. Si D1 para la acción, suma 1 punto. Si los atacantes anotan, los atacantes suman 1. Series de 5 repeticiones. El defensor que llega a 3 puntos gana la tanda.
+
+PUNTOS_CLAVE:
+1. El defensor retrocede mirando el balón, nunca de espaldas. La posición de retroceso: ligeramente hacia el lado del balón.
+2. No comprometerse con el pase: fingir hacia el pase pero volver al balón. Comprometerse es regalar la otra opción.
+3. Objetivo del defensor: forzar que la decisión atacante sea imperfecta (pase difícil, bote largo), no necesariamente robar.
+4. Si el atacante con balón frena → salir a presionarle antes de que encuentre el pase cómodo.
+5. Competitivo: el defensor suma puntos por cada 2c1 que para. Trabajar series de 5 repeticiones.
+
+
+================================================================================
+EJ_042 | 5 contra 4 con +1 recuperando
+[juego_equipo/transicion_defensiva] [U16 U18 Senior] [15 min] [Int:5/5 Cog:5/5] [Mín:10 jug]
+================================================================================
+
+DESCRIPCION:
+Cinco atacantes (A1-A5) contra cuatro defensores (D1-D4). D5 empieza fuera de la pista o en el lado contrario y recupera en sprint. Los cuatro defensores gestionan el 5c4 orientándose al balón y rotando. A1-A5 deben aprovechar la superioridad antes de que D5 recupere.
+
+PUNTOS_CLAVE:
+1. Los 4 defensores no intentan jugar individualmente: se orientan al balón y defienden en zona hasta que llega el quinto.
+2. El quinto defensor (D5) corre en sprint al carril más alejado del balón: si está cubierto, al carril interior peligroso.
+3. Los 4 defensores comunican constantemente: '¡balón!', '¡ayuda!', '¡ya llega D5!' para no abandonar una zona sin cubrir la siguiente.
+4. Los 5 atacantes deben finalizar en los primeros 3-4 pases: esperar demasiado permite que D5 recupere.
+5. Si D5 llega antes de la finalización, el ejercicio se convierte en 5c5 normal.
+
+
+================================================================================
+EJ_043 | 2 contra 0 contraataque desde rebote (bote)
+[juego_equipo/rebote] [U12 U14 U16 U18 Senior] [8 min] [Int:4/5 Cog:2/5] [Mín:2 jug]
+================================================================================
+
+DESCRIPCION:
+A1 coge un rebote defensivo (lanzado por el entrenador al tablero) y arranca inmediatamente en bote por el carril central. A2 sale al mismo tiempo por la banda contraria. Sin defensa, los dos finalizan en la canasta contraria: A1 entra en bandeja o pasa a A2 según quien tenga el carril más limpio.
+
+PUNTOS_CLAVE:
+1. En cuanto A1 coge el rebote, sale inmediatamente en bote por el carril central sin esperar a A2.
+2. A2 sale al mismo tiempo que A1, pero por la banda contraria, para crear anchura.
+3. El reboteador (A1) bota por el carril central hasta la línea del triple rival. Máximo 3-4 botes si el campo está despejado.
+4. No parar en el medio campo: el contraataque se gana en la velocidad de la primera fase.
+5. Finalización: A1 puede entrar directo o dar el último pase a A2 en la banda. Elegir la opción más limpia.
+
+
+================================================================================
+EJ_044 | 3 contra 0 contraataque desde rebote (pase de salida)
+[juego_equipo/rebote] [U12 U14 U16 U18 Senior] [10 min] [Int:4/5 Cog:3/5] [Mín:3 jug]
+================================================================================
+
+DESCRIPCION:
+El entrenador lanza el balón al tablero. A1 coge el rebote defensivo y hace inmediatamente el pase de salida a A2 en la banda derecha. A2 avanza botando y pasa a A3 en el carril central. Los tres corren en sus carriles hacia la canasta contraria y finalizan. Rueda: el que finaliza coge el rebote en la repetición siguiente.
+
+PUNTOS_CLAVE:
+1. El reboteador (A1) no bota: busca inmediatamente el pase de salida al lateral más cercano (A2 o A3) que ya está corriendo.
+2. A2 y A3 salen antes del rebote a los carriles laterales: anticipan el outlet pass del reboteador.
+3. El primer receptor (A2 o A3) avanza y pasa al carril central donde A1 llega como segundo jugador con balón.
+4. El outlet pass debe hacerse en menos de 2 segundos: cada segundo que el reboteador tarda bota elimina ventaja.
+5. No hay rebote sin outlet: en cuanto se coge el rebote, mirar al carril lateral y pasar.
+
+
+================================================================================
+EJ_045 | 3 contra 3 con rebote — quien roba ataca
+[juego_equipo/rebote] [U14 U16 U18 Senior] [15 min] [Int:5/5 Cog:4/5] [Mín:6 jug]
+================================================================================
+
+DESCRIPCION:
+3c3 en media pista. Al finalizar cada posesión con tiro (obligatorio tirar antes de 8 segundos), ambos equipos luchan el rebote. Si el equipo atacante (A) coge el rebote ofensivo, sigue atacando. Si el equipo defensor (B) coge el rebote, transita en contraataque a la canasta contraria en 3c3.
+
+PUNTOS_CLAVE:
+1. El rebote defensivo no termina hasta que el balón sale de la zona: contacto → bloqueo de rebote → posesión segura.
+2. Todos los defensores hacen bloqueo de rebote al lanzamiento, no solo los interiores. El lanzamiento es la señal.
+3. Si el equipo A coge el rebote ofensivo: sigue atacando la misma canasta. Si el equipo B coge el rebote defensivo: transición inmediata a la canasta contraria.
+4. Los atacantes deben decidir entre rebote ofensivo (riesgo) y repliegue defensivo anticipado (seguridad). Esta decisión es colectiva.
+5. Contar los rebotes de cada equipo: el que más coge gana la tanda.
+
+
+================================================================================
+EJ_046 | 1 contra 1 en el rebote
+[1c1/rebote] [U12 U14 U16 U18 Senior] [10 min] [Int:4/5 Cog:2/5] [Mín:2 jug]
+================================================================================
+
+DESCRIPCION:
+El entrenador lanza el balón al tablero desde distintas posiciones. A1 (atacante) y D1 (defensor) compiten por el rebote. D1 aplica la técnica de bloqueo de rebote al lanzamiento. A1 intenta anticipar la trayectoria. El que coge más rebotes en 10 repeticiones gana. Cambiar roles.
+
+PUNTOS_CLAVE:
+1. Bloqueo de rebote: al lanzamiento, dar un paso lateral hacia el atacante y hacer contacto de cadera. El bloqueador no mira el balón hasta tener el contacto.
+2. El bloqueador busca posición entre el atacante y el aro, no entre el atacante y el balón.
+3. El reboteador ofensivo (A1) intenta anticipar la trayectoria del balón ANTES del rebote para llegar con ventaja.
+4. El salto de rebote es hacia arriba, no hacia el balón. Coger el balón en el punto más alto del salto.
+5. El rebote defensivo termina cuando el balón está protegido en los dos brazos, no al tocarlo.
+
+
+================================================================================
+EJ_047 | 5 contra 5 presión total a toda pista
+[juego_equipo/defensa] [U16 U18 Senior] [15 min] [Int:5/5 Cog:5/5] [Mín:10 jug]
+================================================================================
+
+DESCRIPCION:
+5c5 a pista completa con presión defensiva desde el saque de fondo. El equipo defensor aplica presión individual en todo el campo con opción de trampa en esquinas. El equipo atacante tiene 8 segundos para pasar el medio campo. Si el equipo atacante pasa la presión, juegan 5c5 en media pista. Alternar roles cada 4 posesiones.
+
+PUNTOS_CLAVE:
+1. La presión comienza en el saque de fondo: D1 molesta el primer pase sin cometer falta. Los demás tapan las líneas de pase directas.
+2. Trampa en la esquina: cuando el balón llega a la banda en el primer tercio, D1 y D2 forman trampa. El resto tapa los pases de escape.
+3. El trapping es eficaz solo si los tres defensores restantes tapan los tres pases más probables. Sin rotación previa, no hay trampa.
+4. Si el ataque supera el medio campo en 5 segundos, replegar a media pista y defender normal. No perseguir el balón.
+5. El pase largo por encima de la presión es la respuesta habitual del ataque: anticipar ese pase con D5 en posición alta.
+
+
+================================================================================
+EJ_048 | 2 contra 3 a toda pista — superioridad defensiva
+[juego_equipo/defensa] [U14 U16 U18 Senior] [12 min] [Int:4/5 Cog:4/5] [Mín:5 jug]
+================================================================================
+
+DESCRIPCION:
+Dos atacantes (A1 y A2) intentan avanzar a toda pista contra tres defensores (D1, D2, D3). Los tres defensores coordinan la presión: uno sobre el jugador con balón, uno tapando el pase, uno cerrando el avance. Los atacantes intentan progresar pasando y botando. El ejercicio entrena la superioridad defensiva coordinada.
+
+PUNTOS_CLAVE:
+1. Con tres defensores contra dos atacantes, siempre hay un defensor libre: ese defensor es el que presiona al jugador con balón.
+2. D1 presiona al jugador con balón, D2 tapa el passing lane al compañero, D3 se adelanta hacia la línea de fondo para cortar el avance.
+3. Los tres defensores no deben amontonarse en el mismo carril: uno presiona, uno tapa el pase, uno anticipa.
+4. Si el ataque pasa el balón, los tres defensores rotan inmediatamente: el que estaba tapando el pase pasa a presionar al nuevo jugador con balón.
+5. El objetivo final no es necesariamente robar, sino obligar al 2c3 a no poder avanzar sin error.
+
+
+================================================================================
+EJ_049 | 1 contra 1 — defensor permite el primer pase
+[1c1/defensa_individual] [U12 U14 U16 U18 Senior] [10 min] [Int:4/5 Cog:4/5] [Mín:3 jug]
+================================================================================
+
+DESCRIPCION:
+El entrenador o un compañero (A1) pasa el balón a A2. D1 se coloca dejando el passing lane libre voluntariamente. Al lanzarse el pase, D1 cierra inmediatamente a A2 para defenders el 1c1. A2 decide según la velocidad de cierre de D1: tiro directo si D1 llega tarde o penetración al lado contrario si D1 cierra pronto.
+
+PUNTOS_CLAVE:
+1. El defensor se posiciona voluntariamente dejando un passing lane libre. Al lanzarse el pase, cierra inmediatamente al nuevo jugador con balón.
+2. Cerrar al jugador con balón: no en línea recta (el atacante puede penetrar por el otro lado) sino en arco, llegando ligeramente adelantado.
+3. El atacante con el balón debe leer si el defensor cierra tarde o pronto: si llega tarde → tira directo; si llega pronto → bote al lado contrario.
+4. Trabajar por ambos lados: el pasador debe pasar a la derecha y a la izquierda del defensor en diferentes repeticiones.
+5. Progresión: el defensor deja pasar el pase → el defensor sale más tarde → el defensor intenta interceptar el pase.
+
+
+================================================================================
+EJ_050 | 3 contra 2 con +1 — ayuda y rotación defensiva
+[juego_equipo/defensa] [U14 U16 U18 Senior] [15 min] [Int:4/5 Cog:5/5] [Mín:6 jug]
+================================================================================
+
+DESCRIPCION:
+Tres atacantes (A1, A2, A3) contra dos defensores (D1, D2) en media pista. D3 empieza en la línea de medio campo y repliega en sprint. D1 y D2 defienden el 3c2 hasta que D3 comunica que está en posición. D3 al llegar toma su marcaje y los tres defensores ajustan. Los atacantes deben aprovechar la superioridad antes de que D3 recupere.
+
+PUNTOS_CLAVE:
+1. D1 y D2 defienden el 3c2 temporalmente: D1 sobre el jugador con balón, D2 entre los dos atacantes sin balón (defensa del pase interior).
+2. D3 (+1) recupera en sprint y debe comunicar '¡ya estoy!' cuando puede asumir a un atacante. Hasta ese momento, D1 y D2 no pueden arriesgarse.
+3. Rotación al llegar D3: D3 toma al atacante más peligroso (normalmente el más cercano al aro), D2 ajusta al otro, D1 al jugador con balón.
+4. Los atacantes deben finalizar antes de que llegue D3: si esperan a D3, el 3c2 desaparece.
+5. No confundir 'ayuda' con 'abandonar al marcaje': la ayuda se hace sin perder de vista al propio marcaje.
+
+
+================================================================================
+EJ_051 | Castillos — 1c1 de manejo en cuadrado
+[1c1/manejo_balon] [U12 U14 U16 U18 Senior] [8 min] [Int:3/5 Cog:3/5] [Mín:2 jug]
+================================================================================
+
+DESCRIPCION:
+ORGANIZACIÓN: cuadrado de conos de aproximadamente 3x3 metros. A1 (atacante con balón) y D1 (defensor con balón) dentro del cuadrado. SECUENCIA: D1 presiona intentando tocar el balón de A1 mientras A1 lo protege botando. A1 no puede salir del cuadrado, ponerse de espaldas ni de lado. D1 intenta tocar el balón de A1 con su mano libre mientras controla el suyo. COMPETICIÓN: 1 minuto de reloj. Si D1 toca el balón de A1 → punto para D1. Si A1 sale del cuadrado → punto para D1. Al minuto, cambiar roles. Gana quien acumule más puntos tras dos rondas. PROGRESIÓN: reducir el cuadrado 50 cm para aumentar la dificultad.
+
+PUNTOS_CLAVE:
+1. El atacante nunca puede ponerse de lado, de espaldas ni salir del área — cara siempre hacia el defensor.
+2. El bote de protección: cuerpo entre el defensor y el balón, brazo libre como escudo, bote bajo y alejado del defensor.
+3. El defensor toca el balón, no al jugador: presión sobre el balón, no sobre el cuerpo del rival.
+4. Cambiar de mano solo cuando el defensor se compromete hacia un lado — no hacerlo sin razón.
+5. En la fila de espera se sigue botando. Nadie parado.
+
+
+================================================================================
+EJ_052 | Tiro con presión — activación de defensores laterales
+[tiro/concentracion] [U14 U16 U18 Senior] [10 min] [Int:3/5 Cog:4/5] [Mín:4 jug]
+================================================================================
+
+DESCRIPCION:
+ORGANIZACIÓN: A1 (tirador) en posición de tiro (ej. codo o 45°). A2 (pasador) enfrentado a A1 con balón. D1 y D2 en los laterales del tirador, a 2-3 metros, mirando hacia fuera o de espaldas. SECUENCIA: A2 hace el pase a A1. En el momento del pase, D1 y D2 arrancan a cerrar sobre A1. A1 recibe, lee qué defensor llega antes y decide: tiro si hay espacio, bote al lado contrario si no. ROTACIÓN: A1 va a pasador, A2 va a D1, D1 a D2, D2 a tirador. PROGRESIÓN: defensores de espaldas al inicio → solo un defensor activo elegido por el entrenador → defensor con balón que dificulta la línea de pase.
+
+PUNTOS_CLAVE:
+1. El tirador no sabe de dónde viene la presión — debe recibir, orientarse y decidir antes de que el defensor llegue.
+2. Si el defensor llega tarde → tiro directo. Si el defensor llega pronto → bote al lado libre.
+3. Mecánica estable aunque el defensor esté encima: no apresurar el lanzamiento perdiendo la técnica.
+4. El pasador activa el drill: su pase es la señal de salida de los defensores.
+5. VARIANTE: defensores salen de espaldas para mayor reacción; o par de defensores sale vs impar de defensores.
+
+
+================================================================================
+EJ_053 | Winchester — 5 cierres defensivos consecutivos
+[1c1/defensa_individual] [U16 U18 Senior] [12 min] [Int:5/5 Cog:4/5] [Mín:2 jug]
+================================================================================
+
+DESCRIPCION:
+ORGANIZACIÓN: A1 (atacante) en posición con balón. D1 (defensor) en el punto de tiro libre o en el lateral, según la posición de A1. SECUENCIA: D1 hace 5 cierres consecutivos sobre A1 sin parar. Cada cierre: D1 retrocede 4-5 pasos, A1 se reposiciona, D1 cierra en sprint. Tras cada cierre, A1 ataca el 1c1 (máx. 2 botes). Si A1 anota o no anota, el siguiente cierre comienza inmediatamente. Tras 5 cierres seguidos, A1 y D1 descansan 30 s y se cambian roles. COMPETICIÓN: D1 suma 1 punto por cada 1c1 parado. A1 suma 1 por cada canasta. Quien más puntos sume en 3 tandas de 5 gana. PROGRESIÓN: 3 cierres → 5 → 7. Limitar botes del atacante.
+
+PUNTOS_CLAVE:
+1. El defensor cierra en arco, no en línea recta: llegar ligeramente adelantado para forzar el cambio de dirección.
+2. Tras el cierre: manos arriba para dificultar el tiro, posición de defensa con los pies activos. No apoyarse en el atacante.
+3. El atacante usa técnica vertical: elevarse hacia arriba protegiendo el balón, no hacia el defensor.
+4. La fatiga acumulada en el 4.º y 5.º cierre es la clave del ejercicio: mantener la técnica cuando el cuerpo ya está cargado.
+5. VARIANTE: limitar botes del atacante (máximo 2) para acelerar la decisión y aumentar la presión.
+
+
+================================================================================
+EJ_054 | 3/4 de pista — 1c1 a campo abierto con persecución
+[1c1/penetracion] [U14 U16 U18 Senior] [10 min] [Int:5/5 Cog:3/5] [Mín:2 jug]
+================================================================================
+
+DESCRIPCION:
+ORGANIZACIÓN: dos filas en la línea de medio campo — fila de atacantes (A1, con balones) y fila de defensores (D1, sin balón) a 1-2 metros por detrás. SECUENCIA: el entrenador pita. A1 arranca en sprint hacia la canasta contraria botando. D1 sale a perseguir inmediatamente, sin ventaja de posición. A1 ataca el aro sin ralentizar. D1 intenta llegar antes de la finalización para complicar el tiro. Terminada la acción, A1 pasa a la fila de defensores, D1 a la fila de atacantes. COMPETICIÓN: cuenta cuántos cierres llega D1 antes de que A1 lance. PROGRESIÓN: D1 sale 0.5 s antes (ventaja) → simultáneo → D1 sale 0.5 s después (desventaja).
+
+PUNTOS_CLAVE:
+1. El atacante sale en ventaja de campo: el defensor no puede adelantarse, solo perseguir.
+2. El atacante no espera al defensor — ataca el aro directamente desde que toca el balón.
+3. El defensor persigue en sprint intentando llegar al menos en posición de molestia antes de la finalización.
+4. La defensa en persecución no salta al defensor — llega, orienta el aro y presiona el tiro.
+5. ROTACIÓN: dos filas. Fila atacante con balón, fila defensora sin balón. Atacante pasa a defensor, defensor a cola de atacantes.
+
+
+================================================================================
+EJ_055 | 2c2 con hándicap — superioridad que se cierra
+[ventaja_numerica/superioridad] [U14 U16 U18 Senior] [12 min] [Int:4/5 Cog:5/5] [Mín:4 jug]
+================================================================================
+
+DESCRIPCION:
+ORGANIZACIÓN: A1 y A2 en el perímetro con balón. D1 en posición defensiva retrasada. D2 en la línea de fondo lateral, fuera de la pista. SECUENCIA: A1 y A2 atacan 2c1 contra D1 en media pista. Simultáneamente, D2 toca la línea de fondo y hace sprint para incorporarse. Los atacantes deben finalizar antes de que D2 llegue. Si D2 llega → 2c2 normal. ROTACIÓN: A1 y A2 pasan a defender; D1 pasa a la fila de atacantes; D2 pasa a la fila de D1. El jugador nuevo de la fila hace el sprint lateral como D2.
+
+PUNTOS_CLAVE:
+1. Los atacantes tienen ventaja 2c1 solo hasta que D2 toca la línea de fondo y se incorpora. Hay que aprovecharla ANTES.
+2. D1 gana tiempo retrocediendo sin comprometerse: no saltar al pase, no saltar al bote. Obligar a los atacantes a decidir mal.
+3. Cuando D2 llega y comunica, D1 deja el balón y va a su marcaje. La comunicación es obligatoria.
+4. Si los atacantes no finalizaron en 2c1, ahora es 2c2 normal. Los defensores asumen sus marcajes.
+5. ROTACIÓN: ataque → defensa → descanso → ataque. El último defensor que llega siempre hace el sprint del lateral.
+
+
+================================================================================
+EJ_056 | Palomero — 3c2 continuo con rotación
+[ventaja_numerica/contraataque] [U14 U16 U18 Senior] [15 min] [Int:5/5 Cog:4/5] [Mín:6 jug]
+================================================================================
+
+DESCRIPCION:
+ORGANIZACIÓN: dos filas en la línea de fondo (A4, A5...) y 3 atacantes (A1, A2, A3) + 2 defensores (D1, D2) en pista. SECUENCIA: A1, A2, A3 atacan 3c2 contra D1 y D2 en una canasta. Al terminar la posesión (canasta, robo o salida): (1) D1 y D2 pasan a ser atacantes hacia la canasta contraria. (2) El último de A1/A2/A3 que tocó el balón (el 'palomero') se queda a defender solo. (3) Dos nuevos jugadores de la fila (A4, A5) salen como los otros dos atacantes para completar el 3c2 en la dirección contraria. ROTACIÓN: el palomero va a la fila al terminar su defensa. El flujo es continuo — ningún jugador para durante el ejercicio.
+
+PUNTOS_CLAVE:
+1. El 'palomero' es el último atacante que tocó el balón: se queda a defender solo al finalizar la posesión.
+2. Los dos defensores originales pasan inmediatamente al ataque hacia la canasta contraria en cuanto la posesión termina.
+3. Los dos nuevos atacantes de la fila se suman al nuevo 3c2 en dirección contraria.
+4. El palomero no corre a la otra canasta — se queda y defiende el siguiente 3c2 que viene hacia él.
+5. La intensidad viene del encadenamiento sin pausa: al terminar una posesión, la siguiente empieza inmediatamente.
+
+
+================================================================================
+EJ_057 | Circus — 3c3 defensa de comunicación y rotaciones
+[juego_equipo/defensa] [U16 U18 Senior] [12 min] [Int:4/5 Cog:5/5] [Mín:6 jug]
+================================================================================
+
+DESCRIPCION:
+ORGANIZACIÓN: A1, A2, A3 en el perímetro (cabecera y dos alas) con balón. D1, D2, D3 defienden 3c3 en el perímetro. SECUENCIA: los atacantes circulan el balón por el perímetro (sin botar, solo pases). Los defensores presionan según la posición del balón y comunican sus rotaciones. Cuando el entrenador pita, los defensores deben cambiar de emparejamiento en rotación (D1→D2→D3→D1) sin perder la presión al balón en ningún momento. Si la comunicación falla y un atacante recibe en posición de ventaja → puede atacar. ROTACIÓN de equipos: el trío defensor que encaja 3 canastas sale; entra el siguiente grupo. PROGRESIÓN: añadir cortes de los atacantes (pase y corte al aro) para forzar cambios y rotaciones más complejas.
+
+PUNTOS_CLAVE:
+1. Los defensores no mantienen sus emparejamientos iniciales — rotan según la señal del entrenador, no según el movimiento del balón.
+2. La comunicación es constante y obligatoria: '¡balón!', '¡ayuda!', '¡cambio!' antes de cada movimiento defensivo.
+3. El defensor del balón presiona siempre. Los otros dos asumen posición de ayuda según donde está el balón.
+4. Al rotar, el que salía de la ayuda pasa a presionar balón y el que presionaba pasa a ayuda — sin interrupciones.
+5. Los atacantes pasan el balón de perímetro sin botar para forzar las rotaciones defensivas continuamente.
+
+
+================================================================================
+EJ_058 | Shell Drill — 4c4 posiciones defensivas de media pista
+[juego_equipo/defensa] [U16 U18 Senior] [15 min] [Int:3/5 Cog:5/5] [Mín:8 jug]
+================================================================================
+
+DESCRIPCION:
+ORGANIZACIÓN: cuatro posiciones base de ataque — A1 en cabecera, A2 en ala derecha, A3 en ala izquierda, A4 en poste bajo. D1, D2, D3, D4 defienden en las posiciones correctas según el balón. SECUENCIA PROGRESIVA: (1) Solo pases, sin bote ni ataques: los atacantes circulan el balón y los defensores ajustan posición en cada pase. (2) Añadir bote: los atacantes pueden botar, los defensores trabajan la presión y el 'on-ball'. (3) Añadir cortes: los atacantes sin balón pueden cortar al aro; los defensores deben decidir si seguirlos o cederlos. (4) 4c4 live: los atacantes pueden atacar cuando quieran. El entrenador para el ejercicio cuando la posición defensiva colectiva sea incorrecta y corrige en el sitio. ROTACIÓN: tras cada tanda de 2 minutos, ataque y defensa se intercambian roles.
+
+PUNTOS_CLAVE:
+1. Ball-you-man: siempre en la línea imaginaria entre el balón y tu marcaje. Si el balón cambia de lado, tu posición cambia.
+2. Lado del balón (on-ball): presión directa con manos activas. Lado contrario (help side): posición de ayuda en el carril del aro.
+3. Niega los pases directos al lado del balón. Permite los pases de lado contrario (más lentos, más fáciles de interceptar).
+4. Al cortar el atacante: decide si seguirlo (if below the ball) o cedérselo a un compañero y comunicarlo.
+5. El ejercicio lo dirige el entrenador pitando para que los atacantes pasen — sin atacar al aro hasta la señal.
+
+
+================================================================================
+SECCION: EJERCICIOS NUEVOS
+Añade aquí los ejercicios que quieres incorporar a exercises.json.
+Instrucciones:
+  - Copia el bloque [NUEVO] tantas veces como necesites
+  - Rellena DESCRIPCION y PUNTOS_CLAVE (el resto es optativo; Claude lo deduce)
+  - Cuando termines dile a Claude "importa los nuevos ejercicios"
+  - Claude añadirá el diagrama, categoría exacta, intensidad, etc. y los
+    incorporará a exercises.json con los ids siguientes disponibles (ej_059...)
+
+CATEGORIAS validas:
+  ventaja_numerica | bloqueo_directo | bloqueo_indirecto | tiro
+  1c1 | juego_equipo | fisico | calentamiento
+
+EDADES validas (espacio-separadas): U8 U10 U12 U14 U16 U18 Senior
+================================================================================
+
+================================================================================
+[NUEVO] Nombre del ejercicio
+CATEGORIA: juego_equipo
+SUBCATEGORIA: 
+EDADES: U14 U16 U18
+DURACION: 12
+INTENSIDAD: 3
+COGNITIVA: 3
+JUGADORES_MINIMOS: 4
+================================================================================
+
+DESCRIPCION:
+[Describe el drill: organización de las filas/grupos, secuencia paso a paso, rotación y elemento competitivo o de transición]
+
+PUNTOS_CLAVE:
+1. [Primer punto clave para el entrenador]
+2. [Segundo punto]
+3. [Tercer punto]
+
+================================================================================
+[NUEVO] (otro ejercicio — copia y rellena)
+CATEGORIA: 
+SUBCATEGORIA: 
+EDADES: 
+DURACION: 
+INTENSIDAD: 
+COGNITIVA: 
+JUGADORES_MINIMOS: 
+================================================================================
+
+DESCRIPCION:
+
+
+PUNTOS_CLAVE:
+1. 
+2. 
+3. 
+

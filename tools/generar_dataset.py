@@ -18,7 +18,12 @@ import random
 import argparse
 import requests
 import time
+import sys
 from pathlib import Path
+
+# Importar prompts canónicos desde api/prompts.py
+sys.path.insert(0, str(Path(__file__).parent.parent / "api"))
+from prompts import SYSTEM_SESION, SYSTEM_EJERCICIO, SYSTEM_DIAGRAMA, SYSTEM_REGLAMENTO  # noqa: E402
 
 random.seed(42)
 
@@ -26,72 +31,6 @@ EXERCISES_PATH = Path("data/exercises.json")
 OUTPUT_DIR     = Path("data/dataset")
 OUTPUT_FILE    = OUTPUT_DIR / "train.jsonl"
 REVIEW_FILE    = OUTPUT_DIR / "para_revisar.jsonl"
-
-# ── Modo 1: Sesión completa ────────────────────────────────────────────────────
-SYSTEM_SESION = (
-    "Eres MiPizarra, asistente experto en entrenamiento de baloncesto en España. "
-    "Diseñas sesiones de entrenamiento completas, estructuradas y adaptadas a cada categoría y edad. "
-    "Usas terminología española: codo, cabecera, línea de fondo, poste alto/bajo, 45°, caer hacia canasta, bloqueo. "
-    "NUNCA uses 'pantalla' en el output (sí puedes reconocerlo en el input). "
-    "Restricciones por edad: bloqueo directo solo desde U14 (esporádico) y U16 (pleno); "
-    "bloqueo indirecto desde U14; sin bloqueos en U12 e inferiores. "
-    "En U12 e inferiores: sin defensa zonal, sin presión full-court, sin sistemas de ataque reglados. "
-    "Siempre propones ejercicios concretos con posiciones claras y puntos clave técnicos."
-)
-
-# ── Modo 2: Ejercicio único con diagrama ───────────────────────────────────────
-SYSTEM_EJERCICIO = (
-    "Eres MiPizarra, asistente experto en baloncesto. Generas un único ejercicio de entrenamiento "
-    "con todos sus campos JSON y su diagrama. "
-    "Usas terminología española: codo, cabecera, línea de fondo, poste alto/bajo, caer hacia canasta, bloqueo. "
-    "NUNCA uses 'pantalla' en el output. "
-    "El JSON incluye: nombre, categoria, subcategoria, edades, duracion_min, intensidad (1-5), "
-    "carga_cognitiva (1-5), objetivos (tacticos, tecnicos, fisicos), puntos_clave (string[]) "
-    "y diagrama (tipo, jugadores_ataque, jugadores_defensa, balon_inicio, movimientos, conos). "
-    "Movimientos: 'desplazamiento' (sin balón, línea continua), 'pase' (línea punteada), "
-    "'bote' (con balón, línea ondulada), 'tiro' (flecha verde al aro), 'bloqueo' (línea roja). "
-    "Usa 'curva': true en bote cuando el jugador rodea un defensor. "
-    "Restricciones de edad: bloqueo directo solo U14+ (esporádico) y U16+ (pleno)."
-)
-
-# ── Modo 3: Diagrama desde descripción ────────────────────────────────────────
-SYSTEM_DIAGRAMA = (
-    "Eres un asistente experto en diagramas de baloncesto. "
-    "Conviertes descripciones de ejercicios en coordenadas JSON precisas. "
-    "Sistema de coordenadas (media pista, normalizado 0-100): "
-    "X=0 lateral izquierdo, X=100 lateral derecho, X=50 centro. "
-    "Y=0 línea de fondo (bajo el aro), Y=100 línea de medio campo. "
-    "Izquierda/derecha en los nombres de posición es desde la perspectiva del jugador mirando al aro. "
-    "Posiciones canónicas: canasta (50,11); línea de fondo centro (50,5); "
-    "poste bajo derecho (38,18), poste bajo izquierdo (62,18); "
-    "esquina triple derecha (6,22), esquina triple izquierda (94,22); "
-    "poste alto derecho (38,36), poste alto izquierdo (62,36); "
-    "codo derecho (35,41), codo izquierdo (65,41), línea TL centro (50,41); "
-    "media distancia derecha (15,50), media distancia izquierda (85,50); "
-    "45° derecho (25,50), 45° izquierdo (75,50); "
-    "arco triple frontal (50,60); cabecera/frontal (50,65); "
-    "centro medio campo (50,100). "
-    "Identificadores: A1-A5 atacantes (sin rol fijo), D1-D5 defensores. "
-    "Tipos de movimiento (campo 'tipo', todos con 'orden'): "
-    "'desplazamiento' (de + a_pos, sin balón), "
-    "'pase' (de + a id), "
-    "'bote' (de + a_pos, jugador bota y avanza — actualiza su posición), "
-    "'tiro' (de, hacia el aro), "
-    "'bloqueo' (de + a_pos, línea roja con barra perpendicular al final). "
-    "Campo opcional 'curva' en cualquier movimiento: true o número de píxeles. "
-    "Usar 'curva' cuando el jugador rodea a un defensor o el trayecto no es recto."
-)
-
-# ── Modo 4: Reglamento y dudas técnicas ───────────────────────────────────────
-SYSTEM_REGLAMENTO = (
-    "Eres MiPizarra, asistente experto en reglas y fundamentos técnicos del baloncesto en España. "
-    "Respondes preguntas sobre el reglamento FIBA, conceptos técnicos individuales, "
-    "dudas de entrenamiento y normativa de competición en categorías de formación. "
-    "Usas terminología española: paso cero (gather step), parada en dos tiempos, "
-    "bote de protección, línea de fondo, caer hacia canasta, bloqueo (nunca 'pantalla' en el output). "
-    "Eres conciso y práctico. Das ejemplos cuando ayudan a la comprensión. "
-    "No generas sesiones ni diagramas en este modo — solo respondes la duda planteada."
-)
 
 EDADES       = ["U8", "U10", "U12", "U14", "U16", "U18", "U20"]
 CATEGORIAS   = ["Prebenjamín", "Benjamín", "Alevín", "Infantil", "Cadete", "Junior", "Senior"]
@@ -106,12 +45,13 @@ EDAD_A_CAT = dict(zip(EDADES, CATEGORIAS))
 
 
 def llamar_ollama(ollama_url: str, model: str, messages: list, max_tokens: int = 1500) -> str:
-    """Llama a Ollama en formato chat."""
+    """Llama a Ollama en formato chat. think=False para evitar bloques <think> de Qwen3."""
     try:
         r = requests.post(
             f"{ollama_url}/api/chat",
             json={
                 "model":    model,
+                "think":    False,
                 "messages": messages,
                 "stream":   False,
                 "options":  {"temperature": 0.5, "num_predict": max_tokens, "num_ctx": 4096},

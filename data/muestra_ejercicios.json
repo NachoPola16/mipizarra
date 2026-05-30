@@ -1,0 +1,785 @@
+[
+  {
+    "id": "ej_002",
+    "nombre": "Bloqueo directo a todo campo — pick & roll + 2c1 de vuelta",
+    "categoria": "bloqueo_directo",
+    "subcategoria": "pick_and_roll",
+    "edades": [
+      "U14",
+      "U16",
+      "U18",
+      "Senior"
+    ],
+    "duracion_min": 15,
+    "intensidad": 4,
+    "carga_cognitiva": 4,
+    "jugadores_minimos": 3,
+    "objetivos": {
+      "tacticos": [
+        "bloqueo directo bajo fatiga",
+        "lectura de la respuesta defensiva",
+        "transición inmediata 2c1"
+      ],
+      "tecnicos": [
+        "ángulo y legalidad del bloqueo",
+        "salida hombro con hombro",
+        "roll al aro",
+        "pase o tiro según la lectura"
+      ],
+      "fisicos": [
+        "sprint a todo campo",
+        "esfuerzo continuo"
+      ]
+    },
+    "puntos_clave": [
+      "A2 planta el bloqueo con pies anchos y brazos cruzados ANTES del contacto. Sin posición establecida es falta en ataque.",
+      "A1 sale hombro con hombro rozando a A2. Si sale separado, D1 pasa por el hueco.",
+      "A2 pivota inmediatamente mirando el balón y corre al aro (roll). No esperar parado.",
+      "A1 lee a D1: si siguió a A1 hacia el codo → pase a A2 en el roll; si D1 ayudó al roll → A1 lanza.",
+      "En la transición 2c1 de vuelta, D1 no espera: pasa a A2 en carrera y ambos atacan a máxima velocidad.",
+      "Progresión: 2v0 (sin D1) para memorizar la mecánica → 2v1 con D1 pasivo → 2v1 con D1 activo."
+    ],
+    "descripcion": "ORGANIZACIÓN: grupos de tres (A1/base con balón, A2/pívot, D1/defensor) en la línea de fondo propia. FASE 1 — ataque hacia la canasta contraria: (1) Los tres arrancan corriendo. D1 corre al lado de A1 defendiéndole. (2) Al llegar a la línea de triple de la canasta contraria, A2 planta el bloqueo directo sobre D1 — pies anchos, brazos cruzados. (3) A1 sale hombro con hombro hacia el codo. A2 hace el roll mirando el balón. (4) A1 lee a D1 y decide: pase a A2 en el roll o tiro desde el codo. FASE 2 — 2c1 de vuelta: (5) Tras la jugada (canasta o no), D1 coge el balón. A2 sprint hacia la canasta original. A1 queda como único defensor. (6) D1 pasa a A2 en carrera; D1 y A2 atacan 2c1 a la canasta original contra A1 solo. ROTACIÓN: quien fue defensor único en el 2c1 pasa a ser A1 (base) en la siguiente repetición.",
+    "diagramas": [
+      {
+        "titulo": "Fase 1 — Sprint + bloqueo directo en la canasta contraria",
+        "tipo": "pista_completa",
+        "jugadores_ataque": [
+          {
+            "id": "A1",
+            "x": 50,
+            "y": 92
+          },
+          {
+            "id": "A2",
+            "x": 30,
+            "y": 92
+          }
+        ],
+        "jugadores_defensa": [
+          {
+            "id": "D1",
+            "x": 50,
+            "y": 88
+          }
+        ],
+        "balon_inicio": {
+          "portador": "A1"
+        },
+        "movimientos": [
+          {
+            "de": "A2",
+            "a_pos": {
+              "x": 46,
+              "y": 15
+            },
+            "tipo": "desplazamiento",
+            "orden": 1
+          },
+          {
+            "de": "A1",
+            "a_pos": {
+              "x": 50,
+              "y": 22
+            },
+            "tipo": "bote",
+            "orden": 2
+          },
+          {
+            "de": "A2",
+            "a_pos": {
+              "x": 44,
+              "y": 10
+            },
+            "tipo": "bloqueo",
+            "orden": 3
+          },
+          {
+            "de": "A1",
+            "a_pos": {
+              "x": 35,
+              "y": 22
+            },
+            "tipo": "bote",
+            "curva": true,
+            "orden": 4
+          },
+          {
+            "de": "A2",
+            "a_pos": {
+              "x": 50,
+              "y": 5
+            },
+            "tipo": "desplazamiento",
+            "orden": 5
+          },
+          {
+            "de": "A1",
+            "a": "A2",
+            "tipo": "pase",
+            "orden": 6
+          }
+        ],
+        "conos": []
+      },
+      {
+        "titulo": "Fase 2 — D1 y A2 atacan 2c1 a la canasta original; A1 defiende solo",
+        "tipo": "pista_completa",
+        "jugadores_ataque": [
+          {
+            "id": "A1",
+            "x": 50,
+            "y": 50
+          },
+          {
+            "id": "A2",
+            "x": 30,
+            "y": 15
+          }
+        ],
+        "jugadores_defensa": [
+          {
+            "id": "D1",
+            "x": 50,
+            "y": 10
+          }
+        ],
+        "balon_inicio": {
+          "portador": "D1"
+        },
+        "movimientos": [
+          {
+            "de": "D1",
+            "a": "A2",
+            "tipo": "pase",
+            "orden": 1
+          },
+          {
+            "de": "A2",
+            "a_pos": {
+              "x": 10,
+              "y": 75
+            },
+            "tipo": "bote",
+            "orden": 2
+          },
+          {
+            "de": "D1",
+            "a_pos": {
+              "x": 50,
+              "y": 70
+            },
+            "tipo": "desplazamiento",
+            "orden": 3
+          },
+          {
+            "de": "A2",
+            "a": "D1",
+            "tipo": "pase",
+            "orden": 4
+          },
+          {
+            "de": "D1",
+            "tipo": "tiro",
+            "orden": 5
+          }
+        ],
+        "conos": []
+      }
+    ]
+  },
+  {
+    "id": "ej_004",
+    "nombre": "Pases en carrera + 2 contra 1 desde saque de banda",
+    "categoria": "ventaja_numerica",
+    "subcategoria": "contraataque",
+    "edades": [
+      "U12",
+      "U14",
+      "U16",
+      "U18",
+      "Senior"
+    ],
+    "duracion_min": 12,
+    "intensidad": 4,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 3,
+    "objetivos": {
+      "tacticos": [
+        "pase en carrera a pista completa",
+        "transición a 2c1 desde saque lateral",
+        "lectura del único defensor"
+      ],
+      "tecnicos": [
+        "pase adelantado diagonal en carrera",
+        "saque de banda en movimiento",
+        "decisión en 2c1"
+      ],
+      "fisicos": [
+        "sprint",
+        "coordinación en carrera"
+      ]
+    },
+    "puntos_clave": [
+      "Los pases van siempre adelantados y en diagonal: el receptor no frena para recibir. Si alguien para, el ritmo del drill se rompe.",
+      "La secuencia de pases es fija — centro→derecha→centro→izquierda — para memorizarla y ejecutarla a máxima velocidad sin pensar.",
+      "Quien planta el balón fuera NO entra a la pista hasta que uno de los dos saca de banda. El saque simula una situación real de partido.",
+      "En el 2c1: el que saca de banda ataca con bote directo al aro; el otro sale al carril libre. El defensor elige a quién presionar — la decisión la lee el que tiene el balón.",
+      "El defensor arranca en desventaja de posición — los dos atacantes deben aprovechar esa ventaja sin ralentizar la acción."
+    ],
+    "descripcion": "ORGANIZACIÓN: tres jugadores en la línea de fondo — A1 en el centro con balón, A2 en la banda derecha, A3 en la banda izquierda. SECUENCIA FASE 1 — carrera con pases: (1) Los tres arrancan corriendo hacia la canasta contraria. (2) A1 pasa a A2 (centro a derecha); A2 pasa a A1 (derecha a centro); A1 pasa a A3 (centro a izquierda). Pases adelantados en diagonal — nadie para para recibir. (3) Cuando A3 llega a la línea de medio campo con el balón, lo planta en el suelo fuera de la pista (en la línea lateral) y se queda fuera. SECUENCIA FASE 2 — 2c1: (4) A3 pasa a defender: entra a la pista cuando uno de los dos comience el saque de banda. (5) A1 o A2 recoge el balón plantado y saca de banda desde la línea lateral; el otro se coloca en el carril opuesto. (6) A1 y A2 atacan 2c1 contra A3 hasta anotar o que la defensa recupere el balón. ROTACIÓN: en la siguiente repetición, quien defendió pasa a salir de centro (A1).",
+    "diagramas": [
+      {
+        "titulo": "Fase 1 — Carrera con pases: centro → derecha → centro → izquierda",
+        "tipo": "pista_completa",
+        "jugadores_ataque": [
+          {
+            "id": "A1",
+            "x": 50,
+            "y": 92
+          },
+          {
+            "id": "A2",
+            "x": 10,
+            "y": 92
+          },
+          {
+            "id": "A3",
+            "x": 90,
+            "y": 92
+          }
+        ],
+        "jugadores_defensa": [],
+        "balon_inicio": {
+          "portador": "A1"
+        },
+        "movimientos": [
+          {
+            "de": "A1",
+            "a": "A2",
+            "tipo": "pase",
+            "orden": 1
+          },
+          {
+            "de": "A2",
+            "a": "A1",
+            "tipo": "pase",
+            "orden": 2
+          },
+          {
+            "de": "A1",
+            "a": "A3",
+            "tipo": "pase",
+            "orden": 3
+          },
+          {
+            "de": "A3",
+            "a_pos": {
+              "x": 100,
+              "y": 50
+            },
+            "tipo": "desplazamiento",
+            "orden": 4
+          }
+        ],
+        "conos": [
+          {
+            "x": 100,
+            "y": 50
+          }
+        ]
+      },
+      {
+        "titulo": "Fase 2 — A3 defiende; A1 y A2 atacan 2c1 desde saque lateral en medio campo",
+        "tipo": "media_pista",
+        "jugadores_ataque": [
+          {
+            "id": "A1",
+            "x": 2,
+            "y": 85
+          },
+          {
+            "id": "A2",
+            "x": 50,
+            "y": 85
+          }
+        ],
+        "jugadores_defensa": [
+          {
+            "id": "D1",
+            "x": 50,
+            "y": 55
+          }
+        ],
+        "balon_inicio": {
+          "portador": "A1"
+        },
+        "movimientos": [
+          {
+            "de": "A1",
+            "a": "A2",
+            "tipo": "pase",
+            "orden": 1
+          },
+          {
+            "de": "A2",
+            "a_pos": {
+              "x": 50,
+              "y": 55
+            },
+            "tipo": "bote",
+            "orden": 2
+          },
+          {
+            "de": "A1",
+            "a_pos": {
+              "x": 10,
+              "y": 50
+            },
+            "tipo": "desplazamiento",
+            "orden": 3
+          },
+          {
+            "de": "A2",
+            "a": "A1",
+            "tipo": "pase",
+            "orden": 4
+          },
+          {
+            "de": "A1",
+            "tipo": "tiro",
+            "orden": 5
+          }
+        ],
+        "conos": []
+      }
+    ]
+  },
+  {
+    "id": "ej_039",
+    "nombre": "5 contra 5 estático (sin bote)",
+    "categoria": "juego_equipo",
+    "subcategoria": "ataque_posicional",
+    "edades": [
+      "U16",
+      "U18",
+      "Senior"
+    ],
+    "duracion_min": 15,
+    "intensidad": 2,
+    "carga_cognitiva": 5,
+    "jugadores_minimos": 10,
+    "objetivos": {
+      "tacticos": [
+        "espaciado colectivo sin bote",
+        "lectura del pase y corte sin la opción del bote",
+        "sistema de ataque posicional"
+      ],
+      "tecnicos": [
+        "pase rápido de primera intención",
+        "corte al aro tras pase obligatorio",
+        "posición de triple amenaza sin bote"
+      ],
+      "fisicos": []
+    },
+    "puntos_clave": [
+      "Prohibido el bote: toda acción se resuelve con pases y desplazamientos. La ausencia del bote obliga a cortar y a espaciarse correctamente.",
+      "Tras pasar, acción inmediata obligatoria: cortar al aro o reposicionarse. Nunca quedarse en el mismo sitio tras un pase.",
+      "Los cinco atacantes deben mantener siempre el espaciado mínimo (4-5 metros entre jugadores). Sin bote es más fácil amontonarse.",
+      "Si no hay tiro abierto en 5 pases, cambiar el lado del balón y crear de nuevo.",
+      "El ejercicio expone los defectos del spacing y el timing del corte: sin bote no hay 'escondite'."
+    ],
+    "descripcion": "5c5 en media pista con la regla de prohibición de bote. Los atacantes solo pueden pasar y moverse. Tras cada pase, el pasador corta al aro o se reposiciona en el lado contrario. El ataque busca tiro abierto sin usar el bote. La defensa defiende normal. El entrenador penaliza cada bote con pérdida de posesión.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {
+          "id": "A1",
+          "x": 50,
+          "y": 65
+        },
+        {
+          "id": "A2",
+          "x": 25,
+          "y": 50
+        },
+        {
+          "id": "A3",
+          "x": 75,
+          "y": 50
+        },
+        {
+          "id": "A4",
+          "x": 6,
+          "y": 22
+        },
+        {
+          "id": "A5",
+          "x": 94,
+          "y": 22
+        }
+      ],
+      "jugadores_defensa": [
+        {
+          "id": "D1",
+          "x": 50,
+          "y": 57
+        },
+        {
+          "id": "D2",
+          "x": 25,
+          "y": 43
+        },
+        {
+          "id": "D3",
+          "x": 75,
+          "y": 43
+        },
+        {
+          "id": "D4",
+          "x": 12,
+          "y": 26
+        },
+        {
+          "id": "D5",
+          "x": 88,
+          "y": 26
+        }
+      ],
+      "balon_inicio": {
+        "portador": "A1"
+      },
+      "movimientos": [
+        {
+          "de": "A1",
+          "a": "A2",
+          "tipo": "pase",
+          "orden": 1
+        },
+        {
+          "de": "A1",
+          "a_pos": {
+            "x": 38,
+            "y": 18
+          },
+          "tipo": "desplazamiento",
+          "orden": 2
+        },
+        {
+          "de": "A2",
+          "a": "A4",
+          "tipo": "pase",
+          "orden": 3
+        },
+        {
+          "de": "A4",
+          "tipo": "tiro",
+          "orden": 4
+        }
+      ],
+      "conos": []
+    }
+  },
+  {
+    "id": "ej_056",
+    "nombre": "Palomero — 3c2 continuo con rotación",
+    "categoria": "ventaja_numerica",
+    "subcategoria": "contraataque",
+    "edades": [
+      "U14",
+      "U16",
+      "U18",
+      "Senior"
+    ],
+    "duracion_min": 15,
+    "intensidad": 5,
+    "carga_cognitiva": 4,
+    "jugadores_minimos": 6,
+    "fuente": "isportcoach.com",
+    "objetivos": {
+      "tacticos": [
+        "3c2 continuo",
+        "balance defensivo inmediato",
+        "cambio de roles ataque-defensa sin pausa"
+      ],
+      "tecnicos": [
+        "toma de decisión en 3c2",
+        "repliegue defensivo",
+        "asignación de marcajes en transición"
+      ],
+      "fisicos": [
+        "resistencia a esfuerzo continuo",
+        "sprint repetido"
+      ]
+    },
+    "puntos_clave": [
+      "El 'palomero' es el último atacante que tocó el balón: se queda a defender solo al finalizar la posesión.",
+      "Los dos defensores originales pasan inmediatamente al ataque hacia la canasta contraria en cuanto la posesión termina.",
+      "Los dos nuevos atacantes de la fila se suman al nuevo 3c2 en dirección contraria.",
+      "El palomero no corre a la otra canasta — se queda y defiende el siguiente 3c2 que viene hacia él.",
+      "La intensidad viene del encadenamiento sin pausa: al terminar una posesión, la siguiente empieza inmediatamente."
+    ],
+    "descripcion": "ORGANIZACIÓN: dos filas en la línea de fondo (A4, A5...) y 3 atacantes (A1, A2, A3) + 2 defensores (D1, D2) en pista. SECUENCIA: A1, A2, A3 atacan 3c2 contra D1 y D2 en una canasta. Al terminar la posesión (canasta, robo o salida): (1) D1 y D2 pasan a ser atacantes hacia la canasta contraria. (2) El último de A1/A2/A3 que tocó el balón (el 'palomero') se queda a defender solo. (3) Dos nuevos jugadores de la fila (A4, A5) salen como los otros dos atacantes para completar el 3c2 en la dirección contraria. ROTACIÓN: el palomero va a la fila al terminar su defensa. El flujo es continuo — ningún jugador para durante el ejercicio.",
+    "diagramas": [
+      {
+        "titulo": "Fase 1 — A1/A2/A3 atacan 3c2 en la canasta izquierda",
+        "tipo": "pista_completa",
+        "jugadores_ataque": [
+          {
+            "id": "A1",
+            "x": 50,
+            "y": 15
+          },
+          {
+            "id": "A2",
+            "x": 10,
+            "y": 15
+          },
+          {
+            "id": "A3",
+            "x": 90,
+            "y": 15
+          }
+        ],
+        "jugadores_defensa": [
+          {
+            "id": "D1",
+            "x": 38,
+            "y": 8
+          },
+          {
+            "id": "D2",
+            "x": 62,
+            "y": 8
+          }
+        ],
+        "balon_inicio": {
+          "portador": "A1"
+        },
+        "movimientos": [
+          {
+            "de": "A1",
+            "a_pos": {
+              "x": 50,
+              "y": 8
+            },
+            "tipo": "bote",
+            "orden": 1
+          },
+          {
+            "de": "A2",
+            "a_pos": {
+              "x": 10,
+              "y": 5
+            },
+            "tipo": "desplazamiento",
+            "orden": 2
+          },
+          {
+            "de": "A1",
+            "a": "A2",
+            "tipo": "pase",
+            "orden": 3
+          },
+          {
+            "de": "A2",
+            "tipo": "tiro",
+            "orden": 4
+          }
+        ],
+        "conos": []
+      },
+      {
+        "titulo": "Fase 2 — D1/D2 atacan 3c2 en la canasta contraria; A3 queda como palomero",
+        "tipo": "pista_completa",
+        "jugadores_ataque": [
+          {
+            "id": "A1",
+            "x": 10,
+            "y": 12
+          },
+          {
+            "id": "A2",
+            "x": 90,
+            "y": 12
+          },
+          {
+            "id": "A3",
+            "x": 50,
+            "y": 88
+          }
+        ],
+        "jugadores_defensa": [
+          {
+            "id": "D1",
+            "x": 38,
+            "y": 92
+          },
+          {
+            "id": "D2",
+            "x": 62,
+            "y": 92
+          }
+        ],
+        "balon_inicio": {
+          "portador": "A1"
+        },
+        "movimientos": [
+          {
+            "de": "A1",
+            "a_pos": {
+              "x": 50,
+              "y": 85
+            },
+            "tipo": "bote",
+            "orden": 1
+          },
+          {
+            "de": "A2",
+            "a_pos": {
+              "x": 90,
+              "y": 88
+            },
+            "tipo": "desplazamiento",
+            "orden": 2
+          },
+          {
+            "de": "A3",
+            "a_pos": {
+              "x": 50,
+              "y": 95
+            },
+            "tipo": "desplazamiento",
+            "orden": 3
+          }
+        ],
+        "conos": []
+      }
+    ]
+  },
+  {
+    "id": "ej_058",
+    "nombre": "Shell Drill — 4c4 posiciones defensivas de media pista",
+    "categoria": "juego_equipo",
+    "subcategoria": "defensa",
+    "edades": [
+      "U16",
+      "U18",
+      "Senior"
+    ],
+    "duracion_min": 15,
+    "intensidad": 3,
+    "carga_cognitiva": 5,
+    "jugadores_minimos": 8,
+    "fuente": "isportcoach.com",
+    "objetivos": {
+      "tacticos": [
+        "posiciones defensivas correctas según lado del balón",
+        "negación del pase y posición de ayuda",
+        "defensa colectiva de media pista"
+      ],
+      "tecnicos": [
+        "posición ball-you-man",
+        "negación activa",
+        "defensa de cortes"
+      ],
+      "fisicos": [
+        "desplazamiento defensivo continuo"
+      ]
+    },
+    "puntos_clave": [
+      "Ball-you-man: siempre en la línea imaginaria entre el balón y tu marcaje. Si el balón cambia de lado, tu posición cambia.",
+      "Lado del balón (on-ball): presión directa con manos activas. Lado contrario (help side): posición de ayuda en el carril del aro.",
+      "Niega los pases directos al lado del balón. Permite los pases de lado contrario (más lentos, más fáciles de interceptar).",
+      "Al cortar el atacante: decide si seguirlo (if below the ball) o cedérselo a un compañero y comunicarlo.",
+      "El ejercicio lo dirige el entrenador pitando para que los atacantes pasen — sin atacar al aro hasta la señal."
+    ],
+    "descripcion": "ORGANIZACIÓN: cuatro posiciones base de ataque — A1 en cabecera, A2 en ala derecha, A3 en ala izquierda, A4 en poste bajo. D1, D2, D3, D4 defienden en las posiciones correctas según el balón. SECUENCIA PROGRESIVA: (1) Solo pases, sin bote ni ataques: los atacantes circulan el balón y los defensores ajustan posición en cada pase. (2) Añadir bote: los atacantes pueden botar, los defensores trabajan la presión y el 'on-ball'. (3) Añadir cortes: los atacantes sin balón pueden cortar al aro; los defensores deben decidir si seguirlos o cederlos. (4) 4c4 live: los atacantes pueden atacar cuando quieran. El entrenador para el ejercicio cuando la posición defensiva colectiva sea incorrecta y corrige en el sitio. ROTACIÓN: tras cada tanda de 2 minutos, ataque y defensa se intercambian roles.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {
+          "id": "A1",
+          "x": 50,
+          "y": 65
+        },
+        {
+          "id": "A2",
+          "x": 25,
+          "y": 50
+        },
+        {
+          "id": "A3",
+          "x": 75,
+          "y": 50
+        },
+        {
+          "id": "A4",
+          "x": 38,
+          "y": 18
+        }
+      ],
+      "jugadores_defensa": [
+        {
+          "id": "D1",
+          "x": 50,
+          "y": 57
+        },
+        {
+          "id": "D2",
+          "x": 32,
+          "y": 40
+        },
+        {
+          "id": "D3",
+          "x": 62,
+          "y": 38
+        },
+        {
+          "id": "D4",
+          "x": 44,
+          "y": 24
+        }
+      ],
+      "balon_inicio": {
+        "portador": "A1"
+      },
+      "movimientos": [
+        {
+          "de": "A1",
+          "a": "A2",
+          "tipo": "pase",
+          "orden": 1
+        },
+        {
+          "de": "D1",
+          "a_pos": {
+            "x": 32,
+            "y": 53
+          },
+          "tipo": "desplazamiento",
+          "orden": 2
+        },
+        {
+          "de": "D2",
+          "a_pos": {
+            "x": 25,
+            "y": 43
+          },
+          "tipo": "desplazamiento",
+          "orden": 3
+        },
+        {
+          "de": "D3",
+          "a_pos": {
+            "x": 55,
+            "y": 35
+          },
+          "tipo": "desplazamiento",
+          "orden": 4
+        }
+      ],
+      "conos": []
+    }
+  }
+]

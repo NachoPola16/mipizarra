@@ -43,7 +43,18 @@ Los tres modos comparten el mismo modelo pero con system prompts distintos. Pend
 - jugadas_tacticas_doble_bloqueo.md, toma_decisiones_drills.md
 - ejercicios_propios_coleccion.md (365 ejercicios propios)
 
-**exercises.json:** 50 ejercicios completos con puntos_clave, descripción y diagrama (ej_001–ej_025 generales + ej_026–ej_050 del trabajo Cadete de Nacho: contraataque, transición ofensiva/defensiva, ataque posicional, rebote y defensa)
+**exercises.json:** 58 ejercicios con puntos_clave, descripción y diagrama
+- ej_001–ej_025: ejercicios generales (reescritos como drills reales con movimiento, rotación y elemento competitivo)
+- ej_026–ej_050: ejercicios del trabajo Cadete de Nacho (contraataque, transición ofensiva/defensiva, ataque posicional, rebote, defensa)
+- ej_051–ej_058: extraídos de isportcoach.com (Castillos, Tiro con presión, Winchester, 3/4 pista, 2c2 hándicap, Palomero, Circus, Shell Drill)
+
+**Herramientas de edición de ejercicios:**
+- `exercises_editable.txt` — versión legible de exercises.json para editar manualmente DESCRIPCION y PUNTOS_CLAVE; incluye sección de EJERCICIOS NUEVOS al final
+- `tools/exportar_editable.py` — regenera el .txt desde exercises.json
+- `tools/importar_editable.py` — sincroniza los cambios del .txt de vuelta a exercises.json
+- `tools/importar_isportcoach.py` — sustituto del scraper; ejercicios de isportcoach ya importados
+
+**Terminología corregida en todo el proyecto:** "portador" → "jugador con balón" en exercises.json y en los 9 documentos .md de data/teoria/
 
 **PDFs organizados en 4 subcarpetas** en `data/pdfs/` (ya indexables)
 
@@ -55,11 +66,26 @@ Los tres modos comparten el mismo modelo pero con system prompts distintos. Pend
 - `--steps` default 100 (recalibrado para datasets pequeños)
 - Script de evaluación base vs fine-tuned: [tools/evaluar_modelo.py](tools/evaluar_modelo.py)
 
+**Bugs críticos corregidos (revisión Opus 4.8, 2026-05-30):**
+- ✅ `"think": False` añadido en TODAS las llamadas Ollama (rag_engine.py ×5, generar_dataset.py ×1) — era bloqueante para JSON con Qwen3
+- ✅ `generar_diagrama_desde_texto` reescrito: eliminado formato Mistral `[INST]`, usa `/api/chat` + `SYSTEM_DIAGRAMA`
+- ✅ System prompts unificados en `api/prompts.py` (fuente única para inferencia y training)
+- ✅ `OLLAMA_MODEL` default corregido: `hoops-mistral` → `qwen3:4b`
+- ✅ SYSTEM_EJERCICIO actualizado: incluye ahora el formato `diagramas` multifase con `titulo`
+
 **Pendiente — próxima sesión (en este orden):**
 
 1. ~~**Añadir ejercicios del trabajo Cadete a `exercises.json`** — hecho (ej_026–ej_050, 25 ejercicios nuevos).~~
 
-2. **Indexar data/teoria/ en ChromaDB** (en el servidor):
+2. **[PRIORIDAD 1 — hacer antes de cualquier entrenamiento] Probar RAG puro con modelo base:**
+   ```bash
+   curl -X POST http://192.168.1.72:8000/generar \
+     -H "Content-Type: application/json" \
+     -d '{"edad": "U16", "duracion": 90, "objetivo": "contraataque"}'
+   ```
+   Si la calidad ya vale → no hay que fine-tunear. Si no → proceder con los pasos siguientes.
+
+3. **Indexar data/teoria/ en ChromaDB** (en el servidor):
    ```bash
    docker exec -it mipizarra-api python /app/tools/indexar_pdfs.py
    ```
@@ -74,8 +100,11 @@ Los tres modos comparten el mismo modelo pero con system prompts distintos. Pend
 
 5. **Entrenar en local** (RTX 5060 Ti, recomendado):
    ```bash
-   python tools/finetune_qwen.py --no-quantize --rank 16 --steps 150
+   python tools/finetune_qwen.py --no-quantize --rank 8 --steps 40
    ```
+   ⚠ 150 pasos con ~135 ejemplos son ~9-18 épocas → sobreentrenamiento casi seguro.
+   Usar 30-50 pasos máximo (1-2 épocas). Añadir split de validación y early stopping.
+   Rank 8 es correcto para < 500 ejemplos.
 
 6. **Pull en el servidor** (si no están descargados):
    ```bash

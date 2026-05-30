@@ -65,9 +65,47 @@ Seis periodos de 8 minutos. Cada jugador pasa dos periodos en banquillo y juega 
 
 ---
 
-## Norma del saque rápido (FAB)
+## Norma del saque rápido (novedad temporada 2025/2026)
 
-La Federación Aragonesa de Baloncesto establece que, en determinadas categorías y situaciones, se aplica el **saque rápido sin intervención del árbitro**. Los entrenadores deben conocer cuándo aplica y enseñar a los jugadores a sacar rápido desde banda sin esperar a que el árbitro toque el balón, ya que en muchas situaciones del juego escolar el árbitro no lo toca.
+### Qué es
+
+Se denomina **"saque rápido de balón"** al saque lateral o de fondo en el que **el árbitro no entrega ni retiene el balón** antes de que el equipo lo ponga en juego. El equipo que saca lo hace directamente, sin esperar al árbitro.
+
+> ⚠ **No confundir con el saque rápido tras canasta** (norma FIBA senior/pro): esa variante —sacar de fondo directamente tras encajar canasta— existe en competiciones profesionales FIBA y ACB pero **no aplica en categorías de formación en España**.
+
+### Cuándo aplica
+
+El saque rápido **solo** está permitido cuando se dan **las dos condiciones a la vez**:
+
+1. **Se saca desde la pista trasera** (campo defensivo propio del equipo que saca).
+2. **El saque es consecuencia de una violación** del reglamento (no de una falta ni de una canasta).
+
+Ejemplo típico: el rival comete pasos o doble en su campo de ataque (el campo defensivo del equipo que recibirá la posesión) → el equipo que recibe la posesión saca rápido desde su propio campo defensivo sin que el árbitro toque el balón.
+
+### Cuándo NO aplica — excepciones obligatorias
+
+| Situación | ¿Saque rápido? |
+|---|---|
+| Últimos **2 minutos** del 4.º cuarto | ❌ No — árbitro siempre toca el balón |
+| Últimos **2 minutos** de cualquier prórroga | ❌ No |
+| Saque desde la **pista de ataque** (campo rival) | ❌ No — solo funciona desde campo propio |
+| Consecuencia de una **falta** (no de una violación) | ❌ No |
+| Consecuencia de una **canasta** encajada | ❌ No (eso es la norma pro, no aplica aquí) |
+| El equipo solicita **tiempo muerto** | ❌ No — pierde el derecho al saque rápido |
+
+### Categorías donde aplica (España, temporada 2025/2026)
+
+- ✅ **Cadete (U16) → Senior**: aplica en competiciones autonómicas y provinciales + Campeonatos de España FEB.
+- ❌ **Infantil (U14) y Minibasket (U8-U12)**: excluidas — mantienen su normativa propia con saque estándar.
+
+Fuente: FEB + federaciones autonómicas (FBPA, FBCYL, FBM y otras) — implementación generalizada en 2025/2026.
+
+### Cómo entrenarlo
+
+- **Reacción inmediata**: en cuanto el árbitro señala la violación y el equipo recupera posesión en su campo, el primer jugador que toca el balón lo saca **sin esperar**. Trabajar el hábito de mirar al árbitro y reaccionar al silbato.
+- **Lectura del campo**: antes de sacar, el jugador que saca mira la posición de sus compañeros. Si hay un carril abierto al contraataque → sacar rápido. Si el rival ya está replegado → esperar al árbitro (el saque lento es siempre válido).
+- **No hay obligación de sacar rápido**: el saque rápido es un derecho del equipo, no una obligación. Si no hay ventaja, el árbitro puede entregar el balón igualmente.
+- **Drill**: 5c5 con regla activa de saque rápido para que los jugadores se habitúen a reaccionar tanto en ataque (salir al contraataque) como en defensa (replegar cuando ceden la violación).
 
 ---
 

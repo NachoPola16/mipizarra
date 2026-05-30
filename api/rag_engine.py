@@ -5,6 +5,7 @@ import logging
 import requests
 import chromadb
 from llama_index.embeddings.ollama import OllamaEmbedding
+from prompts import SYSTEM_SESION, SYSTEM_EJERCICIO, SYSTEM_DIAGRAMA, SYSTEM_REGLAMENTO  # noqa: F401
 
 # Mapeo de códigos UXX a nombres de categorías
 EDAD_A_CATEGORIA = {
@@ -21,7 +22,7 @@ EDAD_A_CATEGORIA = {
 logger = logging.getLogger(__name__)
 
 OLLAMA_URL     = os.environ.get("OLLAMA_URL", "http://ollama:11434")
-MODEL          = os.environ.get("OLLAMA_MODEL", "hoops-mistral")
+MODEL          = os.environ.get("OLLAMA_MODEL", "qwen3:4b")
 EXERCISES_PATH = os.environ.get("EXERCISES_PATH", "/app/data/exercises.json")
 CHROMA_DB_DIR  = os.environ.get("CHROMA_DB_DIR", "/app/data/chroma_db")
 EMBED_MODEL    = "nomic-embed-text"
@@ -244,6 +245,7 @@ SESIÓN:"""
             json={
                 "model":   MODEL,
                 "prompt":  prompt,
+                "think":   False,          # Qwen3: desactivar thinking para evitar bloques <think>
                 "stream":  False,
                 "options": {
                     "temperature": 0.4,
@@ -336,52 +338,30 @@ SESIÓN:"""
     }
 
 def generar_diagrama_desde_texto(descripcion_ejercicio: str) -> dict | None:
-    """
-    Pide al LLM que convierta una descripción textual en coordenadas estructuradas.
-    """
-    prompt = f"""[INST] Eres un asistente que convierte descripciones de ejercicios de baloncesto en coordenadas para diagramas.
-
-EJERCICIO:
-{descripcion_ejercicio}
-
-GEOMETRIA DE LA PISTA (media pista FIBA):
-- Coordenadas X: 0 (lateral izquierdo) a 100 (lateral derecho)
-- Coordenadas Y: 0 (debajo de canasta/baseline) a 100 (línea de medio campo)
-- Canasta: x=50, y≈11
-- Línea de tiros libres: y≈41
-- Tope del arco de 3 puntos: y≈60
-- Esquinas del triple: x=6 o x=94, y≈22
-
-RESPONDE SOLO CON JSON (sin explicaciones):
-{{
-  "jugadores_ataque": [
-    {{"id": "A1", "rol": "base", "x": 50, "y": 65}}
-  ],
-  "jugadores_defensa": [
-    {{"id": "D1", "rol": "defensor", "x": 50, "y": 45}}
-  ],
-  "movimientos": [
-    {{"de": "A1", "a_pos": {{"x": 35, "y": 50}}, "tipo": "desplazamiento", "orden": 1}}
-  ]
-}}
-[/INST]"""
-
+    """Convierte una descripción textual en coordenadas JSON de diagrama."""
     try:
         response = requests.post(
-            f"{OLLAMA_URL}/api/generate",
+            f"{OLLAMA_URL}/api/chat",
             json={
-                "model": MODEL,
-                "prompt": prompt,
+                "model":  MODEL,
+                "think":  False,
+                "format": "json",
                 "stream": False,
-                "options": {"temperature": 0.2, "num_predict": 500},
+                "messages": [
+                    {"role": "system", "content": SYSTEM_DIAGRAMA},
+                    {"role": "user",   "content": (
+                        f"Genera las coordenadas JSON del diagrama para este ejercicio.\n\n"
+                        f"DESCRIPCIÓN:\n{descripcion_ejercicio}\n\n"
+                        "Devuelve SOLO el JSON con: tipo, jugadores_ataque, jugadores_defensa, "
+                        "balon_inicio, movimientos (con orden), conos."
+                    )},
+                ],
+                "options": {"temperature": 0.2, "num_predict": 600},
             },
             timeout=60,
         )
         response.raise_for_status()
-        texto = response.json()["response"]
-        
-        # Limpiar markdown si lo devuelve
-        texto = texto.replace("```json", "").replace("```", "").strip()
+        texto = response.json()["message"]["content"].strip()
         diagrama = json.loads(texto)
         return diagrama
         
@@ -506,6 +486,7 @@ Genera SOLO el JSON (sin explicaciones):"""
                 "model":   MODEL,
                 "prompt":  prompt,
                 "format":  "json",
+                "think":   False,          # Qwen3: sin thinking para JSON estructurado
                 "stream":  False,
                 "options": {
                     "temperature": 0.2,
@@ -517,9 +498,9 @@ Genera SOLO el JSON (sin explicaciones):"""
         )
         response.raise_for_status()
         texto = response.json()["response"]
-        
+
         diagrama = json.loads(texto.strip())
-        
+
         # Validación mínima
         if "jugadores_ataque" not in diagrama or len(diagrama.get("jugadores_ataque", [])) == 0:
             logger.warning(f"  ✗ Diagrama sin jugadores de ataque")
@@ -535,18 +516,7 @@ Genera SOLO el JSON (sin explicaciones):"""
 
 # ── Modo 2: Ejercicio único ──────────────────────────────────────────────────
 
-SYSTEM_EJERCICIO = (
-    "Eres MiPizarra, asistente experto en baloncesto. Generas un único ejercicio de entrenamiento "
-    "con todos sus campos JSON y su diagrama. "
-    "Usas terminología española: codo, cabecera, línea de fondo, poste alto/bajo, caer hacia canasta, bloqueo. "
-    "NUNCA uses 'pantalla' en el output. "
-    "El JSON incluye: nombre, categoria, subcategoria, edades (array), duracion_min, intensidad (1-5), "
-    "carga_cognitiva (1-5), objetivos (tacticos, tecnicos, fisicos), puntos_clave (string[]) "
-    "y diagrama (tipo, jugadores_ataque, jugadores_defensa, balon_inicio, movimientos, conos). "
-    "Movimientos: 'desplazamiento' (sin balón), 'pase', 'bote' (con balón), 'tiro', 'bloqueo'. "
-    "Usa 'curva': true en bote cuando el jugador rodea a un defensor. "
-    "Bloqueo directo solo desde U14 (esporádico) y U16 (pleno uso)."
-)
+# SYSTEM_EJERCICIO importado de api/prompts.py
 
 
 def generar_ejercicio_unico(edad: str, objetivo: str, descripcion: str = "") -> dict:
@@ -564,7 +534,10 @@ def generar_ejercicio_unico(edad: str, objetivo: str, descripcion: str = "") -> 
         r = requests.post(
             f"{OLLAMA_URL}/api/generate",
             json={
-                "model": MODEL, "prompt": prompt, "format": "json",
+                "model":  MODEL,
+                "prompt": prompt,
+                "format": "json",
+                "think":  False,          # Qwen3: sin thinking para JSON estructurado
                 "stream": False,
                 "options": {"temperature": 0.4, "num_predict": 900, "top_k": 40},
             },
@@ -581,18 +554,7 @@ def generar_ejercicio_unico(edad: str, objetivo: str, descripcion: str = "") -> 
 
 # ── Modo 3: Reglamento y dudas técnicas ─────────────────────────────────────
 
-SYSTEM_REGLAMENTO = (
-    "Eres MiPizarra, asistente experto en reglas y fundamentos técnicos del baloncesto en España. "
-    "Respondes cualquier duda de un entrenador: reglamento FIBA, situaciones de juego concretas "
-    "(¿son pasos? ¿es doble? ¿es falta?), conceptos técnicos individuales (paso cero, parada en dos tiempos, "
-    "tipos de finalización, cambios de mano, pase picado, etc.), normativa de competición por categoría "
-    "y decisiones pedagógicas (¿puedo trabajar bloqueos directos en infantil?). "
-    "Usas terminología española: paso cero (gather step), parada en dos tiempos, "
-    "línea de fondo, caer hacia canasta, bloqueo (nunca 'pantalla' en el output). "
-    "Eres conciso y práctico. Cuando hay una situación de juego, explicas la regla aplicable "
-    "y el criterio para que el entrenador lo entienda y pueda explicárselo a sus jugadores. "
-    "No generas sesiones ni diagramas — solo respondes la duda planteada."
-)
+# SYSTEM_REGLAMENTO importado de api/prompts.py
 
 
 def responder_duda_reglamento(pregunta: str) -> str:
@@ -602,6 +564,7 @@ def responder_duda_reglamento(pregunta: str) -> str:
             f"{OLLAMA_URL}/api/chat",
             json={
                 "model": MODEL,
+                "think": False,
                 "messages": [
                     {"role": "system", "content": SYSTEM_REGLAMENTO},
                     {"role": "user", "content": pregunta},
