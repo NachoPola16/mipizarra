@@ -23,6 +23,11 @@ logger = logging.getLogger(__name__)
 
 OLLAMA_URL     = os.environ.get("OLLAMA_URL", "http://ollama:11434")
 MODEL          = os.environ.get("OLLAMA_MODEL", "qwen3:4b")
+# Modelo para generar_sesion(): texto libre largo y estructurado. qwen3:4b filtra
+# razonamiento en inglés dentro del propio texto (no solo como preámbulo) y el
+# parámetro "think": False no lo evita de forma fiable. qwen2.5-instruct no tiene
+# modo thinking, así que no puede colarse ningún razonamiento.
+MODEL_SESION   = os.environ.get("OLLAMA_MODEL_SESION", "qwen2.5:7b-instruct-q4_K_M")
 EXERCISES_PATH = os.environ.get("EXERCISES_PATH", "/app/data/exercises.json")
 CHROMA_DB_DIR  = os.environ.get("CHROMA_DB_DIR", "/app/data/chroma_db")
 EMBED_MODEL    = "nomic-embed-text"
@@ -290,9 +295,8 @@ SESIÓN:"""
         response = requests.post(
             f"{OLLAMA_URL}/api/generate",
             json={
-                "model":   MODEL,
+                "model":   MODEL_SESION,
                 "prompt":  prompt,
-                "think":   False,          # Qwen3: desactivar thinking para evitar bloques <think>
                 "stream":  False,
                 "options": {
                     "temperature": 0.4,
