@@ -136,9 +136,8 @@ def construir_contexto_ejercicios(ejercicios: list, max_ejs: int = 10) -> str:
         fisicos   = ", ".join(ej.get("objetivos", {}).get("fisicos",   []))
         obj_str   = " | ".join(filter(None, [tacticos, tecnicos, fisicos]))
         desc = ej.get("descripcion", "")[:150]
-        etiqueta = f"[{ej['_fase']}] " if ej.get("_fase") else ""
         lineas.append(
-            f"- {etiqueta}\"{ej['nombre']}\" "
+            f"- \"{ej['nombre']}\" "
             f"({ej['duracion_min']} min, intensidad {ej['intensidad']}/5): "
             f"{obj_str}. {desc}"
         )
@@ -225,13 +224,13 @@ def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
     t_ej     = t_parte // 3
     categoria_nombre = EDAD_A_CATEGORIA.get(edad, edad)
 
-    prompt = f"""Eres MiPizarra, experto en entrenamiento de baloncesto. Diseña una sesión completa y detallada.
+    prompt = f"""Eres MiPizarra, asistente de entrenamiento de baloncesto. Escribe la sesión directamente, sin pensar en voz alta ni hacer comentarios previos.
 
-CATEGORÍA: {categoria_nombre} ({edad}) | DURACIÓN TOTAL: {duracion} min | OBJETIVO PRINCIPAL: {objetivo}
+CATEGORÍA: {categoria_nombre} ({edad}) | DURACIÓN: {duracion} min | OBJETIVO: {objetivo}
 
-REPARTO DE TIEMPO OBLIGATORIO (debe sumar exactamente {duracion} min):
+TIEMPO:
 - Calentamiento: {t_calent} min
-- Parte principal: {t_parte} min → ~{t_ej} min por ejercicio ({t_parte} min en total entre los 3)
+- Parte principal: {t_parte} min (3 ejercicios de ~{t_ej} min)
 - Descanso: {t_descanso} min
 - Vuelta a la calma: {t_vuelta} min
 
@@ -239,55 +238,49 @@ REPARTO DE TIEMPO OBLIGATORIO (debe sumar exactamente {duracion} min):
 
 {ctx_ejercs}
 
-ESTRUCTURA EXACTA A SEGUIR — rellena TODOS los campos, sin añadir ni eliminar secciones:
+Escribe exactamente esto (sin cambiar los títulos en negrita):
 
 **CALENTAMIENTO ({t_calent} min)**
-Juego: "[nombre del juego dinámico con balón]"
-Reglas: [2-3 frases concretas sobre cómo se juega, con mecánicas de {objetivo}]
+Juego: "[nombre]"
+Reglas: [2-3 frases de cómo se juega]
 Espacio: [media pista / pista completa]
 
-**PARTE PRINCIPAL** — progresión obligatoria con oposición creciente
+**PARTE PRINCIPAL**
 
-Ejercicio 1 (ANALÍTICO — usa preferiblemente uno marcado [ANALÍTICO] en la lista, sin oposición o con defensa pasiva): [NOMBRE EXACTO de la lista de ejercicios]
+Ejercicio 1: [nombre EXACTO de la lista — sin oposición o con defensa pasiva]
 Duración: {t_ej} min
-Organización: [descripción con posiciones concretas: codo TL, esquina, baseline, poste alto...]
+Organización: [descripción con posiciones: codo TL, esquina, baseline, poste alto...]
 Puntos clave:
-- [fundamento técnico de base que sostiene "{objetivo}" — p.ej. pase en carrera, rebote y salida, recepción]
-- [aspecto técnico 2 del mismo fundamento]
+- [fundamento de base para {objetivo}: pase en carrera, pase de salida, rebote...]
+- [segundo aspecto técnico]
 
-Ejercicio 2 (OPOSICIÓN REDUCIDA — superioridad numérica tipo 2c1/3c2, marcado [OBJETIVO] en la lista — DIFERENTE al Ejercicio 1): [NOMBRE EXACTO de la lista]
+Ejercicio 2: [nombre EXACTO de la lista — con oposición reducida: 2c1 o 3c2 — distinto al 1]
 Duración: {t_ej} min
-Organización: [descripción detallada]
+Organización: [descripción]
 Puntos clave:
-- [aspecto táctico 1 relacionado con {objetivo} en situación de ventaja numérica]
-- [aspecto táctico 2 relacionado con {objetivo}]
+- [aspecto táctico con ventaja numérica]
+- [segundo aspecto]
 
 {descanso_texto}
 
-Ejercicio 3 (APLICADO — oposición igualada o casi igualada, situación de juego real, marcado [OBJETIVO] — DIFERENTE a Ejercicio 1 y 2): [NOMBRE EXACTO de la lista]
+Ejercicio 3: [nombre EXACTO de la lista — con oposición igualada o casi igualada — distinto al 1 y 2]
 Duración: {t_parte - 2*t_ej} min
-Organización: [descripción detallada con mayor complejidad que los anteriores]
+Organización: [descripción más compleja]
 Puntos clave:
-- [aspecto técnico 1 relacionado con {objetivo}]
-- [aspecto técnico 2 relacionado con {objetivo}]
+- [aspecto táctico aplicado]
+- [segundo aspecto]
 
 **VUELTA A LA CALMA ({t_vuelta} min)**
-Juego: "[juego recreativo o tiro libre, DIFERENTE al calentamiento]"
-Reglas: [2-3 frases breves]
+Juego: "[juego recreativo o tiro libre]"
+Reglas: [2-3 frases]
 
-**Fundamentos**: [SOLO las técnicas específicas de {objetivo} practicadas hoy, p.ej. suspensión, entrada 1-2, floater, tiro de codo — NO copiar fundamentos genéricos]
+**Fundamentos**: [técnicas reales practicadas hoy]
 
-INSTRUCCIONES CRÍTICAS:
-- Usa SOLO nombres EXACTOS de la lista de ejercicios disponibles
-- EXACTAMENTE 3 ejercicios en Parte Principal — ni uno más ni uno menos
-- Los 3 ejercicios deben tener nombres DISTINTOS entre sí
-- NO repitas variantes del mismo ejercicio: el objetivo "{objetivo}" es el HILO CONDUCTOR, no una exigencia de que los 3 ejercicios sean iguales
-- OPOSICIÓN PROGRESIVA OBLIGATORIA: Ejercicio 1 sin oposición o con defensa pasiva → Ejercicio 2 con oposición reducida (superioridad numérica) → Ejercicio 3 con oposición igualada o casi igualada
-- El Ejercicio 1 puede trabajar un fundamento de base distinto al objetivo (p.ej. pase o rebote como preparación para contraataque), siempre que sirva de apoyo real al objetivo principal
-- Calentamiento: juego dinámico con balón, mecánica distinta a los ejercicios de parte principal
-- Vuelta a la calma: recreativo o tiro libre
-- Los Fundamentos deben listar técnicas DE TIRO/PASE/etc. reales que se hayan practicado hoy
-- Responde ÚNICAMENTE con la sesión, sin explicaciones ni comentarios
+REGLAS:
+- Escribe SOLO la sesión, sin explicaciones, sin comentarios, sin razonar la elección de ejercicios
+- Usa nombres EXACTOS de la lista
+- 3 ejercicios distintos con progresión sin oposición → oposición reducida → oposición igualada
+- El Ejercicio 1 puede trabajar un fundamento distinto al objetivo principal si lo prepara (pase, rebote)
 
 SESIÓN:"""
 
@@ -334,17 +327,20 @@ SESIÓN:"""
         # ── 0. Eliminar bloques <think>...</think> (Qwen3 con think no desactivado) ──
         texto = re.sub(r'<think>.*?</think>', '', texto, flags=re.DOTALL).strip()
 
-        # ── 0b. Eliminar razonamiento en inglés antes del formato de sesión ──────
-        match_inicio = re.search(r'\*\*CALENTAMIENTO', texto)
+        # ── 0b. Cortar razonamiento previo y encontrar el inicio real de la sesión ──
+        # Busca el primer marcador estructural de la sesión (en cualquier orden)
+        match_inicio = re.search(
+            r'(\*\*CALENTAMIENTO|\*\*PARTE PRINCIPAL|^Ejercicio\s+1\s*:)',
+            texto, re.MULTILINE
+        )
         if match_inicio:
             texto = texto[match_inicio.start():]
         else:
-            # Eliminar líneas en inglés al principio (preamble del modelo)
+            # Fallback: primera línea que comience una sección conocida
             lineas = texto.split('\n')
             primera_es = next(
                 (i for i, l in enumerate(lineas)
-                 if l.strip().startswith('**') or l.strip().startswith('Ejercicio') or
-                    any(kw in l for kw in ('CALENTAMIENTO', 'PARTE PRINCIPAL', 'VUELTA'))),
+                 if re.match(r'(Ejercicio\s+1|CALENTAMIENTO|\*\*CALENTAMIENTO|\*\*PARTE)', l.strip())),
                 None
             )
             if primera_es:
