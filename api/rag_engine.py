@@ -117,6 +117,49 @@ def filtrar_ejercicios(ejercicios: list, edad: str, objetivo: str) -> list:
     # Devolver: analíticos primero (para fase 1), directos después (fases 2-3)
     return analiticos + directos
 
+
+def _nivel_oposicion(ej: dict) -> int:
+    """0=sin oposición, 1=reducida (2c1/3c2), 2=igualada (3c3...)"""
+    import re as _re
+    nombre = ej['nombre'].lower()
+    # Solo el nombre — más predecible que incluir descripción
+    if _re.search(r'contra\s+0\b|\bc0\b|\bx0\b', nombre):
+        return 0
+    if _re.search(r'contra\s+[12]\b|\b[23]c[12]\b|\b2c1\b|\b3c2\b', nombre):
+        return 1
+    if _re.search(r'contra\s+3\b|\b3c3\b|\b4c4\b', nombre):
+        return 2
+    return 0 if ej.get('_fase') == 'ANALÍTICO' else 1
+
+
+def seleccionar_tres_ejercicios(relevantes: list) -> tuple:
+    """Elige (ej1_analitico, ej2_reducida, ej3_aplicado) directamente en Python."""
+    analiticos = [e for e in relevantes if e.get('_fase') == 'ANALÍTICO']
+    directos   = [e for e in relevantes if e.get('_fase') == 'OBJETIVO']
+
+    # Fallback: si no hay analíticos, usar el primer directo de nivel 0
+    if not analiticos:
+        analiticos = [e for e in directos if _nivel_oposicion(e) == 0] or directos[:1]
+
+    ej1 = analiticos[0] if analiticos else None
+
+    # Ejercicio 2: directo con oposición reducida (nivel 1), diferente al ej1
+    candidatos_2 = sorted(
+        [e for e in directos if e != ej1],
+        key=lambda e: abs(_nivel_oposicion(e) - 1)
+    )
+    ej2 = candidatos_2[0] if candidatos_2 else None
+
+    # Ejercicio 3: directo con mayor oposición (nivel 2 preferible), diferente a ej1 y ej2
+    candidatos_3 = sorted(
+        [e for e in directos if e != ej1 and e != ej2],
+        key=lambda e: -_nivel_oposicion(e)
+    )
+    ej3 = candidatos_3[0] if candidatos_3 else None
+
+    return ej1, ej2, ej3
+
+
 def construir_contexto_ejercicios(ejercicios: list, max_ejs: int = 10) -> str:
     analiticos = [e for e in ejercicios if e.get("_fase") == "ANALÍTICO"]
     directos   = [e for e in ejercicios if e.get("_fase") != "ANALÍTICO"]
@@ -203,17 +246,24 @@ TERMINOLOGÍA TÉCNICA (usa siempre en las descripciones):
 """
 
 
+def _desc_ej(ej: dict) -> str:
+    """Línea corta de descripción para el prompt de sesión."""
+    tacticos = ", ".join(ej.get("objetivos", {}).get("tacticos", [])[:3])
+    desc = ej.get("descripcion", "")[:120]
+    return f"{tacticos}. {desc}".strip(". ")
+
+
 def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
     import re
 
     ejercicios = cargar_ejercicios()
     relevantes = filtrar_ejercicios(ejercicios, edad, objetivo)
-    ctx_ejercs = construir_contexto_ejercicios(relevantes, max_ejs=10)
-    ctx_teoria = construir_contexto_teoria(objetivo, edad)
+    ej1, ej2, ej3 = seleccionar_tres_ejercicios(relevantes)
+    ctx_teoria  = construir_contexto_teoria(objetivo, edad)
 
     teoria_intro = ""
     if ctx_teoria:
-        teoria_intro = f"TEORIA Y METODOLOGÍA (usa estos conceptos):\n{ctx_teoria[:1500]}\n\n"
+        teoria_intro = f"CONTEXTO METODOLÓGICO:\n{ctx_teoria[:800]}\n\n"
 
     t_descanso = 3 if duracion >= 60 else 2
     descanso_texto = f"**DESCANSO ({t_descanso} min)**"
@@ -224,65 +274,57 @@ def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
     t_ej     = t_parte // 3
     categoria_nombre = EDAD_A_CATEGORIA.get(edad, edad)
 
-    prompt = f"""Eres MiPizarra, asistente de entrenamiento de baloncesto. Escribe la sesión directamente, sin pensar en voz alta ni hacer comentarios previos.
+    n1 = ej1['nombre'] if ej1 else "ejercicio analítico"
+    n2 = ej2['nombre'] if ej2 else "ejercicio con superioridad"
+    n3 = ej3['nombre'] if ej3 else "ejercicio aplicado"
+
+    prompt = f"""Eres MiPizarra, asistente de entrenamiento de baloncesto.
+Rellena la plantilla de abajo con contenido concreto. No añadas texto fuera de la plantilla.
 
 CATEGORÍA: {categoria_nombre} ({edad}) | DURACIÓN: {duracion} min | OBJETIVO: {objetivo}
 
-TIEMPO:
-- Calentamiento: {t_calent} min
-- Parte principal: {t_parte} min (3 ejercicios de ~{t_ej} min)
-- Descanso: {t_descanso} min
-- Vuelta a la calma: {t_vuelta} min
-
 {teoria_intro}{VOCABULARIO_TECNICO}
 
-{ctx_ejercs}
-
-Escribe exactamente esto (sin cambiar los títulos en negrita):
+EJERCICIOS DE LA SESIÓN (ya seleccionados — usa estos nombres exactos):
+1. "{n1}" — sin oposición o defensa pasiva. {_desc_ej(ej1) if ej1 else ''}
+2. "{n2}" — con superioridad numérica. {_desc_ej(ej2) if ej2 else ''}
+3. "{n3}" — con oposición igualada. {_desc_ej(ej3) if ej3 else ''}
 
 **CALENTAMIENTO ({t_calent} min)**
-Juego: "[nombre]"
-Reglas: [2-3 frases de cómo se juega]
-Espacio: [media pista / pista completa]
+Juego:
+Reglas:
+Espacio:
 
 **PARTE PRINCIPAL**
 
-Ejercicio 1: [nombre EXACTO de la lista — sin oposición o con defensa pasiva]
+Ejercicio 1: {n1}
 Duración: {t_ej} min
-Organización: [descripción con posiciones: codo TL, esquina, baseline, poste alto...]
+Organización:
 Puntos clave:
-- [fundamento de base para {objetivo}: pase en carrera, pase de salida, rebote...]
-- [segundo aspecto técnico]
+-
+-
 
-Ejercicio 2: [nombre EXACTO de la lista — con oposición reducida: 2c1 o 3c2 — distinto al 1]
+Ejercicio 2: {n2}
 Duración: {t_ej} min
-Organización: [descripción]
+Organización:
 Puntos clave:
-- [aspecto táctico con ventaja numérica]
-- [segundo aspecto]
+-
+-
 
 {descanso_texto}
 
-Ejercicio 3: [nombre EXACTO de la lista — con oposición igualada o casi igualada — distinto al 1 y 2]
+Ejercicio 3: {n3}
 Duración: {t_parte - 2*t_ej} min
-Organización: [descripción más compleja]
+Organización:
 Puntos clave:
-- [aspecto táctico aplicado]
-- [segundo aspecto]
+-
+-
 
 **VUELTA A LA CALMA ({t_vuelta} min)**
-Juego: "[juego recreativo o tiro libre]"
-Reglas: [2-3 frases]
+Juego:
+Reglas:
 
-**Fundamentos**: [técnicas reales practicadas hoy]
-
-REGLAS:
-- Escribe SOLO la sesión, sin explicaciones, sin comentarios, sin razonar la elección de ejercicios
-- Usa nombres EXACTOS de la lista
-- 3 ejercicios distintos con progresión sin oposición → oposición reducida → oposición igualada
-- El Ejercicio 1 puede trabajar un fundamento distinto al objetivo principal si lo prepara (pase, rebote)
-
-SESIÓN:"""
+**Fundamentos**: """
 
     try:
         response = requests.post(
@@ -393,13 +435,13 @@ SESIÓN:"""
         logger.error(f"Error generando sesión: {e}")
         return {
             "texto": f"**Error generando sesión**: {str(e)}",
-            "ejercicios_usados": relevantes[:10],
+            "ejercicios_usados": [e for e in [ej1, ej2, ej3] if e],
             "teoria_usada": bool(ctx_teoria),
         }
 
     return {
         "texto":             texto,
-        "ejercicios_usados": relevantes[:10],
+        "ejercicios_usados": [e for e in [ej1, ej2, ej3] if e],
         "teoria_usada":      bool(ctx_teoria),
     }
 
