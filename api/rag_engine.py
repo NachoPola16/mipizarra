@@ -33,52 +33,97 @@ _chroma      = chromadb.PersistentClient(path=CHROMA_DB_DIR)
 
 
 # ─── Ejercicios ──────────────────────────────────────────────────────────
+
+# Fundamentos analíticos relacionados con cada tipo de objetivo.
+# Sirven para seleccionar ejercicios de fase analítica (ejercicio 1)
+# aunque no sean directamente del objetivo principal.
+COMPONENTES_ANALITICOS = {
+    "contraataque":      ["pase", "rebote", "transición", "salida", "carrera"],
+    "transición":        ["pase", "rebote", "salida", "carrera"],
+    "tiro":              ["tiro", "recepción", "desmarque", "corte", "movimiento"],
+    "defensa":           ["posición", "ayuda", "rebote", "deslizamiento", "cierre"],
+    "bloqueo":           ["bloqueo", "lectura", "pase"],
+    "ataque posicional": ["pase", "corte", "espaciado", "movimiento"],
+    "1c1":               ["bote", "tiro", "finalizacion", "entrada", "penetración"],
+    "pase":              ["pase", "recepción", "movimiento", "corte"],
+    "rebote":            ["rebote", "posición", "salida"],
+}
+
+
 def cargar_ejercicios() -> list:
     with open(EXERCISES_PATH, encoding="utf-8") as f:
         return json.load(f)
 
-def filtrar_ejercicios(ejercicios: list, edad: str, objetivo: str) -> list:
-    # Convertir U16 → Cadete si es necesario
-    categoria = EDAD_A_CATEGORIA.get(edad, edad)
-    
+
+def _palabras_objetivo(objetivo: str) -> tuple[list[str], list[str]]:
+    """Devuelve (palabras_directas, palabras_componentes) para un objetivo."""
     palabras = objetivo.lower().split()
-    seleccionados = []
+    componentes = []
+    for clave, fundamentos in COMPONENTES_ANALITICOS.items():
+        if any(p in clave for p in palabras) or any(clave in p for p in palabras):
+            componentes.extend(fundamentos)
+    return palabras, list(set(componentes))
 
-    for ej in ejercicios:
+
+def filtrar_ejercicios(ejercicios: list, edad: str, objetivo: str) -> list:
+    categoria = EDAD_A_CATEGORIA.get(edad, edad)
+    palabras_obj, palabras_comp = _palabras_objetivo(objetivo)
+
+    def en_categoria(ej):
         edades_ej = ej.get("edades", [])
-        # Buscar tanto por código (U16) como por nombre (Cadete)
-        if edad not in edades_ej and categoria not in edades_ej:
+        return edad in edades_ej or categoria in edades_ej
+
+    def texto_ej(ej):
+        tags = " ".join(ej.get("objetivos", {}).get("tacticos", []))
+        return f"{ej['nombre']} {ej.get('descripcion', '')} {tags}".lower()
+
+    directos, analiticos, resto = [], [], []
+    for ej in ejercicios:
+        if not en_categoria(ej):
             continue
-        
-        tags  = " ".join(ej.get("objetivos", {}).get("tacticos", []))
-        texto = f"{ej['nombre']} {ej.get('descripcion', '')} {tags}".lower()
-        if any(p in texto for p in palabras):
-            seleccionados.append(ej)
+        txt = texto_ej(ej)
+        if any(p in txt for p in palabras_obj):
+            directos.append(ej)
+        elif palabras_comp and any(p in txt for p in palabras_comp):
+            analiticos.append(ej)
+        else:
+            resto.append(ej)
 
-    # Fallback: todos los de esa edad/categoría
-    if not seleccionados:
-        seleccionados = [
-            e for e in ejercicios 
-            if edad in e.get("edades", []) or categoria in e.get("edades", [])
-        ]
+    # Fallback: si no hay directos, usar toda la categoría
+    if not directos:
+        directos = analiticos + resto
+        analiticos = []
 
-    # Ordenar: primero los que tienen diagrama, luego por relevancia
-    def score(ej):
-        tags  = " ".join(ej.get("objetivos", {}).get("tacticos", []))
-        texto = f"{ej['nombre']} {ej.get('descripcion', '')} {tags}".lower()
-        coincidencias = sum(1 for p in palabras if p in texto)
+    def score(ej, palabras):
+        txt = texto_ej(ej)
+        coincidencias = sum(1 for p in palabras if p in txt)
         tiene_diagrama = 10 if "diagrama" in ej else 0
         return tiene_diagrama + coincidencias
 
-    return sorted(seleccionados, key=score, reverse=True)
+    directos   = sorted(directos,   key=lambda e: score(e, palabras_obj),  reverse=True)
+    analiticos = sorted(analiticos, key=lambda e: score(e, palabras_comp), reverse=True)[:4]
+
+    # Marcar fase para que construir_contexto_ejercicios pueda etiquetarlos
+    for ej in analiticos:
+        ej["_fase"] = "ANALÍTICO"
+    for ej in directos:
+        ej["_fase"] = "OBJETIVO"
+
+    # Devolver: analíticos primero (para fase 1), directos después (fases 2-3)
+    return analiticos + directos
 
 def construir_contexto_ejercicios(ejercicios: list, max_ejs: int = 10) -> str:
-    con_diagrama = [e for e in ejercicios if "diagrama" in e]
-    sin_diagrama = [e for e in ejercicios if "diagrama" not in e]
-    
-    seleccion = con_diagrama[:2] + sin_diagrama[:max_ejs-2]
+    analiticos = [e for e in ejercicios if e.get("_fase") == "ANALÍTICO"]
+    directos   = [e for e in ejercicios if e.get("_fase") != "ANALÍTICO"]
+
+    con_diagrama = [e for e in directos if "diagrama" in e]
+    sin_diagrama = [e for e in directos if "diagrama" not in e]
+    resto_directos = con_diagrama[:2] + sin_diagrama
+    n_directos = max(max_ejs - len(analiticos), 4)
+
+    seleccion = analiticos + resto_directos[:n_directos]
     seleccion = seleccion[:max_ejs]
-    
+
     lineas = ["EJERCICIOS DISPONIBLES (usa el nombre EXACTO):"]
     for ej in seleccion:
         tacticos  = ", ".join(ej.get("objetivos", {}).get("tacticos",  []))
@@ -86,8 +131,9 @@ def construir_contexto_ejercicios(ejercicios: list, max_ejs: int = 10) -> str:
         fisicos   = ", ".join(ej.get("objetivos", {}).get("fisicos",   []))
         obj_str   = " | ".join(filter(None, [tacticos, tecnicos, fisicos]))
         desc = ej.get("descripcion", "")[:150]
+        etiqueta = f"[{ej['_fase']}] " if ej.get("_fase") else ""
         lineas.append(
-            f"- \"{ej['nombre']}\" "
+            f"- {etiqueta}\"{ej['nombre']}\" "
             f"({ej['duracion_min']} min, intensidad {ej['intensidad']}/5): "
             f"{obj_str}. {desc}"
         )
@@ -195,25 +241,25 @@ Juego: "[nombre del juego dinámico con balón]"
 Reglas: [2-3 frases concretas sobre cómo se juega, con mecánicas de {objetivo}]
 Espacio: [media pista / pista completa]
 
-**PARTE PRINCIPAL**
+**PARTE PRINCIPAL** — progresión obligatoria con oposición creciente
 
-Ejercicio 1: [NOMBRE EXACTO de la lista de ejercicios]
+Ejercicio 1 (ANALÍTICO — usa preferiblemente uno marcado [ANALÍTICO] en la lista, sin oposición o con defensa pasiva): [NOMBRE EXACTO de la lista de ejercicios]
 Duración: {t_ej} min
 Organización: [descripción con posiciones concretas: codo TL, esquina, baseline, poste alto...]
 Puntos clave:
-- [aspecto técnico 1 relacionado con {objetivo}]
-- [aspecto técnico 2 relacionado con {objetivo}]
+- [fundamento técnico de base que sostiene "{objetivo}" — p.ej. pase en carrera, rebote y salida, recepción]
+- [aspecto técnico 2 del mismo fundamento]
 
-Ejercicio 2: [NOMBRE EXACTO de la lista — DIFERENTE al Ejercicio 1]
+Ejercicio 2 (OPOSICIÓN REDUCIDA — superioridad numérica tipo 2c1/3c2, marcado [OBJETIVO] en la lista — DIFERENTE al Ejercicio 1): [NOMBRE EXACTO de la lista]
 Duración: {t_ej} min
 Organización: [descripción detallada]
 Puntos clave:
-- [aspecto técnico 1 relacionado con {objetivo}]
-- [aspecto técnico 2 relacionado con {objetivo}]
+- [aspecto táctico 1 relacionado con {objetivo} en situación de ventaja numérica]
+- [aspecto táctico 2 relacionado con {objetivo}]
 
 {descanso_texto}
 
-Ejercicio 3: [NOMBRE EXACTO de la lista — DIFERENTE a Ejercicio 1 y 2]
+Ejercicio 3 (APLICADO — oposición igualada o casi igualada, situación de juego real, marcado [OBJETIVO] — DIFERENTE a Ejercicio 1 y 2): [NOMBRE EXACTO de la lista]
 Duración: {t_parte - 2*t_ej} min
 Organización: [descripción detallada con mayor complejidad que los anteriores]
 Puntos clave:
@@ -230,8 +276,9 @@ INSTRUCCIONES CRÍTICAS:
 - Usa SOLO nombres EXACTOS de la lista de ejercicios disponibles
 - EXACTAMENTE 3 ejercicios en Parte Principal — ni uno más ni uno menos
 - Los 3 ejercicios deben tener nombres DISTINTOS entre sí
-- TODOS los ejercicios deben trabajar el objetivo "{objetivo}" directamente
-- Progresión pedagógica: Ejercicio 1 (individual/parejas) → 2 (grupos) → 3 (juego reducido)
+- NO repitas variantes del mismo ejercicio: el objetivo "{objetivo}" es el HILO CONDUCTOR, no una exigencia de que los 3 ejercicios sean iguales
+- OPOSICIÓN PROGRESIVA OBLIGATORIA: Ejercicio 1 sin oposición o con defensa pasiva → Ejercicio 2 con oposición reducida (superioridad numérica) → Ejercicio 3 con oposición igualada o casi igualada
+- El Ejercicio 1 puede trabajar un fundamento de base distinto al objetivo (p.ej. pase o rebote como preparación para contraataque), siempre que sirva de apoyo real al objetivo principal
 - Calentamiento: juego dinámico con balón, mecánica distinta a los ejercicios de parte principal
 - Vuelta a la calma: recreativo o tiro libre
 - Los Fundamentos deben listar técnicas DE TIRO/PASE/etc. reales que se hayan practicado hoy
@@ -279,6 +326,25 @@ SESIÓN:"""
         if texto.startswith("{") or texto.startswith("["):
             logger.warning("Modelo devolvió JSON en lugar de texto, reintentando...")
             raise ValueError("Respuesta en JSON no válida")
+
+        # ── 0. Eliminar bloques <think>...</think> (Qwen3 con think no desactivado) ──
+        texto = re.sub(r'<think>.*?</think>', '', texto, flags=re.DOTALL).strip()
+
+        # ── 0b. Eliminar razonamiento en inglés antes del formato de sesión ──────
+        match_inicio = re.search(r'\*\*CALENTAMIENTO', texto)
+        if match_inicio:
+            texto = texto[match_inicio.start():]
+        else:
+            # Eliminar líneas en inglés al principio (preamble del modelo)
+            lineas = texto.split('\n')
+            primera_es = next(
+                (i for i, l in enumerate(lineas)
+                 if l.strip().startswith('**') or l.strip().startswith('Ejercicio') or
+                    any(kw in l for kw in ('CALENTAMIENTO', 'PARTE PRINCIPAL', 'VUELTA'))),
+                None
+            )
+            if primera_es:
+                texto = '\n'.join(lineas[primera_es:]).strip()
 
         # ── 1. Limpiar preámbulos que el modelo añade antes de la sesión ──────
         preambles = ['"""', "'''", '""', "''"]
