@@ -222,6 +222,11 @@ def _generar_pdf(sesion_texto, edad, objetivo, duracion, diagramas):
             pdf.set_text_color(40, 40, 50)
             continue
 
+        # Markdown inline (*cursiva*, **negrita**) que el modelo añade dentro de la
+        # línea: este renderer no lo interpreta, así que se elimina para no mostrar
+        # asteriscos literales y para que coincida con subsec_keys ("*Juego*:" → "Juego:").
+        linea = linea.replace('**', '').replace('*', '')
+
         if re.match(r'Ejercicio \d+', linea):
             if not pagina_recien_nueva:
                 pdf.add_page()

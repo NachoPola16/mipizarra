@@ -119,16 +119,16 @@ def filtrar_ejercicios(ejercicios: list, edad: str, objetivo: str) -> list:
 
 
 def _nivel_oposicion(ej: dict) -> int:
-    """0=sin oposición, 1=reducida (2c1/3c2), 2=igualada (3c3...)"""
+    """0=sin oposición, 1=reducida (ventaja numérica), 2=igualada (mismo nº ataque/defensa)"""
     import re as _re
     nombre = ej['nombre'].lower()
-    # Solo el nombre — más predecible que incluir descripción
-    if _re.search(r'contra\s+0\b|\bc0\b|\bx0\b', nombre):
-        return 0
-    if _re.search(r'contra\s+[12]\b|\b[23]c[12]\b|\b2c1\b|\b3c2\b', nombre):
-        return 1
-    if _re.search(r'contra\s+3\b|\b3c3\b|\b4c4\b', nombre):
-        return 2
+    # Extrae "AcB" o "A contra B" (con o sin espacios): ataque vs defensa
+    m = _re.search(r'(\d)\s*c(?:ontra)?\s*(\d)', nombre)
+    if m:
+        ataque, defensa = int(m.group(1)), int(m.group(2))
+        if defensa == 0:
+            return 0
+        return 2 if ataque == defensa else 1
     return 0 if ej.get('_fase') == 'ANALÍTICO' else 1
 
 

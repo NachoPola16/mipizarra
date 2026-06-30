@@ -451,6 +451,7 @@ async function generar() {
         });
         const data = await resp.json();
         if (!resp.ok) throw new Error(data.error || 'Error desconocido');
+        if (data.duracion) currentDuracion = data.duracion;
         currentResult = data;
         renderResults(data);
     } catch (e) {

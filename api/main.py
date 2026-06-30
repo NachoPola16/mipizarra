@@ -234,6 +234,9 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
 
     return {
         "sesion":    resultado["texto"],
+        "duracion":  req.duracion,
+        "edad":      edad,
+        "objetivo":  req.objetivo,
         "diagramas": diagramas,
         "teoria_usada": resultado.get("teoria_usada", False),
         "ejercicios_usados": [
