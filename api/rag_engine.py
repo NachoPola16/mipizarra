@@ -246,6 +246,30 @@ TERMINOLOGÍA TÉCNICA (usa siempre en las descripciones):
 """
 
 
+def _eliminar_secciones_duplicadas(texto: str) -> str:
+    """Si el modelo repite un 'Ejercicio N:' ya visto (rambling tras terminar la
+    plantilla), elimina ese bloque duplicado hasta la siguiente sección válida."""
+    import re as _re
+    lineas = texto.split('\n')
+    vistos = set()
+    resultado = []
+    saltando = False
+    for linea in lineas:
+        m = _re.match(r'Ejercicio\s+(\d+)\s*:', linea.strip())
+        if m:
+            num = m.group(1)
+            if num in vistos:
+                saltando = True
+                continue
+            vistos.add(num)
+            saltando = False
+        elif _re.match(r'(\*\*?VUELTA A LA CALMA|\*\*?Fundamentos|DESCANSO)', linea.strip(), _re.IGNORECASE):
+            saltando = False
+        if not saltando:
+            resultado.append(linea)
+    return '\n'.join(resultado)
+
+
 def _desc_ej(ej: dict) -> str:
     """Línea corta de descripción para el prompt de sesión."""
     tacticos = ", ".join(ej.get("objetivos", {}).get("tacticos", [])[:3])
@@ -335,7 +359,7 @@ Reglas:
                 "stream":  False,
                 "options": {
                     "temperature": 0.4,
-                    "num_predict": 1800,
+                    "num_predict": 900,
                     "num_ctx":     6144,
                     "top_p":       0.9,
                     "min_p":       0.05,
@@ -416,6 +440,9 @@ Reglas:
         for patron_extra in ["\nEjercicio 4:", "\nEjercicio 5:"]:
             if patron_extra in texto:
                 texto = texto.split(patron_extra)[0].strip()
+
+        # ── 3b. Eliminar "Ejercicio 1/2/3" repetidos (rambling tras terminar) ──
+        texto = _eliminar_secciones_duplicadas(texto)
 
         # ── 4. Truncar al final natural (tras Fundamentos) ────────────────────
         # Acepta: **Fundamentos**: texto | Fundamentos\ntexto | FUNDAMENTOS: texto
