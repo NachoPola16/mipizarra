@@ -25,21 +25,61 @@ logger = logging.getLogger(__name__)
 
 
 def parsear_ejercicios_de_sesion(texto: str) -> list:
-    """Extrae nombre y organización de cada ejercicio del texto de sesión generado."""
+    """Extrae nombre y organización de cada ejercicio del texto de sesión generado.
+    Reconoce tanto 'Ejercicio N:' como 'Ejercicio N.1:' / 'Ejercicio N.2 (variante):'
+    cuando un ejercicio largo se ha partido en base + variante."""
+    cab = r'Ejercicio \d+(?:\.\d+)?\s*(?:\([^)]*\))?\s*:'
     ejercicios = []
-    partes = re.split(r'\n(?=Ejercicio \d+:)', texto)
+    partes = re.split(rf'\n(?=\s*{cab})', texto)
     for parte in partes:
-        m = re.match(r'Ejercicio \d+:\s*"?([^"\n]+)"?', parte.strip())
-        if not m:
+        parte = parte.strip()
+        m_cab = re.match(cab, parte)
+        if not m_cab:
             continue
-        nombre = m.group(1).strip().strip('"')
+        cabecera_completa = parte[:m_cab.end()]
+        resto_primera_linea = parte[m_cab.end():].split('\n', 1)[0]
+
+        # Nombre: preferir el que va dentro del paréntesis ('variante de "X"'),
+        # y si no, el texto tras los dos puntos EN LA MISMA LÍNEA (el modelo a veces
+        # no repite el nombre ahí, así que no cruzamos a la línea de "Duración:").
+        m_variante = re.search(r'variante de\s+"([^"]+)"', cabecera_completa, re.IGNORECASE)
+        if m_variante:
+            nombre = m_variante.group(1).strip()
+        elif resto_primera_linea.strip():
+            nombre = resto_primera_linea.strip().strip('"')
+        else:
+            continue
+
         m_org = re.search(
-            r'Organización[:\s]+(.*?)(?=Puntos clave:|Duración:|Ejercicio \d+:|$)',
+            rf'Organización[:\s]+(.*?)(?=Puntos clave:|Duración:|{cab}|$)',
             parte, re.DOTALL | re.IGNORECASE,
         )
         desc = m_org.group(1).strip() if m_org else ""
         ejercicios.append({"nombre": nombre, "descripcion": desc})
     return ejercicios
+
+
+def parsear_calentamiento_y_vuelta(texto: str) -> list:
+    """Extrae el juego de CALENTAMIENTO y VUELTA A LA CALMA para poder darles diagrama
+    también — parsear_ejercicios_de_sesion solo captura los 'Ejercicio N:' de la parte
+    principal, y estos dos bloques se quedaban siempre sin representación gráfica."""
+    resultado = []
+    for etiqueta, patron in (
+        ("Calentamiento", r'\*\*CALENTAMIENTO[^\n]*\*\*(.*?)(?=\n---|\*\*PARTE PRINCIPAL|\Z)'),
+        ("Vuelta a la calma", r'\*\*VUELTA A LA CALMA[^\n]*\*\*(.*?)(?=\*\*Fundamentos|\Z)'),
+    ):
+        m = re.search(patron, texto, re.DOTALL | re.IGNORECASE)
+        if not m:
+            continue
+        bloque = m.group(1)
+        m_juego = re.search(r'Juego:\s*([^\n]+)', bloque)
+        if not m_juego:
+            continue
+        nombre = f"{etiqueta}: {m_juego.group(1).strip()}"
+        m_reglas = re.search(r'Reglas:\s*(.*?)(?=Espacio:|\Z)', bloque, re.DOTALL)
+        desc = m_reglas.group(1).strip() if m_reglas else bloque.strip()
+        resultado.append({"nombre": nombre, "descripcion": desc})
+    return resultado
 
 
 # ── Defensa en profundidad: secret compartido con el proxy ──────────────────
@@ -166,21 +206,41 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
         ejercicios_db = resultado.get("ejercicios_usados", [])
 
         ejercicios_con_descripcion = []
-        for i, ej_texto in enumerate(ejercicios_del_texto[:3]):
+        # Hasta 6: cada uno de los 3 ejercicios principales puede venir partido en
+        # base + variante (N.1/N.2) cuando la duración supera lo que esa edad aguanta.
+        # La base usa el diagrama guardado de la ficha; la variante (mismo nombre,
+        # segunda aparición) describe un cambio distinto, así que genera el suyo
+        # propio en vez de repetir el mismo diagrama dos veces.
+        ids_ya_usados = set()
+        for i, ej_texto in enumerate(ejercicios_del_texto[:6]):
             ej_db = next(
                 (e for e in ejercicios_db if e.get("nombre", "").lower() in ej_texto["nombre"].lower()
                  or ej_texto["nombre"].lower() in e.get("nombre", "").lower()),
                 ejercicios_db[i] if i < len(ejercicios_db) else {}
             )
+            es_variante = ej_db.get("id") and ej_db.get("id") in ids_ya_usados
+            if ej_db.get("id"):
+                ids_ya_usados.add(ej_db["id"])
+
             ejercicios_con_descripcion.append({
                 "nombre":      ej_texto["nombre"],
-                "descripcion": ej_texto["descripcion"] or ej_db.get("descripcion", ""),
-                "diagrama":    ej_db.get("diagrama"),
-                "id":          ej_db.get("id", f"ej_texto_{i}"),
+                "descripcion": ej_texto["descripcion"] or ("" if es_variante else ej_db.get("descripcion", "")),
+                "diagrama":    None if es_variante else ej_db.get("diagrama"),
+                "id":          f"{ej_db.get('id', f'ej_texto_{i}')}{'_variante' if es_variante else ''}",
             })
 
         if not ejercicios_con_descripcion:
             ejercicios_con_descripcion = ejercicios_db[:4]
+
+        # Calentamiento y vuelta a la calma son juegos inventados por el modelo, sin
+        # entrada en exercises.json — igual se benefician de diagrama automático.
+        for extra in parsear_calentamiento_y_vuelta(resultado["texto"]):
+            ejercicios_con_descripcion.append({
+                "nombre":      extra["nombre"],
+                "descripcion": extra["descripcion"],
+                "diagrama":    None,
+                "id":          extra["nombre"].split(":")[0].strip().lower().replace(" ", "_"),
+            })
 
         logger.info(f"Intentando generar {len(ejercicios_con_descripcion)} diagramas")
 

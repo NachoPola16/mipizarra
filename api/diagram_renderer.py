@@ -149,20 +149,19 @@ def _half_court_elements(svg: list, cx: float, base_y: float, pad_x: float,
     logger.info("  → Triple FIBA 6.75m")
 
     # Triple Minibasket (solo Alevín e inferiores: U8, U10, U12)
+    # Rectángulo, no arco: línea de tiro libre (4m) prolongada 4m a cada lado
+    # hasta unir con la línea de fondo (regla FEB). No hay curva.
     if edad in CATEGORIAS_MINI:
         hw    = 4.0 * ESCALA
-        ch    = 4.6 * ESCALA
         ml_x  = cx - hw
         mr_x  = cx + hw
-        top_y = base_y - s * ch
-        svg.append(f'<line x1="{ml_x:.0f}" y1="{base_y:.0f}" x2="{ml_x:.0f}" y2="{top_y:.0f}" '
+        svg.append(f'<line x1="{ml_x:.0f}" y1="{base_y:.0f}" x2="{ml_x:.0f}" y2="{tl_y:.0f}" '
                    f'stroke="#2d3748" stroke-width="2.5"/>')
-        svg.append(f'<line x1="{mr_x:.0f}" y1="{base_y:.0f}" x2="{mr_x:.0f}" y2="{top_y:.0f}" '
+        svg.append(f'<line x1="{mr_x:.0f}" y1="{base_y:.0f}" x2="{mr_x:.0f}" y2="{tl_y:.0f}" '
                    f'stroke="#2d3748" stroke-width="2.5"/>')
-        arc_sw_mini = "0 0 1" if not flip else "0 0 0"
-        svg.append(f'<path d="M {ml_x:.0f},{top_y:.0f} A {hw:.0f},{hw:.0f} {arc_sw_mini} {mr_x:.0f},{top_y:.0f}" '
-                   f'fill="none" stroke="#2d3748" stroke-width="2.5"/>')
-        logger.info("  → Triple MINIBASKET (4m, 4.6m corner)")
+        svg.append(f'<line x1="{ml_x:.0f}" y1="{tl_y:.0f}" x2="{mr_x:.0f}" y2="{tl_y:.0f}" '
+                   f'stroke="#2d3748" stroke-width="2.5"/>')
+        logger.info("  → Triple MINIBASKET (rectángulo, 4m cada lado hasta línea de tiro libre)")
 
 
 def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:

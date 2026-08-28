@@ -27,7 +27,7 @@ MODEL          = os.environ.get("OLLAMA_MODEL", "qwen3:4b")
 # razonamiento en inglés dentro del propio texto (no solo como preámbulo) y el
 # parámetro "think": False no lo evita de forma fiable. qwen2.5-instruct no tiene
 # modo thinking, así que no puede colarse ningún razonamiento.
-MODEL_SESION   = os.environ.get("OLLAMA_MODEL_SESION", "qwen2.5:7b-instruct-q4_K_M")
+MODEL_SESION   = os.environ.get("OLLAMA_MODEL_SESION", os.environ.get("OLLAMA_MODEL", "qwen3:4b"))
 EXERCISES_PATH = os.environ.get("EXERCISES_PATH", "/app/data/exercises.json")
 CHROMA_DB_DIR  = os.environ.get("CHROMA_DB_DIR", "/app/data/chroma_db")
 EMBED_MODEL    = "nomic-embed-text"
@@ -94,16 +94,22 @@ def filtrar_ejercicios(ejercicios: list, edad: str, objetivo: str) -> list:
         else:
             resto.append(ej)
 
-    # Fallback: si no hay directos, usar toda la categoría
-    if not directos:
-        directos = analiticos + resto
-        analiticos = []
-
     def score(ej, palabras):
         txt = texto_ej(ej)
         coincidencias = sum(1 for p in palabras if p in txt)
         tiene_diagrama = 10 if "diagrama" in ej else 0
         return tiene_diagrama + coincidencias
+
+    # Fallback: si no hay directos, usar toda la categoría
+    if not directos:
+        directos = analiticos + resto
+        analiticos = []
+    elif len(directos) < 3:
+        # El objetivo no tiene por qué ser lo PRINCIPAL de los 3 ejercicios — si hay
+        # pocos con coincidencia directa, se completa con los mejores del resto
+        # (objetivo como aspecto secundario/terciario) en vez de forzar solo directos.
+        resto_ordenado = sorted(resto, key=lambda e: score(e, palabras_obj), reverse=True)
+        directos = directos + resto_ordenado[:3 - len(directos)]
 
     directos   = sorted(directos,   key=lambda e: score(e, palabras_obj),  reverse=True)
     analiticos = sorted(analiticos, key=lambda e: score(e, palabras_comp), reverse=True)[:4]
@@ -235,14 +241,38 @@ def construir_contexto_teoria(objetivo: str, edad: str) -> str:
 
 
 # ─── Generación ──────────────────────────────────────────────────────────
-VOCABULARIO_TECNICO = """\
-TERMINOLOGÍA TÉCNICA (usa siempre en las descripciones):
-- Zonas de pista: codo TL derecho/izquierdo, cabecera triple, esquina derecha/izquierda, baseline, poste alto, poste bajo, zona pintada, ala derecha/izquierda
-- Bote: progresión (velocidad), protección (cuerpo entre balón y defensor), crossover, entre piernas, por detrás, bote de retroceso
+# Categorías de formación (minibasket y alevín) donde no se recomienda enseñar
+# juego de poste ni bloqueos — no es ilegal, pero no aporta a esas edades
+# (mismo criterio que la tabla de restricciones de docs/coordenadas.md).
+CATEGORIAS_SIN_POSTE_NI_BLOQUEO = {"U8", "U10", "U12", "Prebenjamín", "Benjamín", "Alevín"}
+
+
+def vocabulario_tecnico(edad: str) -> str:
+    """Terminología técnica para el prompt de sesión, adaptada a la edad:
+    sin poste bajo/bloqueos para categorías de formación."""
+    mini = edad in CATEGORIAS_SIN_POSTE_NI_BLOQUEO
+
+    zonas = ("codo TL derecho/izquierdo, cabecera triple, esquina derecha/izquierda, "
+             "baseline, zona pintada, ala derecha/izquierda")
+    if not mini:
+        zonas += ", poste alto, poste bajo"
+
+    defensa = ("posición básica (pies separados, rodillas flexionadas, manos activas), "
+                "deslizamiento lateral, ayuda, rotación, negación, tapping")
+    conceptos = "caída hacia canasta, corte (en V, puerta atrás), penetración, 1vs1 con bote"
+    if not mini:
+        defensa += ", defensa al bloqueo directo (pasar por delante/detrás, cambio)"
+        conceptos = "bloqueo directo, " + conceptos
+
+    return f"""\
+TERMINOLOGÍA TÉCNICA (úsala donde tenga sentido táctico; no fuerces varios términos \
+en una misma frase ni encadenes acciones sin relación lógica entre sí):
+- Zonas de pista: {zonas}
+- Bote: progresión (velocidad), protección (cuerpo entre balón y defensor), crossover, entre piernas, por detrás, bote hacia atrás
 - Tiro: suspensión, bandeja mano dominante/débil, entrada 1-2 con parada, floater, tiro de media distancia desde codo, tiro libre
 - Pase: pecho, picado, béisbol, por encima (overhead), pase en movimiento, pase de salida tras rebote
-- Defensa: posición básica (pies separados, rodillas flexionadas, manos activas), deslizamiento lateral, ayuda, rotación, negación, tapping, defensa al bloqueo directo (pasar por delante/detrás, cambio)
-- Conceptos: bloqueo directo, caída hacia canasta, corte (en V, puerta atrás), penetración, 1vs1 con bote\
+- Defensa: {defensa}
+- Conceptos: {conceptos}\
 """
 
 
@@ -255,7 +285,7 @@ def _eliminar_secciones_duplicadas(texto: str) -> str:
     resultado = []
     saltando = False
     for linea in lineas:
-        m = _re.match(r'Ejercicio\s+(\d+)\s*:', linea.strip())
+        m = _re.match(r'Ejercicio\s+(\d+(?:\.\d+)?)\s*(?:\([^)]*\))?\s*:', linea.strip())
         if m:
             num = m.group(1)
             if num in vistos:
@@ -277,6 +307,54 @@ def _desc_ej(ej: dict) -> str:
     return f"{tacticos}. {desc}".strip(". ")
 
 
+# Minutos máximos razonables haciendo lo mismo antes de perder la atención/
+# motivación del grupo. Categorías de formación aguantan menos que Cadete+.
+MAX_BLOQUE_POR_EDAD = {
+    "U8": 10, "U10": 10, "Prebenjamín": 10, "Benjamín": 10,
+    "U12": 10, "Alevín": 10,
+    "U14": 15, "Infantil": 15,
+}
+MAX_BLOQUE_DEFECTO = 20  # Cadete en adelante
+
+
+def _redondear_5(minutos: float, minimo: int = 5) -> int:
+    """Las duraciones son una guía para el entrenador, no una medida exacta —
+    se redondean siempre a múltiplos de 5 (5, 10, 15, 20...), nunca por debajo del mínimo."""
+    return max(minimo, round(minutos / 5) * 5)
+
+
+def _bloque_ejercicio(numero: int, nombre: str, duracion: int, edad: str) -> str:
+    """Plantilla para un ejercicio de la parte principal. Si la duración supera lo que
+    ese grupo de edad aguanta haciendo lo mismo, lo parte en N.1 (base) + N.2 (variante:
+    mismo ejercicio con un cambio/regla nueva) en vez de un único bloque monótono."""
+    max_bloque = MAX_BLOQUE_POR_EDAD.get(edad, MAX_BLOQUE_DEFECTO)
+    if duracion <= max_bloque:
+        return f"""Ejercicio {numero}: {nombre}
+Duración: {duracion} min
+Organización:
+Puntos clave:
+-
+-
+"""
+    t1 = _redondear_5(duracion / 2)
+    t2 = _redondear_5(duracion - t1)
+    return f"""Ejercicio {numero}.1: {nombre}
+Duración: {t1} min
+Organización:
+Puntos clave:
+-
+-
+
+Ejercicio {numero}.2 (variante de "{nombre}" — mismo ejercicio con un cambio o regla nueva, no lo repitas igual):
+Duración: {t2} min
+Qué cambia respecto a {numero}.1:
+Organización:
+Puntos clave:
+-
+-
+"""
+
+
 def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
     import re
 
@@ -292,10 +370,10 @@ def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
     t_descanso = 3 if duracion >= 60 else 2
     descanso_texto = f"**DESCANSO ({t_descanso} min)**"
 
-    t_calent = max(10, duracion // 6)
-    t_vuelta = max(5, duracion // 15)
+    t_calent = _redondear_5(duracion / 6, minimo=10)
+    t_vuelta = _redondear_5(duracion / 15, minimo=5)
     t_parte  = duracion - t_calent - t_vuelta - t_descanso
-    t_ej     = t_parte // 3
+    t_ej     = _redondear_5(t_parte / 3)
     categoria_nombre = EDAD_A_CATEGORIA.get(edad, edad)
 
     n1 = ej1['nombre'] if ej1 else "ejercicio analítico"
@@ -307,7 +385,14 @@ Rellena la plantilla de abajo con contenido concreto. No añadas texto fuera de 
 
 CATEGORÍA: {categoria_nombre} ({edad}) | DURACIÓN: {duracion} min | OBJETIVO: {objetivo}
 
-{teoria_intro}{VOCABULARIO_TECNICO}
+Si el objetivo es amplio o genérico (p.ej. solo "tiro", sin más detalle), no lo trates
+igual en los tres ejercicios: cada uno debe concretar un aspecto distinto (tiro en
+estático, pies de tiro, mano/muñeca, tiro tras bote, tiro en movimiento...) en vez de
+repetir siempre la misma idea general. Además, el objetivo no tiene que ser
+necesariamente el foco principal de los tres ejercicios — está bien que en alguno sea
+secundario o terciario si eso da más variedad a la sesión.
+
+{teoria_intro}{vocabulario_tecnico(edad)}
 
 EJERCICIOS DE LA SESIÓN (ya seleccionados — usa estos nombres exactos):
 1. "{n1}" — sin oposición o defensa pasiva. {_desc_ej(ej1) if ej1 else ''}
@@ -321,29 +406,11 @@ Espacio:
 
 **PARTE PRINCIPAL**
 
-Ejercicio 1: {n1}
-Duración: {t_ej} min
-Organización:
-Puntos clave:
--
--
-
-Ejercicio 2: {n2}
-Duración: {t_ej} min
-Organización:
-Puntos clave:
--
--
-
+{_bloque_ejercicio(1, n1, t_ej, edad)}
+{_bloque_ejercicio(2, n2, t_ej, edad)}
 {descanso_texto}
 
-Ejercicio 3: {n3}
-Duración: {t_parte - 2*t_ej} min
-Organización:
-Puntos clave:
--
--
-
+{_bloque_ejercicio(3, n3, t_ej, edad)}
 **VUELTA A LA CALMA ({t_vuelta} min)**
 Juego:
 Reglas:
@@ -359,7 +426,7 @@ Reglas:
                 "stream":  False,
                 "options": {
                     "temperature": 0.4,
-                    "num_predict": 900,
+                    "num_predict": 2500,
                     "num_ctx":     6144,
                     "top_p":       0.9,
                     "min_p":       0.05,
@@ -396,7 +463,7 @@ Reglas:
         # ── 0b. Cortar razonamiento previo y encontrar el inicio real de la sesión ──
         # Busca el primer marcador estructural de la sesión (en cualquier orden)
         match_inicio = re.search(
-            r'(\*\*CALENTAMIENTO|\*\*PARTE PRINCIPAL|^Ejercicio\s+1\s*:)',
+            r'(\*\*CALENTAMIENTO|\*\*PARTE PRINCIPAL|^Ejercicio\s+1(?:\.\d+)?\s*(?:\([^)]*\))?\s*:)',
             texto, re.MULTILINE
         )
         if match_inicio:
@@ -598,7 +665,15 @@ REGLAS CRÍTICAS:
 1. jugadores_ataque = TODOS los jugadores atacantes/pasadores/tiradores (personas)
 2. jugadores_defensa = TODOS los jugadores defensores (personas)
 3. conos = SOLO pylons/conos físicos en el suelo para delimitar zonas, NO jugadores
-4. Pon SIEMPRE al menos 2 jugadores_ataque (nunca dejes el ejercicio con 1 solo jugador)
+4. El número de jugadores_ataque y jugadores_defensa tiene que coincidir con lo que diga
+   el NOMBRE o la DESCRIPCIÓN (ej. "1c1" o "1 contra 1" = 1 atacante y 1 defensor exactos,
+   nunca añadas un segundo atacante; "3c0" = 3 atacantes, 0 defensores; "2c1" = 2 atacantes,
+   1 defensor). Si describe a UN SOLO jugador entrenando individualmente (bote, tiro,
+   técnica en solitario, circuito de conos) → usa exactamente 1 jugador_ataque, NUNCA
+   inventes un intercambio de pases entre varios jugadores si la descripción no menciona
+   pase explícitamente. Solo usa 2+ jugadores si el texto describe interacción real entre
+   ellos (pase, defensa, competición por parejas). Ante la duda entre "inventar más
+   jugadores" o "menos", elige siempre menos.
 5. Si la descripción menciona "esquinas y alas" → coloca jugadores en (6,22), (25,50), (75,50), (94,22)
 6. Si dice "codo TL" → usa (35,41) o (65,41)
 7. Si un jugador tira, añade movimiento tipo "tiro" desde ese jugador
@@ -698,8 +773,7 @@ def responder_duda_reglamento(pregunta: str) -> str:
         r = requests.post(
             f"{OLLAMA_URL}/api/chat",
             json={
-                "model": MODEL,
-                "think": False,
+                "model": MODEL_SESION,
                 "messages": [
                     {"role": "system", "content": SYSTEM_REGLAMENTO},
                     {"role": "user", "content": pregunta},

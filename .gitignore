@@ -1,22 +1,31 @@
-# Entorno
+# Entorno local
 .env
+ollama/
+cache/
+outputs/
+data/chroma_db/
+staticfiles/
+
+# Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
+*.class
+.venv/
+env/
 *.egg-info/
-venv/
 
 # Docker (datos locales que no van al repo)
-ollama/
 data/sessions/*.json
 
 # PDFs — no van al repo (pueden tener derechos de autor)
 data/pdfs/
 
+# Fotos personales de referencia (entrenamientos en papel, pendientes de transcribir)
+data/fotos_pendientes_entrenamientos/
+
 # Modelos y outputs
 *.gguf
 *.bin
-outputs/
 
 # Fine-tuning cache (autogenerado)
 unsloth_compiled_cache/
@@ -27,5 +36,4 @@ tools/scraper_isportcoach.py
 # Sistema
 .DS_Store
 Thumbs.db
-cache/
 repomix-output.xml

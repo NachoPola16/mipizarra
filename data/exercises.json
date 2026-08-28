@@ -6138,5 +6138,169 @@
       ],
       "conos": []
     }
+  },
+  {
+    "id": "ej_059",
+    "nombre": "Pilla-pilla progresivo (0, 1 y 2 balones)",
+    "categoria": "calentamiento",
+    "subcategoria": "reaccion",
+    "edades": [
+      "U12"
+    ],
+    "duracion_min": 10,
+    "intensidad": 3,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 6,
+    "objetivos": {
+      "tacticos": [
+        "lectura del entorno",
+        "protección del balón"
+      ],
+      "tecnicos": [
+        "bote de protección",
+        "cambios de mano y ritmo"
+      ],
+      "fisicos": [
+        "reacción",
+        "desplazamientos multidireccionales"
+      ]
+    },
+    "puntos_clave": [
+      "No dejar de botar",
+      "Cabeza levantada"
+    ],
+    "descripcion": "Por todo el campo. Los jugadores sin balón deben \"pillar\" (tocar) a los jugadores con 1 balón; si lo consiguen, estos les entregan el balón. La misma dinámica se repite entre los jugadores con 1 y con 2 balones. Un jugador sin balón nunca puede pillar a uno con 2 balones (tiene que pasar antes por tener 1). Progresión: jugador sin balón → jugador con 1 balón, botando → jugador con 2 balones, botando y protegiéndolos del resto."
+  },
+  {
+    "id": "ej_060",
+    "nombre": "Carrera a cono + finalización + 1c1",
+    "categoria": "1c1",
+    "subcategoria": "reaccion",
+    "edades": [
+      "U12"
+    ],
+    "duracion_min": 15,
+    "intensidad": 3,
+    "carga_cognitiva": 1,
+    "jugadores_minimos": 2,
+    "objetivos": {
+      "tacticos": [
+        "finalización en 1c1",
+        "lectura rápida tras ganar o perder la carrera"
+      ],
+      "tecnicos": [
+        "bote de velocidad",
+        "finalización con entrada"
+      ],
+      "fisicos": [
+        "velocidad de reacción a la señal",
+        "sprint corto"
+      ]
+    },
+    "puntos_clave": [
+      "Velocidad de reacción a la señal",
+      "Bote de velocidad",
+      "Control de balón: el defensor bota mientras se desplaza hacia la canasta contraria",
+      "Defensa",
+      "Finalización solo con entrada, según se decida"
+    ],
+    "descripcion": "A la señal del entrenador, los dos primeros jugadores de la fila corren hacia uno de los conos grandes, hacen un cambio de dirección en el cono y lo tocan, y después intentan meter canasta. El primero que anota ataca 1c1 en la canasta contraria; el otro pasa a defender, botando el balón también mientras se desplaza hacia esa canasta. El atacante solo puede finalizar con entrada, según se decida previamente. Normas variables: en el cono no vale cambiar por las piernas ni por la espalda; el defensor puede botar el balón agarrado o no; se puede meter un tercer jugador para jugar 1c2. También se puede dejar que cada jugador elija libremente qué cono tocar, siempre que cada uno toque uno distinto del otro. Duración orientativa 15 min, hasta 25 min si se añaden variantes."
+  },
+  {
+    "id": "ej_061",
+    "nombre": "1c1 con 4 pasadores (doble reinicio obligatorio)",
+    "categoria": "1c1",
+    "subcategoria": "con_pasadores",
+    "edades": [
+      "U10",
+      "U12",
+      "U14",
+      "U16",
+      "U18",
+      "Senior"
+    ],
+    "duracion_min": 15,
+    "intensidad": 3,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 4,
+    "objetivos": {
+      "tacticos": [
+        "lectura de pasadores de apoyo",
+        "1c1 con reinicio obligado",
+        "rotación pasador-atacante-defensor"
+      ],
+      "tecnicos": [
+        "pase y recepción bajo presión",
+        "bote de protección con cabeza levantada",
+        "finalización en 1c1"
+      ],
+      "fisicos": [
+        "cambios de ritmo",
+        "resistencia a la repetición"
+      ]
+    },
+    "puntos_clave": [
+      "Pases",
+      "Levantar la cabeza botando",
+      "Ataque 1c1",
+      "Defensa 1c1"
+    ],
+    "descripcion": "Se juega en pista completa, dividida en dos mitades que funcionan como estaciones simultáneas. En cada media pista hay 2 pasadores situados fuera del campo, a la altura de la línea de tiro libre (uno a cada banda). Dentro de cada mitad hay uno o varios pares de 1c1 (atacante-defensor) jugando a la vez, usando a los pasadores de su mitad como apoyo. Para poder avanzar en el 1c1, el atacante tiene que pasar y recibir el balón dos veces, a los pasadores que quiera, pero han de ser dos pasadores diferentes. Cuando el entrenador da la señal, se rota: los pasadores pasan a atacar, los atacantes a defender, y los defensores a pasar. Alternativa: se puede jugar con solo 2 pasadores en total (en vez de 4) según el número de jugadores disponibles, aunque lo ideal es tener 4 (2 por mitad). El entrenador puede añadir reglas de puntuación: robo de balón puntúa, solo vale finalizar, solo vale tiro, etc."
+  },
+  {
+    "id": "ej_062",
+    "nombre": "Pases y superioridad 2c1 / 1c2 con rotación",
+    "categoria": "ventaja_numerica",
+    "subcategoria": "pases_y_rotacion",
+    "edades": [
+      "U12"
+    ],
+    "duracion_min": 12,
+    "intensidad": 4,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 3,
+    "objetivos": {
+      "tacticos": [
+        "ataque en superioridad numérica",
+        "lectura de líneas de pase",
+        "fintas defensivas"
+      ],
+      "tecnicos": [
+        "pase picado",
+        "recepción bajo presión"
+      ],
+      "fisicos": [
+        "desplazamientos laterales en defensa"
+      ]
+    },
+    "puntos_clave": [
+      "Pases picados",
+      "Ataque en superioridad",
+      "Defensa: fintas defensivas"
+    ],
+    "descripcion": "En dos medias pistas simultáneas. Los atacantes, en superioridad numérica, hacen pases (picados) dentro de una zona limitada que decide el entrenador, hasta que este dé la señal. El defensor intenta robar o tocar el balón/jugador con balón. Si el defensor toca balón o jugador con balón: los atacantes pasan a defender 1c2 tras tocar las esquinas de su zona; el jugador que defendía toca medio campo y pasa a atacar. Si el defensor no roba y el entrenador da la señal: se repite la misma dinámica de rotación pero jugando 2c1."
+  },
+  {
+    "id": "ej_063",
+    "nombre": "Tiro en competición por parejas o tríos",
+    "categoria": "tiro",
+    "subcategoria": "competicion",
+    "edades": [
+      "U12"
+    ],
+    "duracion_min": 8,
+    "intensidad": 2,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 2,
+    "objetivos": {
+      "tacticos": [],
+      "tecnicos": [
+        "tiro sobre presión",
+        "tiro tras bote"
+      ],
+      "fisicos": []
+    },
+    "puntos_clave": [],
+    "descripcion": "Por parejas o tríos. Cada ronda, un jugador manda: elige el tipo de tiro (tiro sobre presión, tiro tras bote, etc.) y lo intenta. Los demás deben realizar el mismo tipo de tiro. Si alguno de ellos falla, el jugador que ha mandado el tiro suma un punto, pero solo si él mismo lo había metido."
   }
 ]

@@ -33,7 +33,7 @@ services:
     environment:
       - OLLAMA_URL=http://ollama:11434
       - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen3:4b}
-      - OLLAMA_MODEL_SESION=${OLLAMA_MODEL_SESION:-qwen2.5:7b-instruct-q4_K_M}
+      - OLLAMA_MODEL_SESION=${OLLAMA_MODEL_SESION:-qwen3:4b-instruct}
       - EXERCISES_PATH=/app/data/exercises.json
       - CHROMA_DB_DIR=/app/data/chroma_db
       # Si se setea, la API exige header X-Internal-Secret en cada request.

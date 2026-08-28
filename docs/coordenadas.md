@@ -136,6 +136,11 @@ y en el JSON siempre escribe `bloqueo`.
   y como introducción al concepto, nunca como base del ejercicio.
 - **U16 (Cadete) en adelante**: bloqueo directo e indirecto con plena normalidad.
 
+**Juego de poste bajo**: no es una acción ilegal en categorías de formación (U8-U12),
+pero no se recomienda enseñarla — no aporta a esas edades. `vocabulario_tecnico()` en
+`rag_engine.py` ya excluye "poste bajo" y el vocabulario de bloqueos del prompt de
+sesión para estas categorías.
+
 ## Campo opcional `curva`
 
 `desplazamiento`, `pase`, `bote` y `tiro` aceptan el campo `"curva"`.

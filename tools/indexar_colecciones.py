@@ -18,10 +18,12 @@ from llama_index.embeddings.ollama import OllamaEmbedding
 import chromadb
 
 # --- CONFIGURACIÓN ---
-PDFS_BASE_DIR = "/app/data/pdfs"
-CHROMA_DB_DIR = "/app/data/chroma_db"
-EMBED_MODEL   = "nomic-embed-text"
-OLLAMA_URL    = "http://ollama:11434"
+BASE_DIR      = Path(__file__).resolve().parent.parent / "data"
+PDFS_BASE_DIR = Path(os.environ.get("PDFS_BASE_DIR", "/app/data/pdfs" if os.path.exists("/app/data/pdfs") else str(BASE_DIR / "pdfs")))
+TEORIA_MD_DIR = Path(os.environ.get("TEORIA_MD_DIR", "/app/data/teoria" if os.path.exists("/app/data/teoria") else str(BASE_DIR / "teoria")))
+CHROMA_DB_DIR = os.environ.get("CHROMA_DB_DIR", "/app/data/chroma_db" if os.path.exists("/app/data") else str(BASE_DIR / "chroma_db"))
+EMBED_MODEL   = os.environ.get("EMBED_MODEL", "nomic-embed-text")
+OLLAMA_URL    = os.environ.get("OLLAMA_URL", "http://ollama:11434")
 CHUNK_SIZE    = 256
 CHUNK_OVERLAP = 20
 MAX_CHARS     = 6000 * 4          # ~6000 tokens × 4 chars/token
@@ -115,30 +117,56 @@ def insertar_en_chroma(chroma_collection, nodos: list):
         logger.info(f"   💾 Insertados {min(end, len(ids))}/{len(ids)} nodos...")
 
 
-def indexar_coleccion(nombre: str, ruta_pdfs: str):
-    logger.info(f"\n📂 Colección '{nombre}' ← {ruta_pdfs}")
+def indexar_coleccion(nombre: str, rutas: list[Path]):
+    logger.info(f"\n📂 Colección '{nombre}' ← {[str(r) for r in rutas]}")
 
-    pdf_files = list(Path(ruta_pdfs).glob("*.pdf"))
-    if not pdf_files:
-        logger.warning(f"   ⚠️ Sin PDFs en {ruta_pdfs}")
-        return
-
-    # Leer PDFs
-    reader    = PDFReader(return_full_document=False)
     documentos = []
-    for pdf in pdf_files:
-        try:
-            docs = reader.load_data(file=pdf)
-            for d in docs:
-                d.metadata["fuente"]    = pdf.name
-                d.metadata["coleccion"] = nombre
-            documentos.extend(docs)
-            logger.info(f"   📄 {pdf.name} ({len(docs)} páginas)")
-        except Exception as e:
-            logger.error(f"   ❌ {pdf.name}: {e}")
+    reader = None
+
+    for ruta in rutas:
+        if not ruta.exists():
+            continue
+
+        # 1. Leer PDFs
+        pdf_files = list(ruta.glob("*.pdf"))
+        if pdf_files:
+            if reader is None:
+                reader = PDFReader(return_full_document=False)
+            for pdf in pdf_files:
+                try:
+                    docs = reader.load_data(file=pdf)
+                    for d in docs:
+                        d.metadata["fuente"]    = pdf.name
+                        d.metadata["coleccion"] = nombre
+                        d.metadata["tipo"]      = "pdf"
+                    documentos.extend(docs)
+                    logger.info(f"   📄 [PDF] {pdf.name} ({len(docs)} páginas)")
+                except Exception as e:
+                    logger.error(f"   ❌ {pdf.name}: {e}")
+
+        # 2. Leer archivos Markdown (.md)
+        md_files = list(ruta.glob("*.md"))
+        if md_files:
+            for md in md_files:
+                try:
+                    texto = md.read_text(encoding="utf-8").strip()
+                    if texto:
+                        from llama_index.core import Document
+                        doc = Document(
+                            text=texto,
+                            metadata={
+                                "fuente": md.name,
+                                "coleccion": nombre,
+                                "tipo": "markdown"
+                            }
+                        )
+                        documentos.append(doc)
+                        logger.info(f"   📝 [MD] {md.name} ({len(texto)} caracteres)")
+                except Exception as e:
+                    logger.error(f"   ❌ {md.name}: {e}")
 
     if not documentos:
-        logger.warning("   ⚠️ Ningún documento procesable.")
+        logger.warning(f"   ⚠️ Ningún documento procesable para colección '{nombre}'.")
         return
 
     # Dividir en chunks
@@ -166,22 +194,19 @@ def indexar_coleccion(nombre: str, ruta_pdfs: str):
         pass
     coleccion = client.create_collection(nombre)
 
-    # Insertar directamente (sin LlamaIndex en este paso)
+    # Insertar directamente
     insertar_en_chroma(coleccion, nodos_validos)
     logger.info(f"   🎉 '{nombre}' indexada: {len(nodos_validos)} nodos.")
 
 
 if __name__ == "__main__":
     colecciones = {
-        "teoria":        os.path.join(PDFS_BASE_DIR, "coleccion_teoria"),
-        "planificacion": os.path.join(PDFS_BASE_DIR, "coleccion_planificacion"),
-        "reglamento":    os.path.join(PDFS_BASE_DIR, "coleccion_reglamento"),
+        "teoria":        [PDFS_BASE_DIR / "coleccion_teoria", TEORIA_MD_DIR],
+        "planificacion": [PDFS_BASE_DIR / "coleccion_planificacion"],
+        "reglamento":    [PDFS_BASE_DIR / "coleccion_reglamento"],
     }
 
-    for nombre, ruta in colecciones.items():
-        if os.path.isdir(ruta):
-            indexar_coleccion(nombre, ruta)
-        else:
-            logger.warning(f"⚠️ {ruta} no existe, se omite.")
+    for nombre, rutas in colecciones.items():
+        indexar_coleccion(nombre, rutas)
 
     logger.info("\n🏁 Indexado completo.")

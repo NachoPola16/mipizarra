@@ -189,6 +189,29 @@ def _generar_pdf(sesion_texto, edad, objetivo, duracion, diagramas):
                 except Exception:
                     pass
 
+    def add_diagram_by_id_prefix(prefix):
+        """Calentamiento y vuelta a la calma no son 'Ejercicio N', así que no les toca
+        índice por add_diagram() — se buscan por el id que les puso la API."""
+        diagrama = next((d for d in diagramas if d.get('id', '').startswith(prefix)), None)
+        svg_content = diagrama.get('svg', '') if diagrama else ''
+        if not svg_content:
+            return
+        try:
+            if pdf.get_y() > 170:
+                pdf.add_page()
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp:
+                cairosvg.svg2png(
+                    bytestring=svg_content.encode('utf-8'),
+                    write_to=tmp.name,
+                    output_width=900,
+                )
+                pdf.image(tmp.name, x=20, w=170)
+                os.unlink(tmp.name)
+            pdf.set_x(pdf.l_margin)
+            pdf.ln(4)
+        except Exception:
+            pass
+
     ejercicio_actual = -1
     pagina_recien_nueva = False
     subsec_keys = ['Juego:', 'Reglas:', 'Organización:', 'Puntos clave:',
@@ -213,13 +236,17 @@ def _generar_pdf(sesion_texto, edad, objetivo, duracion, diagramas):
             pdf.set_font('Helvetica', 'B', 12)
             pdf.set_text_color(BLUE_R, BLUE_G, BLUE_B)
             pdf.set_x(pdf.l_margin)
-            pdf.cell(170, 7, titulo[:60], new_x='LMARGIN', new_y='NEXT')
+            pdf.multi_cell(170, 7, titulo)
             pdf.set_draw_color(BLUE_R, BLUE_G, BLUE_B)
             pdf.set_line_width(0.5)
             pdf.line(20, pdf.get_y(), 190, pdf.get_y())
             pdf.ln(4)
             pdf.set_font('Helvetica', size=10)
             pdf.set_text_color(40, 40, 50)
+            if 'CALENTAMIENTO' in titulo_up:
+                add_diagram_by_id_prefix('calentamiento')
+            elif 'VUELTA A LA CALMA' in titulo_up:
+                add_diagram_by_id_prefix('vuelta_a_la_calma')
             continue
 
         # Markdown inline (*cursiva*, **negrita**) que el modelo añade dentro de la
@@ -235,7 +262,7 @@ def _generar_pdf(sesion_texto, edad, objetivo, duracion, diagramas):
             pdf.set_font('Helvetica', 'B', 13)
             pdf.set_text_color(DARK_R, DARK_G, DARK_B)
             pdf.set_x(pdf.l_margin)
-            pdf.cell(170, 8, linea[:80], new_x='LMARGIN', new_y='NEXT')
+            pdf.multi_cell(170, 8, linea)
             pdf.ln(2)
             add_diagram(ejercicio_actual)
             pdf.set_x(pdf.l_margin)
