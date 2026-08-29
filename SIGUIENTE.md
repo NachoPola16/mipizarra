@@ -2,6 +2,34 @@
 
 > **Léeme al abrir un chat sobre MiPizarra**. Resume estado, próximo paso y decisiones ya tomadas.
 
+## Empieza por aquí (actualizado 2026-08-29)
+
+**Dónde corre ahora mismo:** en local, en el PC de Nacho (RTX 5060 Ti 16GB) vía
+Docker Compose — no en el LXC del servidor (eso es un tema aparte, ver "Decisión de
+despliegue" en la sección de abajo). El resto de este fichero, más viejo, dice que
+corre en el servidor con GTX 1060 6GB — eso describe el diseño original de mayo,
+ya no el estado real.
+
+**Estado:** revisión de arquitectura completa (28-29 de agosto) — RAG con
+colecciones separadas, diagramas con JSON Schema + validador semántico + reintento,
+auditoría 1 a 1 de los 63 ejercicios de `exercises.json`, regla de bloqueo directo
+corregida en todo el proyecto, y dos bugs de truncado de sesión arreglados con
+reintento automático ante fallo real. Todo probado en vivo contra la app real y
+comiteado (ver commits `f911196`..`75530a9`). Nada pendiente de commitear.
+
+**Próximo paso — sin nada más bloqueando antes:** probar `qwen3.5:4b` **en local**
+(no en el servidor todavía). Salió el 2026-03-02, mejora generacional limpia sobre
+`qwen3:4b-instruct` (256K contexto, tools, visión). Verificar antes de dar nada por
+bueno: (a) que el thinking (activo por defecto en 3.5) se desactiba con
+`chat_template_kwargs: {"enable_thinking": false}` — mecanismo distinto del
+`"think": false` de Ollama que ya falló con qwen3:4b: y (b) que el resultado supera
+en calidad a `qwen3:4b-instruct` antes de cambiar el default. Detalle completo:
+sección "Revisión de arquitectura (2026-08-29)" más abajo, punto 2 de los pendientes.
+
+**Pendiente, no bloqueante:** revisión visual real de los diagramas de
+`ej_060`/`ej_061`/`ej_062` y del arreglo del tiro a pista completa — solo
+verificados numéricamente, nunca vistos renderizados de verdad.
+
 ## Qué es MiPizarra
 
 Asistente local de entrenamiento de baloncesto. Genera sesiones (texto) y diagramas tácticos
@@ -156,23 +184,69 @@ pese a lo que dice la sección de abajo, que describe el diseño original de 202
   reintento y falló seguro (sin diagrama) en 2. Sin errores en logs de la API.
   **Backup `data/chroma_db.bak_20260829/` borrado tras esta confirmación.**
 
+**Hecho (2026-08-29, sesión 4) — bug real de truncado de sesión, encontrado por Nacho
+usando la app de verdad (exportó una sesión a PDF y algo no cuadraba):**
+
+- **Síntoma**: sesión Benjamín/U10, 75 min, "Tiro tras bote" exportada a PDF — el PDF
+  solo tenía 4 páginas, cortado a mitad del Ejercicio 2.1 (ni siquiera tenía
+  `Puntos clave`), sin Ejercicio 2.2/3, sin descanso, sin vuelta a la calma ni
+  fundamentos.
+- **Causa raíz**: `generar_sesion` tenía `num_predict` fijo en 2500 sin importar
+  cuánto contenido pide realmente la plantilla. Para categorías de formación
+  (U8/U10/U12, `MAX_BLOQUE_POR_EDAD=10`) con duraciones largas, los 3 ejercicios se
+  parten en variantes N.1/N.2 (6 bloques en vez de 3) — mucho más texto que rellenar
+  con el mismo presupuesto. Confirmado con Ollama: `done_reason="length"`,
+  `eval_count=2500` — agotaba el tope exacto.
+- **Primer arreglo** (commit `39b721a`): `num_predict`/`num_ctx` escalan si se
+  detecta que los ejercicios se van a partir (`bloques_partidos`).
+- **Seguía sin ser suficiente**: probando un caso que NO debería partirse (Cadete/U16,
+  90 min, "defensa", 3 bloques) también se cortó, con el presupuesto "normal" que
+  hasta entonces parecía sobrado. La verbosidad del modelo varía de una generación a
+  otra (temperature=0.4) — ningún número fijo es garantía real.
+- **Arreglo bueno** (commit `75530a9`): `generar_sesion` ahora lee `done_reason` de
+  la respuesta de Ollama. Si es `"length"` (truncado real), reintenta una vez con
+  +2500 `num_predict` / +3000 `num_ctx` antes de devolver el texto — mismo patrón
+  que el retry de validación semántica de los diagramas: reaccionar al fallo real,
+  no adivinar un número de antemano. Presupuestos base también subidos como margen
+  preventivo (2500→3200 sin partir, 4500→5000 partido).
+- **Verificado en vivo 4 veces** (2 casos, uno repetido dos veces): todas las
+  sesiones completas, con vuelta a la calma y fundamentos, terminando en frase
+  completa. Sin más incidencias de truncado en las pruebas.
+- **Lección para el futuro**: los bugs más interesantes de esta sesión (este y el
+  de la Fase 2 de `ej_007`) los encontró Nacho usando la app de verdad, no ninguna
+  prueba automatizada — seguir generando sesiones reales de vez en cuando, no solo
+  confiar en los tests dirigidos.
+
 **Pendiente — próximos pasos, en este orden:**
 
 1. **Revisión visual real** de los diagramas de `ej_060`/`ej_061`/`ej_062` y del
    arreglo del tiro a pista completa la próxima vez que se abra la app — solo se
    verificó numéricamente, no se ha visto renderizado de verdad.
-2. **Probar `qwen3.5:4b`** (Q4_K_M, 3,4 GB — cabe en la GTX 1060 6GB del servidor,
-   igual que el actual) sobre esta base ya arreglada. Salió el 2026-03-02, después de
-   elegir esta pila. Mejora generacional limpia: 256K contexto (vs 32K), tools, visión.
-   Verificar antes de comprometerse: (a) que carga en Pascal/sm_61 con su arquitectura
-   MoE dispersa + Gated Delta Networks, (b) que el thinking (activo por defecto en
-   3.5) se desactiva de forma fiable con `chat_template_kwargs: {"enable_thinking":
-   false}` — mecanismo distinto del `"think": false` de Ollama que ya falló con
-   qwen3:4b.
+2. **Probar `qwen3.5:4b` — en local primero** (Nacho: "de momento no [servidor], de
+   momento probamos ese modelo en local", 2026-08-29). Q4_K_M, 3,4 GB, cabe también
+   en la GTX 1060 6GB del servidor si más adelante se decide llevarlo allí, pero esa
+   decisión es aparte y no urgente. Salió el 2026-03-02, después de elegir esta
+   pila. Mejora generacional limpia sobre `qwen3:4b-instruct`: 256K contexto (vs
+   32K), tools, visión. Pasos:
+   1. `docker exec mipizarra-ollama ollama pull qwen3.5:4b`
+   2. Cambiar `OLLAMA_MODEL`/`OLLAMA_MODEL_SESION` a `qwen3.5:4b` (`.env` local o
+      `docker-compose.yml`) y reiniciar la API.
+   3. Verificar que el thinking (activo por defecto en 3.5) se desactiva de forma
+      fiable con `chat_template_kwargs: {"enable_thinking": false}` — mecanismo
+      distinto del `"think": false` de Ollama que ya falló con qwen3:4b. Si Ollama no
+      expone ese parámetro directamente, puede hacer falta ajustar cómo se llama al
+      modelo desde `rag_engine.py`.
+   4. Generar varias sesiones/diagramas/reglamento reales y comparar calidad contra
+      `qwen3:4b-instruct` antes de cambiar el default — no cambiar solo porque "es
+      más nuevo".
+   5. Solo si se decide adoptarlo: entonces sí, probar que carga bien en la GTX 1060
+      del servidor (Pascal/sm_61, arquitectura MoE dispersa + Gated Delta Networks —
+      no hay garantía de que Pascal la soporte) antes de plantear llevarlo allí.
 3. **Solo si tras el paso 2 aún falta calidad**: comparar A/B contra `qwen3.5:9b`
    (6,6 GB — no cabe en el servidor, solo PC) para saber si el techo del hardware
    aporta algo o ya se está en meseta. Si se necesita el 9B, el servidor queda
-   descartado por tamaño y la decisión de dónde vive el día a día se resuelve sola.
+   descartado por tamaño para esta IA y la decisión de dónde vive el día a día se
+   resuelve sola.
 4. **Plantillas de diagrama para calentamiento/vuelta a la calma.** Muchos juegos de
    calentamiento (rondos, pilla-pilla) no tienen un diagrama de media pista con
    sentido — forzar generación libre garantiza basura. Mejor: ~10-15 plantillas
