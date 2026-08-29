@@ -31,7 +31,7 @@ Cada ejercicio en `data/exercises.json` sigue esta estructura.
 ## Categorías
 
 - `ventaja_numerica` — 2c1, 3c2, fastbreak
-- `bloqueo_directo` — pick & roll, acción y reacción. U14 solo de forma esporádica; pleno uso desde U16.
+- `bloqueo_directo` — pick & roll, acción y reacción. Desde U16/Cadete. En U14/Infantil solo bloqueos indirectos.
 - `bloqueo_indirecto` — bloqueos alejados, caída hacia canasta. Desde U14 en adelante.
 - `tiro` — mecánica, con oposición, en movimiento
 - `1c1` — individual ofensivo y defensivo (mano a mano, penetración)

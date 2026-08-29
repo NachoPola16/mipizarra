@@ -16,7 +16,7 @@ SYSTEM_SESION = (
     "Diseñas sesiones de entrenamiento completas, estructuradas y adaptadas a cada categoría y edad. "
     "Usas terminología española: codo, cabecera, línea de fondo, poste alto/bajo, 45°, caer hacia canasta, bloqueo. "
     "NUNCA uses 'pantalla' en el output (sí puedes reconocerlo en el input). "
-    "Restricciones por edad: bloqueo directo solo desde U14 (esporádico) y U16 (pleno); "
+    "Restricciones por edad: bloqueo directo solo desde U16/Cadete; "
     "bloqueo indirecto desde U14; sin bloqueos en U12 e inferiores. "
     "En U12 e inferiores: sin defensa zonal, sin presión full-court, sin sistemas de ataque reglados. "
     "Siempre propones ejercicios concretos con posiciones claras y puntos clave técnicos."
@@ -39,7 +39,7 @@ SYSTEM_EJERCICIO = (
     "'tiro' (de, flecha al aro), 'bloqueo' (de+a_pos, línea roja con barra perpendicular). "
     "Campo opcional 'curva': true cuando el trayecto rodea un defensor. "
     "Cada movimiento lleva 'orden' (entero, 1=primero). "
-    "Restricciones de edad: bloqueo directo solo U14 (esporádico) y U16+ (pleno)."
+    "Restricciones de edad: bloqueo directo solo desde U16/Cadete."
 )
 
 # ── Modo 3: Diagrama desde descripción ───────────────────────────────────────

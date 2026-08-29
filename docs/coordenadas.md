@@ -128,12 +128,11 @@ y en el JSON siempre escribe `bloqueo`.
 |----------------------|----------------|------------------|-------------------|-------------------|
 | Prebenjamín/Benjamín | U8, U10        | ✗                | ✗                 | ✓                 |
 | Alevín               | U12            | ✗                | ✗                 | ✓                 |
-| Infantil             | U14 (~13-14)   | esporádico       | ✓                 | ✓                 |
+| Infantil             | U14 (~13-14)   | ✗                | ✓                 | ✓                 |
 | Cadete en adelante   | U16+ (~15+)    | ✓                | ✓                 | ✓                 |
 
 - **U12 e inferiores**: solo acciones individuales (1c1, mano a mano, bote).
-- **U14 (Infantil)**: bloqueos indirectos con normalidad; bloqueo directo solo de forma esporádica
-  y como introducción al concepto, nunca como base del ejercicio.
+- **U14 (Infantil)**: bloqueos indirectos con normalidad; bloqueo directo todavía no.
 - **U16 (Cadete) en adelante**: bloqueo directo e indirecto con plena normalidad.
 
 **Juego de poste bajo**: no es una acción ilegal en categorías de formación (U8-U12),

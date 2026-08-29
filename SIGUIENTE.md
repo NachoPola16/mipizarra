@@ -80,15 +80,20 @@ pese a lo que dice la sección de abajo, que describe el diseño original de 202
   `responder_duda_reglamento` ahora consultan `teoria_md` con presupuesto propio y
   prioridad. Verificado en vivo: una pregunta sobre bloqueos directos en infantil trajo
   contenido de `contenidos_por_edad_lineas_rojas.md` en vez de solo PDFs genéricos.
-- **Hallazgo pendiente de decisión — contradicción real en el material:**
-  `data/teoria/contenidos_por_edad_lineas_rojas.md` (tabla) dice que el bloqueo
-  directo empieza en Cadete/U16 (Infantil/U14 solo bloqueos indirectos), pero
-  `api/prompts.py` (`SYSTEM_SESION`, `SYSTEM_EJERCICIO`), `docs/esquema-ejercicios.md`
-  Y dos ejercicios reales ya en `exercises.json` (`ej_002`, `ej_008`, categoría
-  `bloqueo_directo`, edades desde U14) dicen que es esporádico ya en U14. Son 4
-  fuentes contra 1 — probablemente la tabla del `.md` quedó desactualizada — pero es
-  un criterio pedagógico de Nacho, no se ha tocado. **Decidir cuál es la regla
-  correcta y corregir la que esté mal** (probablemente la tabla del `.md`).
+- **Resuelto (2026-08-29): contradicción sobre bloqueo directo en Infantil/U14.**
+  `data/teoria/contenidos_por_edad_lineas_rojas.md` decía que el bloqueo directo
+  empieza en Cadete/U16 (Infantil/U14 solo bloqueos indirectos); otras 4 fuentes
+  decían "esporádico ya en U14". Nacho confirmó que la regla correcta es la del
+  `.md`: **bloqueo directo solo desde Cadete/U16, nada de directo en Infantil/U14**
+  (bloqueo indirecto sí, desde U14). Corregidas las 4 fuentes que estaban mal:
+  `api/prompts.py` (`SYSTEM_SESION` y `SYSTEM_EJERCICIO`), `docs/esquema-ejercicios.md`,
+  `docs/coordenadas.md` (tabla y notas — tenía la misma regla vieja, no detectado en
+  el primer barrido), `tools/exportar_a_ollama.py` (Modelfile del modelo fine-tuned,
+  tampoco detectado antes) y `ej_002` en `exercises.json` (le quitado U14 de
+  `edades`; `ej_008` ya estaba bien, U16+). Verificado en vivo: la misma pregunta de
+  antes ("¿en infantil se pueden trabajar bloqueos directos?") ahora responde con
+  razonamiento coherente con el resto del proyecto en vez de una coincidencia con
+  fondo correcto pero justificación inventada.
 - **Auditoría 1 a 1 de los 63 ejercicios de `exercises.json`.** Validación estructural
   automatizada (referencias de movimientos, rango de coordenadas, conteo NcM del
   nombre) + lectura manual completa del contenido. Resultado: **corpus sólido** — cero
@@ -156,9 +161,7 @@ pese a lo que dice la sección de abajo, que describe el diseño original de 202
 1. **Revisión visual real** de los diagramas de `ej_060`/`ej_061`/`ej_062` y del
    arreglo del tiro a pista completa la próxima vez que se abra la app — solo se
    verificó numéricamente, no se ha visto renderizado de verdad.
-2. **Resolver la contradicción sobre bloqueo directo en Infantil/U14** (ver arriba) y
-   corregir la fuente que esté desactualizada.
-3. **Probar `qwen3.5:4b`** (Q4_K_M, 3,4 GB — cabe en la GTX 1060 6GB del servidor,
+2. **Probar `qwen3.5:4b`** (Q4_K_M, 3,4 GB — cabe en la GTX 1060 6GB del servidor,
    igual que el actual) sobre esta base ya arreglada. Salió el 2026-03-02, después de
    elegir esta pila. Mejora generacional limpia: 256K contexto (vs 32K), tools, visión.
    Verificar antes de comprometerse: (a) que carga en Pascal/sm_61 con su arquitectura
@@ -166,26 +169,26 @@ pese a lo que dice la sección de abajo, que describe el diseño original de 202
    3.5) se desactiva de forma fiable con `chat_template_kwargs: {"enable_thinking":
    false}` — mecanismo distinto del `"think": false` de Ollama que ya falló con
    qwen3:4b.
-4. **Solo si tras el paso 3 aún falta calidad**: comparar A/B contra `qwen3.5:9b`
+3. **Solo si tras el paso 2 aún falta calidad**: comparar A/B contra `qwen3.5:9b`
    (6,6 GB — no cabe en el servidor, solo PC) para saber si el techo del hardware
    aporta algo o ya se está en meseta. Si se necesita el 9B, el servidor queda
    descartado por tamaño y la decisión de dónde vive el día a día se resuelve sola.
-5. **Plantillas de diagrama para calentamiento/vuelta a la calma.** Muchos juegos de
+4. **Plantillas de diagrama para calentamiento/vuelta a la calma.** Muchos juegos de
    calentamiento (rondos, pilla-pilla) no tienen un diagrama de media pista con
    sentido — forzar generación libre garantiza basura. Mejor: ~10-15 plantillas
    parametrizadas (filas en esquinas, circuito de conos, rondo circular, cuatro
    esquinas...) con el schema restringiendo la elección a un enum.
-6. **Esquema de diagrama con posiciones canónicas nombradas** (enum sobre las ~16 de
+5. **Esquema de diagrama con posiciones canónicas nombradas** (enum sobre las ~16 de
    `docs/coordenadas.md`: codo TL, poste bajo, esquina triple...) en vez de
-   coordenadas `x,y` libres. Necesario para el paso 5 y también habilita:
-7. **Probar conversor de dibujos a mano (tablet + app Notein) → JSON** con
+   coordenadas `x,y` libres. Necesario para el paso 4 y también habilita:
+6. **Probar conversor de dibujos a mano (tablet + app Notein) → JSON** con
    `qwen3.5` (multimodal en 4b y 9b, 89,2% OCRBench). No es proyecto aparte: es
    "input no estructurado → JSON de diagrama", el mismo problema de la generación
    automática de diagramas, con input distinto. Decidir con datos, no en abstracto:
    probar 5 dibujos reales: si cada borrador necesita <30s de corrección, compensa
    el VLM; si no, transcripción manual (a mano son 3-5h para el volumen actual de
    esta temporada, asumible).
-8. **Aparcado — jugadas de pizarra por filtros.** `data/pdfs/coleccion_jugadas/`
+7. **Aparcado — jugadas de pizarra por filtros.** `data/pdfs/coleccion_jugadas/`
    sigue vacía (0 bytes): sin corpus, generar tácticas de ataque estático es el peor
    caso de alucinación de todos los pendientes. Cuando haya material, empezar por un
    catálogo `jugadas.json` filtrable a mano (mismo schema de diagrama, multifase,
