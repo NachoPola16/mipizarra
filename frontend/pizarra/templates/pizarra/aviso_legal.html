@@ -5,6 +5,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aviso Legal — MiPizarra</title>
+<meta name="description" content="Aviso legal de MiPizarra, asistente de entrenamiento de baloncesto con IA.">
+<meta name="theme-color" content="#15120e">
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" type="image/svg+xml" href="{% static 'pizarra/brand/favicon.svg' %}">
 <link rel="alternate icon" href="{% static 'pizarra/brand/favicon.ico' %}">
@@ -153,7 +155,7 @@ footer a:hover { color: var(--text2); }
     <hr>
 
     <footer>
-        <span>MiPizarra &copy; 2026 José Ignacio Pola Cabezón</span>
+        <span>MiPizarra &copy; {% now "Y" %} José Ignacio Pola Cabezón</span>
         <a href="{% url 'privacidad' %}">Política de privacidad</a>
         <a href="/">Inicio</a>
     </footer>

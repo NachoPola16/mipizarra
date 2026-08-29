@@ -5,6 +5,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MiPizarra — Asistente de entrenamiento</title>
+<meta name="description" content="Genera sesiones de entrenamiento de baloncesto y diagramas tácticos con IA local, a partir de la categoría, la duración y el objetivo del entrenamiento.">
+<meta name="theme-color" content="#15120e">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MiPizarra">
+<meta property="og:title" content="MiPizarra — Asistente de entrenamiento">
+<meta property="og:description" content="Genera sesiones de entrenamiento de baloncesto y diagramas tácticos con IA local, a partir de la categoría, la duración y el objetivo del entrenamiento.">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="MiPizarra — Asistente de entrenamiento">
+<meta name="twitter:description" content="Genera sesiones de entrenamiento de baloncesto y diagramas tácticos con IA local.">
 <link rel="icon" type="image/svg+xml" href="{% static 'pizarra/brand/favicon.svg' %}">
 <link rel="alternate icon" href="{% static 'pizarra/brand/favicon.ico' %}">
 <link rel="apple-touch-icon" href="{% static 'pizarra/brand/apple-touch-icon.png' %}">
@@ -232,10 +243,12 @@ input[type="range"] { padding: 0; border: none; background: var(--border); heigh
         <button class="mode-tab" data-mode="reglamento">📖 Reglamento</button>
     </div>
 
+    <div class="feedback-msg err" id="form-error" style="display:none;" role="alert"></div>
+
     <!-- ── Formulario sesión ── -->
     <div id="form-sesion">
     <div>
-        <div class="field-label">Categoría</div>
+        <label class="field-label" for="edad">Categoría</label>
         <select id="edad">
             <option value="">-- No especificar --</option>
             <option value="U8">Prebenjamín</option>
@@ -254,13 +267,13 @@ input[type="range"] { padding: 0; border: none; background: var(--border); heigh
             <input type="checkbox" id="usar-dur"> Especificar duración
         </label>
         <div class="dur-slider" id="dur-slider">
-            <input type="range" id="duracion" min="45" max="120" step="15" value="90">
+            <input type="range" id="duracion" min="45" max="120" step="15" value="90" aria-label="Duración en minutos">
             <div class="dur-val" id="dur-val">90 min</div>
         </div>
     </div>
 
     <div>
-        <div class="field-label">Descripción del entrenamiento</div>
+        <label class="field-label" for="objetivo">Descripción del entrenamiento</label>
         <textarea id="objetivo" placeholder="¿Qué quieres trabajar hoy?&#10;&#10;Ejemplos:&#10;• Tiro en suspensión&#10;• Defensa bloqueo directo&#10;• Transición rápida"></textarea>
     </div>
 
@@ -277,7 +290,7 @@ input[type="range"] { padding: 0; border: none; background: var(--border); heigh
     <!-- ── Formulario reglamento ── -->
     <div id="form-reglamento" style="display:none">
     <div>
-        <div class="field-label">Tu pregunta</div>
+        <label class="field-label" for="pregunta">Tu pregunta</label>
         <textarea id="pregunta" placeholder="Ejemplos:&#10;• ¿Es falta técnica si el entrenador entra a la pista?&#10;• ¿Cuántos tiempos muertos tiene Cadete?&#10;• ¿En qué categorías aplica el saque rápido?&#10;• ¿Qué es el paso cero?" style="min-height:160px"></textarea>
     </div>
     <button class="btn-generar" id="btn-reglamento">🔍 Consultar</button>
@@ -317,8 +330,8 @@ input[type="range"] { padding: 0; border: none; background: var(--border); heigh
         <div class="feedback">
             <div class="feedback-title">¿Usaste esta sesión en un entrenamiento real?</div>
             <div class="feedback-row">
-                <textarea id="fb-cambios" placeholder="Ej: Quité el 3c2 porque solo había 8 jugadores." rows="3"></textarea>
-                <select id="fb-rating">
+                <textarea id="fb-cambios" placeholder="Ej: Quité el 3c2 porque solo había 8 jugadores." rows="3" aria-label="Cambios realizados sobre la sesión"></textarea>
+                <select id="fb-rating" aria-label="Valoración de la sesión">
                     <option value="1">⭐ 1</option>
                     <option value="2">⭐⭐ 2</option>
                     <option value="3" selected>⭐⭐⭐ 3</option>
@@ -344,6 +357,16 @@ let currentEdad = '';
 let currentDuracion = 0;
 let currentMode = 'sesion';
 
+// ── Errores en línea (sin alert() bloqueante) ────────────────────────────────
+function showFormError(msg) {
+    const el = document.getElementById('form-error');
+    el.textContent = msg;
+    el.style.display = '';
+}
+function clearFormError() {
+    document.getElementById('form-error').style.display = 'none';
+}
+
 // ── Mode tabs ──────────────────────────────────────────────────────────────
 document.querySelectorAll('.mode-tab').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -352,6 +375,7 @@ document.querySelectorAll('.mode-tab').forEach(btn => {
         btn.classList.add('active');
         document.getElementById('form-sesion').style.display    = currentMode === 'sesion'    ? '' : 'none';
         document.getElementById('form-reglamento').style.display = currentMode === 'reglamento' ? '' : 'none';
+        clearFormError();
         showEmpty();
         document.getElementById('results').classList.remove('visible');
     });
@@ -395,7 +419,8 @@ document.getElementById('btn-reglamento').addEventListener('click', consultarReg
 
 async function consultarReglamento() {
     const pregunta = document.getElementById('pregunta').value.trim();
-    if (!pregunta) { alert('Escribe una pregunta.'); return; }
+    if (!pregunta) { showFormError('Escribe una pregunta.'); return; }
+    clearFormError();
 
     currentObjetivo = pregunta;
     currentEdad = '';
@@ -408,13 +433,13 @@ async function consultarReglamento() {
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
             body: JSON.stringify({ pregunta }),
         });
-        const data = await resp.json();
-        if (!resp.ok) throw new Error(data.error || 'Error desconocido');
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(data.error || `Error del servidor (${resp.status})`);
         renderReglamento(data);
     } catch (e) {
         hideLoading();
         showEmpty();
-        alert('Error: ' + e.message);
+        showFormError('Error: ' + e.message);
     }
 }
 
@@ -430,7 +455,8 @@ function renderReglamento(data) {
 
 async function generar() {
     const objetivo = document.getElementById('objetivo').value.trim();
-    if (!objetivo) { alert('Describe qué quieres trabajar en el entrenamiento.'); return; }
+    if (!objetivo) { showFormError('Describe qué quieres trabajar en el entrenamiento.'); return; }
+    clearFormError();
 
     const edad = document.getElementById('edad').value;
     const genDiagramas = document.getElementById('gen-diagramas').checked;
@@ -452,15 +478,15 @@ async function generar() {
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
             body: JSON.stringify(payload),
         });
-        const data = await resp.json();
-        if (!resp.ok) throw new Error(data.error || 'Error desconocido');
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(data.error || `Error del servidor (${resp.status})`);
         if (data.duracion) currentDuracion = data.duracion;
         currentResult = data;
         renderResults(data);
     } catch (e) {
         hideLoading();
         showEmpty();
-        alert('Error: ' + e.message);
+        showFormError('Error: ' + e.message);
     }
 }
 
@@ -602,7 +628,9 @@ document.getElementById('btn-pdf').addEventListener('click', async () => {
         a.click();
         URL.revokeObjectURL(a.href);
     } catch (e) {
-        alert('Error generando PDF: ' + e.message);
+        const msgEl = document.getElementById('fb-msg');
+        msgEl.textContent = 'Error generando PDF: ' + e.message;
+        msgEl.className = 'feedback-msg err';
     } finally {
         btn.textContent = '📄 Descargar PDF';
         btn.disabled = false;
@@ -612,7 +640,12 @@ document.getElementById('btn-pdf').addEventListener('click', async () => {
 // ── Feedback ───────────────────────────────────────────────────────────────
 document.getElementById('btn-feedback').addEventListener('click', async () => {
     const cambios = document.getElementById('fb-cambios').value.trim();
-    if (!cambios) { alert('Describe brevemente qué cambiaste.'); return; }
+    const msgEl = document.getElementById('fb-msg');
+    if (!cambios) {
+        msgEl.textContent = 'Describe brevemente qué cambiaste.';
+        msgEl.className = 'feedback-msg err';
+        return;
+    }
     const rating = parseInt(document.getElementById('fb-rating').value);
     const ts = new Date().toISOString().replace(/[:.]/g,'').slice(0,15);
     try {
@@ -666,7 +699,7 @@ function showResults() {
 </script>
 
 <footer class="legal-footer">
-    <span>MiPizarra &copy; 2026</span>
+    <span>MiPizarra &copy; {% now "Y" %}</span>
     <a href="{% url 'privacidad' %}">Política de privacidad</a>
     <a href="{% url 'aviso_legal' %}">Aviso legal</a>
 </footer>

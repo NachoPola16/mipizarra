@@ -118,26 +118,26 @@ def _generar_pdf(sesion_texto, edad, objetivo, duracion, diagramas):
     import cairosvg
     from fpdf import FPDF
 
-    BLUE_R, BLUE_G, BLUE_B = 79, 142, 247
+    ACCENT_R, ACCENT_G, ACCENT_B = 232, 117, 44   # #e8752c
     DARK_R, DARK_G, DARK_B = 30, 30, 40
 
     class PDF_MiPizarra(FPDF):
         def header(self):
-            self.set_fill_color(BLUE_R, BLUE_G, BLUE_B)
+            self.set_fill_color(ACCENT_R, ACCENT_G, ACCENT_B)
             self.rect(0, 0, 210, 7, 'F')
             self.set_y(11)
             self.set_font('Helvetica', 'B', 22)
             self.set_text_color(DARK_R, DARK_G, DARK_B)
             self.cell(0, 9, 'MiPizarra', align='C', new_x='LMARGIN', new_y='NEXT')
             self.set_font('Helvetica', '', 8)
-            self.set_text_color(130, 130, 140)
+            self.set_text_color(140, 130, 115)
             self.cell(0, 4, 'Asistente de entrenamiento de baloncesto', align='C', new_x='LMARGIN', new_y='NEXT')
             self.ln(2)
 
         def footer(self):
             self.set_y(-13)
             self.set_font('Helvetica', '', 7)
-            self.set_text_color(160, 160, 170)
+            self.set_text_color(170, 158, 142)
             self.cell(0, 8, f'Pág. {self.page_no()}', align='C')
 
     pdf = PDF_MiPizarra()
@@ -150,11 +150,11 @@ def _generar_pdf(sesion_texto, edad, objetivo, duracion, diagramas):
     objetivo_corto = objetivo[:40] + '...' if len(objetivo) > 40 else objetivo
 
     y_meta = pdf.get_y()
-    pdf.set_fill_color(240, 244, 255)
-    pdf.set_draw_color(200, 215, 250)
+    pdf.set_fill_color(255, 241, 227)
+    pdf.set_draw_color(240, 196, 150)
     pdf.rect(20, y_meta, 170, 11, 'FD')
     pdf.set_font('Helvetica', 'B', 9)
-    pdf.set_text_color(50, 80, 160)
+    pdf.set_text_color(150, 75, 20)
     pdf.set_xy(20, y_meta + 1)
     meta_str = f'Categoría: {edad_text}   ·   Duración: {duracion_text}   ·   Objetivo: {objetivo_corto}'
     pdf.cell(170, 9, meta_str, align='C', new_x='LMARGIN', new_y='NEXT')
@@ -234,10 +234,10 @@ def _generar_pdf(sesion_texto, edad, objetivo, duracion, diagramas):
                 pdf.ln(4)
                 pagina_recien_nueva = False
             pdf.set_font('Helvetica', 'B', 12)
-            pdf.set_text_color(BLUE_R, BLUE_G, BLUE_B)
+            pdf.set_text_color(ACCENT_R, ACCENT_G, ACCENT_B)
             pdf.set_x(pdf.l_margin)
             pdf.multi_cell(170, 7, titulo)
-            pdf.set_draw_color(BLUE_R, BLUE_G, BLUE_B)
+            pdf.set_draw_color(ACCENT_R, ACCENT_G, ACCENT_B)
             pdf.set_line_width(0.5)
             pdf.line(20, pdf.get_y(), 190, pdf.get_y())
             pdf.ln(4)
