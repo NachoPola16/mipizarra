@@ -393,6 +393,17 @@ def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
     t_ej     = _redondear_5(t_parte / 3)
     categoria_nombre = EDAD_A_CATEGORIA.get(edad, edad)
 
+    # Categorías de formación con sesiones largas parten los 3 ejercicios en N.1+N.2
+    # (ver _bloque_ejercicio) — la plantilla pasa de 3 a 6 bloques a rellenar, así que
+    # el presupuesto de generación tiene que escalar o el modelo corta a mitad de
+    # frase antes de llegar a vuelta a la calma/fundamentos (confirmado con
+    # done_reason="length" en una sesión real U10/75min: se agotaban los 2500 tokens
+    # dentro del Ejercicio 2, perdiendo descanso, ejercicio 3, vuelta y fundamentos).
+    max_bloque = MAX_BLOQUE_POR_EDAD.get(edad, MAX_BLOQUE_DEFECTO)
+    bloques_partidos = t_ej > max_bloque
+    num_predict_sesion = 4500 if bloques_partidos else 2500
+    num_ctx_sesion     = 11000 if bloques_partidos else 8192
+
     n1 = ej1['nombre'] if ej1 else "ejercicio analítico"
     n2 = ej2['nombre'] if ej2 else "ejercicio con superioridad"
     n3 = ej3['nombre'] if ej3 else "ejercicio aplicado"
@@ -443,10 +454,10 @@ Reglas:
                 "stream":  False,
                 "options": {
                     "temperature": 0.4,
-                    "num_predict": 2500,
-                    # Subido de 6144: con presupuesto por colección, ctx_teoria ahora
-                    # puede llegar a ~2700 chars (antes 800 truncados de golpe).
-                    "num_ctx":     8192,
+                    # Escalado según bloques_partidos (ver arriba): 6 bloques de
+                    # ejercicio necesitan bastante más presupuesto que 3.
+                    "num_predict": num_predict_sesion,
+                    "num_ctx":     num_ctx_sesion,
                     "top_p":       0.9,
                     "min_p":       0.05,
                     "repeat_penalty": 1.2,
