@@ -35,8 +35,8 @@ st.set_page_config(
 # ─── CSS ──────────────────────────────────────────────────────────────────
 tema = st.sidebar.selectbox("🎨 Tema", ["Oscuro", "Claro"], index=0)
 
-ACCENT      = "#4f8ef7"
-ACCENT_DARK = "#3a7ae0"
+ACCENT      = "#e8752c"
+ACCENT_DARK = "#c85f1f"
 
 CSS_OSCURO = f"""
 <style>
@@ -44,24 +44,24 @@ CSS_OSCURO = f"""
 
 html, body, [class*="css"] {{
     font-family: 'Inter', sans-serif;
-    background-color: #0d1117;
-    color: #e6edf3;
+    background-color: #15120e;
+    color: #f2ede4;
 }}
 
 /* Scrollbar */
 ::-webkit-scrollbar {{ width: 6px; }}
-::-webkit-scrollbar-track {{ background: #161b22; }}
-::-webkit-scrollbar-thumb {{ background: #30363d; border-radius: 3px; }}
+::-webkit-scrollbar-track {{ background: #1e1a15; }}
+::-webkit-scrollbar-thumb {{ background: #453b2c; border-radius: 3px; }}
 
 [data-testid="stSidebar"] {{
-    background-color: #0d1117;
-    border-right: 1px solid #21262d;
+    background-color: #15120e;
+    border-right: 1px solid #332c22;
 }}
 
 /* Logo */
 .logo-wrap {{
     padding: 1.25rem 0 1rem 0;
-    border-bottom: 1px solid #21262d;
+    border-bottom: 1px solid #332c22;
     margin-bottom: 1.5rem;
 }}
 .logo-main {{
@@ -78,7 +78,7 @@ html, body, [class*="css"] {{
 }}
 .logo-sub {{
     font-size: 0.72rem;
-    color: #7d8590;
+    color: #9c9186;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     margin-top: 4px;
@@ -90,7 +90,7 @@ html, body, [class*="css"] {{
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #7d8590;
+    color: #9c9186;
     margin-bottom: 6px;
     margin-top: 14px;
 }}
@@ -115,14 +115,14 @@ div[data-testid="stButton"] > button:hover {{
 
 /* Session result cards */
 .sesion-card {{
-    background: #161b22;
-    border: 1px solid #21262d;
+    background: #1e1a15;
+    border: 1px solid #332c22;
     border-radius: 10px;
     padding: 1.25rem 1.5rem;
     font-size: 0.92rem;
     line-height: 1.8;
     white-space: pre-wrap;
-    color: #c9d1d9;
+    color: #d8d0c4;
     margin-bottom: 0.75rem;
 }}
 .ejercicio-title {{
@@ -136,9 +136,9 @@ div[data-testid="stButton"] > button:hover {{
 }}
 .section-chip {{
     display: inline-block;
-    background: #1c2333;
+    background: #2a2118;
     color: {ACCENT};
-    border: 1px solid #2d3748;
+    border: 1px solid #3d3324;
     border-radius: 20px;
     padding: 2px 12px;
     font-size: 0.7rem;
@@ -178,12 +178,12 @@ div[data-testid="stButton"] > button:hover {{
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #7d8590;
+    color: #9c9186;
     margin-bottom: 6px;
 }}
 .diagrama-wrap {{
-    background: #0d1117;
-    border: 1px solid #21262d;
+    background: #15120e;
+    border: 1px solid #332c22;
     border-radius: 10px;
     overflow: hidden;
     margin-bottom: 1.5rem;
@@ -202,18 +202,18 @@ div[data-testid="stButton"] > button:hover {{
     font-family: 'Sora', sans-serif;
     font-weight: 700;
     font-size: 1.3rem;
-    color: #e6edf3;
+    color: #f2ede4;
     margin-bottom: 0.4rem;
 }}
 .empty-sub {{
     font-size: 0.85rem;
-    color: #7d8590;
+    color: #9c9186;
     line-height: 1.6;
 }}
-hr {{ border-color: #21262d; }}
+hr {{ border-color: #332c22; }}
 [data-testid="stExpander"] {{
-    background: #161b22;
-    border: 1px solid #21262d;
+    background: #1e1a15;
+    border: 1px solid #332c22;
     border-radius: 8px;
 }}
 </style>
@@ -225,18 +225,18 @@ CSS_CLARO = f"""
 
 html, body, [class*="css"] {{
     font-family: 'Inter', sans-serif;
-    background-color: #f6f8fa;
-    color: #1c1c1e;
+    background-color: #faf7f2;
+    color: #221d16;
 }}
 
 [data-testid="stSidebar"] {{
     background-color: #ffffff;
-    border-right: 1px solid #d0d7de;
+    border-right: 1px solid #e4dccc;
 }}
 
 .logo-wrap {{
     padding: 1.25rem 0 1rem 0;
-    border-bottom: 1px solid #d0d7de;
+    border-bottom: 1px solid #e4dccc;
     margin-bottom: 1.5rem;
 }}
 .logo-main {{
@@ -245,12 +245,12 @@ html, body, [class*="css"] {{
     font-size: 1.9rem;
     letter-spacing: -0.03em;
     line-height: 1;
-    color: #1c1c1e;
+    color: #221d16;
 }}
 .logo-main em {{ font-style: normal; color: {ACCENT}; }}
 .logo-sub {{
     font-size: 0.72rem;
-    color: #6e7781;
+    color: #8a8071;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     margin-top: 4px;
@@ -260,7 +260,7 @@ html, body, [class*="css"] {{
     font-weight: 600;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    color: #6e7781;
+    color: #8a8071;
     margin-bottom: 6px;
     margin-top: 14px;
 }}
@@ -279,29 +279,29 @@ div[data-testid="stButton"] > button:hover {{ background: {ACCENT_DARK} !importa
 
 .sesion-card {{
     background: #ffffff;
-    border: 1px solid #d0d7de;
+    border: 1px solid #e4dccc;
     border-radius: 10px;
     padding: 1.25rem 1.5rem;
     font-size: 0.92rem;
     line-height: 1.8;
     white-space: pre-wrap;
-    color: #24292f;
+    color: #3a3226;
     margin-bottom: 0.75rem;
 }}
 .ejercicio-title {{
     font-family: 'Sora', sans-serif;
     font-weight: 700;
     font-size: 1.1rem;
-    color: #1c1c1e;
+    color: #221d16;
     border-left: 3px solid {ACCENT};
     padding-left: 0.75rem;
     margin-bottom: 0.75rem;
 }}
 .section-chip {{
     display: inline-block;
-    background: #dbeafe;
-    color: #1d4ed8;
-    border: 1px solid #bfdbfe;
+    background: #f6ddc4;
+    color: #b35a12;
+    border: 1px solid #eccba3;
     border-radius: 20px;
     padding: 2px 12px;
     font-size: 0.7rem;
@@ -339,12 +339,12 @@ div[data-testid="stButton"] > button:hover {{ background: {ACCENT_DARK} !importa
     font-weight: 600;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: #6e7781;
+    color: #8a8071;
     margin-bottom: 6px;
 }}
 .diagrama-wrap {{
-    background: #f6f8fa;
-    border: 1px solid #d0d7de;
+    background: #faf7f2;
+    border: 1px solid #e4dccc;
     border-radius: 10px;
     overflow: hidden;
     margin-bottom: 1.5rem;
@@ -355,14 +355,14 @@ div[data-testid="stButton"] > button:hover {{ background: {ACCENT_DARK} !importa
     font-family: 'Sora', sans-serif;
     font-weight: 700;
     font-size: 1.3rem;
-    color: #1c1c1e;
+    color: #221d16;
     margin-bottom: 0.4rem;
 }}
-.empty-sub {{ font-size: 0.85rem; color: #6e7781; line-height: 1.6; }}
-hr {{ border-color: #d0d7de; }}
+.empty-sub {{ font-size: 0.85rem; color: #8a8071; line-height: 1.6; }}
+hr {{ border-color: #e4dccc; }}
 [data-testid="stExpander"] {{
     background: #ffffff;
-    border: 1px solid #d0d7de;
+    border: 1px solid #e4dccc;
     border-radius: 8px;
 }}
 </style>
@@ -376,26 +376,26 @@ def generar_pdf(sesion_texto: str, edad: str, objetivo: str, duracion: int, diag
     import cairosvg
     import tempfile
 
-    BLUE_R, BLUE_G, BLUE_B = 79, 142, 247   # #4f8ef7
+    ACCENT_R, ACCENT_G, ACCENT_B = 232, 117, 44   # #e8752c
     DARK_R, DARK_G, DARK_B = 30, 30, 40
 
     class PDF_MiPizarra(FPDF):
         def header(self):
-            self.set_fill_color(BLUE_R, BLUE_G, BLUE_B)
+            self.set_fill_color(ACCENT_R, ACCENT_G, ACCENT_B)
             self.rect(0, 0, 210, 7, "F")
             self.set_y(11)
             self.set_font("Helvetica", "B", 22)
             self.set_text_color(DARK_R, DARK_G, DARK_B)
             self.cell(0, 9, "MiPizarra", align="C", ln=True)
             self.set_font("Helvetica", "", 8)
-            self.set_text_color(130, 130, 140)
+            self.set_text_color(140, 130, 115)
             self.cell(0, 4, "Asistente de entrenamiento de baloncesto", align="C", ln=True)
             self.ln(2)
 
         def footer(self):
             self.set_y(-13)
             self.set_font("Helvetica", "", 7)
-            self.set_text_color(160, 160, 170)
+            self.set_text_color(170, 158, 142)
             self.cell(0, 8, f"Pág. {self.page_no()}", align="C")
 
     pdf = PDF_MiPizarra()
@@ -409,11 +409,11 @@ def generar_pdf(sesion_texto: str, edad: str, objetivo: str, duracion: int, diag
     objetivo_corto = objetivo[:40] + "..." if len(objetivo) > 40 else objetivo
 
     y_meta = pdf.get_y()
-    pdf.set_fill_color(240, 244, 255)
-    pdf.set_draw_color(200, 215, 250)
+    pdf.set_fill_color(255, 241, 227)
+    pdf.set_draw_color(240, 196, 150)
     pdf.rect(20, y_meta, 170, 11, "FD")
     pdf.set_font("Helvetica", "B", 9)
-    pdf.set_text_color(50, 80, 160)
+    pdf.set_text_color(150, 75, 20)
     pdf.set_xy(20, y_meta + 1)
     meta_str = f"Categoría: {edad_text}   ·   Duración: {duracion_text}   ·   Objetivo: {objetivo_corto}"
     pdf.cell(170, 9, meta_str, align="C", ln=True)
@@ -475,10 +475,10 @@ def generar_pdf(sesion_texto: str, edad: str, objetivo: str, duracion: int, diag
                 pagina_recien_nueva = False
 
             pdf.set_font("Helvetica", "B", 12)
-            pdf.set_text_color(BLUE_R, BLUE_G, BLUE_B)
+            pdf.set_text_color(ACCENT_R, ACCENT_G, ACCENT_B)
             pdf.set_x(pdf.l_margin)
             pdf.cell(170, 7, titulo[:60], ln=True)
-            pdf.set_draw_color(BLUE_R, BLUE_G, BLUE_B)
+            pdf.set_draw_color(ACCENT_R, ACCENT_G, ACCENT_B)
             pdf.set_line_width(0.5)
             pdf.line(20, pdf.get_y(), 190, pdf.get_y())
             pdf.ln(4)
@@ -604,7 +604,7 @@ with st.sidebar:
     st.markdown("<br>", unsafe_allow_html=True)
     generar = st.button("⚡ Generar sesión", use_container_width=True, type="primary")
     st.markdown(
-        "<div style='text-align:center;font-size:0.7rem;color:#7d8590;margin-top:6px;'>"
+        "<div style='text-align:center;font-size:0.7rem;color:#9c9186;margin-top:6px;'>"
         "Enter para generar · Shift+Enter para nueva línea</div>",
         unsafe_allow_html=True,
     )
@@ -748,7 +748,7 @@ svg{{width:100%;height:auto;display:block}}
     st.markdown("<hr>", unsafe_allow_html=True)
     st.markdown(
         "<div style='font-size:0.75rem;font-weight:600;letter-spacing:0.08em;"
-        "text-transform:uppercase;color:#7d8590;margin-bottom:0.75rem;'>"
+        "text-transform:uppercase;color:#9c9186;margin-bottom:0.75rem;'>"
         "¿Usaste esta sesión en un entrenamiento real?</div>",
         unsafe_allow_html=True,
     )

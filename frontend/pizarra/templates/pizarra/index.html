@@ -5,32 +5,35 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MiPizarra — Asistente de entrenamiento</title>
+<link rel="icon" type="image/svg+xml" href="{% static 'pizarra/brand/favicon.svg' %}">
+<link rel="alternate icon" href="{% static 'pizarra/brand/favicon.ico' %}">
+<link rel="apple-touch-icon" href="{% static 'pizarra/brand/apple-touch-icon.png' %}">
 <link rel="stylesheet" href="{% static 'pizarra/css/fonts.css' %}">
 <style>
 /* ── Reset & variables ── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-    --accent:   #4f8ef7;
-    --accent-d: #3a7ae0;
-    --bg:       #0d1117;
-    --bg2:      #161b22;
-    --bg3:      #1c2333;
-    --border:   #21262d;
-    --text:     #e6edf3;
-    --text2:    #c9d1d9;
-    --muted:    #7d8590;
+    --accent:   #e8752c;
+    --accent-d: #c85f1f;
+    --bg:       #15120e;
+    --bg2:      #1e1a15;
+    --bg3:      #2a2118;
+    --border:   #332c22;
+    --text:     #f2ede4;
+    --text2:    #d8d0c4;
+    --muted:    #9c9186;
     --sidebar-w: 280px;
 }
 
 [data-theme="light"] {
-    --bg:     #f6f8fa;
+    --bg:     #faf7f2;
     --bg2:    #ffffff;
-    --bg3:    #dbeafe;
-    --border: #d0d7de;
-    --text:   #1c1c1e;
-    --text2:  #24292f;
-    --muted:  #6e7781;
+    --bg3:    #f6ddc4;
+    --border: #e4dccc;
+    --text:   #221d16;
+    --text2:  #3a3226;
+    --muted:  #8a8071;
 }
 
 html, body {
@@ -94,7 +97,7 @@ select, textarea, input[type="range"] {
 }
 select:focus, textarea:focus { border-color: var(--accent); }
 textarea { resize: vertical; min-height: 120px; line-height: 1.6; }
-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%237d8590' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .75rem center; padding-right: 2rem; }
+select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239c9186' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .75rem center; padding-right: 2rem; }
 
 /* Duration toggle */
 .dur-toggle { display: flex; align-items: center; gap: .5rem; cursor: pointer; font-size: .88rem; color: var(--text2); }
