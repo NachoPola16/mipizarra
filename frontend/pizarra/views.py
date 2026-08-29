@@ -74,6 +74,25 @@ def reglamento(request):
 
 
 @require_POST
+def reprompt_ejercicio(request):
+    try:
+        data = json.loads(request.body)
+        resp = requests.post(
+            f"{settings.API_URL}/reprompt_ejercicio",
+            json=data,
+            headers=_api_headers(),
+            timeout=120,
+        )
+        resp.raise_for_status()
+        return JsonResponse(resp.json())
+    except requests.Timeout:
+        return JsonResponse({'error': 'La corrección tardó demasiado. Inténtalo de nuevo.'}, status=504)
+    except Exception as e:
+        logger.error('Error llamando API reprompt: %s', e)
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@require_POST
 def guardar_feedback(request):
     try:
         data = json.loads(request.body)

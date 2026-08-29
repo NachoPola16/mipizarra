@@ -961,6 +961,49 @@ def generar_ejercicio_unico(edad: str, objetivo: str, descripcion: str = "") -> 
         return {}
 
 
+def reprompt_ejercicio(edad: str, objetivo: str, nombre: str, descripcion: str, instruccion: str) -> dict:
+    """Regenera un ejercicio ya existente aplicando una corrección pedida por el
+    entrenador — mismo formato de salida que generar_ejercicio_unico (texto y
+    diagrama en un único JSON), pero partiendo del ejercicio actual en vez de
+    generar uno nuevo desde cero, para que el modelo sepa qué está corrigiendo."""
+    ctx = construir_contexto_ejercicios(
+        filtrar_ejercicios(cargar_ejercicios(), edad, objetivo)
+    )
+    prompt = (
+        f"Este ejercicio de baloncesto ya está generado para la categoría {edad}, "
+        f"dentro de una sesión con objetivo general: {objetivo}.\n\n"
+        f"EJERCICIO ACTUAL:\n"
+        f"Nombre: {nombre}\n"
+        f"Descripción: {descripcion}\n\n"
+        f"El entrenador pide este cambio sobre ESTE ejercicio: {instruccion}\n\n"
+        "Genera la versión corregida del ejercicio aplicando ese cambio. Si el cambio "
+        "pedido afecta solo al diagrama (jugadores, movimientos), mantén el resto del "
+        "ejercicio igual y actualiza el diagrama acorde al cambio.\n\n"
+        f"Ejercicios de referencia:\n{ctx}\n\n"
+        "Devuelve SOLO el JSON del ejercicio corregido (sin texto adicional):"
+    )
+    try:
+        r = requests.post(
+            f"{OLLAMA_URL}/api/generate",
+            json={
+                "model":  MODEL,
+                "prompt": prompt,
+                "format": "json",
+                "think":  False,          # Qwen3: sin thinking para JSON estructurado
+                "stream": False,
+                "options": {"temperature": 0.4, "num_predict": 900, "top_k": 40},
+            },
+            timeout=120,
+        )
+        r.raise_for_status()
+        ej = json.loads(r.json()["response"].strip())
+        logger.info(f"Ejercicio corregido: {ej.get('nombre', '?')}")
+        return ej
+    except Exception as e:
+        logger.warning(f"Error corrigiendo ejercicio: {e}")
+        return {}
+
+
 # ── Modo 3: Reglamento y dudas técnicas ─────────────────────────────────────
 
 # SYSTEM_REGLAMENTO importado de api/prompts.py

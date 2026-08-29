@@ -16,7 +16,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 from rag_engine import (
     generar_sesion, generar_coordenadas_ejercicio,
-    generar_ejercicio_unico, responder_duda_reglamento,
+    generar_ejercicio_unico, reprompt_ejercicio, responder_duda_reglamento,
 )
 from diagram_renderer import render_diagram, render_all_diagrams
 
@@ -153,6 +153,15 @@ class EjercicioRequest(BaseModel):
     edad:       Optional[str] = None
     objetivo:   str = Field(default="tiro", min_length=1, max_length=MAX_OBJETIVO_LEN)
     descripcion: Optional[str] = Field(default=None, max_length=1000)
+
+
+class RepromptRequest(BaseModel):
+    categoria:   Optional[str] = None
+    edad:        Optional[str] = None
+    objetivo:    str = Field(default="", max_length=MAX_OBJETIVO_LEN)
+    nombre:      str = Field(min_length=1, max_length=200)
+    descripcion: str = Field(default="", max_length=2000)
+    instruccion: str = Field(min_length=3, max_length=MAX_OBJETIVO_LEN)
 
 
 class ReglamentoRequest(BaseModel):
@@ -344,6 +353,36 @@ async def generar_ejercicio(request: Request, req: EjercicioRequest):
                 svgs.append(d)
         except Exception:
             logger.exception("Error renderizando diagrama del ejercicio")
+
+    return {"ejercicio": resultado, "diagramas": svgs}
+
+
+@app.post("/reprompt_ejercicio")
+@limiter.limit("20/hour;5/minute")
+async def corregir_ejercicio(request: Request, req: RepromptRequest):
+    """Regenera un ejercicio ya existente de una sesión aplicando una corrección
+    pedida por el entrenador (texto y/o diagrama), sin tocar el resto de la sesión."""
+    edad = req.edad or (CATEGORIA_A_EDAD.get(req.categoria, "U16") if req.categoria else "U16")
+    logger.info(f"Reprompt ejercicio: edad={edad}, nombre={req.nombre[:60]}, instruccion={req.instruccion[:80]}")
+    try:
+        resultado = reprompt_ejercicio(
+            edad=edad, objetivo=req.objetivo, nombre=req.nombre,
+            descripcion=req.descripcion, instruccion=req.instruccion,
+        )
+    except Exception:
+        logger.exception("Error en reprompt_ejercicio")
+        raise HTTPException(status_code=500, detail="No se pudo corregir el ejercicio")
+
+    if not resultado:
+        raise HTTPException(status_code=500, detail="No se pudo corregir el ejercicio")
+
+    svgs = []
+    if resultado.get("diagrama") or resultado.get("diagramas"):
+        try:
+            for d in render_all_diagrams(resultado, edad=edad):
+                svgs.append(d)
+        except Exception:
+            logger.exception("Error renderizando diagrama del ejercicio corregido")
 
     return {"ejercicio": resultado, "diagramas": svgs}
 

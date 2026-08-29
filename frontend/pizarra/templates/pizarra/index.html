@@ -131,7 +131,16 @@ html, body {
 .badge-ok { background: #0d2218; color: #3fb950; border: 1px solid #1a7f37; }
 .badge-warn { background: #1c1a10; color: #d29922; border: 1px solid #6e451d; }
 
-.ejercicio-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.1rem; border-left: 3px solid var(--accent); padding-left: .75rem; margin: 1.5rem 0 .75rem; }
+.ejercicio-block { border-radius: 10px; padding: .5rem .75rem; margin: 0 -.75rem; transition: background .15s; }
+.ejercicio-block.selected { background: var(--bg2); }
+.ej-select { display: flex; align-items: center; gap: .4rem; font-size: .75rem; color: var(--muted); cursor: pointer; width: fit-content; margin-bottom: .25rem; }
+.ej-select input { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
+.ejercicio-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.1rem; border-left: 3px solid var(--accent); padding-left: .75rem; margin: .5rem 0 .75rem; }
+
+.reprompt-bar { display: flex; align-items: center; gap: .75rem; background: var(--bg2); border: 1px solid var(--accent); border-radius: 10px; padding: .7rem 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.reprompt-count { font-size: .8rem; color: var(--text2); white-space: nowrap; }
+.reprompt-bar input[type="text"] { flex: 1; min-width: 200px; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: .5rem .75rem; font-family: 'Inter', sans-serif; font-size: .85rem; outline: none; }
+.reprompt-bar input[type="text"]:focus { border-color: var(--accent); }
 .diagrama-label { font-size: .68rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
 .diagrama-wrap { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 1.5rem; }
 .diagrama-wrap svg { width: 100%; height: auto; display: block; }
@@ -334,6 +343,13 @@ html, body {
 
     <div class="results" id="results" aria-live="polite">
         <button type="button" class="btn-back" id="btn-nueva">← Nueva consulta</button>
+
+        <div class="reprompt-bar" id="reprompt-bar" style="display:none;">
+            <span class="reprompt-count" id="reprompt-count">0 ejercicios seleccionados</span>
+            <input type="text" id="reprompt-instruccion" placeholder="¿Qué quieres cambiar? Ej: sin defensor, más dinámico…">
+            <button type="button" class="btn-send" id="btn-reprompt">🔄 Aplicar cambio</button>
+        </div>
+
         <div id="resultado-contenido"></div>
 
         <details class="consultados" id="consultados-wrap" style="display:none">
@@ -376,6 +392,9 @@ let currentEdad = '';
 let currentEdadSlug = 'general';
 let currentDuracion = 0;
 let currentMode = 'sesion';
+let currentBloques = [];
+let currentEjercicios = [];
+let selectedEjercicios = new Set();
 
 // ── Errores en línea (sin alert() bloqueante) ────────────────────────────────
 function showFormError(msg) {
@@ -518,6 +537,8 @@ function renderReglamento(data) {
     document.getElementById('consultados-wrap').style.display = 'none';
     document.querySelector('.downloads').style.display = 'none';
     document.querySelector('.feedback').style.display = 'none';
+    selectedEjercicios = new Set();
+    document.getElementById('reprompt-bar').style.display = 'none';
     showResults();
 }
 
@@ -586,7 +607,9 @@ function renderResults(data) {
         ? "<span class='badge badge-ok'>✓ Enriquecido con teoría</span>"
         : "<span class='badge badge-warn'>⚠ Sin teoría adicional</span>";
 
-    // Parsear texto en bloques (secciones y ejercicios)
+    // Parsear texto en bloques (secciones y ejercicios). Se guarda en
+    // currentBloques (no solo local) para poder sustituir un único bloque tras
+    // un reprompt y reconstruir el texto completo sin tocar el resto.
     const lineas = texto.split('\n');
     let bloques = [], bloque = [], ejIdx = -1;
     for (const linea of lineas) {
@@ -599,14 +622,26 @@ function renderResults(data) {
         }
     }
     if (bloque.length) bloques.push({ ejIdx, texto: bloque.join('\n') });
+    currentBloques = bloques;
+    currentEjercicios = [];
+    selectedEjercicios = new Set();
 
     let ejercicioNum = 0;
-    for (const b of bloques) {
+    bloques.forEach((b, bloqueIdx) => {
         if (/^\s*Ejercicio \d+/.test(b.texto)) {
             const ls = b.texto.split('\n');
             const titulo = ls[0].trim();
             const resto  = ls.slice(1).join('\n').trim();
+            const headerLine = (titulo.match(/^(Ejercicio \d+)/) || [null, titulo])[1];
+            const nombre = titulo.replace(/^Ejercicio \d+\s*:\s*/, '').trim();
+            const diagNombre = (ejercicioNum < diagGroups.length && diagGroups[ejercicioNum][0])
+                ? diagGroups[ejercicioNum][0].nombre : nombre;
 
+            currentEjercicios.push({ bloqueIdx, headerLine, nombre, descripcion: resto, diagNombre });
+            const ejN = currentEjercicios.length - 1;
+
+            html += `<div class="ejercicio-block" data-ej-idx="${ejN}">`;
+            html += `<label class="ej-select"><input type="checkbox" class="ej-checkbox" data-ej-idx="${ejN}"> Editar este ejercicio</label>`;
             html += `<div class='ejercicio-title'>${escHtml(titulo)}</div>`;
 
             // Mostrar TODOS los diagramas del ejercicio (multifase)
@@ -618,19 +653,29 @@ function renderResults(data) {
             }
 
             if (resto) html += `<div class='sesion-card'>${mdToHtml(resto)}</div>`;
+            html += `</div>`;
             ejercicioNum++;
         } else {
             const contenido = b.texto.trim();
-            if (!contenido) continue;
+            if (!contenido) return;
             // Secciones (**TEXTO**) en línea propia → título de sección
             const soloTitulo = contenido.replace(/\*\*(.+?)\*\*/g, (_, t) =>
                 `<div class='section-title'>${escHtml(t)}</div>`
             );
             html += (soloTitulo !== contenido) ? soloTitulo : `<div class='sesion-card'>${mdToHtml(contenido)}</div>`;
         }
-    }
+    });
 
     document.getElementById('resultado-contenido').innerHTML = html;
+    document.querySelectorAll('.ej-checkbox').forEach(cb => {
+        cb.addEventListener('change', () => {
+            const idx = parseInt(cb.dataset.ejIdx);
+            cb.closest('.ejercicio-block').classList.toggle('selected', cb.checked);
+            if (cb.checked) selectedEjercicios.add(idx); else selectedEjercicios.delete(idx);
+            actualizarBarraReprompt();
+        });
+    });
+    actualizarBarraReprompt();
 
     // Restaurar secciones que el modo reglamento puede haber ocultado
     document.querySelector('.downloads').style.display = '';
@@ -655,6 +700,93 @@ function renderResults(data) {
     document.getElementById('fb-msg').textContent = '';
     showResults();
 }
+
+// ── Reprompt: corregir uno o varios ejercicios ya generados ─────────────────
+function actualizarBarraReprompt() {
+    const bar = document.getElementById('reprompt-bar');
+    const n = selectedEjercicios.size;
+    if (n === 0) { bar.style.display = 'none'; return; }
+    bar.style.display = '';
+    document.getElementById('reprompt-count').textContent =
+        n === 1 ? '1 ejercicio seleccionado' : `${n} ejercicios seleccionados`;
+}
+
+function formatEjercicioTexto(headerLine, ej) {
+    const partes = [];
+    if (ej.objetivos && typeof ej.objetivos === 'object') {
+        ['tacticos', 'tecnicos', 'fisicos'].forEach(k => {
+            const v = ej.objetivos[k];
+            if (v) partes.push(Array.isArray(v) ? v.join(', ') : String(v));
+        });
+    }
+    let out = `${headerLine}: ${ej.nombre || 'Ejercicio corregido'}\n`;
+    out += `Organización: ${partes.join(' ') || 'Ver diagrama.'}\n`;
+    if (ej.duracion_min) out += `Duración: ${ej.duracion_min} min\n`;
+    if (Array.isArray(ej.puntos_clave) && ej.puntos_clave.length) {
+        out += `Puntos clave: ${ej.puntos_clave.join('; ')}`;
+    }
+    return out.trim();
+}
+
+document.getElementById('btn-reprompt').addEventListener('click', async () => {
+    const instruccion = document.getElementById('reprompt-instruccion').value.trim();
+    if (!instruccion) { showFormError('Describe qué quieres cambiar.'); return; }
+    if (!currentResult || selectedEjercicios.size === 0) return;
+    clearFormError();
+
+    const btn = document.getElementById('btn-reprompt');
+    const idxs = Array.from(selectedEjercicios);
+    btn.disabled = true;
+
+    for (const idx of idxs) {
+        const ej = currentEjercicios[idx];
+        btn.textContent = `⏳ Corrigiendo ${idxs.indexOf(idx) + 1}/${idxs.length}…`;
+        try {
+            const resp = await fetch('{% url "reprompt" %}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+                body: JSON.stringify({
+                    edad: document.getElementById('edad').value,
+                    objetivo: currentObjetivo,
+                    nombre: ej.nombre,
+                    descripcion: ej.descripcion,
+                    instruccion,
+                }),
+            });
+            const data = await resp.json().catch(() => ({}));
+            if (!resp.ok) throw new Error(data.error || `Error del servidor (${resp.status})`);
+
+            const nuevoEjercicio = data.ejercicio || {};
+            const nuevasDiagramas = data.diagramas || [];
+
+            // Sustituir el texto del bloque, conservando la numeración "Ejercicio N".
+            currentBloques[ej.bloqueIdx].texto = formatEjercicioTexto(ej.headerLine, nuevoEjercicio);
+
+            // Sustituir sus diagramas EN SU MISMA POSICIÓN (no al final): diagGroups
+            // se reconstruye por orden de array al volver a renderizar, así que un
+            // simple filter+push desalinearía los diagramas de los ejercicios
+            // siguientes.
+            const nuevoNombre = nuevoEjercicio.nombre || ej.nombre;
+            currentResult.diagramas = currentResult.diagramas || [];
+            const primeraPos = currentResult.diagramas.findIndex(d => d.nombre === ej.diagNombre);
+            const insertarEn = primeraPos === -1 ? currentResult.diagramas.length : primeraPos;
+            currentResult.diagramas = currentResult.diagramas.filter(d => d.nombre !== ej.diagNombre);
+            const nuevosConNombre = nuevasDiagramas.map(d => ({ id: ej.diagNombre, nombre: nuevoNombre, titulo: d.titulo || '', svg: d.svg }));
+            currentResult.diagramas.splice(insertarEn, 0, ...nuevosConNombre);
+        } catch (e) {
+            showFormError(`Error corrigiendo "${ej.nombre}": ${e.message}`);
+        }
+    }
+
+    // Reconstruir el texto completo de la sesión a partir de los bloques (solo
+    // cambió el/los que se corrigieron) y volver a pintar todo con los datos ya
+    // actualizados, para que "Nueva consulta" y las descargas reflejen el cambio.
+    currentResult.sesion = currentBloques.map(b => b.texto).join('\n');
+    document.getElementById('reprompt-instruccion').value = '';
+    btn.disabled = false;
+    btn.textContent = '🔄 Aplicar cambio';
+    renderResults(currentResult);
+});
 
 function escHtml(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
