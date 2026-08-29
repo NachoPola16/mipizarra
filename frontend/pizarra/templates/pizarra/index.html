@@ -57,7 +57,7 @@ html, body {
 
 /* ── Top bar ── */
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.75rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
-.brand { display: flex; align-items: center; gap: .55rem; font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1.25rem; letter-spacing: -.02em; }
+.brand { display: flex; align-items: center; gap: .55rem; font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1.25rem; letter-spacing: -.02em; color: inherit; text-decoration: none; }
 .brand em { font-style: normal; color: var(--accent); }
 .brand-mark { width: 26px; height: 26px; border-radius: 22%; flex-shrink: 0; transition: transform .3s cubic-bezier(.16,1,.3,1); }
 .brand:hover .brand-mark { transform: rotate(-8deg) scale(1.08); }
@@ -203,7 +203,7 @@ html, body {
 <div class="app">
 
 <header class="topbar">
-    <div class="brand">
+    <a class="brand" href="{% url 'index' %}" aria-label="Ir al inicio de MiPizarra">
         <svg class="brand-mark" viewBox="0 0 512 512" role="img" aria-label="MiPizarra">
             <rect width="512" height="512" rx="114" fill="#15120e"/>
             <rect x="224" y="80" width="64" height="48" rx="14" fill="#e8752c"/>
@@ -213,7 +213,7 @@ html, body {
             <path d="M276.9 199.5 L286.5 175.3 L260.5 176.9" fill="none" stroke="#e8752c" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <span>Mi<em>Pizarra</em></span>
-    </div>
+    </a>
     <div class="mode-tabs">
         <button class="mode-tab active" data-mode="sesion">⚡ Sesión</button>
         <button class="mode-tab" data-mode="reglamento">📖 Reglamento</button>
