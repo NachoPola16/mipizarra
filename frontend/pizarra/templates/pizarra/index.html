@@ -40,7 +40,6 @@
     --text:     #f2ede4;
     --text2:    #d8d0c4;
     --muted:    #9c9186;
-    --sidebar-w: 280px;
 }
 
 html, body {
@@ -56,83 +55,49 @@ html, body {
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
-/* ── Layout ── */
-.app { display: flex; min-height: 100vh; }
+/* ── Top bar ── */
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.75rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: .55rem; font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1.25rem; letter-spacing: -.02em; }
+.brand em { font-style: normal; color: var(--accent); }
+.brand-mark { width: 26px; height: 26px; border-radius: 22%; flex-shrink: 0; }
+.mode-tabs { display: flex; gap: .4rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
+.mode-tab { padding: .4rem .9rem; font-size: .82rem; font-weight: 600; border: none; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; font-family: 'Inter', sans-serif; transition: color .15s; }
+.mode-tab:hover { color: var(--text); }
+.mode-tab.active { background: var(--accent); color: #fff; }
+.mode-tab.active:hover { color: #fff; }
 
-.sidebar {
-    width: var(--sidebar-w);
-    min-width: var(--sidebar-w);
-    background: var(--bg);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    padding: 1.5rem 1.25rem;
-    position: sticky;
-    top: 0;
-    height: 100vh;
-    overflow-y: auto;
-    gap: .9rem;
-}
+/* ── Content ── */
+.content { max-width: 800px; margin: 0 auto; padding: 0 1.5rem 3rem; }
 
-.main {
-    flex: 1;
-    padding: 2rem 2.5rem;
-    overflow-y: auto;
-}
+/* ── Prompt section (estado inicial / "home") ── */
+.prompt-section { display: flex; flex-direction: column; align-items: center; gap: 2rem; padding-top: 3.5rem; }
+.center-heading { display: flex; flex-direction: column; align-items: center; gap: .65rem; }
+.center-title { font-size: 1.9rem; font-weight: 800; letter-spacing: -.02em; text-align: center; text-wrap: balance; font-family: 'Sora', sans-serif; }
+.center-sub { color: var(--muted); text-align: center; font-size: .95rem; line-height: 1.5; max-width: 46ch; }
 
-/* ── Logo ── */
-.logo { border-bottom: 1px solid var(--border); padding-bottom: 1rem; margin-bottom: .25rem; }
-.logo-main { font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1.9rem; letter-spacing: -.03em; line-height: 1; color: var(--text); }
-.logo-main em { font-style: normal; color: var(--accent); }
-.logo-sub { font-size: .72rem; color: var(--muted); letter-spacing: .12em; text-transform: uppercase; margin-top: 4px; }
+.pill-row { display: flex; gap: .6rem; flex-wrap: wrap; justify-content: center; width: 100%; }
+.pill { display: flex; align-items: center; gap: .4rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: .4rem .9rem; font-size: .82rem; color: var(--text2); cursor: pointer; transition: border-color .15s; }
+.pill:focus-within, .pill:hover { border-color: var(--accent); }
+.pill svg { width: 14px; height: 14px; opacity: .6; flex-shrink: 0; }
+.pill select { background: none; border: none; color: var(--text2); font-size: .82rem; font-family: 'Inter', sans-serif; cursor: pointer; }
+.pill select:focus { outline: none; }
 
-/* ── Field label ── */
-.field-label { font-size: .68rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; margin-top: 4px; }
+.prompt-box { width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 1.1rem 1.25rem; display: flex; flex-direction: column; gap: .9rem; transition: border-color .15s; }
+.prompt-box:focus-within { border-color: var(--accent); }
+.prompt-box textarea { width: 100%; background: none; border: none; color: var(--text); font-family: 'Inter', sans-serif; font-size: 1rem; line-height: 1.6; resize: vertical; min-height: 76px; outline: none; }
+.prompt-box textarea::placeholder { color: var(--muted); }
+.prompt-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; }
+.diag-toggle { display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: var(--muted); cursor: pointer; }
+.diag-toggle input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+.btn-send { background: var(--accent); color: #fff; font-family: 'Inter', sans-serif; font-weight: 600; font-size: .88rem; letter-spacing: .02em; border: none; border-radius: 10px; padding: .65rem 1.4rem; cursor: pointer; transition: background .15s; }
+.btn-send:hover { background: var(--accent-d); }
+.btn-send:disabled { opacity: .5; cursor: not-allowed; }
 
-/* ── Form controls ── */
-select, textarea, input[type="range"] {
-    width: 100%;
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    color: var(--text);
-    border-radius: 6px;
-    padding: .5rem .75rem;
-    font-family: 'Inter', sans-serif;
-    font-size: .88rem;
-    outline: none;
-    transition: border-color .15s;
-}
-select:focus, textarea:focus { border-color: var(--accent); }
-textarea { resize: vertical; min-height: 120px; line-height: 1.6; }
-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239c9186' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .75rem center; padding-right: 2rem; }
+.chips { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center; }
+.chip { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 20px; padding: .45rem 1rem; font-size: .8rem; cursor: pointer; font-family: 'Inter', sans-serif; transition: border-color .15s, color .15s; }
+.chip:hover { border-color: var(--accent); color: var(--text); }
 
-/* Duration toggle */
-.dur-toggle { display: flex; align-items: center; gap: .5rem; cursor: pointer; font-size: .88rem; color: var(--text2); }
-.dur-toggle input[type="checkbox"] { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
-.dur-slider { display: none; margin-top: .5rem; }
-.dur-slider.visible { display: block; }
-.dur-val { text-align: center; font-size: .85rem; font-weight: 600; color: var(--accent); margin-top: .25rem; }
-input[type="range"] { padding: 0; border: none; background: var(--border); height: 4px; border-radius: 2px; accent-color: var(--accent); cursor: pointer; }
-
-/* ── Button ── */
-.btn-generar {
-    width: 100%;
-    background: var(--accent);
-    color: #fff;
-    font-family: 'Inter', sans-serif;
-    font-weight: 600;
-    font-size: .9rem;
-    letter-spacing: .04em;
-    border: none;
-    border-radius: 8px;
-    padding: .7rem 1.5rem;
-    cursor: pointer;
-    transition: background .15s;
-    margin-top: .25rem;
-}
-.btn-generar:hover { background: var(--accent-d); }
-.btn-generar:disabled { opacity: .5; cursor: not-allowed; }
-.btn-hint { text-align: center; font-size: .68rem; color: var(--muted); margin-top: 5px; }
+.btn-hint { text-align: center; font-size: .68rem; color: var(--muted); }
 
 /* ── Loading ── */
 .loading { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 40vh; gap: 1.5rem; }
@@ -141,15 +106,11 @@ input[type="range"] { padding: 0; border: none; background: var(--border); heigh
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-text { color: var(--muted); font-size: .9rem; }
 
-/* ── Empty state ── */
-.empty { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; text-align: center; padding: 2rem; gap: .75rem; }
-.empty-icon { font-size: 3.5rem; }
-.empty-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.3rem; }
-.empty-sub { font-size: .88rem; color: var(--muted); line-height: 1.7; max-width: 360px; }
-
 /* ── Results ── */
-.results { display: none; }
+.results { display: none; padding-top: 2rem; }
 .results.visible { display: block; }
+.btn-back { background: none; border: none; color: var(--muted); font-family: 'Inter', sans-serif; font-size: .82rem; cursor: pointer; display: inline-flex; align-items: center; gap: .35rem; margin-bottom: 1.5rem; transition: color .15s; }
+.btn-back:hover { color: var(--text); }
 
 .badge { display: inline-block; border-radius: 6px; padding: 3px 12px; font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 1.25rem; }
 .badge-ok { background: #0d2218; color: #3fb950; border: 1px solid #1a7f37; }
@@ -178,28 +139,24 @@ input[type="range"] { padding: 0; border: none; background: var(--border); heigh
 .feedback { border-top: 1px solid var(--border); margin-top: 2rem; padding-top: 1.5rem; }
 .feedback-title { font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
 .feedback-row { display: flex; gap: .75rem; align-items: flex-start; }
-.feedback-row textarea { flex: 1; }
-.feedback-row select { width: 110px; min-width: 110px; }
+.feedback-row textarea { flex: 1; background: var(--bg2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: .5rem .75rem; font-family: 'Inter', sans-serif; font-size: .88rem; resize: vertical; }
+.feedback-row select { width: 110px; min-width: 110px; background: var(--bg2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: .5rem .75rem; font-family: 'Inter', sans-serif; font-size: .88rem; }
 .btn-fb { margin-top: .75rem; background: var(--bg2); border: 1px solid var(--border); color: var(--text); font-family: 'Inter', sans-serif; font-weight: 600; font-size: .88rem; border-radius: 8px; padding: .55rem 1.25rem; cursor: pointer; transition: border-color .15s; }
 .btn-fb:hover { border-color: var(--accent); }
 .feedback-msg { font-size: .85rem; margin-top: .5rem; }
 .feedback-msg.ok { color: #3fb950; }
 .feedback-msg.err { color: #f85149; }
-
-/* ── Responsive ── */
-@media (max-width: 680px) {
-    .app { flex-direction: column; }
-    .sidebar { width: 100%; min-width: 0; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border); }
-    .main { padding: 1.25rem; }
-}
-
-/* ── Mode tabs ── */
-.mode-tabs { display: flex; gap: .4rem; margin-bottom: .25rem; }
-.mode-tab { flex: 1; padding: .4rem .5rem; font-size: .78rem; font-weight: 600; border: 1px solid var(--border); border-radius: 6px; background: var(--bg2); color: var(--muted); cursor: pointer; transition: all .15s; font-family: 'Inter', sans-serif; }
-.mode-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.feedback-msg.err[id="form-error"] { max-width: 800px; margin: 1.5rem auto 0; padding: .7rem 1rem; background: var(--bg2); border: 1px solid var(--border); border-left: 3px solid #f85149; border-radius: 6px; }
 
 /* ── Reglamento result ── */
 .reglamento-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; font-size: .95rem; line-height: 1.85; color: var(--text2); white-space: pre-wrap; }
+
+/* ── Responsive ── */
+@media (max-width: 560px) {
+    .topbar { justify-content: center; }
+    .prompt-section { padding-top: 2rem; }
+    .center-title { font-size: 1.5rem; }
+}
 
 /* ── Footer legal ── */
 .legal-footer {
@@ -208,7 +165,6 @@ input[type="range"] { padding: 0; border: none; background: var(--border); heigh
     font-size: .72rem;
     color: var(--muted);
     border-top: 1px solid var(--border);
-    flex-shrink: 0;
 }
 .legal-footer a {
     color: var(--muted);
@@ -221,88 +177,111 @@ input[type="range"] { padding: 0; border: none; background: var(--border); heigh
 <body>
 <div class="app">
 
-<!-- ── Sidebar ── -->
-<aside class="sidebar">
-    <div class="logo">
-        <div class="logo-main">Mi<em>Pizarra</em></div>
-        <div class="logo-sub">Asistente de entrenamiento</div>
+<header class="topbar">
+    <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 512 512" role="img" aria-label="MiPizarra">
+            <rect width="512" height="512" rx="114" fill="#15120e"/>
+            <rect x="224" y="80" width="64" height="48" rx="14" fill="#e8752c"/>
+            <rect x="118" y="110" width="276" height="308" rx="26" fill="none" stroke="#e8752c" stroke-width="30" stroke-linejoin="round"/>
+            <circle cx="200" cy="360" r="24" fill="#e8752c"/>
+            <path d="M200 360 Q160 260 280 180" fill="none" stroke="#e8752c" stroke-width="26" stroke-linecap="round"/>
+            <path d="M276.9 199.5 L286.5 175.3 L260.5 176.9" fill="none" stroke="#e8752c" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Mi<em>Pizarra</em>
     </div>
-
     <div class="mode-tabs">
         <button class="mode-tab active" data-mode="sesion">⚡ Sesión</button>
         <button class="mode-tab" data-mode="reglamento">📖 Reglamento</button>
     </div>
+</header>
+
+<main class="content">
 
     <div class="feedback-msg err" id="form-error" style="display:none;" role="alert"></div>
 
-    <!-- ── Formulario sesión ── -->
-    <div id="form-sesion">
-    <div>
-        <label class="field-label" for="edad">Categoría</label>
-        <select id="edad">
-            <option value="">-- No especificar --</option>
-            <option value="U8">Prebenjamín</option>
-            <option value="U10">Benjamín</option>
-            <option value="U12">Alevín</option>
-            <option value="U14">Infantil</option>
-            <option value="U16">Cadete</option>
-            <option value="U18">Junior</option>
-            <option value="Senior">Senior</option>
-        </select>
-    </div>
-
-    <div>
-        <div class="field-label">Duración</div>
-        <label class="dur-toggle">
-            <input type="checkbox" id="usar-dur"> Especificar duración
-        </label>
-        <div class="dur-slider" id="dur-slider">
-            <input type="range" id="duracion" min="45" max="120" step="15" value="90" aria-label="Duración en minutos">
-            <div class="dur-val" id="dur-val">90 min</div>
+    <!-- ── Sesión: estado inicial ── -->
+    <div id="form-sesion" class="prompt-section">
+        <div class="center-heading">
+            <div class="center-title">¿Qué quieres trabajar hoy?</div>
+            <div class="center-sub">Describe el objetivo y genera una sesión completa con ejercicios y diagramas tácticos.</div>
         </div>
-    </div>
 
-    <div>
-        <label class="field-label" for="objetivo">Descripción del entrenamiento</label>
-        <textarea id="objetivo" placeholder="¿Qué quieres trabajar hoy?&#10;&#10;Ejemplos:&#10;• Tiro en suspensión&#10;• Defensa bloqueo directo&#10;• Transición rápida"></textarea>
-    </div>
+        <div class="pill-row">
+            <label class="pill">
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 1 0 0 10A5 5 0 0 0 8 1Z"/></svg>
+                <select id="edad" aria-label="Categoría">
+                    <option value="">Categoría: sin especificar</option>
+                    <option value="U8">Prebenjamín (U8)</option>
+                    <option value="U10">Benjamín (U10)</option>
+                    <option value="U12">Alevín (U12)</option>
+                    <option value="U14">Infantil (U14)</option>
+                    <option value="U16">Cadete (U16)</option>
+                    <option value="U18">Junior (U18)</option>
+                    <option value="Senior">Senior</option>
+                </select>
+            </label>
+            <label class="pill">
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm.5 3v4.3l3 1.8-.5.9-3.5-2.1V4h1Z"/></svg>
+                <select id="duracion" aria-label="Duración">
+                    <option value="">Duración: flexible</option>
+                    <option value="45">45 min</option>
+                    <option value="60">60 min</option>
+                    <option value="75">75 min</option>
+                    <option value="90">90 min</option>
+                    <option value="105">105 min</option>
+                    <option value="120">120 min</option>
+                </select>
+            </label>
+        </div>
 
-    <div>
-        <label class="dur-toggle">
-            <input type="checkbox" id="gen-diagramas" checked> Generar diagramas
-        </label>
-    </div>
+        <div class="prompt-box">
+            <textarea id="objetivo" aria-label="Descripción del entrenamiento" placeholder="Ej: Tiro en suspensión y defensa de bloqueo directo…" rows="3"></textarea>
+            <div class="prompt-actions">
+                <label class="diag-toggle"><input type="checkbox" id="gen-diagramas" checked> Generar diagramas</label>
+                <button class="btn-send" id="btn-generar">⚡ Generar sesión</button>
+            </div>
+        </div>
 
-    <button class="btn-generar" id="btn-generar">⚡ Generar sesión</button>
-    <div class="btn-hint">Enter para generar · Shift+Enter para nueva línea</div>
+        <div class="chips">
+            <button type="button" class="chip" data-fill="Tiro en suspensión">Tiro en suspensión</button>
+            <button type="button" class="chip" data-fill="Defensa de bloqueo directo">Defensa de bloqueo directo</button>
+            <button type="button" class="chip" data-fill="Transición rápida">Transición rápida</button>
+            <button type="button" class="chip" data-fill="Manejo de balón">Manejo de balón</button>
+        </div>
+
+        <div class="btn-hint">Enter para generar · Shift+Enter para nueva línea</div>
     </div><!-- /form-sesion -->
 
-    <!-- ── Formulario reglamento ── -->
-    <div id="form-reglamento" style="display:none">
-    <div>
-        <label class="field-label" for="pregunta">Tu pregunta</label>
-        <textarea id="pregunta" placeholder="Ejemplos:&#10;• ¿Es falta técnica si el entrenador entra a la pista?&#10;• ¿Cuántos tiempos muertos tiene Cadete?&#10;• ¿En qué categorías aplica el saque rápido?&#10;• ¿Qué es el paso cero?" style="min-height:160px"></textarea>
-    </div>
-    <button class="btn-generar" id="btn-reglamento">🔍 Consultar</button>
-    <div class="btn-hint">Enter para consultar · Shift+Enter para nueva línea</div>
-    </div><!-- /form-reglamento -->
-</aside>
+    <!-- ── Reglamento: estado inicial ── -->
+    <div id="form-reglamento" class="prompt-section" style="display:none">
+        <div class="center-heading">
+            <div class="center-title">¿Qué quieres saber del reglamento?</div>
+            <div class="center-sub">Pregunta sobre reglas, tiempos, categorías o cualquier duda arbitral.</div>
+        </div>
 
-<!-- ── Main ── -->
-<main class="main">
+        <div class="prompt-box">
+            <textarea id="pregunta" aria-label="Tu pregunta sobre el reglamento" placeholder="Ej: ¿Es falta técnica si el entrenador entra a la pista?" style="min-height:120px" rows="3"></textarea>
+            <div class="prompt-actions" style="justify-content:flex-end;">
+                <button class="btn-send" id="btn-reglamento">🔍 Consultar</button>
+            </div>
+        </div>
+
+        <div class="chips">
+            <button type="button" class="chip" data-fill-pregunta="¿Cuántos tiempos muertos tiene Cadete?">¿Tiempos muertos en Cadete?</button>
+            <button type="button" class="chip" data-fill-pregunta="¿Qué es el paso cero?">¿Qué es el paso cero?</button>
+            <button type="button" class="chip" data-fill-pregunta="¿En qué categorías aplica el saque rápido?">Saque rápido, ¿en qué categorías?</button>
+        </div>
+
+        <div class="btn-hint">Enter para consultar · Shift+Enter para nueva línea</div>
+    </div><!-- /form-reglamento -->
 
     <div class="loading" id="loading" role="status" aria-live="polite">
         <div class="spinner"></div>
         <div class="loading-text">Generando sesión… (puede tardar hasta 2 minutos)</div>
     </div>
 
-    <div class="empty" id="empty">
-        <div class="empty-icon">🏀</div>
-        <div class="empty-title">Diseña tu próximo entrenamiento</div>
-        <div class="empty-sub">Selecciona categoría y duración en el panel izquierdo, describe el objetivo y pulsa <strong>Generar sesión</strong>.</div>
-    </div>
-
     <div class="results" id="results" aria-live="polite">
+        <button type="button" class="btn-back" id="btn-nueva">← Nueva consulta</button>
         <div id="resultado-contenido"></div>
 
         <details class="consultados" id="consultados-wrap" style="display:none">
@@ -362,21 +341,32 @@ document.querySelectorAll('.mode-tab').forEach(btn => {
         currentMode = btn.dataset.mode;
         document.querySelectorAll('.mode-tab').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-        document.getElementById('form-sesion').style.display    = currentMode === 'sesion'    ? '' : 'none';
-        document.getElementById('form-reglamento').style.display = currentMode === 'reglamento' ? '' : 'none';
         clearFormError();
         showEmpty();
-        document.getElementById('results').classList.remove('visible');
     });
 });
 
-// ── Duration slider ────────────────────────────────────────────────────────
-const usarDur = document.getElementById('usar-dur');
-const durSlider = document.getElementById('dur-slider');
-const durInput = document.getElementById('duracion');
-const durVal = document.getElementById('dur-val');
-usarDur.addEventListener('change', () => durSlider.classList.toggle('visible', usarDur.checked));
-durInput.addEventListener('input', () => { durVal.textContent = durInput.value + ' min'; });
+// ── Chips de ejemplo ───────────────────────────────────────────────────────
+document.querySelectorAll('.chip[data-fill]').forEach(chip => {
+    chip.addEventListener('click', () => {
+        const ta = document.getElementById('objetivo');
+        ta.value = chip.dataset.fill;
+        ta.focus();
+    });
+});
+document.querySelectorAll('.chip[data-fill-pregunta]').forEach(chip => {
+    chip.addEventListener('click', () => {
+        const ta = document.getElementById('pregunta');
+        ta.value = chip.dataset.fillPregunta;
+        ta.focus();
+    });
+});
+
+// ── Volver a la entrada desde resultados ────────────────────────────────────
+document.getElementById('btn-nueva').addEventListener('click', () => {
+    showEmpty();
+    document.getElementById(currentMode === 'sesion' ? 'objetivo' : 'pregunta').focus();
+});
 
 // ── Enter to submit ────────────────────────────────────────────────────────
 document.getElementById('objetivo').addEventListener('keydown', e => {
@@ -436,7 +426,7 @@ async function generar() {
 
     const edad = document.getElementById('edad').value;
     const genDiagramas = document.getElementById('gen-diagramas').checked;
-    const duracion = usarDur.checked ? parseInt(durInput.value) : null;
+    const duracion = parseInt(document.getElementById('duracion').value) || null;
 
     currentObjetivo = objetivo;
     currentEdad = document.getElementById('edad').options[document.getElementById('edad').selectedIndex].text;
@@ -641,22 +631,27 @@ document.getElementById('btn-feedback').addEventListener('click', async () => {
             }),
         });
         if (resp.ok) {
-            const msg = document.getElementById('fb-msg');
-            msg.textContent = '✓ Sesión guardada. ¡Gracias!';
-            msg.className = 'feedback-msg ok';
+            msgEl.textContent = '✓ Sesión guardada. ¡Gracias!';
+            msgEl.className = 'feedback-msg ok';
         } else {
             throw new Error();
         }
     } catch {
-        const msg = document.getElementById('fb-msg');
-        msg.textContent = 'Error guardando. Inténtalo de nuevo.';
-        msg.className = 'feedback-msg err';
+        msgEl.textContent = 'Error guardando. Inténtalo de nuevo.';
+        msgEl.className = 'feedback-msg err';
     }
 });
 
 // ── State helpers ──────────────────────────────────────────────────────────
+function showEmpty() {
+    document.getElementById('form-sesion').style.display = currentMode === 'sesion' ? '' : 'none';
+    document.getElementById('form-reglamento').style.display = currentMode === 'reglamento' ? '' : 'none';
+    document.getElementById('loading').classList.remove('visible');
+    document.getElementById('results').classList.remove('visible');
+}
 function showLoading() {
-    document.getElementById('empty').style.display = 'none';
+    document.getElementById('form-sesion').style.display = 'none';
+    document.getElementById('form-reglamento').style.display = 'none';
     document.getElementById('results').classList.remove('visible');
     document.getElementById('loading').classList.add('visible');
     document.getElementById('btn-generar').disabled = true;
@@ -667,12 +662,10 @@ function hideLoading() {
     document.getElementById('btn-generar').disabled = false;
     document.getElementById('btn-reglamento').disabled = false;
 }
-function showEmpty() {
-    document.getElementById('empty').style.display = '';
-}
 function showResults() {
     hideLoading();
-    document.getElementById('empty').style.display = 'none';
+    document.getElementById('form-sesion').style.display = 'none';
+    document.getElementById('form-reglamento').style.display = 'none';
     document.getElementById('results').classList.add('visible');
 }
 </script>
