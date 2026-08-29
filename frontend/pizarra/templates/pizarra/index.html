@@ -59,7 +59,8 @@ html, body {
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.75rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
 .brand { display: flex; align-items: center; gap: .55rem; font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1.25rem; letter-spacing: -.02em; }
 .brand em { font-style: normal; color: var(--accent); }
-.brand-mark { width: 26px; height: 26px; border-radius: 22%; flex-shrink: 0; }
+.brand-mark { width: 26px; height: 26px; border-radius: 22%; flex-shrink: 0; transition: transform .3s cubic-bezier(.16,1,.3,1); }
+.brand:hover .brand-mark { transform: rotate(-8deg) scale(1.08); }
 .mode-tabs { display: flex; gap: .4rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
 .mode-tab { padding: .4rem .9rem; font-size: .82rem; font-weight: 600; border: none; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; font-family: 'Inter', sans-serif; transition: color .15s; }
 .mode-tab:hover { color: var(--text); }
@@ -69,18 +70,32 @@ html, body {
 /* ── Content ── */
 .content { max-width: 800px; margin: 0 auto; padding: 0 1.5rem 3rem; }
 
+/* ── Entrada suave (respeta prefers-reduced-motion más abajo) ── */
+@keyframes slideUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
 /* ── Prompt section (estado inicial / "home") ── */
-.prompt-section { display: flex; flex-direction: column; align-items: center; gap: 2rem; padding-top: 3.5rem; }
+.prompt-section { display: flex; flex-direction: column; align-items: center; gap: 2rem; padding-top: 3.5rem; animation: slideUp .4s ease both; }
 .center-heading { display: flex; flex-direction: column; align-items: center; gap: .65rem; }
 .center-title { font-size: 1.9rem; font-weight: 800; letter-spacing: -.02em; text-align: center; text-wrap: balance; font-family: 'Sora', sans-serif; }
 .center-sub { color: var(--muted); text-align: center; font-size: .95rem; line-height: 1.5; max-width: 46ch; }
 
 .pill-row { display: flex; gap: .6rem; flex-wrap: wrap; justify-content: center; width: 100%; }
-.pill { display: flex; align-items: center; gap: .4rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: .4rem .9rem; font-size: .82rem; color: var(--text2); cursor: pointer; transition: border-color .15s; }
-.pill:focus-within, .pill:hover { border-color: var(--accent); }
-.pill svg { width: 14px; height: 14px; opacity: .6; flex-shrink: 0; }
-.pill select { background: none; border: none; color: var(--text2); font-size: .82rem; font-family: 'Inter', sans-serif; cursor: pointer; }
-.pill select:focus { outline: none; }
+
+/* ── Desplegable a medida (sustituye el <select> nativo, que no se puede
+   estilar de forma consistente entre navegadores) ── */
+.dd { position: relative; }
+.dd-btn { display: flex; align-items: center; gap: .4rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: .4rem .9rem; font-size: .82rem; color: var(--text2); cursor: pointer; font-family: 'Inter', sans-serif; transition: border-color .15s; }
+.dd-btn:hover, .dd.open .dd-btn { border-color: var(--accent); }
+.dd-icon { width: 14px; height: 14px; opacity: .6; flex-shrink: 0; }
+.dd-caret { width: 11px; height: 11px; margin-left: .1rem; flex-shrink: 0; transition: transform .15s; }
+.dd.open .dd-caret { transform: rotate(180deg); }
+.dd-list { position: absolute; top: calc(100% + 6px); left: 0; min-width: 210px; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: .4rem; box-shadow: 0 12px 32px rgba(0,0,0,.45); display: none; z-index: 5; list-style: none; margin: 0; max-height: 280px; overflow-y: auto; }
+.dd.open .dd-list { display: block; }
+.dd-opt { padding: .5rem .75rem; border-radius: 7px; font-size: .85rem; color: var(--text2); cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+.dd-opt:hover, .dd-opt:focus { background: var(--bg3); color: var(--text); outline: none; }
+.dd-opt.selected { color: var(--accent); font-weight: 600; }
+.dd-opt.selected::after { content: '✓'; font-size: .75rem; }
+.dd-native { display: none; }
 
 .prompt-box { width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 1.1rem 1.25rem; display: flex; flex-direction: column; gap: .9rem; transition: border-color .15s; }
 .prompt-box:focus-within { border-color: var(--accent); }
@@ -108,7 +123,7 @@ html, body {
 
 /* ── Results ── */
 .results { display: none; padding-top: 2rem; }
-.results.visible { display: block; }
+.results.visible { display: block; animation: slideUp .35s ease both; }
 .btn-back { background: none; border: none; color: var(--muted); font-family: 'Inter', sans-serif; font-size: .82rem; cursor: pointer; display: inline-flex; align-items: center; gap: .35rem; margin-bottom: 1.5rem; transition: color .15s; }
 .btn-back:hover { color: var(--text); }
 
@@ -145,11 +160,21 @@ html, body {
 .btn-fb:hover { border-color: var(--accent); }
 .feedback-msg { font-size: .85rem; margin-top: .5rem; }
 .feedback-msg.ok { color: #3fb950; }
-.feedback-msg.err { color: #f2685c; }
-.feedback-msg.err[id="form-error"] { max-width: 800px; margin: 1.5rem auto 0; padding: .7rem 1rem; background: #2a1512; border: 1px solid #7a2e22; border-left: 3px solid #e8544a; border-radius: 6px; }
+.feedback-msg.err { color: #d98a6f; }
+.feedback-msg.err[id="form-error"] { max-width: 800px; margin: 1.5rem auto 0; padding: .7rem 1rem; background: #241a10; border: 1px solid #5c4322; border-left: 3px solid #b3452f; border-radius: 6px; }
 
 /* ── Reglamento result ── */
 .reglamento-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; font-size: .95rem; line-height: 1.85; color: var(--text2); white-space: pre-wrap; }
+
+/* ── Movimiento reducido ── */
+@media (prefers-reduced-motion: reduce) {
+    .prompt-section, .results.visible { animation: none; }
+    .brand-mark, .dd-caret, .mode-tab, .chip, .dd-btn, .btn-send, .btn-dl, .btn-fb, .btn-back { transition: none; }
+    .brand:hover .brand-mark { transform: none; }
+}
+@media (prefers-reduced-motion: no-preference) {
+    @view-transition { navigation: auto; }
+}
 
 /* ── Responsive ── */
 @media (max-width: 560px) {
@@ -207,10 +232,24 @@ html, body {
         </div>
 
         <div class="pill-row">
-            <label class="pill">
-                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a5 5 0 1 0 0 10A5 5 0 0 0 8 1Z"/></svg>
-                <select id="edad" aria-label="Categoría">
-                    <option value="">Categoría: sin especificar</option>
+            <div class="dd" id="dd-edad" data-prefix="Categoría">
+                <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false">
+                    <svg class="dd-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a5 5 0 1 0 0 10A5 5 0 0 0 8 1Z"/></svg>
+                    <span class="dd-label">Categoría: sin especificar</span>
+                    <svg class="dd-caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>
+                </button>
+                <ul class="dd-list" role="listbox" aria-label="Categoría">
+                    <li class="dd-opt selected" role="option" aria-selected="true" tabindex="-1" data-value="">Sin especificar</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U8">Prebenjamín (U8)</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U10">Benjamín (U10)</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U12">Alevín (U12)</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U14">Infantil (U14)</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U16">Cadete (U16)</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U18">Junior (U18)</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="Senior">Senior</li>
+                </ul>
+                <select id="edad" class="dd-native" tabindex="-1" aria-hidden="true">
+                    <option value="">Sin especificar</option>
                     <option value="U8">Prebenjamín (U8)</option>
                     <option value="U10">Benjamín (U10)</option>
                     <option value="U12">Alevín (U12)</option>
@@ -219,11 +258,24 @@ html, body {
                     <option value="U18">Junior (U18)</option>
                     <option value="Senior">Senior</option>
                 </select>
-            </label>
-            <label class="pill">
-                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm.5 3v4.3l3 1.8-.5.9-3.5-2.1V4h1Z"/></svg>
-                <select id="duracion" aria-label="Duración">
-                    <option value="">Duración: flexible</option>
+            </div>
+            <div class="dd" id="dd-duracion" data-prefix="Duración">
+                <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false">
+                    <svg class="dd-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm.5 3v4.3l3 1.8-.5.9-3.5-2.1V4h1Z"/></svg>
+                    <span class="dd-label">Duración: flexible</span>
+                    <svg class="dd-caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>
+                </button>
+                <ul class="dd-list" role="listbox" aria-label="Duración">
+                    <li class="dd-opt selected" role="option" aria-selected="true" tabindex="-1" data-value="">Flexible</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="45">45 min</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="60">60 min</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="75">75 min</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="90">90 min</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="105">105 min</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="120">120 min</li>
+                </ul>
+                <select id="duracion" class="dd-native" tabindex="-1" aria-hidden="true">
+                    <option value="">Flexible</option>
                     <option value="45">45 min</option>
                     <option value="60">60 min</option>
                     <option value="75">75 min</option>
@@ -231,7 +283,7 @@ html, body {
                     <option value="105">105 min</option>
                     <option value="120">120 min</option>
                 </select>
-            </label>
+            </div>
         </div>
 
         <div class="prompt-box">
@@ -344,6 +396,56 @@ document.querySelectorAll('.mode-tab').forEach(btn => {
         clearFormError();
         showEmpty();
     });
+});
+
+// ── Desplegables a medida (edad, duración) ──────────────────────────────────
+document.querySelectorAll('.dd').forEach(dd => {
+    const btn    = dd.querySelector('.dd-btn');
+    const label  = dd.querySelector('.dd-label');
+    const native = dd.querySelector('.dd-native');
+    const prefix = dd.dataset.prefix;
+    const opts   = Array.from(dd.querySelectorAll('.dd-opt'));
+
+    function closeDd() { dd.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
+    function openDd() {
+        document.querySelectorAll('.dd.open').forEach(o => { if (o !== dd) o.classList.remove('open'); });
+        dd.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+    }
+    function selectOpt(opt) {
+        opts.forEach(o => { o.classList.remove('selected'); o.setAttribute('aria-selected', 'false'); });
+        opt.classList.add('selected');
+        opt.setAttribute('aria-selected', 'true');
+        native.value = opt.dataset.value;
+        label.textContent = `${prefix}: ${opt.textContent}`;
+        closeDd();
+    }
+
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dd.classList.contains('open') ? closeDd() : openDd();
+    });
+    btn.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openDd();
+            (dd.querySelector('.dd-opt.selected') || opts[0])?.focus();
+        }
+    });
+
+    opts.forEach((opt, i) => {
+        opt.addEventListener('click', () => selectOpt(opt));
+        opt.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown') { e.preventDefault(); (opts[i + 1] || opts[0]).focus(); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); (opts[i - 1] || opts[opts.length - 1]).focus(); }
+            else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectOpt(opt); btn.focus(); }
+            else if (e.key === 'Escape') { closeDd(); btn.focus(); }
+        });
+    });
+});
+document.addEventListener('click', () => document.querySelectorAll('.dd.open').forEach(d => d.classList.remove('open')));
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') document.querySelectorAll('.dd.open').forEach(d => d.classList.remove('open'));
 });
 
 // ── Chips de ejemplo ───────────────────────────────────────────────────────

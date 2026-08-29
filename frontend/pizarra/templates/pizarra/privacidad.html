@@ -107,6 +107,9 @@ footer {
 }
 footer a { color: var(--muted); }
 footer a:hover { color: var(--text2); }
+@media (prefers-reduced-motion: no-preference) {
+    @view-transition { navigation: auto; }
+}
 </style>
 </head>
 <body>
