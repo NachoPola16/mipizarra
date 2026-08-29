@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="es" data-theme="dark">
+<html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,6 +19,7 @@
 <link rel="icon" type="image/svg+xml" href="{% static 'pizarra/brand/favicon.svg' %}">
 <link rel="alternate icon" href="{% static 'pizarra/brand/favicon.ico' %}">
 <link rel="apple-touch-icon" href="{% static 'pizarra/brand/apple-touch-icon.png' %}">
+<link rel="manifest" href="{% static 'pizarra/brand/site.webmanifest' %}">
 <link rel="stylesheet" href="{% static 'pizarra/css/fonts.css' %}">
 <style>
 /* ── Reset & variables ── */
@@ -35,16 +36,6 @@
     --text2:    #d8d0c4;
     --muted:    #9c9186;
     --sidebar-w: 280px;
-}
-
-[data-theme="light"] {
-    --bg:     #faf7f2;
-    --bg2:    #ffffff;
-    --bg3:    #f6ddc4;
-    --border: #e4dccc;
-    --text:   #221d16;
-    --text2:  #3a3226;
-    --muted:  #8a8071;
 }
 
 html, body {
@@ -138,10 +129,6 @@ input[type="range"] { padding: 0; border: none; background: var(--border); heigh
 .btn-generar:disabled { opacity: .5; cursor: not-allowed; }
 .btn-hint { text-align: center; font-size: .68rem; color: var(--muted); margin-top: 5px; }
 
-/* ── Theme toggle ── */
-.theme-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: .3rem .6rem; font-size: .78rem; cursor: pointer; align-self: flex-start; transition: color .15s, border-color .15s; }
-.theme-btn:hover { color: var(--text); border-color: var(--text); }
-
 /* ── Loading ── */
 .loading { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 40vh; gap: 1.5rem; }
 .loading.visible { display: flex; }
@@ -162,8 +149,6 @@ input[type="range"] { padding: 0; border: none; background: var(--border); heigh
 .badge { display: inline-block; border-radius: 6px; padding: 3px 12px; font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 1.25rem; }
 .badge-ok { background: #0d2218; color: #3fb950; border: 1px solid #1a7f37; }
 .badge-warn { background: #1c1a10; color: #d29922; border: 1px solid #6e451d; }
-[data-theme="light"] .badge-ok { background: #d4edda; color: #155724; border-color: #c3e6cb; }
-[data-theme="light"] .badge-warn { background: #fff3cd; color: #856404; border-color: #ffd576; }
 
 .ejercicio-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.1rem; border-left: 3px solid var(--accent); padding-left: .75rem; margin: 1.5rem 0 .75rem; }
 .diagrama-label { font-size: .68rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
@@ -296,14 +281,12 @@ input[type="range"] { padding: 0; border: none; background: var(--border); heigh
     <button class="btn-generar" id="btn-reglamento">🔍 Consultar</button>
     <div class="btn-hint">Enter para consultar · Shift+Enter para nueva línea</div>
     </div><!-- /form-reglamento -->
-
-    <button class="theme-btn" id="theme-btn" title="Cambiar tema">☀ Tema claro</button>
 </aside>
 
 <!-- ── Main ── -->
 <main class="main">
 
-    <div class="loading" id="loading">
+    <div class="loading" id="loading" role="status" aria-live="polite">
         <div class="spinner"></div>
         <div class="loading-text">Generando sesión… (puede tardar hasta 2 minutos)</div>
     </div>
@@ -314,7 +297,7 @@ input[type="range"] { padding: 0; border: none; background: var(--border); heigh
         <div class="empty-sub">Selecciona categoría y duración en el panel izquierdo, describe el objetivo y pulsa <strong>Generar sesión</strong>.</div>
     </div>
 
-    <div class="results" id="results">
+    <div class="results" id="results" aria-live="polite">
         <div id="resultado-contenido"></div>
 
         <details class="consultados" id="consultados-wrap" style="display:none">
@@ -379,20 +362,6 @@ document.querySelectorAll('.mode-tab').forEach(btn => {
         showEmpty();
         document.getElementById('results').classList.remove('visible');
     });
-});
-
-// ── Theme ──────────────────────────────────────────────────────────────────
-const themeBtn = document.getElementById('theme-btn');
-const html = document.documentElement;
-if (localStorage.getItem('theme') === 'light') setTheme('light');
-
-function setTheme(t) {
-    html.setAttribute('data-theme', t);
-    themeBtn.textContent = t === 'dark' ? '☀ Tema claro' : '🌙 Tema oscuro';
-    localStorage.setItem('theme', t);
-}
-themeBtn.addEventListener('click', () => {
-    setTheme(html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 });
 
 // ── Duration slider ────────────────────────────────────────────────────────
@@ -683,10 +652,12 @@ function showLoading() {
     document.getElementById('results').classList.remove('visible');
     document.getElementById('loading').classList.add('visible');
     document.getElementById('btn-generar').disabled = true;
+    document.getElementById('btn-reglamento').disabled = true;
 }
 function hideLoading() {
     document.getElementById('loading').classList.remove('visible');
     document.getElementById('btn-generar').disabled = false;
+    document.getElementById('btn-reglamento').disabled = false;
 }
 function showEmpty() {
     document.getElementById('empty').style.display = '';
