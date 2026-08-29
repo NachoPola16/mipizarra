@@ -22,12 +22,14 @@ EDAD_A_CATEGORIA = {
 logger = logging.getLogger(__name__)
 
 OLLAMA_URL     = os.environ.get("OLLAMA_URL", "http://ollama:11434")
-MODEL          = os.environ.get("OLLAMA_MODEL", "qwen3:4b")
-# Modelo para generar_sesion(): texto libre largo y estructurado. qwen3:4b filtra
-# razonamiento en inglés dentro del propio texto (no solo como preámbulo) y el
-# parámetro "think": False no lo evita de forma fiable. qwen2.5-instruct no tiene
-# modo thinking, así que no puede colarse ningún razonamiento.
-MODEL_SESION   = os.environ.get("OLLAMA_MODEL_SESION", os.environ.get("OLLAMA_MODEL", "qwen3:4b"))
+# qwen3:4b (con thinking) filtra razonamiento en inglés dentro del propio texto (no
+# solo como preámbulo) y el parámetro "think": False no lo evita de forma fiable.
+# Esto afecta igual al texto libre (generar_sesion, reglamento) y al JSON de diagramas:
+# bajo restricción de formato el modelo con thinking degrada y devuelve diagramas
+# vacíos o inventados. La variante -instruct no tiene modo thinking, así que no puede
+# colarse ningún razonamiento por ninguna de las dos rutas.
+MODEL          = os.environ.get("OLLAMA_MODEL", "qwen3:4b-instruct")
+MODEL_SESION   = os.environ.get("OLLAMA_MODEL_SESION", os.environ.get("OLLAMA_MODEL", "qwen3:4b-instruct"))
 EXERCISES_PATH = os.environ.get("EXERCISES_PATH", "/app/data/exercises.json")
 CHROMA_DB_DIR  = os.environ.get("CHROMA_DB_DIR", "/app/data/chroma_db")
 EMBED_MODEL    = "nomic-embed-text"
@@ -124,14 +126,21 @@ def filtrar_ejercicios(ejercicios: list, edad: str, objetivo: str) -> list:
     return analiticos + directos
 
 
+def _extraer_conteo_nc_m(nombre: str) -> tuple[int, int] | None:
+    """Extrae (nº atacantes, nº defensores) de un nombre tipo 'AcB' / 'A contra B'
+    (con o sin espacios), p.ej. '1c1', '2 contra 1', '3c0'. None si no matchea."""
+    import re as _re
+    m = _re.search(r'(\d)\s*c(?:ontra)?\s*(\d)', nombre.lower())
+    if not m:
+        return None
+    return int(m.group(1)), int(m.group(2))
+
+
 def _nivel_oposicion(ej: dict) -> int:
     """0=sin oposición, 1=reducida (ventaja numérica), 2=igualada (mismo nº ataque/defensa)"""
-    import re as _re
-    nombre = ej['nombre'].lower()
-    # Extrae "AcB" o "A contra B" (con o sin espacios): ataque vs defensa
-    m = _re.search(r'(\d)\s*c(?:ontra)?\s*(\d)', nombre)
-    if m:
-        ataque, defensa = int(m.group(1)), int(m.group(2))
+    conteo = _extraer_conteo_nc_m(ej['nombre'])
+    if conteo:
+        ataque, defensa = conteo
         if defensa == 0:
             return 0
         return 2 if ataque == defensa else 1
@@ -224,7 +233,11 @@ def consultar_coleccion(nombre: str, consulta: str, n_resultados: int = 4) -> st
         return ""
 
 
-def construir_contexto_teoria(objetivo: str, edad: str) -> str:
+def construir_contexto_teoria(objetivo: str, edad: str, presupuesto_por_coleccion: int = 900) -> str:
+    """Presupuesto de caracteres POR COLECCIÓN, no un truncado global al final: antes
+    se concatenaban teoria+planificacion+reglamento y se cortaba a 800 caracteres en
+    el prompt, así que planificacion y reglamento (los últimos en concatenarse) nunca
+    llegaban a sobrevivir el corte — en la práctica solo teoria influía en la sesión."""
     consulta = f"entrenamiento baloncesto {objetivo} categoria {edad}"
     partes   = []
     mapeo    = {
@@ -235,7 +248,7 @@ def construir_contexto_teoria(objetivo: str, edad: str) -> str:
     for nombre, etiqueta in mapeo.items():
         fragmento = consultar_coleccion(nombre, consulta, n_resultados=4)
         if fragmento:
-            partes.append(f"--- {etiqueta} ---\n{fragmento}")
+            partes.append(f"--- {etiqueta} ---\n{fragmento[:presupuesto_por_coleccion]}")
 
     return "\n\n".join(partes) if partes else ""
 
@@ -363,9 +376,9 @@ def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
     ej1, ej2, ej3 = seleccionar_tres_ejercicios(relevantes)
     ctx_teoria  = construir_contexto_teoria(objetivo, edad)
 
-    teoria_intro = ""
-    if ctx_teoria:
-        teoria_intro = f"CONTEXTO METODOLÓGICO:\n{ctx_teoria[:800]}\n\n"
+    # Sin truncado global aquí: construir_contexto_teoria ya aplica presupuesto por
+    # colección, así que lo que devuelve ya está acotado a un tamaño razonable.
+    teoria_intro = f"CONTEXTO METODOLÓGICO:\n{ctx_teoria}\n\n" if ctx_teoria else ""
 
     t_descanso = 3 if duracion >= 60 else 2
     descanso_texto = f"**DESCANSO ({t_descanso} min)**"
@@ -427,7 +440,9 @@ Reglas:
                 "options": {
                     "temperature": 0.4,
                     "num_predict": 2500,
-                    "num_ctx":     6144,
+                    # Subido de 6144: con presupuesto por colección, ctx_teoria ahora
+                    # puede llegar a ~2700 chars (antes 800 truncados de golpe).
+                    "num_ctx":     8192,
                     "top_p":       0.9,
                     "min_p":       0.05,
                     "repeat_penalty": 1.2,
@@ -573,9 +588,138 @@ def generar_diagrama_desde_texto(descripcion_ejercicio: str) -> dict | None:
 
 
 # Función para generar coordenadas a partir de descripción y nombre
+# JSON Schema del diagrama para "format" en /api/generate: Ollama compila esto a
+# una gramática (XGrammar) que restringe la decodificación token a token, así que
+# garantiza forma válida (tipos, enums de "tipo") — a diferencia de "format": "json",
+# que solo garantiza JSON parseable de cualquier forma. Deliberadamente permisivo en
+# "required" por movimiento (solo de/tipo/orden): qué campos hacen falta según el
+# tipo de movimiento (a_pos vs a) es una regla cruzada que JSON Schema no expresa
+# bien, así que se comprueba en _validar_diagrama.
+_DIAGRAMA_JSON_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "tipo": {"type": "string", "enum": ["media_pista", "pista_completa"]},
+        "jugadores_ataque": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "string"},
+                    "x":  {"type": "number", "minimum": 0, "maximum": 100},
+                    "y":  {"type": "number", "minimum": 0, "maximum": 100},
+                },
+                "required": ["id", "x", "y"],
+            },
+        },
+        "jugadores_defensa": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "id": {"type": "string"},
+                    "x":  {"type": "number", "minimum": 0, "maximum": 100},
+                    "y":  {"type": "number", "minimum": 0, "maximum": 100},
+                },
+                "required": ["id", "x", "y"],
+            },
+        },
+        "balon_inicio": {
+            "type": "object",
+            "properties": {"portador": {"type": "string"}},
+            "required": ["portador"],
+        },
+        "movimientos": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "de":    {"type": "string"},
+                    "a":     {"type": "string"},
+                    "a_pos": {
+                        "type": "object",
+                        "properties": {
+                            "x": {"type": "number", "minimum": 0, "maximum": 100},
+                            "y": {"type": "number", "minimum": 0, "maximum": 100},
+                        },
+                        "required": ["x", "y"],
+                    },
+                    "tipo":  {"type": "string", "enum": ["desplazamiento", "pase", "bote", "tiro", "bloqueo"]},
+                    "orden": {"type": "integer", "minimum": 1},
+                    "curva": {"type": "boolean"},
+                },
+                "required": ["de", "tipo", "orden"],
+            },
+        },
+        "conos": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "x": {"type": "number", "minimum": 0, "maximum": 100},
+                    "y": {"type": "number", "minimum": 0, "maximum": 100},
+                },
+                "required": ["x", "y"],
+            },
+        },
+    },
+    "required": ["jugadores_ataque", "jugadores_defensa", "balon_inicio", "movimientos"],
+}
+
+
+def _validar_diagrama(diagrama: dict, nombre_ejercicio: str = "") -> str | None:
+    """Valida coherencia semántica del diagrama que el JSON Schema no puede expresar:
+    referencias de movimientos a jugadores realmente declarados, y que el nº de
+    jugadores coincide con lo que dice el nombre (p.ej. "1c1" = 1 atacante + 1
+    defensor). Devuelve None si es válido, o una descripción del error (para
+    reintentar con el modelo señalándoselo) si no lo es."""
+    ataque  = diagrama.get("jugadores_ataque") or []
+    defensa = diagrama.get("jugadores_defensa") or []
+    if not ataque:
+        return "jugadores_ataque no puede estar vacío"
+
+    ids = [j.get("id") for j in ataque] + [j.get("id") for j in defensa]
+    if len(set(ids)) != len(ids):
+        return "hay ids de jugador repetidos entre jugadores_ataque y jugadores_defensa"
+    ids = set(ids)
+
+    conteo = _extraer_conteo_nc_m(nombre_ejercicio)
+    if conteo:
+        n_ataque, n_defensa = conteo
+        if len(ataque) != n_ataque or len(defensa) != n_defensa:
+            return (
+                f"el nombre del ejercicio indica {n_ataque}c{n_defensa} pero el diagrama "
+                f"tiene {len(ataque)} atacante(s) y {len(defensa)} defensor(es)"
+            )
+
+    portador = (diagrama.get("balon_inicio") or {}).get("portador")
+    if portador and portador not in ids:
+        return f"balon_inicio.portador='{portador}' no es un jugador declarado"
+
+    for mov in diagrama.get("movimientos") or []:
+        de = mov.get("de")
+        if de not in ids:
+            return f"movimiento con de='{de}' no coincide con ningún jugador declarado"
+        tipo = mov.get("tipo")
+        if tipo == "pase":
+            a = mov.get("a")
+            if a not in ids:
+                return f"movimiento 'pase' con a='{a}' no coincide con ningún jugador declarado"
+        elif tipo in ("desplazamiento", "bote", "bloqueo") and "a_pos" not in mov:
+            return f"movimiento '{tipo}' sin 'a_pos'"
+        elif tipo not in ("desplazamiento", "bote", "bloqueo", "tiro", "pase"):
+            return f"tipo de movimiento desconocido: '{tipo}'"
+
+    return None
+
+
 def generar_coordenadas_ejercicio(descripcion: str, nombre: str) -> dict | None:
-    """Genera coordenadas precisas basadas en la descripción del ejercicio."""
-    
+    """Genera coordenadas precisas basadas en la descripción del ejercicio.
+    JSON Schema restringe la forma (Ollama/XGrammar); _validar_diagrama comprueba
+    lo que el schema no puede (conteo de jugadores, referencias cruzadas). Si el
+    primer intento no pasa la validación semántica, reintenta una vez señalando el
+    error concreto; si sigue sin ser válido, no hay diagrama — preferible a uno que
+    contradice el texto."""
+
     # Ejemplos más variados para que el modelo aprenda patrones
     ejemplos = [
         {
@@ -689,39 +833,56 @@ EJEMPLOS:
 
 Genera SOLO el JSON (sin explicaciones):"""
 
-    try:
-        response = requests.post(
-            f"{OLLAMA_URL}/api/generate",
-            json={
-                "model":   MODEL,
-                "prompt":  prompt,
-                "format":  "json",
-                "think":   False,          # Qwen3: sin thinking para JSON estructurado
-                "stream":  False,
-                "options": {
-                    "temperature": 0.2,
-                    "num_predict": 800,
-                    "top_k": 40,
+    def _pedir(prompt_txt: str) -> dict | None:
+        try:
+            response = requests.post(
+                f"{OLLAMA_URL}/api/generate",
+                json={
+                    "model":   MODEL,
+                    "prompt":  prompt_txt,
+                    "format":  _DIAGRAMA_JSON_SCHEMA,
+                    "think":   False,          # Qwen3: sin thinking para JSON estructurado
+                    "stream":  False,
+                    "options": {
+                        "temperature": 0.2,
+                        "num_predict": 800,
+                        "top_k": 40,
+                    },
                 },
-            },
-            timeout=120,
-        )
-        response.raise_for_status()
-        texto = response.json()["response"]
-
-        diagrama = json.loads(texto.strip())
-
-        # Validación mínima
-        if "jugadores_ataque" not in diagrama or len(diagrama.get("jugadores_ataque", [])) == 0:
-            logger.warning(f"  ✗ Diagrama sin jugadores de ataque")
+                timeout=120,
+            )
+            response.raise_for_status()
+            return json.loads(response.json()["response"].strip())
+        except Exception as e:
+            logger.warning(f"  ✗ Error generando coordenadas: {e}")
             return None
-            
-        logger.info(f"  ✓ Coordenadas generadas: {len(diagrama.get('jugadores_ataque', []))} atacantes, {len(diagrama.get('jugadores_defensa', []))} defensores")
-        return diagrama
 
-    except Exception as e:
-        logger.warning(f"  ✗ Error generando coordenadas: {e}")
+    diagrama = _pedir(prompt)
+    if diagrama is None:
         return None
+
+    error = _validar_diagrama(diagrama, nombre)
+    if error:
+        logger.warning(f"  ✗ Diagrama inválido para '{nombre}': {error}. Reintentando...")
+        prompt_retry = (
+            prompt
+            + f"\n\nTu intento anterior tenía este error, corrígelo: {error}\n"
+              f"Diagrama anterior (no lo repitas igual):\n{json.dumps(diagrama, ensure_ascii=False)}\n\n"
+              "Genera SOLO el JSON corregido:"
+        )
+        diagrama = _pedir(prompt_retry)
+        if diagrama is None:
+            return None
+        error = _validar_diagrama(diagrama, nombre)
+        if error:
+            logger.warning(f"  ✗ Diagrama sigue inválido tras reintento para '{nombre}': {error}")
+            return None
+
+    logger.info(
+        f"  ✓ Coordenadas generadas: {len(diagrama.get('jugadores_ataque', []))} atacantes, "
+        f"{len(diagrama.get('jugadores_defensa', []))} defensores"
+    )
+    return diagrama
 
 
 # ── Modo 2: Ejercicio único ──────────────────────────────────────────────────
@@ -768,7 +929,19 @@ def generar_ejercicio_unico(edad: str, objetivo: str, descripcion: str = "") -> 
 
 
 def responder_duda_reglamento(pregunta: str) -> str:
-    """Modo 3: responde una duda de reglamento o fundamento técnico."""
+    """Modo 3: responde una duda de reglamento o fundamento técnico.
+    Antes respondía solo de memoria paramétrica del modelo pese a tener 1.238 chunks
+    de reglas FIBA/minibasket/normativa de competición ya indexados en ChromaDB sin
+    usar — normativa autonómica/long-tail es justo donde un 4B alucina más y donde
+    hay más que ganar con retrieval."""
+    contexto = consultar_coleccion("reglamento", pregunta, n_resultados=6)
+    mensaje_usuario = pregunta
+    if contexto:
+        mensaje_usuario = (
+            f"EXTRACTOS DE REGLAMENTO (pueden no cubrir toda la pregunta; si no "
+            f"encuentras la respuesta aquí, usa tu conocimiento pero dilo):\n"
+            f"{contexto[:3000]}\n\nPREGUNTA: {pregunta}"
+        )
     try:
         r = requests.post(
             f"{OLLAMA_URL}/api/chat",
@@ -776,10 +949,10 @@ def responder_duda_reglamento(pregunta: str) -> str:
                 "model": MODEL_SESION,
                 "messages": [
                     {"role": "system", "content": SYSTEM_REGLAMENTO},
-                    {"role": "user", "content": pregunta},
+                    {"role": "user", "content": mensaje_usuario},
                 ],
                 "stream": False,
-                "options": {"temperature": 0.3, "num_predict": 500, "num_ctx": 4096},
+                "options": {"temperature": 0.3, "num_predict": 500, "num_ctx": 6144},
             },
             timeout=90,
         )

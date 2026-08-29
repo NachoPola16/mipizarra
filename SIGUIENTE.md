@@ -20,6 +20,108 @@ Los tres modos comparten el mismo modelo pero con system prompts distintos. Pend
 - Modelo "profesor" para destilar dataset sintético: **qwen2.5:7b-instruct-q4_K_M**.
 - Carpeta canónica del servicio: **`mipizarra/`** (antes `hoops-coach`).
 
+## Revisión de arquitectura (2026-08-29) — leer esto primero
+
+Revisión completa con Opus tras las pruebas en vivo del 28-29/08 (ver commit
+`f911196`). Diagnóstico: los dos síntomas abiertos (diagramas poco fiables en texto
+libre, RAG que "no notaba" que estuviera conectado) eran bugs de arquitectura, no
+falta de capacidad del modelo. Se arreglaron el mismo día, ya probados en vivo contra
+la instancia real (que corre en local, PC con RTX 5060 Ti — no en el LXC del servidor,
+pese a lo que dice la sección de abajo, que describe el diseño original de 2026-05).
+
+**Hecho y verificado hoy:**
+1. `generar_coordenadas_ejercicio` / `generar_diagrama_desde_texto` / `generar_ejercicio_unico`
+   usaban `MODEL` = `qwen3:4b` (con thinking) mientras que `generar_sesion` y
+   `responder_duda_reglamento` ya habían migrado a `qwen3:4b-instruct`. El JSON de
+   diagramas se generaba con el modelo que sabíamos que fallaba bajo restricción de
+   formato. `MODEL` ahora también apunta a `-instruct` por defecto (`api/rag_engine.py`,
+   `docker-compose.yml`, `.env.example`).
+2. `generar_coordenadas_ejercicio` ahora pasa un **JSON Schema real** en `format`
+   (antes `"json"` a secas — solo garantizaba JSON válido, cualquier forma). Ollama
+   compila el schema a gramática (XGrammar) y restringe la decodificación.
+3. Nuevo `_validar_diagrama()`: valida lo que el schema no puede expresar — que
+   `de`/`a`/`portador` referencien jugadores realmente declarados, y que el nº de
+   atacantes/defensores cuadre con el `NcM` del nombre (reutiliza el regex de
+   `_nivel_oposicion`, factorizado en `_extraer_conteo_nc_m`). Si falla, un reintento
+   señalando el error concreto; si sigue fallando, `None` — sin diagrama es mejor que
+   un diagrama que contradice el texto. **Confirmado en logs reales**: el validador
+   atrapó un `desplazamiento sin a_pos` (la causa exacta de "a veces no genera nada" —
+   el renderer descartaba esos movimientos en silencio), se recuperó en 2 de 3 casos
+   tras el reintento, y en el que no pudo, devolvió `None` limpio en vez de un dibujo
+   roto.
+4. `parsear_ejercicios_de_sesion` (`api/main.py`) no capturaba `Qué cambia respecto a
+   N.1:` en las variantes (iba antes de `Organización:` en la plantilla) — la sustancia
+   de la variante se perdía y su diagrama se generaba a ciegas. Ahora se captura y se
+   antepone a la descripción.
+5. `construir_contexto_teoria` concatenaba teoria+planificacion+reglamento y el
+   resultado se truncaba a **800 caracteres** en `generar_sesion` — con chunks de
+   ~530 chars de media, sobrevivían ~1,5 chunks y las colecciones `planificacion` y
+   `reglamento` (al ir después en la concatenación) nunca llegaban al prompt. Ahora
+   presupuesto de 900 chars **por colección** (no un corte global), sin truncado
+   adicional en `generar_sesion`. `num_ctx` subido de 6144 a 8192 para dar margen.
+6. `/reglamento` **no hacía retrieval en absoluto** — respondía solo de memoria
+   paramétrica pese a tener 1.238 chunks de reglas FIBA/minibasket/normativa aragonesa
+   ya indexados sin usar. Ahora consulta la colección `reglamento` (6 chunks, tope
+   3000 chars) antes de preguntar al modelo. **Probado en vivo**: pregunta sobre
+   tiempos muertos en Juegos Escolares de Aragón infantil → recuperó el fragmento
+   correcto de `juegos_escolares_2223.pdf` / `normativa_tecnica_jjee_2324.pdf` (no la
+   regla FIBA genérica) y respondió citándolo.
+
+**Pendiente — próximos pasos, en este orden:**
+
+1. **Reiniciar/probar en vivo** con estos cambios si aún no se ha hecho tras esta
+   sesión (`docker compose up -d --build api` en local). Generar un par de sesiones
+   con calentamiento/vuelta a la calma y revisar visualmente los SVG.
+2. **Separar material curado de PDFs en colecciones distintas.** Ahora mismo los 20
+   `.md` de `data/teoria/` compiten en la misma colección Chroma contra PDFs enteros
+   (p.ej. `tiro_a_canasta_erena_2026.pdf`, 225 KB) — el vecino más cercano casi
+   siempre es un párrafo de PDF, no el documento escrito a propósito. **Requiere
+   reindexar ChromaDB (muta el estado real que usas a diario) — confirmar con Nacho
+   antes de tocarlo**, y decidir cuál de los varios `tools/indexar_*.py` es el
+   canónico (hay `indexar_pdfs.py`, `indexar_conocimiento.py`, `indexar_entrenamientos.py`,
+   `indexar_colecciones.py` — no auditado en esta sesión cuál está vigente).
+3. **Auditar diagramas ya guardados en `exercises.json`** contra el nuevo
+   `_validar_diagrama()` (se sabe que `ej_003` tiene un 1c1 con 2 atacantes/0
+   defensores). Tarea mecánica, no arquitectónica.
+4. **Probar `qwen3.5:4b`** (Q4_K_M, 3,4 GB — cabe en la GTX 1060 6GB del servidor,
+   igual que el actual) sobre esta base ya arreglada. Salió el 2026-03-02, después de
+   elegir esta pila. Mejora generacional limpia: 256K contexto (vs 32K), tools, visión.
+   Verificar antes de comprometerse: (a) que carga en Pascal/sm_61 con su arquitectura
+   MoE dispersa + Gated Delta Networks, (b) que el thinking (activo por defecto en
+   3.5) se desactiva de forma fiable con `chat_template_kwargs: {"enable_thinking":
+   false}` — mecanismo distinto del `"think": false` de Ollama que ya falló con
+   qwen3:4b.
+5. **Solo si tras el paso 4 aún falta calidad**: comparar A/B contra `qwen3.5:9b`
+   (6,6 GB — no cabe en el servidor, solo PC) para saber si el techo del hardware
+   aporta algo o ya se está en meseta. Si se necesita el 9B, el servidor queda
+   descartado por tamaño y la decisión de dónde vive el día a día se resuelve sola.
+6. **Plantillas de diagrama para calentamiento/vuelta a la calma.** Muchos juegos de
+   calentamiento (rondos, pilla-pilla) no tienen un diagrama de media pista con
+   sentido — forzar generación libre garantiza basura. Mejor: ~10-15 plantillas
+   parametrizadas (filas en esquinas, circuito de conos, rondo circular, cuatro
+   esquinas...) con el schema restringiendo la elección a un enum.
+7. **Esquema de diagrama con posiciones canónicas nombradas** (enum sobre las ~16 de
+   `docs/coordenadas.md`: codo TL, poste bajo, esquina triple...) en vez de
+   coordenadas `x,y` libres. Necesario para el paso 6 y también habilita:
+8. **Probar conversor de dibujos a mano (tablet + app Notein) → JSON** con
+   `qwen3.5` (multimodal en 4b y 9b, 89,2% OCRBench). No es proyecto aparte: es
+   "input no estructurado → JSON de diagrama", el mismo problema del punto 3, con
+   input distinto. Decidir con datos, no en abstracto: probar 5 dibujos reales: si
+   cada borrador necesita <30s de corrección, compensa el VLM; si no, transcripción
+   manual (a mano son 3-5h para el volumen actual de esta temporada, asumible).
+9. **Aparcado — jugadas de pizarra por filtros.** `data/pdfs/coleccion_jugadas/`
+   sigue vacía (0 bytes): sin corpus, generar tácticas de ataque estático es el peor
+   caso de alucinación de todos los pendientes. Cuando haya material, empezar por un
+   catálogo `jugadas.json` filtrable a mano (mismo schema de diagrama, multifase,
+   `render_all_diagrams()` ya lo soporta) — datos primero, generación después o nunca.
+
+**Decisión de despliegue — recomendación dada y aceptada (2026-08-29):** PC bajo
+demanda, no servidor siempre encendido ni esperar mejora de hardware. Generar una
+sesión es planificación puntual (2-3 veces/semana, un usuario), no justifica un
+servicio 24/7; y la GTX 1060 es Pascal, invertir ahí es apostar por una arquitectura
+que las librerías de inferencia están dejando atrás. No bloqueante: con `qwen3.5:4b`
+el servidor sigue siendo viable si se prefiere más adelante.
+
 ## Estado actual (2026-05-30)
 
 ### Lo que está hecho y listo

@@ -55,6 +55,18 @@ def parsear_ejercicios_de_sesion(texto: str) -> list:
             parte, re.DOTALL | re.IGNORECASE,
         )
         desc = m_org.group(1).strip() if m_org else ""
+
+        # Variantes (N.2): "Qué cambia respecto a N.1:" va ANTES de "Organización:" en
+        # la plantilla y describe la única diferencia real con la base — sin esto, el
+        # diagrama de la variante se generaba sin saber qué la distingue del ejercicio base.
+        m_cambio = re.search(
+            rf'Qué cambia respecto a[^:\n]*:\s*(.*?)(?=Organización:|Puntos clave:|Duración:|{cab}|$)',
+            parte, re.DOTALL | re.IGNORECASE,
+        )
+        if m_cambio and m_cambio.group(1).strip():
+            cambio = m_cambio.group(1).strip().rstrip('.')
+            desc = f"Cambio respecto al ejercicio base: {cambio}. {desc}".strip()
+
         ejercicios.append({"nombre": nombre, "descripcion": desc})
     return ejercicios
 
