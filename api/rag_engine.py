@@ -395,14 +395,18 @@ def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
 
     # Categorías de formación con sesiones largas parten los 3 ejercicios en N.1+N.2
     # (ver _bloque_ejercicio) — la plantilla pasa de 3 a 6 bloques a rellenar, así que
-    # el presupuesto de generación tiene que escalar o el modelo corta a mitad de
-    # frase antes de llegar a vuelta a la calma/fundamentos (confirmado con
-    # done_reason="length" en una sesión real U10/75min: se agotaban los 2500 tokens
-    # dentro del Ejercicio 2, perdiendo descanso, ejercicio 3, vuelta y fundamentos).
+    # hace falta bastante más presupuesto de generación que con 3. Pero esto es solo
+    # un punto de partida razonable, no una garantía: la verbosidad del modelo varía
+    # de una generación a otra (confirmado con 2 sesiones reales que agotaron
+    # done_reason="length" con presupuestos distintos — una de 6 bloques con 2500 y
+    # otra de 3 bloques a 90 min con el "2500 de toda la vida" que hasta ahora parecía
+    # suficiente). Por eso el número de aquí abajo es solo el primer intento; el
+    # reintento en _pedir_texto_sesion() reacciona al truncado real en vez de confiar
+    # en una estimación fija.
     max_bloque = MAX_BLOQUE_POR_EDAD.get(edad, MAX_BLOQUE_DEFECTO)
     bloques_partidos = t_ej > max_bloque
-    num_predict_sesion = 4500 if bloques_partidos else 2500
-    num_ctx_sesion     = 11000 if bloques_partidos else 8192
+    num_predict_sesion = 5000 if bloques_partidos else 3200
+    num_ctx_sesion     = 11000 if bloques_partidos else 9000
 
     n1 = ej1['nombre'] if ej1 else "ejercicio analítico"
     n2 = ej2['nombre'] if ej2 else "ejercicio con superioridad"
@@ -445,7 +449,10 @@ Reglas:
 
 **Fundamentos**: """
 
-    try:
+    def _pedir_texto_sesion(num_predict: int, num_ctx: int) -> tuple[str, str | None]:
+        """Devuelve (texto, done_reason). done_reason=='length' significa que Ollama
+        agotó num_predict y cortó a mitad de frase — señal real de truncado, a
+        diferencia de adivinar de antemano si el presupuesto alcanzará."""
         response = requests.post(
             f"{OLLAMA_URL}/api/generate",
             json={
@@ -454,10 +461,8 @@ Reglas:
                 "stream":  False,
                 "options": {
                     "temperature": 0.4,
-                    # Escalado según bloques_partidos (ver arriba): 6 bloques de
-                    # ejercicio necesitan bastante más presupuesto que 3.
-                    "num_predict": num_predict_sesion,
-                    "num_ctx":     num_ctx_sesion,
+                    "num_predict": num_predict,
+                    "num_ctx":     num_ctx,
                     "top_p":       0.9,
                     "min_p":       0.05,
                     "repeat_penalty": 1.2,
@@ -481,7 +486,25 @@ Reglas:
             timeout=300,
         )
         response.raise_for_status()
-        texto = response.json()["response"].strip()
+        data = response.json()
+        return data["response"], data.get("done_reason")
+
+    try:
+        texto, done_reason = _pedir_texto_sesion(num_predict_sesion, num_ctx_sesion)
+        if done_reason == "length":
+            logger.warning(
+                f"Sesión truncada (agotó num_predict={num_predict_sesion}), "
+                f"reintentando con más presupuesto..."
+            )
+            texto, done_reason = _pedir_texto_sesion(
+                num_predict_sesion + 2500, num_ctx_sesion + 3000
+            )
+            if done_reason == "length":
+                logger.warning(
+                    "Sesión sigue truncada tras el reintento — se entrega el texto "
+                    "parcial (mejor incompleto y avisado que nada)."
+                )
+        texto = texto.strip()
 
         if texto.startswith("{") or texto.startswith("["):
             logger.warning("Modelo devolvió JSON en lugar de texto, reintentando...")
