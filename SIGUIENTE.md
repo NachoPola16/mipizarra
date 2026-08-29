@@ -67,22 +67,71 @@ pese a lo que dice la sección de abajo, que describe el diseño original de 202
    correcto de `juegos_escolares_2223.pdf` / `normativa_tecnica_jjee_2324.pdf` (no la
    regla FIBA genérica) y respondió citándolo.
 
+**Hecho (2026-08-29, sesión 2) — colecciones separadas y auditoría de exercises.json:**
+
+- **`teoria_md` separada de `teoria`.** `tools/indexar_colecciones.py` es el script
+  canónico (confirmado: coincide con las 3 colecciones reales y `CHUNK_SIZE=256`
+  observado; `indexar_pdfs.py` está obsoleto, crea una colección `teoria_baloncesto`
+  que no existe en la instancia real). Se cambió a 4 colecciones: `teoria_md` (los 20
+  `.md` curados, incluidos los dos de reglamento), `teoria`, `planificacion`,
+  `reglamento` — cada una solo PDFs salvo `teoria_md`. Reindexado en local con
+  `docker exec mipizarra-api python /app/tools/indexar_colecciones.py` (backup previo
+  en `data/chroma_db.bak_20260829/`). `construir_contexto_teoria` y
+  `responder_duda_reglamento` ahora consultan `teoria_md` con presupuesto propio y
+  prioridad. Verificado en vivo: una pregunta sobre bloqueos directos en infantil trajo
+  contenido de `contenidos_por_edad_lineas_rojas.md` en vez de solo PDFs genéricos.
+- **Hallazgo pendiente de decisión — contradicción real en el material:**
+  `data/teoria/contenidos_por_edad_lineas_rojas.md` (tabla) dice que el bloqueo
+  directo empieza en Cadete/U16 (Infantil/U14 solo bloqueos indirectos), pero
+  `api/prompts.py` (`SYSTEM_SESION`, `SYSTEM_EJERCICIO`), `docs/esquema-ejercicios.md`
+  Y dos ejercicios reales ya en `exercises.json` (`ej_002`, `ej_008`, categoría
+  `bloqueo_directo`, edades desde U14) dicen que es esporádico ya en U14. Son 4
+  fuentes contra 1 — probablemente la tabla del `.md` quedó desactualizada — pero es
+  un criterio pedagógico de Nacho, no se ha tocado. **Decidir cuál es la regla
+  correcta y corregir la que esté mal** (probablemente la tabla del `.md`).
+- **Auditoría 1 a 1 de los 63 ejercicios de `exercises.json`.** Validación estructural
+  automatizada (referencias de movimientos, rango de coordenadas, conteo NcM del
+  nombre) + lectura manual completa del contenido. Resultado: **corpus sólido** — cero
+  IDs duplicados, cero categorías/edades fuera de lista, cero referencias rotas, cero
+  coordenadas fuera de rango, ninguna categoría de bloqueo en edades de formación.
+  De los 19 avisos iniciales del validador automático, 17 eran falsos positivos por
+  dos patrones legítimos y recurrentes en el fichero que el validador (pensado para
+  diagramas generados en caliente, no para ejercicios ya curados) no entendía:
+  - **Sufijo "+1 recuperando"** (`ej_040`, `ej_042`, `ej_050`): el nombre cita el
+    déficit inicial (p.ej. "2c1"), pero el diagrama capta el estado FINAL una vez
+    llega el defensor de recuperación (2c2) — correcto tal cual está.
+  - **Patrón "pasador/feeder sin defensor + pareja 1c1 real"** (`ej_003`, `ej_005`,
+    `ej_007` fase 1, `ej_012`, `ej_033`, `ej_049`, `ej_054` fase 1): el "1c1"/"2c2"
+    del nombre describe solo el duelo en vivo; el pasador que nunca ataca no lleva
+    defensor asociado — correcto tal cual está.
+  Se corrigieron los 2 hallazgos reales que sobrevivieron a esa criba, más 1 de
+  completitud, todos verificados de nuevo tras el cambio:
+  1. `ej_019` — el nombre decía "2c1" pero la descripción y el diagrama son 1 atacante
+     contra 2 defensores. Renombrado a "SSG Finalización 1c2 con superioridad defensiva".
+  2. `ej_007` — el propio texto describe "FASE 1 — sin defensa" y "FASE 2 — con
+     defensa (D1 real)" pero solo existía diagrama de la Fase 1. Añadida la Fase 2
+     (mismo trayecto, con D1 real en vez de cono, `curva: true` al rodearlo) siguiendo
+     el patrón ya usado en `ej_004`/`ej_054`.
+  3. `ej_063` — `puntos_clave` vacío. Añadidos 3 puntos basados en su propia
+     descripción (nada inventado).
+  - **Sin tocar, a valorar por Nacho** (no mecánico, requiere criterio o coordenadas
+    que el texto no especifica): `ej_060`, `ej_061`, `ej_062` son ejercicios
+    espacialmente complejos sin diagrama que probablemente lo merecerían, pero
+    construirlo exige inventar posiciones de conos/pasadores que el texto no fija —
+    mejor que los dibuje o confirme Nacho antes que asumidos por mí. `ej_060`
+    (`carga_cognitiva: 1`) y `ej_061` (`carga_cognitiva: 2`) tienen pinta de estar
+    infravalorados para lo que describen, pero es un campo de criterio de entrenador
+    — señalado, no corregido.
+
 **Pendiente — próximos pasos, en este orden:**
 
 1. **Reiniciar/probar en vivo** con estos cambios si aún no se ha hecho tras esta
    sesión (`docker compose up -d --build api` en local). Generar un par de sesiones
    con calentamiento/vuelta a la calma y revisar visualmente los SVG.
-2. **Separar material curado de PDFs en colecciones distintas.** Ahora mismo los 20
-   `.md` de `data/teoria/` compiten en la misma colección Chroma contra PDFs enteros
-   (p.ej. `tiro_a_canasta_erena_2026.pdf`, 225 KB) — el vecino más cercano casi
-   siempre es un párrafo de PDF, no el documento escrito a propósito. **Requiere
-   reindexar ChromaDB (muta el estado real que usas a diario) — confirmar con Nacho
-   antes de tocarlo**, y decidir cuál de los varios `tools/indexar_*.py` es el
-   canónico (hay `indexar_pdfs.py`, `indexar_conocimiento.py`, `indexar_entrenamientos.py`,
-   `indexar_colecciones.py` — no auditado en esta sesión cuál está vigente).
-3. **Auditar diagramas ya guardados en `exercises.json`** contra el nuevo
-   `_validar_diagrama()` (se sabe que `ej_003` tiene un 1c1 con 2 atacantes/0
-   defensores). Tarea mecánica, no arquitectónica.
+2. **Resolver la contradicción sobre bloqueo directo en Infantil/U14** (ver arriba) y
+   corregir la fuente que esté desactualizada.
+3. **Decidir sobre `ej_060`/`ej_061`/`ej_062`** (diagrama sí/no, con qué coordenadas)
+   y revisar si `carga_cognitiva` de `ej_060`/`ej_061` está bien calibrada.
 4. **Probar `qwen3.5:4b`** (Q4_K_M, 3,4 GB — cabe en la GTX 1060 6GB del servidor,
    igual que el actual) sobre esta base ya arreglada. Salió el 2026-03-02, después de
    elegir esta pila. Mejora generacional limpia: 256K contexto (vs 32K), tools, visión.

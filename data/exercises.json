@@ -866,51 +866,102 @@
       "En espera: los que no están actuando botan en el sitio. Nadie parado."
     ],
     "descripcion": "ORGANIZACIÓN: fila en el 45° izquierdo (A2, A3... con balones). Cono en la posición del defensor imaginario (en el 45°). FASE 1 — sin defensa: cada jugador sale del 45°, da el primer paso PEGADO al cono y penetra por la línea de fondo. Entra por debajo del aro y hace bandeja por el lado contrario usando el tablero. Coge el rebote y va al final de la fila. FASE 2 — con defensa (D1 real): D1 espera en posición sobre el 45°. A1 recibe el balón (del anterior rebote o de la fila) y ataca 1c1 por la línea de fondo. D1 defiende activamente. ROTACIÓN: A1 → D1, D1 → final de la fila de atacantes. Trabajar el 45° derecho también.",
-    "diagrama": {
-      "tipo": "media_pista",
-      "jugadores_ataque": [
-        {
-          "id": "A1",
-          "x": 75,
-          "y": 50
-        }
-      ],
-      "jugadores_defensa": [],
-      "balon_inicio": {
-        "portador": "A1"
+    "diagramas": [
+      {
+        "titulo": "Fase 1 — sin defensa: penetración pegada al cono",
+        "tipo": "media_pista",
+        "jugadores_ataque": [
+          {
+            "id": "A1",
+            "x": 75,
+            "y": 50
+          }
+        ],
+        "jugadores_defensa": [],
+        "balon_inicio": {
+          "portador": "A1"
+        },
+        "movimientos": [
+          {
+            "de": "A1",
+            "a_pos": {
+              "x": 90,
+              "y": 20
+            },
+            "tipo": "bote",
+            "orden": 1
+          },
+          {
+            "de": "A1",
+            "a_pos": {
+              "x": 50,
+              "y": 11
+            },
+            "tipo": "bote",
+            "orden": 2
+          },
+          {
+            "de": "A1",
+            "tipo": "tiro",
+            "orden": 3
+          }
+        ],
+        "conos": [
+          {
+            "x": 75,
+            "y": 42
+          }
+        ]
       },
-      "movimientos": [
-        {
-          "de": "A1",
-          "a_pos": {
-            "x": 90,
-            "y": 20
-          },
-          "tipo": "bote",
-          "orden": 1
+      {
+        "titulo": "Fase 2 — con defensa real (D1)",
+        "tipo": "media_pista",
+        "jugadores_ataque": [
+          {
+            "id": "A1",
+            "x": 75,
+            "y": 50
+          }
+        ],
+        "jugadores_defensa": [
+          {
+            "id": "D1",
+            "x": 75,
+            "y": 42
+          }
+        ],
+        "balon_inicio": {
+          "portador": "A1"
         },
-        {
-          "de": "A1",
-          "a_pos": {
-            "x": 50,
-            "y": 11
+        "movimientos": [
+          {
+            "de": "A1",
+            "a_pos": {
+              "x": 90,
+              "y": 20
+            },
+            "tipo": "bote",
+            "curva": true,
+            "orden": 1
           },
-          "tipo": "bote",
-          "orden": 2
-        },
-        {
-          "de": "A1",
-          "tipo": "tiro",
-          "orden": 3
-        }
-      ],
-      "conos": [
-        {
-          "x": 75,
-          "y": 42
-        }
-      ]
-    }
+          {
+            "de": "A1",
+            "a_pos": {
+              "x": 50,
+              "y": 11
+            },
+            "tipo": "bote",
+            "orden": 2
+          },
+          {
+            "de": "A1",
+            "tipo": "tiro",
+            "orden": 3
+          }
+        ],
+        "conos": []
+      }
+    ]
   },
   {
     "id": "ej_008",
@@ -1701,7 +1752,7 @@
   },
   {
     "id": "ej_019",
-    "nombre": "SSG Finalización 2c1 con superioridad defensiva",
+    "nombre": "SSG Finalización 1c2 con superioridad defensiva",
     "categoria": "ventaja_numerica",
     "subcategoria": "finalizacion",
     "edades": [
@@ -6300,7 +6351,11 @@
       ],
       "fisicos": []
     },
-    "puntos_clave": [],
+    "puntos_clave": [
+      "Solo puntúa el que manda el tiro, y solo si él mismo lo había metido antes — no puede pedir un tiro que no domina para hacer fallar a los demás sin arriesgar nada.",
+      "Variar el tipo de tiro en cada ronda (estático, tras bote, con presión...) para que el juego cubra distintas situaciones de tiro, no solo la más cómoda para quien manda.",
+      "La presión social de fallar delante del grupo es parte del objetivo: trabajar la rutina de tiro también bajo esa presión, no solo la mecánica."
+    ],
     "descripcion": "Por parejas o tríos. Cada ronda, un jugador manda: elige el tipo de tiro (tiro sobre presión, tiro tras bote, etc.) y lo intenta. Los demás deben realizar el mismo tipo de tiro. Si alguno de ellos falla, el jugador que ha mandado el tiro suma un punto, pero solo si él mismo lo había metido."
   }
 ]

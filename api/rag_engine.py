@@ -237,18 +237,22 @@ def construir_contexto_teoria(objetivo: str, edad: str, presupuesto_por_coleccio
     """Presupuesto de caracteres POR COLECCIÓN, no un truncado global al final: antes
     se concatenaban teoria+planificacion+reglamento y se cortaba a 800 caracteres en
     el prompt, así que planificacion y reglamento (los últimos en concatenarse) nunca
-    llegaban a sobrevivir el corte — en la práctica solo teoria influía en la sesión."""
+    llegaban a sobrevivir el corte — en la práctica solo teoria influía en la sesión.
+    "teoria_md" (los 20 .md escritos a propósito) va primero y con más presupuesto:
+    antes competían en la misma colección que "teoria" contra PDFs de cientos de KB
+    y casi nunca ganaban la búsqueda de vecinos más cercanos."""
     consulta = f"entrenamiento baloncesto {objetivo} categoria {edad}"
     partes   = []
     mapeo    = {
-        "teoria":        "TEORIA Y METODOLOGIA",
-        "planificacion": "PLANIFICACION",
-        "reglamento":    "REGLAMENTO",
+        "teoria_md":     ("MATERIAL PROPIO (prioritario)", int(presupuesto_por_coleccion * 1.5)),
+        "teoria":        ("TEORIA Y METODOLOGIA",           presupuesto_por_coleccion),
+        "planificacion": ("PLANIFICACION",                  presupuesto_por_coleccion),
+        "reglamento":    ("REGLAMENTO",                      presupuesto_por_coleccion),
     }
-    for nombre, etiqueta in mapeo.items():
+    for nombre, (etiqueta, presupuesto) in mapeo.items():
         fragmento = consultar_coleccion(nombre, consulta, n_resultados=4)
         if fragmento:
-            partes.append(f"--- {etiqueta} ---\n{fragmento[:presupuesto_por_coleccion]}")
+            partes.append(f"--- {etiqueta} ---\n{fragmento[:presupuesto]}")
 
     return "\n\n".join(partes) if partes else ""
 
@@ -933,14 +937,23 @@ def responder_duda_reglamento(pregunta: str) -> str:
     Antes respondía solo de memoria paramétrica del modelo pese a tener 1.238 chunks
     de reglas FIBA/minibasket/normativa de competición ya indexados en ChromaDB sin
     usar — normativa autonómica/long-tail es justo donde un 4B alucina más y donde
-    hay más que ganar con retrieval."""
-    contexto = consultar_coleccion("reglamento", pregunta, n_resultados=6)
+    hay más que ganar con retrieval. También consulta "teoria_md": ahí viven los dos
+    .md curados de reglamento (normas clave FIBA, competición de formación en España),
+    más concisos y de más señal que extraer un fragmento suelto de un PDF de reglas."""
+    contexto_curado = consultar_coleccion("teoria_md", pregunta, n_resultados=3)
+    contexto_reglas  = consultar_coleccion("reglamento", pregunta, n_resultados=6)
+    partes = []
+    if contexto_curado:
+        partes.append(f"--- MATERIAL PROPIO ---\n{contexto_curado[:1500]}")
+    if contexto_reglas:
+        partes.append(f"--- REGLAMENTO FIBA / COMPETICIÓN ---\n{contexto_reglas[:2500]}")
+
     mensaje_usuario = pregunta
-    if contexto:
+    if partes:
         mensaje_usuario = (
             f"EXTRACTOS DE REGLAMENTO (pueden no cubrir toda la pregunta; si no "
             f"encuentras la respuesta aquí, usa tu conocimiento pero dilo):\n"
-            f"{contexto[:3000]}\n\nPREGUNTA: {pregunta}"
+            f"{chr(10).join(partes)}\n\nPREGUNTA: {pregunta}"
         )
     try:
         r = requests.post(

@@ -200,8 +200,12 @@ def indexar_coleccion(nombre: str, rutas: list[Path]):
 
 
 if __name__ == "__main__":
+    # "teoria_md" separada de "teoria": los 20 .md curados de data/teoria/ competían
+    # en la misma colección contra PDFs enteros (p.ej. un libro de 225 KB sobre tiro),
+    # así que el vecino más cercano casi nunca era el documento escrito a propósito.
     colecciones = {
-        "teoria":        [PDFS_BASE_DIR / "coleccion_teoria", TEORIA_MD_DIR],
+        "teoria_md":     [TEORIA_MD_DIR],
+        "teoria":        [PDFS_BASE_DIR / "coleccion_teoria"],
         "planificacion": [PDFS_BASE_DIR / "coleccion_planificacion"],
         "reglamento":    [PDFS_BASE_DIR / "coleccion_reglamento"],
     }
