@@ -114,25 +114,51 @@ pese a lo que dice la sección de abajo, que describe el diseño original de 202
      el patrón ya usado en `ej_004`/`ej_054`.
   3. `ej_063` — `puntos_clave` vacío. Añadidos 3 puntos basados en su propia
      descripción (nada inventado).
-  - **Sin tocar, a valorar por Nacho** (no mecánico, requiere criterio o coordenadas
-    que el texto no especifica): `ej_060`, `ej_061`, `ej_062` son ejercicios
-    espacialmente complejos sin diagrama que probablemente lo merecerían, pero
-    construirlo exige inventar posiciones de conos/pasadores que el texto no fija —
-    mejor que los dibuje o confirme Nacho antes que asumidos por mí. `ej_060`
-    (`carga_cognitiva: 1`) y `ej_061` (`carga_cognitiva: 2`) tienen pinta de estar
-    infravalorados para lo que describen, pero es un campo de criterio de entrenador
-    — señalado, no corregido.
+**Hecho (2026-08-29, sesión 3) — diagramas de ej_060/061/062 + bug real en el renderer + prueba en vivo:**
+
+- **Bug real encontrado y arreglado**: el movimiento `tiro` en `diagram_renderer.py`
+  apuntaba siempre a la coordenada fija `(50,11)` (canasta cercana), sin importar si
+  el diagrama era `pista_completa` y el jugador atacaba la canasta lejana. Cualquier
+  diagrama a pista completa con un tiro en la mitad lejana habría salido con la
+  flecha apuntando al lado equivocado. Arreglado: si `tipo == "pista_completa"` y el
+  jugador está en la mitad `y > 50`, el tiro apunta a `(50,89)` (espejo de la canasta
+  cercana). Verificado numéricamente (coordenadas de píxel en ambos sentidos) — no
+  hay herramienta de renderizado visual en este entorno, así que falta una
+  comprobación visual real la próxima vez que se abra la app.
+- **Diagramas construidos para `ej_060`, `ej_061`, `ej_062`** (antes sin tocar,
+  requerían inventar coordenadas que el texto no fija explícitamente — Nacho pidió
+  interpretarlas en vez de preguntar, dado que el texto describe la disposición con
+  suficiente detalle):
+  - `ej_060` (pista completa, 2 fases): Fase 1 — dos filas corren a conos grandes y
+    tiran a su propia canasta; Fase 2 — 1c1 en la canasta contraria.
+  - `ej_061` (media pista): pasadores en línea de tiro libre a cada banda (`x=0` y
+    `x=100`, borde de la pista — el esquema no admite coordenadas fuera de 0-100, así
+    que quedan pegados a la línea en vez de literalmente fuera), doble reinicio con
+    pasador distinto, ataque final.
+  - `ej_062`: zona marcada con 4 conos, 2 atacantes + 1 defensor, pases dentro de la
+    zona (sin tiro — el ejercicio es de posesión/rotación, no de finalización).
+  Verificados con `_validar_diagrama` (los mismos falsos positivos ya conocidos por
+  "carrera sin oposición"/"pasador sin defensor", nada nuevo) y con el chequeo de
+  rango/referencias — estructura limpia en los tres. **`carga_cognitiva` de `ej_060`
+  y `ej_061` sigue sin tocar** (sigue pareciendo baja, es criterio de entrenador).
+- **Prueba en vivo end-to-end**: sesión real generada (`U12`, 75 min, objetivo
+  "1c1") con el código y las colecciones ya arregladas. Resultado: 3 ejercicios con
+  variantes N.1/N.2, 6 de 8 diagramas posibles generados con contenido real; los 2
+  que no se generaron fallaron la validación semántica dos veces seguidas (referencia
+  a jugador no declarado) y devolvieron `None` limpio — exactamente el
+  comportamiento diseñado, confirmado con logs reales: el validador atrapó
+  problemas reales en 5 de 5 intentos de auto-generación, se recuperó en 3 con el
+  reintento y falló seguro (sin diagrama) en 2. Sin errores en logs de la API.
+  **Backup `data/chroma_db.bak_20260829/` borrado tras esta confirmación.**
 
 **Pendiente — próximos pasos, en este orden:**
 
-1. **Reiniciar/probar en vivo** con estos cambios si aún no se ha hecho tras esta
-   sesión (`docker compose up -d --build api` en local). Generar un par de sesiones
-   con calentamiento/vuelta a la calma y revisar visualmente los SVG.
+1. **Revisión visual real** de los diagramas de `ej_060`/`ej_061`/`ej_062` y del
+   arreglo del tiro a pista completa la próxima vez que se abra la app — solo se
+   verificó numéricamente, no se ha visto renderizado de verdad.
 2. **Resolver la contradicción sobre bloqueo directo en Infantil/U14** (ver arriba) y
    corregir la fuente que esté desactualizada.
-3. **Decidir sobre `ej_060`/`ej_061`/`ej_062`** (diagrama sí/no, con qué coordenadas)
-   y revisar si `carga_cognitiva` de `ej_060`/`ej_061` está bien calibrada.
-4. **Probar `qwen3.5:4b`** (Q4_K_M, 3,4 GB — cabe en la GTX 1060 6GB del servidor,
+3. **Probar `qwen3.5:4b`** (Q4_K_M, 3,4 GB — cabe en la GTX 1060 6GB del servidor,
    igual que el actual) sobre esta base ya arreglada. Salió el 2026-03-02, después de
    elegir esta pila. Mejora generacional limpia: 256K contexto (vs 32K), tools, visión.
    Verificar antes de comprometerse: (a) que carga en Pascal/sm_61 con su arquitectura
@@ -140,25 +166,26 @@ pese a lo que dice la sección de abajo, que describe el diseño original de 202
    3.5) se desactiva de forma fiable con `chat_template_kwargs: {"enable_thinking":
    false}` — mecanismo distinto del `"think": false` de Ollama que ya falló con
    qwen3:4b.
-5. **Solo si tras el paso 4 aún falta calidad**: comparar A/B contra `qwen3.5:9b`
+4. **Solo si tras el paso 3 aún falta calidad**: comparar A/B contra `qwen3.5:9b`
    (6,6 GB — no cabe en el servidor, solo PC) para saber si el techo del hardware
    aporta algo o ya se está en meseta. Si se necesita el 9B, el servidor queda
    descartado por tamaño y la decisión de dónde vive el día a día se resuelve sola.
-6. **Plantillas de diagrama para calentamiento/vuelta a la calma.** Muchos juegos de
+5. **Plantillas de diagrama para calentamiento/vuelta a la calma.** Muchos juegos de
    calentamiento (rondos, pilla-pilla) no tienen un diagrama de media pista con
    sentido — forzar generación libre garantiza basura. Mejor: ~10-15 plantillas
    parametrizadas (filas en esquinas, circuito de conos, rondo circular, cuatro
    esquinas...) con el schema restringiendo la elección a un enum.
-7. **Esquema de diagrama con posiciones canónicas nombradas** (enum sobre las ~16 de
+6. **Esquema de diagrama con posiciones canónicas nombradas** (enum sobre las ~16 de
    `docs/coordenadas.md`: codo TL, poste bajo, esquina triple...) en vez de
-   coordenadas `x,y` libres. Necesario para el paso 6 y también habilita:
-8. **Probar conversor de dibujos a mano (tablet + app Notein) → JSON** con
+   coordenadas `x,y` libres. Necesario para el paso 5 y también habilita:
+7. **Probar conversor de dibujos a mano (tablet + app Notein) → JSON** con
    `qwen3.5` (multimodal en 4b y 9b, 89,2% OCRBench). No es proyecto aparte: es
-   "input no estructurado → JSON de diagrama", el mismo problema del punto 3, con
-   input distinto. Decidir con datos, no en abstracto: probar 5 dibujos reales: si
-   cada borrador necesita <30s de corrección, compensa el VLM; si no, transcripción
-   manual (a mano son 3-5h para el volumen actual de esta temporada, asumible).
-9. **Aparcado — jugadas de pizarra por filtros.** `data/pdfs/coleccion_jugadas/`
+   "input no estructurado → JSON de diagrama", el mismo problema de la generación
+   automática de diagramas, con input distinto. Decidir con datos, no en abstracto:
+   probar 5 dibujos reales: si cada borrador necesita <30s de corrección, compensa
+   el VLM; si no, transcripción manual (a mano son 3-5h para el volumen actual de
+   esta temporada, asumible).
+8. **Aparcado — jugadas de pizarra por filtros.** `data/pdfs/coleccion_jugadas/`
    sigue vacía (0 bytes): sin corpus, generar tácticas de ataque estático es el peor
    caso de alucinación de todos los pendientes. Cuando haya material, empezar por un
    catálogo `jugadas.json` filtrable a mano (mismo schema de diagrama, multifase,

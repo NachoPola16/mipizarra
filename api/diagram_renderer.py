@@ -257,7 +257,13 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
                                f'marker-end="url(#arr)"/>')
 
         elif tipo == "tiro":
-            x2, y2 = to_px(50, 11)
+            # En pista_completa hay dos aros; el tiro va al más cercano al jugador
+            # según en qué mitad esté (canasta lejana = espejo de (50,11): (50,89)).
+            # En media_pista solo hay un aro en (50,11) sea cual sea la y del jugador.
+            if data.get("tipo") == "pista_completa" and posiciones[de][1] > 50:
+                x2, y2 = to_px(50, 89)
+            else:
+                x2, y2 = to_px(50, 11)
             a, b, c, d2 = shorten(x1, y1, x2, y2, 14)
             if curvature is not None:
                 cx_ctrl, cy_ctrl = _bezier_ctrl_pt(a, b, c, d2, curvature)

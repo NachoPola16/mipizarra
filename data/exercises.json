@@ -6255,7 +6255,126 @@
       "Defensa",
       "Finalización solo con entrada, según se decida"
     ],
-    "descripcion": "A la señal del entrenador, los dos primeros jugadores de la fila corren hacia uno de los conos grandes, hacen un cambio de dirección en el cono y lo tocan, y después intentan meter canasta. El primero que anota ataca 1c1 en la canasta contraria; el otro pasa a defender, botando el balón también mientras se desplaza hacia esa canasta. El atacante solo puede finalizar con entrada, según se decida previamente. Normas variables: en el cono no vale cambiar por las piernas ni por la espalda; el defensor puede botar el balón agarrado o no; se puede meter un tercer jugador para jugar 1c2. También se puede dejar que cada jugador elija libremente qué cono tocar, siempre que cada uno toque uno distinto del otro. Duración orientativa 15 min, hasta 25 min si se añaden variantes."
+    "descripcion": "A la señal del entrenador, los dos primeros jugadores de la fila corren hacia uno de los conos grandes, hacen un cambio de dirección en el cono y lo tocan, y después intentan meter canasta. El primero que anota ataca 1c1 en la canasta contraria; el otro pasa a defender, botando el balón también mientras se desplaza hacia esa canasta. El atacante solo puede finalizar con entrada, según se decida previamente. Normas variables: en el cono no vale cambiar por las piernas ni por la espalda; el defensor puede botar el balón agarrado o no; se puede meter un tercer jugador para jugar 1c2. También se puede dejar que cada jugador elija libremente qué cono tocar, siempre que cada uno toque uno distinto del otro. Duración orientativa 15 min, hasta 25 min si se añaden variantes.",
+    "diagramas": [
+      {
+        "titulo": "Fase 1 — carrera a cono + intento de canasta (propia)",
+        "tipo": "pista_completa",
+        "jugadores_ataque": [
+          {
+            "id": "A1",
+            "x": 35,
+            "y": 35
+          },
+          {
+            "id": "A2",
+            "x": 65,
+            "y": 35
+          }
+        ],
+        "jugadores_defensa": [],
+        "balon_inicio": {
+          "portador": "A1"
+        },
+        "movimientos": [
+          {
+            "de": "A1",
+            "a_pos": {
+              "x": 30,
+              "y": 18
+            },
+            "tipo": "bote",
+            "orden": 1
+          },
+          {
+            "de": "A2",
+            "a_pos": {
+              "x": 70,
+              "y": 18
+            },
+            "tipo": "bote",
+            "orden": 2
+          },
+          {
+            "de": "A1",
+            "a_pos": {
+              "x": 45,
+              "y": 12
+            },
+            "tipo": "bote",
+            "orden": 3
+          },
+          {
+            "de": "A2",
+            "a_pos": {
+              "x": 55,
+              "y": 12
+            },
+            "tipo": "bote",
+            "orden": 4
+          },
+          {
+            "de": "A1",
+            "tipo": "tiro",
+            "orden": 5
+          },
+          {
+            "de": "A2",
+            "tipo": "tiro",
+            "orden": 6
+          }
+        ],
+        "conos": [
+          {
+            "x": 30,
+            "y": 18
+          },
+          {
+            "x": 70,
+            "y": 18
+          }
+        ]
+      },
+      {
+        "titulo": "Fase 2 — 1c1 en la canasta contraria (quien anota ataca)",
+        "tipo": "pista_completa",
+        "jugadores_ataque": [
+          {
+            "id": "A1",
+            "x": 50,
+            "y": 78
+          }
+        ],
+        "jugadores_defensa": [
+          {
+            "id": "D1",
+            "x": 50,
+            "y": 85
+          }
+        ],
+        "balon_inicio": {
+          "portador": "A1"
+        },
+        "movimientos": [
+          {
+            "de": "A1",
+            "a_pos": {
+              "x": 45,
+              "y": 88
+            },
+            "tipo": "bote",
+            "curva": true,
+            "orden": 1
+          },
+          {
+            "de": "A1",
+            "tipo": "tiro",
+            "orden": 2
+          }
+        ],
+        "conos": []
+      }
+    ]
   },
   {
     "id": "ej_061",
@@ -6296,7 +6415,88 @@
       "Ataque 1c1",
       "Defensa 1c1"
     ],
-    "descripcion": "Se juega en pista completa, dividida en dos mitades que funcionan como estaciones simultáneas. En cada media pista hay 2 pasadores situados fuera del campo, a la altura de la línea de tiro libre (uno a cada banda). Dentro de cada mitad hay uno o varios pares de 1c1 (atacante-defensor) jugando a la vez, usando a los pasadores de su mitad como apoyo. Para poder avanzar en el 1c1, el atacante tiene que pasar y recibir el balón dos veces, a los pasadores que quiera, pero han de ser dos pasadores diferentes. Cuando el entrenador da la señal, se rota: los pasadores pasan a atacar, los atacantes a defender, y los defensores a pasar. Alternativa: se puede jugar con solo 2 pasadores en total (en vez de 4) según el número de jugadores disponibles, aunque lo ideal es tener 4 (2 por mitad). El entrenador puede añadir reglas de puntuación: robo de balón puntúa, solo vale finalizar, solo vale tiro, etc."
+    "descripcion": "Se juega en pista completa, dividida en dos mitades que funcionan como estaciones simultáneas. En cada media pista hay 2 pasadores situados fuera del campo, a la altura de la línea de tiro libre (uno a cada banda). Dentro de cada mitad hay uno o varios pares de 1c1 (atacante-defensor) jugando a la vez, usando a los pasadores de su mitad como apoyo. Para poder avanzar en el 1c1, el atacante tiene que pasar y recibir el balón dos veces, a los pasadores que quiera, pero han de ser dos pasadores diferentes. Cuando el entrenador da la señal, se rota: los pasadores pasan a atacar, los atacantes a defender, y los defensores a pasar. Alternativa: se puede jugar con solo 2 pasadores en total (en vez de 4) según el número de jugadores disponibles, aunque lo ideal es tener 4 (2 por mitad). El entrenador puede añadir reglas de puntuación: robo de balón puntúa, solo vale finalizar, solo vale tiro, etc.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {
+          "id": "A1",
+          "x": 50,
+          "y": 65
+        },
+        {
+          "id": "A2",
+          "x": 0,
+          "y": 41
+        },
+        {
+          "id": "A3",
+          "x": 100,
+          "y": 41
+        }
+      ],
+      "jugadores_defensa": [
+        {
+          "id": "D1",
+          "x": 50,
+          "y": 58
+        }
+      ],
+      "balon_inicio": {
+        "portador": "A1"
+      },
+      "movimientos": [
+        {
+          "de": "A1",
+          "a": "A2",
+          "tipo": "pase",
+          "orden": 1
+        },
+        {
+          "de": "A2",
+          "a": "A1",
+          "tipo": "pase",
+          "orden": 2
+        },
+        {
+          "de": "A1",
+          "a_pos": {
+            "x": 35,
+            "y": 50
+          },
+          "tipo": "bote",
+          "orden": 3
+        },
+        {
+          "de": "A1",
+          "a": "A3",
+          "tipo": "pase",
+          "orden": 4
+        },
+        {
+          "de": "A3",
+          "a": "A1",
+          "tipo": "pase",
+          "orden": 5
+        },
+        {
+          "de": "A1",
+          "a_pos": {
+            "x": 50,
+            "y": 20
+          },
+          "tipo": "bote",
+          "curva": true,
+          "orden": 6
+        },
+        {
+          "de": "A1",
+          "tipo": "tiro",
+          "orden": 7
+        }
+      ],
+      "conos": []
+    }
   },
   {
     "id": "ej_062",
@@ -6329,7 +6529,64 @@
       "Ataque en superioridad",
       "Defensa: fintas defensivas"
     ],
-    "descripcion": "En dos medias pistas simultáneas. Los atacantes, en superioridad numérica, hacen pases (picados) dentro de una zona limitada que decide el entrenador, hasta que este dé la señal. El defensor intenta robar o tocar el balón/jugador con balón. Si el defensor toca balón o jugador con balón: los atacantes pasan a defender 1c2 tras tocar las esquinas de su zona; el jugador que defendía toca medio campo y pasa a atacar. Si el defensor no roba y el entrenador da la señal: se repite la misma dinámica de rotación pero jugando 2c1."
+    "descripcion": "En dos medias pistas simultáneas. Los atacantes, en superioridad numérica, hacen pases (picados) dentro de una zona limitada que decide el entrenador, hasta que este dé la señal. El defensor intenta robar o tocar el balón/jugador con balón. Si el defensor toca balón o jugador con balón: los atacantes pasan a defender 1c2 tras tocar las esquinas de su zona; el jugador que defendía toca medio campo y pasa a atacar. Si el defensor no roba y el entrenador da la señal: se repite la misma dinámica de rotación pero jugando 2c1.",
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {
+          "id": "A1",
+          "x": 40,
+          "y": 55
+        },
+        {
+          "id": "A2",
+          "x": 60,
+          "y": 45
+        }
+      ],
+      "jugadores_defensa": [
+        {
+          "id": "D1",
+          "x": 50,
+          "y": 50
+        }
+      ],
+      "balon_inicio": {
+        "portador": "A1"
+      },
+      "movimientos": [
+        {
+          "de": "A1",
+          "a": "A2",
+          "tipo": "pase",
+          "orden": 1
+        },
+        {
+          "de": "A2",
+          "a": "A1",
+          "tipo": "pase",
+          "orden": 2
+        }
+      ],
+      "conos": [
+        {
+          "x": 30,
+          "y": 35
+        },
+        {
+          "x": 70,
+          "y": 35
+        },
+        {
+          "x": 30,
+          "y": 60
+        },
+        {
+          "x": 70,
+          "y": 60
+        }
+      ]
+    }
   },
   {
     "id": "ej_063",
