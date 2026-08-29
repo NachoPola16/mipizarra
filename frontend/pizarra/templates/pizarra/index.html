@@ -6,16 +6,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MiPizarra — Asistente de entrenamiento</title>
 <meta name="description" content="Genera sesiones de entrenamiento de baloncesto y diagramas tácticos con IA local, a partir de la categoría, la duración y el objetivo del entrenamiento.">
+<meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#15120e">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="MiPizarra">
 <meta property="og:title" content="MiPizarra — Asistente de entrenamiento">
 <meta property="og:description" content="Genera sesiones de entrenamiento de baloncesto y diagramas tácticos con IA local, a partir de la categoría, la duración y el objetivo del entrenamiento.">
 <meta property="og:url" content="{{ request.build_absolute_uri }}">
+<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'pizarra/brand/og-image.png' %}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:locale" content="es_ES">
-<meta name="twitter:card" content="summary">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="MiPizarra — Asistente de entrenamiento">
 <meta name="twitter:description" content="Genera sesiones de entrenamiento de baloncesto y diagramas tácticos con IA local.">
+<meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'pizarra/brand/og-image.png' %}">
 <link rel="icon" type="image/svg+xml" href="{% static 'pizarra/brand/favicon.svg' %}">
 <link rel="alternate icon" href="{% static 'pizarra/brand/favicon.ico' %}">
 <link rel="apple-touch-icon" href="{% static 'pizarra/brand/apple-touch-icon.png' %}">
@@ -337,6 +342,7 @@ const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
 let currentResult = null;
 let currentObjetivo = '';
 let currentEdad = '';
+let currentEdadSlug = 'general';
 let currentDuracion = 0;
 let currentMode = 'sesion';
 
@@ -393,6 +399,7 @@ async function consultarReglamento() {
 
     currentObjetivo = pregunta;
     currentEdad = '';
+    currentEdadSlug = 'general';
     currentDuracion = 0;
     showLoading();
 
@@ -433,6 +440,7 @@ async function generar() {
 
     currentObjetivo = objetivo;
     currentEdad = document.getElementById('edad').options[document.getElementById('edad').selectedIndex].text;
+    currentEdadSlug = edad ? edad.toLowerCase() : 'general';
     currentDuracion = duracion || 0;
 
     showLoading();
@@ -567,7 +575,7 @@ document.getElementById('btn-txt').addEventListener('click', () => {
     const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `sesion_${currentEdad.toLowerCase().replace(/\s/g,'_')}.txt`;
+    a.download = `sesion_${currentEdadSlug}.txt`;
     a.click();
     URL.revokeObjectURL(a.href);
 });
@@ -593,7 +601,7 @@ document.getElementById('btn-pdf').addEventListener('click', async () => {
         const blob = await resp.blob();
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `sesion_${currentEdad.toLowerCase().replace(/\s/g,'_')}.pdf`;
+        a.download = `sesion_${currentEdadSlug}.pdf`;
         a.click();
         URL.revokeObjectURL(a.href);
     } catch (e) {
