@@ -2,9 +2,60 @@
 
 > **Léeme al abrir un chat sobre MiPizarra**. Resume estado, próximo paso y decisiones ya tomadas.
 
-## Empieza por aquí (actualizado 2026-08-29)
+## Empieza por aquí (actualizado 2026-08-30)
 
-**Dónde corre ahora mismo:** en local, en el PC de Nacho (RTX 5060 Ti 16GB) vía
+**Sesión 2026-08-30 — branding, rediseño de interfaz y reprompt de ejercicios**
+(hilo aparte del de RAG/modelo de abajo, sin relación con él):
+
+- **Marca**: se mantiene "MiPizarra" (se barajaron y descartaron varias alternativas
+  por colisión con apps existentes o por sonar genérico). Logo/favicon nuevos
+  (tablero + jugada trazada, `frontend/pizarra/static/pizarra/brand/`), paleta
+  cálida (`#e8752c` sobre `#15120e`) sustituyendo el azul/gris frío original, en
+  toda la app (Django, PDF, y el Streamlit legacy antes de borrarlo).
+- **`frontend/app.py` (Streamlit) borrado** — prototipo sin usar, no aparecía en
+  ningún `docker-compose.yml`.
+- **Rediseño de interfaz**: de formulario en sidebar de 280px a layout tipo
+  ChatGPT/Perplexity (barra superior + caja de entrada centrada). Categoría/duración
+  como "pills" con desplegable propio (el `<select>` nativo no se puede estilar
+  igual entre navegadores). Chips de ejemplo clicables. Sin modo claro, solo oscuro.
+- **Función nueva: reprompt de ejercicios.** Seleccionar uno o varios ejercicios ya
+  generados y pedir una corrección en texto libre (endpoint `/reprompt_ejercicio`,
+  reutiliza el mecanismo de `generar_ejercicio_unico`). **Bug real encontrado
+  comparando PDFs antes/después de una corrección real**: el prompt describía el
+  ejercicio actual con "Nombre:"/"Descripción:" en mayúscula y el modelo copiaba
+  ese estilo de nombres de campo en el JSON de salida en vez del esquema real de la
+  app (sin diagrama en absoluto). Reescrito especificando el esquema exacto con
+  ejemplo — probado de nuevo tras el fix, sale correcto.
+- **Tres bugs del motor de diagramas**, encontrados analizando sesiones PDF reales
+  (no solo tests dirigidos):
+  1. El emparejamiento por nombre con la biblioteca caía a "el i-ésimo de la lista"
+     si no había coincidencia — asignaba diagramas de ejercicios sin relación
+     (p.ej. conos+defensor a un ejercicio de pases). Ahora sin match va directo a
+     generación automática desde la descripción real.
+  2. Un fallo de generación dejaba un hueco en blanco sin avisar, y además
+     desalineaba el índice de *todos* los ejercicios siguientes (tanto en el JSON
+     que consume el frontend como en `add_diagram()` del PDF). Ahora siempre hay
+     una entrada — real o el placeholder "Diagrama no disponible".
+  3. `_validar_diagrama` no comprobaba distancia entre jugadores — en ejercicios de
+     marca muy cercana (1c1) atacante y defensor podían solaparse visualmente.
+     Ahora exige mínimo 8 unidades (sistema de coordenadas 0-100).
+- **Seguridad**: `DJANGO_SECRET_KEY` real generada para el `.env` del servidor
+  (estaba usando el valor por defecto público del propio `docker-compose.yml`).
+  `<SERVER_IP>` sin sustituir en `DJANGO_ALLOWED_HOSTS` corregido a `${BIND_IP}`.
+- **Basic Auth quitado** de `mipizarra.polacabezon.com` en NPM (editado el `.conf`
+  de nginx directamente por SSH). **Pendiente**: la base de datos de NPM sigue
+  teniendo la Access List asociada a ese proxy host — si alguien guarda cualquier
+  cambio desde la UI de NPM en "mipizarra", puede regenerar el `.conf` y reponer el
+  Basic Auth sin querer. Quitar también la Access List desde la UI (Proxy Hosts →
+  mipizarra → Edit → Access List → "Publicly Accessible") para que quede consistente.
+- **Estado del despliegue**: parado en el servidor a propósito — las pruebas de esta
+  sesión se hicieron en local (Docker Desktop, PC de Nacho). Código ya al día en
+  ambos sitios al cierre de esta sesión (`git pull` hecho en el servidor aunque los
+  contenedores sigan abajo).
+- **Pendiente**: Nacho probará el reprompt de nuevo con un caso real para confirmar
+  el fix del esquema JSON de principio a fin.
+
+**Dónde corre ahora mismo (hilo de RAG/modelo, sesión anterior):** en local, en el PC de Nacho (RTX 5060 Ti 16GB) vía
 Docker Compose — no en el LXC del servidor (eso es un tema aparte, ver "Decisión de
 despliegue" en la sección de abajo). El resto de este fichero, más viejo, dice que
 corre en el servidor con GTX 1060 6GB — eso describe el diseño original de mayo,
