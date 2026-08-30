@@ -104,7 +104,8 @@ html, body {
 .prompt-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; }
 .diag-toggle { display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: var(--muted); cursor: pointer; }
 .diag-toggle input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
-.btn-send { background: var(--accent); color: #fff; font-family: 'Inter', sans-serif; font-weight: 600; font-size: .88rem; letter-spacing: .02em; border: none; border-radius: 10px; padding: .65rem 1.4rem; cursor: pointer; transition: background .15s; }
+.btn-send { display: inline-flex; align-items: center; gap: .4rem; background: var(--accent); color: #fff; font-family: 'Inter', sans-serif; font-weight: 600; font-size: .88rem; letter-spacing: .02em; border: none; border-radius: 10px; padding: .65rem 1.4rem; cursor: pointer; transition: background .15s; }
+.btn-send svg { width: 15px; height: 15px; flex-shrink: 0; }
 .btn-send:hover { background: var(--accent-d); }
 .btn-send:disabled { opacity: .5; cursor: not-allowed; }
 
@@ -127,9 +128,7 @@ html, body {
 .btn-back { background: none; border: none; color: var(--muted); font-family: 'Inter', sans-serif; font-size: .82rem; cursor: pointer; display: inline-flex; align-items: center; gap: .35rem; margin-bottom: 1.5rem; transition: color .15s; }
 .btn-back:hover { color: var(--text); }
 
-.badge { display: inline-block; border-radius: 6px; padding: 3px 12px; font-size: .72rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; margin-bottom: 1.25rem; }
-.badge-ok { background: #0d2218; color: #3fb950; border: 1px solid #1a7f37; }
-.badge-warn { background: #1c1a10; color: #d29922; border: 1px solid #6e451d; }
+.badge { display: block; font-size: .72rem; color: var(--muted); margin-bottom: 1.25rem; }
 
 .ejercicio-block { border-radius: 10px; padding: .5rem .75rem; margin: 0 -.75rem; transition: background .15s; }
 .ejercicio-block.selected { background: var(--bg2); }
@@ -137,10 +136,10 @@ html, body {
 .ej-select input { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
 .ejercicio-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.1rem; border-left: 3px solid var(--accent); padding-left: .75rem; margin: .5rem 0 .75rem; }
 
-.reprompt-bar { display: flex; align-items: center; gap: .75rem; background: var(--bg2); border: 1px solid var(--accent); border-radius: 10px; padding: .7rem 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.reprompt-bar { display: flex; align-items: flex-end; gap: .75rem; background: var(--bg2); border: 1px solid var(--accent); border-radius: 10px; padding: .7rem 1rem; margin-top: 2rem; flex-wrap: wrap; }
 .reprompt-count { font-size: .8rem; color: var(--text2); white-space: nowrap; }
-.reprompt-bar input[type="text"] { flex: 1; min-width: 200px; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: .5rem .75rem; font-family: 'Inter', sans-serif; font-size: .85rem; outline: none; }
-.reprompt-bar input[type="text"]:focus { border-color: var(--accent); }
+.reprompt-bar textarea { flex: 1; min-width: 200px; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: .5rem .75rem; font-family: 'Inter', sans-serif; font-size: .85rem; outline: none; resize: none; overflow: hidden; max-height: 160px; line-height: 1.4; }
+.reprompt-bar textarea:focus { border-color: var(--accent); }
 .diagrama-label { font-size: .68rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
 .diagrama-wrap { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 1.5rem; }
 .diagrama-wrap svg { width: 100%; height: auto; display: block; }
@@ -344,12 +343,6 @@ html, body {
     <div class="results" id="results" aria-live="polite">
         <button type="button" class="btn-back" id="btn-nueva">← Nueva consulta</button>
 
-        <div class="reprompt-bar" id="reprompt-bar" style="display:none;">
-            <span class="reprompt-count" id="reprompt-count">0 ejercicios seleccionados</span>
-            <input type="text" id="reprompt-instruccion" placeholder="¿Qué quieres cambiar? Ej: sin defensor, más dinámico…">
-            <button type="button" class="btn-send" id="btn-reprompt">🔄 Aplicar cambio</button>
-        </div>
-
         <div id="resultado-contenido"></div>
 
         <details class="consultados" id="consultados-wrap" style="display:none">
@@ -376,6 +369,15 @@ html, body {
             </div>
             <button class="btn-fb" id="btn-feedback">💾 Guardar sesión usada</button>
             <div class="feedback-msg" id="fb-msg"></div>
+        </div>
+
+        <div class="reprompt-bar" id="reprompt-bar" style="display:none;">
+            <span class="reprompt-count" id="reprompt-count">0 ejercicios seleccionados</span>
+            <textarea id="reprompt-instruccion" rows="1" placeholder="¿Qué quieres cambiar? Ej: sin defensor, más dinámico…"></textarea>
+            <button type="button" class="btn-send" id="btn-reprompt">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2.5v3.2h-3.2"/></svg>
+                Aplicar cambio
+            </button>
         </div>
     </div>
 
@@ -604,8 +606,8 @@ function renderResults(data) {
 
     // Badge
     let html = data.teoria_usada
-        ? "<span class='badge badge-ok'>✓ Enriquecido con teoría</span>"
-        : "<span class='badge badge-warn'>⚠ Sin teoría adicional</span>";
+        ? "<span class='badge'>✓ Enriquecido con teoría</span>"
+        : "<span class='badge'>Sin teoría adicional</span>";
 
     // Parsear texto en bloques (secciones y ejercicios). Se guarda en
     // currentBloques (no solo local) para poder sustituir un único bloque tras
@@ -705,7 +707,13 @@ function renderResults(data) {
 function actualizarBarraReprompt() {
     const bar = document.getElementById('reprompt-bar');
     const n = selectedEjercicios.size;
-    if (n === 0) { bar.style.display = 'none'; return; }
+    if (n === 0) {
+        bar.style.display = 'none';
+        const ta = document.getElementById('reprompt-instruccion');
+        ta.value = '';
+        ta.style.height = 'auto';
+        return;
+    }
     bar.style.display = '';
     document.getElementById('reprompt-count').textContent =
         n === 1 ? '1 ejercicio seleccionado' : `${n} ejercicios seleccionados`;
@@ -728,7 +736,17 @@ function formatEjercicioTexto(headerLine, ej) {
     return out.trim();
 }
 
-document.getElementById('btn-reprompt').addEventListener('click', async () => {
+const repromptTextarea = document.getElementById('reprompt-instruccion');
+repromptTextarea.addEventListener('input', () => {
+    repromptTextarea.style.height = 'auto';
+    repromptTextarea.style.height = repromptTextarea.scrollHeight + 'px';
+});
+repromptTextarea.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); aplicarReprompt(); }
+});
+document.getElementById('btn-reprompt').addEventListener('click', aplicarReprompt);
+
+async function aplicarReprompt() {
     const instruccion = document.getElementById('reprompt-instruccion').value.trim();
     if (!instruccion) { showFormError('Describe qué quieres cambiar.'); return; }
     if (!currentResult || selectedEjercicios.size === 0) return;
@@ -782,11 +800,12 @@ document.getElementById('btn-reprompt').addEventListener('click', async () => {
     // cambió el/los que se corrigieron) y volver a pintar todo con los datos ya
     // actualizados, para que "Nueva consulta" y las descargas reflejen el cambio.
     currentResult.sesion = currentBloques.map(b => b.texto).join('\n');
-    document.getElementById('reprompt-instruccion').value = '';
+    repromptTextarea.value = '';
+    repromptTextarea.style.height = 'auto';
     btn.disabled = false;
-    btn.textContent = '🔄 Aplicar cambio';
+    btn.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2.5v3.2h-3.2"/></svg> Aplicar cambio';
     renderResults(currentResult);
-});
+}
 
 function escHtml(s) {
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
