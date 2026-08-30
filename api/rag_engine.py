@@ -720,6 +720,24 @@ def _validar_diagrama(diagrama: dict, nombre_ejercicio: str = "") -> str | None:
         return "hay ids de jugador repetidos entre jugadores_ataque y jugadores_defensa"
     ids = set(ids)
 
+    # Distancia mínima entre jugadores: en ejercicios "cara a cara muy cerca"
+    # (p.ej. 1c1 de protección) el modelo a veces coloca atacante y defensor casi
+    # en la misma coordenada — sus círculos se solapan en el render y uno queda
+    # ilegible. 8 unidades (sistema 0-100) da un margen visible sin impedir
+    # emparejamientos realmente pegados (un defensor presionando de cerca).
+    MIN_DIST_JUGADORES = 8
+    todos = ataque + defensa
+    for i in range(len(todos)):
+        for j in range(i + 1, len(todos)):
+            p1, p2 = todos[i], todos[j]
+            dist = ((p1.get("x", 0) - p2.get("x", 0)) ** 2 + (p1.get("y", 0) - p2.get("y", 0)) ** 2) ** 0.5
+            if dist < MIN_DIST_JUGADORES:
+                return (
+                    f"jugadores '{p1.get('id')}' y '{p2.get('id')}' están demasiado cerca "
+                    f"({dist:.1f} unidades, mínimo {MIN_DIST_JUGADORES}) — sus círculos se solaparían "
+                    "en el diagrama, sepáralos aunque el ejercicio sea de marca cercana"
+                )
+
     conteo = _extraer_conteo_nc_m(nombre_ejercicio)
     if conteo:
         n_ataque, n_defensa = conteo
