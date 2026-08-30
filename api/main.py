@@ -24,6 +24,21 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
+def _svg_diagrama_no_disponible() -> str:
+    """Placeholder visible cuando la generación automática de coordenadas falla
+    (tras reintento) o el renderer lanza una excepción — antes se dejaba un
+    hueco en blanco sin ninguna indicación de que algo había fallado."""
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 200">'
+        '<rect width="500" height="200" fill="#faf8f0" stroke="#2d3748" stroke-width="2"/>'
+        '<text x="250" y="95" text-anchor="middle" font-family="sans-serif" font-size="15" '
+        'font-weight="bold" fill="#2d3748">Diagrama no disponible</text>'
+        '<text x="250" y="120" text-anchor="middle" font-family="sans-serif" font-size="12" '
+        'fill="#6b7280">No se pudo generar automáticamente para este ejercicio.</text>'
+        '</svg>'
+    )
+
+
 def parsear_ejercicios_de_sesion(texto: str) -> list:
     """Extrae nombre y organización de cada ejercicio del texto de sesión generado.
     Reconoce tanto 'Ejercicio N:' como 'Ejercicio N.1:' / 'Ejercicio N.2 (variante):'
@@ -234,10 +249,16 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
         # propio en vez de repetir el mismo diagrama dos veces.
         ids_ya_usados = set()
         for i, ej_texto in enumerate(ejercicios_del_texto[:6]):
+            # Si el nombre que puso el modelo no coincide (ni de lejos) con ningún
+            # ejercicio de la biblioteca, NO caer a "el i-ésimo de la lista" — eso
+            # asignaba el diagrama de un ejercicio de biblioteca totalmente distinto
+            # (p.ej. uno con conos y defensor) a un ejercicio inventado sin relación.
+            # Mejor tratarlo como "sin ficha" y que se genere uno propio a partir de
+            # la descripción real más abajo.
             ej_db = next(
                 (e for e in ejercicios_db if e.get("nombre", "").lower() in ej_texto["nombre"].lower()
                  or ej_texto["nombre"].lower() in e.get("nombre", "").lower()),
-                ejercicios_db[i] if i < len(ejercicios_db) else {}
+                {}
             )
             es_variante = ej_db.get("id") and ej_db.get("id") in ids_ya_usados
             if ej_db.get("id"):
@@ -285,6 +306,12 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
                         })
                 except Exception:
                     logger.exception(f"Error renderizando diagramas de '{nombre}'")
+                    diagramas.append({
+                        "id":     ej.get("id", f"ej_{idx}"),
+                        "nombre": nombre,
+                        "titulo": "",
+                        "svg":    _svg_diagrama_no_disponible(),
+                    })
                 continue
 
             # Ejercicio con un único diagrama (o sin diagrama → generar automático)
@@ -302,14 +329,23 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
 
                 try:
                     svg = render_diagram(diagrama_data, edad=edad)
-                    diagramas.append({
-                        "id":     ej.get("id", f"ej_{idx}"),
-                        "nombre": nombre,
-                        "titulo": "",
-                        "svg":    svg,
-                    })
                 except Exception:
                     logger.exception(f"Error renderizando diagrama de '{nombre}'")
+                    svg = _svg_diagrama_no_disponible()
+                diagramas.append({
+                    "id":     ej.get("id", f"ej_{idx}"),
+                    "nombre": nombre,
+                    "titulo": "",
+                    "svg":    svg,
+                })
+            else:
+                logger.warning(f"  ✗ No se pudo generar diagrama para '{nombre}', se muestra aviso")
+                diagramas.append({
+                    "id":     ej.get("id", f"ej_{idx}"),
+                    "nombre": nombre,
+                    "titulo": "",
+                    "svg":    _svg_diagrama_no_disponible(),
+                })
 
         logger.info(f"Total diagramas generados: {len(diagramas)}")
 
