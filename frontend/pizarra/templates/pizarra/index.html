@@ -26,22 +26,8 @@
 <link rel="apple-touch-icon" href="{% static 'pizarra/brand/apple-touch-icon.png' %}">
 <link rel="manifest" href="{% static 'pizarra/brand/site.webmanifest' %}">
 <link rel="stylesheet" href="{% static 'pizarra/css/fonts.css' %}">
+<link rel="stylesheet" href="{% static 'pizarra/css/theme.css' %}">
 <style>
-/* ── Reset & variables ── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-:root {
-    --accent:   #e8752c;
-    --accent-d: #c85f1f;
-    --bg:       #15120e;
-    --bg2:      #1e1a15;
-    --bg3:      #2a2118;
-    --border:   #332c22;
-    --text:     #f2ede4;
-    --text2:    #d8d0c4;
-    --muted:    #9c9186;
-}
-
 html, body {
     font-family: 'Inter', sans-serif;
     background: var(--bg);
@@ -64,8 +50,8 @@ html, body {
 .mode-tabs { display: flex; gap: .4rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
 .mode-tab { padding: .4rem .9rem; font-size: .82rem; font-weight: 600; border: none; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; font-family: 'Inter', sans-serif; transition: color .15s; }
 .mode-tab:hover { color: var(--text); }
-.mode-tab.active { background: var(--accent); color: #fff; }
-.mode-tab.active:hover { color: #fff; }
+.mode-tab.active { background: var(--accent); color: var(--bg); }
+.mode-tab.active:hover { color: var(--bg); }
 
 /* ── Content ── */
 .content { max-width: 800px; margin: 0 auto; padding: 0 1.5rem 3rem; }
@@ -104,7 +90,7 @@ html, body {
 .prompt-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; }
 .diag-toggle { display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: var(--muted); cursor: pointer; }
 .diag-toggle input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
-.btn-send { display: inline-flex; align-items: center; gap: .4rem; background: var(--accent); color: #fff; font-family: 'Inter', sans-serif; font-weight: 600; font-size: .88rem; letter-spacing: .02em; border: none; border-radius: 10px; padding: .65rem 1.4rem; cursor: pointer; transition: background .15s; }
+.btn-send { display: inline-flex; align-items: center; gap: .4rem; background: var(--accent); color: var(--bg); font-family: 'Inter', sans-serif; font-weight: 600; font-size: .88rem; letter-spacing: .02em; border: none; border-radius: 10px; padding: .65rem 1.4rem; cursor: pointer; transition: background .15s; }
 .btn-send svg { width: 15px; height: 15px; flex-shrink: 0; }
 .btn-send:hover { background: var(--accent-d); }
 .btn-send:disabled { opacity: .5; cursor: not-allowed; }
@@ -134,7 +120,8 @@ html, body {
 .ejercicio-block.selected { background: var(--bg2); }
 .ej-select { display: flex; align-items: center; gap: .4rem; font-size: .75rem; color: var(--muted); cursor: pointer; width: fit-content; margin-bottom: .25rem; }
 .ej-select input { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
-.ejercicio-title { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.1rem; border-left: 3px solid var(--accent); padding-left: .75rem; margin: .5rem 0 .75rem; }
+.ejercicio-title { display: flex; align-items: center; gap: .55rem; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.1rem; margin: .5rem 0 .75rem; }
+.ejercicio-title::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
 
 .reprompt-bar { display: flex; align-items: flex-end; gap: .75rem; background: var(--bg2); border: 1px solid var(--accent); border-radius: 10px; padding: .7rem 1rem; margin-top: 2rem; flex-wrap: wrap; }
 .reprompt-count { font-size: .8rem; color: var(--text2); white-space: nowrap; }
@@ -169,7 +156,7 @@ html, body {
 .feedback-msg { font-size: .85rem; margin-top: .5rem; }
 .feedback-msg.ok { color: #3fb950; }
 .feedback-msg.err { color: #d98a6f; }
-.feedback-msg.err[id="form-error"] { max-width: 800px; margin: 1.5rem auto 0; padding: .7rem 1rem; background: #241a10; border: 1px solid #5c4322; border-left: 3px solid #b3452f; border-radius: 6px; }
+.feedback-msg.err[id="form-error"] { max-width: 800px; margin: 1.5rem auto 0; padding: .7rem 1rem; background: #241a10; border: 1px solid #b3452f; border-radius: 8px; }
 
 /* ── Reglamento result ── */
 .reglamento-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; font-size: .95rem; line-height: 1.85; color: var(--text2); white-space: pre-wrap; }
@@ -179,9 +166,6 @@ html, body {
     .prompt-section, .results.visible { animation: none; }
     .brand-mark, .dd-caret, .mode-tab, .chip, .dd-btn, .btn-send, .btn-dl, .btn-fb, .btn-back { transition: none; }
     .brand:hover .brand-mark { transform: none; }
-}
-@media (prefers-reduced-motion: no-preference) {
-    @view-transition { navigation: auto; }
 }
 
 /* ── Responsive ── */
@@ -235,7 +219,7 @@ html, body {
     <!-- ── Sesión: estado inicial ── -->
     <div id="form-sesion" class="prompt-section">
         <div class="center-heading">
-            <div class="center-title">¿Qué quieres trabajar hoy?</div>
+            <h1 class="center-title">¿Qué quieres trabajar hoy?</h1>
             <div class="center-sub">Describe el objetivo y genera una sesión completa con ejercicios y diagramas tácticos.</div>
         </div>
 
@@ -315,7 +299,7 @@ html, body {
     <!-- ── Reglamento: estado inicial ── -->
     <div id="form-reglamento" class="prompt-section" style="display:none">
         <div class="center-heading">
-            <div class="center-title">¿Qué quieres saber del reglamento?</div>
+            <h1 class="center-title">¿Qué quieres saber del reglamento?</h1>
             <div class="center-sub">Pregunta sobre reglas, tiempos, categorías o cualquier duda arbitral.</div>
         </div>
 
@@ -341,6 +325,7 @@ html, body {
     </div>
 
     <div class="results" id="results" aria-live="polite">
+        <h1 id="results-heading" class="sr-only">Resultado</h1>
         <button type="button" class="btn-back" id="btn-nueva">← Nueva consulta</button>
 
         <div id="resultado-contenido"></div>
@@ -533,6 +518,7 @@ async function consultarReglamento() {
 }
 
 function renderReglamento(data) {
+    document.getElementById('results-heading').textContent = 'Respuesta sobre el reglamento';
     const respuesta = data.respuesta || data.texto || '';
     const html = `<div class='reglamento-card'>${mdToHtml(respuesta)}</div>`;
     document.getElementById('resultado-contenido').innerHTML = html;
@@ -591,6 +577,7 @@ function mdToHtml(s) {
 
 // ── Render sesión ──────────────────────────────────────────────────────────
 function renderResults(data) {
+    document.getElementById('results-heading').textContent = 'Sesión de entrenamiento generada';
     const texto = (data.sesion || data.texto || '').replace(/\[ej_\d+\]\s*/g, '');
     const diagramas = data.diagramas || [];
 
@@ -644,7 +631,7 @@ function renderResults(data) {
 
             html += `<div class="ejercicio-block" data-ej-idx="${ejN}">`;
             html += `<label class="ej-select"><input type="checkbox" class="ej-checkbox" data-ej-idx="${ejN}"> Editar este ejercicio</label>`;
-            html += `<div class='ejercicio-title'>${escHtml(titulo)}</div>`;
+            html += `<h3 class='ejercicio-title'>${escHtml(titulo)}</h3>`;
 
             // Mostrar TODOS los diagramas del ejercicio (multifase)
             if (ejercicioNum < diagGroups.length) {
@@ -662,7 +649,7 @@ function renderResults(data) {
             if (!contenido) return;
             // Secciones (**TEXTO**) en línea propia → título de sección
             const soloTitulo = contenido.replace(/\*\*(.+?)\*\*/g, (_, t) =>
-                `<div class='section-title'>${escHtml(t)}</div>`
+                `<h2 class='section-title'>${escHtml(t)}</h2>`
             );
             html += (soloTitulo !== contenido) ? soloTitulo : `<div class='sesion-card'>${mdToHtml(contenido)}</div>`;
         }

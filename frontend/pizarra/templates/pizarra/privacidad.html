@@ -12,19 +12,8 @@
 <link rel="alternate icon" href="{% static 'pizarra/brand/favicon.ico' %}">
 <link rel="apple-touch-icon" href="{% static 'pizarra/brand/apple-touch-icon.png' %}">
 <link rel="stylesheet" href="{% static 'pizarra/css/fonts.css' %}">
+<link rel="stylesheet" href="{% static 'pizarra/css/theme.css' %}">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-    --accent:   #e8752c;
-    --accent-d: #c85f1f;
-    --bg:       #15120e;
-    --bg2:      #1e1a15;
-    --bg3:      #2a2118;
-    --border:   #332c22;
-    --text:     #f2ede4;
-    --text2:    #d8d0c4;
-    --muted:    #9c9186;
-}
 html, body {
     font-family: 'Inter', sans-serif;
     background: var(--bg);
@@ -82,9 +71,8 @@ a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 .highlight-box {
     background: var(--bg2);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
-    border-radius: 6px;
+    border: 1px solid var(--accent);
+    border-radius: 8px;
     padding: .9rem 1.1rem;
     margin: 1rem 0 1.25rem;
     font-size: .88rem;
@@ -107,9 +95,6 @@ footer {
 }
 footer a { color: var(--muted); }
 footer a:hover { color: var(--text2); }
-@media (prefers-reduced-motion: no-preference) {
-    @view-transition { navigation: auto; }
-}
 </style>
 </head>
 <body>
