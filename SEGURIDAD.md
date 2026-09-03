@@ -1,6 +1,19 @@
 # Seguridad — MiPizarra
 
-> Objetivo: que **solo Nacho** pueda acceder a `mipizarra.polacabezon.com` con
+> **Estado actual (3 septiembre 2026, decisión explícita de Nacho):** el Basic
+> Auth de NPM (Paso 2 de este documento) está **desactivado a propósito** — el
+> proxy host de `mipizarra.polacabezon.com` no tiene ninguna Access List
+> asignada (`access_list_id: 0` en la BD de NPM, verificado). Razón: el
+> proyecto todavía está en desarrollo y solo se despliega puntualmente para
+> pruebas, no de forma permanente; se confía en que la URL no se comparte ni
+> se indexa (seguridad por oscuridad, aceptada conscientemente para esta fase).
+> El `X-Internal-Secret` entre frontend y API (Paso 1) sigue activo y no
+> protege frente a un visitante normal, solo frente a quien intente saltarse
+> el frontend y hablar directo con la API. **No "arreglar" esto reactivando el
+> Basic Auth sin confirmar primero con Nacho** — si el proyecto pasa a estar
+> desplegado de forma permanente, retomar el Paso 2 de más abajo.
+
+> Objetivo original: que **solo Nacho** pueda acceder a `mipizarra.polacabezon.com` con
 > autenticación. Estrategia: Basic Auth en Nginx Proxy Manager + secret compartido
 > entre NPM y la API como defensa en profundidad.
 
