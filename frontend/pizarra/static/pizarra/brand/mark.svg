@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="MiPizarra">
+  <!-- Tablero de entrenador con una jugada trazada (punto de jugador + trayectoria).
+       Mismo SVG que favicon.svg: un solo asset para navbar y favicon. -->
+  <rect width="512" height="512" rx="114" fill="#15120e"/>
+  <rect x="224" y="80" width="64" height="48" rx="14" fill="#e8752c"/>
+  <rect x="118" y="110" width="276" height="308" rx="26" fill="none" stroke="#e8752c" stroke-width="30" stroke-linejoin="round"/>
+  <circle cx="200" cy="360" r="24" fill="#e8752c"/>
+  <path d="M200 360 Q160 260 280 180" fill="none" stroke="#e8752c" stroke-width="26" stroke-linecap="round"/>
+  <path d="M276.9 199.5 L286.5 175.3 L260.5 176.9" fill="none" stroke="#e8752c" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

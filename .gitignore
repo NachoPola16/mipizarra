@@ -1,0 +1,37 @@
+# Entorno local
+.env
+ollama/
+cache/
+outputs/
+data/chroma_db/
+staticfiles/
+
+# Python
+__pycache__/
+*.py[cod]
+*.class
+.venv/
+env/
+*.egg-info/
+
+# Docker (datos locales que no van al repo)
+data/sessions/*.json
+
+# Material local — no va al repo
+data/pdfs/
+
+# Modelos y outputs
+*.gguf
+*.bin
+
+# Fine-tuning cache (autogenerado)
+unsloth_compiled_cache/
+
+# Sistema
+.DS_Store
+Thumbs.db
+repomix-output.xml
+
+# Notas internas (contexto local, no públicas)
+PRIVADO.md
+notas/
