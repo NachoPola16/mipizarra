@@ -45,6 +45,36 @@ curl -X POST http://localhost:8090/generar \
   -d '{"edad":"U16","duracion":90,"objetivo":"bloqueo directo"}'
 ```
 
+## Tests de regresión
+
+Dos niveles, para detectar si un cambio de modelo o de prompts empeora la calidad:
+
+**Tests offline** (`tests/`, sin Ollama ni red): validador de diagramas, filtrado y
+selección de ejercicios, parseo de sesiones (incluidas variantes N.1/N.2), renderer SVG
+sobre toda la biblioteca e invariantes de `data/exercises.json`.
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
+**Arnés en vivo** (`tools/regresion.py`): lanza 13 casos fijos (6 sesiones, 2 ejercicios
+con diagrama y 5 preguntas de reglamento) contra la API real y comprueba estructura de
+la sesión, diagramas, reglas de edad (≤U12) y que no se citen fuentes. Necesita la API
+levantada con Ollama y GPU.
+
+```bash
+python tools/regresion.py                                  # guarda data/regresion/AAAA-MM-DD_HHMM.json
+python tools/regresion.py --solo sesiones                  # sesiones | ejercicios | reglamento
+python tools/regresion.py --comparar data/regresion/<anterior>.json
+```
+
+Muestra una tabla en consola y devuelve código de salida 1 si falla algún criterio duro
+o si `--comparar` detecta empeoramientos. Lanza una ejecución de referencia antes de
+cambiar modelo o prompts y compara después. El límite de `/generar` (10/hora por IP)
+solo permite una ejecución completa por hora; reiniciar el contenedor de la API lo
+resetea. Los resultados no se versionan (`data/regresion/` está en `.gitignore`).
+
 ## Documentación
 
 - [Arquitectura](docs/arquitectura.md)
