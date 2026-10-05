@@ -134,3 +134,25 @@ def test_terminologia_bloqueo_no_pantalla(ej):
     """docs/coordenadas.md: en los outputs siempre 'bloqueo', nunca 'pantalla'."""
     texto = json.dumps(ej, ensure_ascii=False).lower()
     assert "pantalla" not in texto
+
+
+# ── Campos opcionales de la Fase 1.2 (ver docs/esquema-ejercicios.md) ─────────
+
+CAMPOS_TEXTO = ("material", "consigna")
+CAMPOS_LISTA = ("errores_frecuentes", "que_observar")
+
+
+@pytest.mark.parametrize("ej", EJERCICIOS, ids=_ids)
+def test_campos_nuevos_opcionales_tienen_la_forma_correcta(ej):
+    for campo in CAMPOS_TEXTO:
+        if campo in ej:
+            assert isinstance(ej[campo], str) and ej[campo].strip(), campo
+    for campo in CAMPOS_LISTA:
+        if campo in ej:
+            assert isinstance(ej[campo], list) and ej[campo], campo
+            assert all(isinstance(i, str) and i.strip() for i in ej[campo]), campo
+    if "progresion" in ej:
+        prog = ej["progresion"]
+        assert isinstance(prog, dict) and prog, "progresion"
+        assert set(prog) <= {"facilitar", "complicar"}, prog
+        assert all(isinstance(v, str) and v.strip() for v in prog.values()), prog

@@ -255,7 +255,9 @@ def _generar_pdf(sesion_texto, edad, objetivo, duracion, diagramas):
     ejercicio_actual = -1
     pagina_recien_nueva = False
     subsec_keys = ['Juego:', 'Reglas:', 'Organización:', 'Puntos clave:',
-                   'Espacio:', 'Duración:', 'Fundamentos:', 'Puntos Clave:']
+                   'Espacio:', 'Duración:', 'Fundamentos:', 'Puntos Clave:',
+                   'Material:', 'Consigna:', 'Errores frecuentes:', 'Qué observar:',
+                   'Cómo facilitar:', 'Cómo complicar:']
 
     for linea in sesion_texto.split('\n'):
         linea = linea.strip()
