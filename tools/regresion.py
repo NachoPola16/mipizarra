@@ -12,7 +12,7 @@ usuario.
 Casos (fijos y deterministas, ver CASOS_* más abajo):
   - 6 sesiones (POST /generar)
   - 2 ejercicios sueltos con diagrama (POST /ejercicio)
-  - 6 preguntas de reglamento (POST /reglamento)
+  - 7 preguntas de reglamento (POST /reglamento)
 
 Criterios duros (si alguno falla, código de salida 1):
   - Sesiones: HTTP 200; las 4 secciones (CALENTAMIENTO, PARTE PRINCIPAL, VUELTA A LA
@@ -103,6 +103,10 @@ CASOS_REGLAMENTO = [
     {"id": "reg_falta_disruptiva",
      "pregunta": "¿Qué es una falta disruptiva en el reglamento FIBA actual y puede descalificar a un jugador?",
      "claves": [["disruptiva"], ["flagrante"]]},
+    {"id": "reg_aragon_periodos_alevin", "ambito": "aragon",
+     "pregunta": "En los Juegos Escolares de Aragón, ¿cuántos periodos tiene que jugar como mínimo cada "
+                 "jugador en alevín?",
+     "claves": [["dos periodos", "2 periodos"]]},
     {"id": "reg_aro_minibasket",
      "pregunta": "¿A qué altura está el aro en minibasket?",
      "claves": [["2,60", "2.60", "260 cm", "2 metros y 60", "2,6 m"]]},
@@ -453,6 +457,8 @@ def ejecutar(api: str, solo: str | None, validador=None) -> list[dict]:
         print("Reglamento (POST /reglamento)")
         for caso in CASOS_REGLAMENTO:
             peticion = {"pregunta": caso["pregunta"]}
+            if caso.get("ambito"):
+                peticion["ambito"] = caso["ambito"]
             status, datos, lat, error = _post(api, "/reglamento", peticion, TIMEOUT_REGLAMENTO, cabeceras)
             registrar("reglamento", caso, peticion, evaluar_reglamento(caso, status, datos, lat), error)
 
