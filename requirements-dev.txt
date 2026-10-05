@@ -1,0 +1,7 @@
+# Dependencias para ejecutar los tests offline (tests/) fuera del contenedor.
+# fastapi y slowapi son las mismas versiones de api/requirements.txt (los tests
+# importan api/main.py); ChromaDB y llama-index no hacen falta, se simulan.
+pytest
+fastapi==0.111.0
+slowapi==0.1.9
+requests

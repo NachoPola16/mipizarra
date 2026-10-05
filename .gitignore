@@ -16,6 +16,7 @@ env/
 
 # Docker (datos locales que no van al repo)
 data/sessions/*.json
+data/regresion/
 
 # Material local — no va al repo
 data/pdfs/
