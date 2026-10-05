@@ -193,7 +193,7 @@ def _plantilla_modelo(huecos: list[_Hueco], edad: str, t_calent: int, t_vuelta: 
     bloques = []
     for h in huecos:
         if h.ficha is None:
-            bloques.append(_bloque_ejercicio(h.numero, "", h.t1 + h.t2, edad))
+            bloques.append(_bloque_ejercicio(h.numero, "(nombre propio del ejercicio)", h.t1 + h.t2, edad))
         elif h.partido and h.variante_curada is None:
             bloques.append(_plantilla_variante(h.numero, h.ficha["nombre"], h.t2))
     principal = "\n".join(bloques)
@@ -285,7 +285,8 @@ def _limpiar_respuesta(texto: str) -> str:
     return texto
 
 
-def _pedir_texto_sesion(prompt: str, num_predict: int, num_ctx: int) -> tuple[str, str | None]:
+def _pedir_texto_sesion(prompt: str, num_predict: int, num_ctx: int,
+                       parar_en: tuple[str, ...] = ()) -> tuple[str, str | None]:
     """Devuelve (texto, done_reason). done_reason=='length' significa que Ollama
     agotó num_predict y cortó a mitad de frase — señal real de truncado, a
     diferencia de adivinar de antemano si el presupuesto alcanzará."""
@@ -316,6 +317,7 @@ def _pedir_texto_sesion(prompt: str, num_predict: int, num_ctx: int) -> tuple[st
                     "**SESIÓN**",
                     # Ejercicios extra
                     "Ejercicio 4:", "Ejercicio 5:",
+                    *parar_en,
                 ],
             },
         },
@@ -326,7 +328,15 @@ def _pedir_texto_sesion(prompt: str, num_predict: int, num_ctx: int) -> tuple[st
     return data["response"], data.get("done_reason")
 
 
-def _texto_del_modelo(prompt: str, num_predict: int, num_ctx: int) -> str:
+def _con_inicio(texto: str, inicio: str) -> str:
+    """El prompt termina con el inicio de la respuesta (cabecera de calentamiento): el modelo
+    continúa desde ahí, así que se le antepone. Si repite la cabecera por su cuenta, no se duplica."""
+    if re.match(r"\s*\*{0,2}\s*CALENTAMIENTO", texto, re.IGNORECASE):
+        return texto
+    return _unir(inicio, texto)
+
+
+def _texto_del_modelo(prompt: str, inicio: str, num_predict: int, num_ctx: int) -> str:
     """Pide el texto al modelo, con un reintento con más presupuesto si se trunca."""
     texto, done_reason = _pedir_texto_sesion(prompt, num_predict, num_ctx)
     if done_reason == "length":
@@ -339,7 +349,64 @@ def _texto_del_modelo(prompt: str, num_predict: int, num_ctx: int) -> str:
                 "Sesión sigue truncada tras el reintento — se entrega el texto "
                 "parcial (mejor incompleto y avisado que nada)."
             )
-    return _limpiar_respuesta(texto)
+    return _limpiar_respuesta(_con_inicio(texto, inicio))
+
+
+# Cómo empieza, según el apartado, una continuación que repite su propia cabecera.
+_CABECERA_PROPIA = {
+    "calentamiento": re.compile(r"\s*\*{0,2}\s*CALENTAMIENTO", re.IGNORECASE),
+    "vuelta":        re.compile(r"\s*\*{0,2}\s*VUELTA A LA CALMA", re.IGNORECASE),
+    "fundamentos":   re.compile(r"\s*\*{0,2}\s*fundamentos", re.IGNORECASE),
+    "ej":            re.compile(r"\s*Ejercicio\s+\d"),
+}
+_ABRE_SECCION = re.compile(r"\s*(?:\*\*|Ejercicio\s+\d)")
+
+
+def _completar_apartados(cuerpo: str, texto: str, huecos: list[_Hueco], inicios: dict[str, str],
+                         num_ctx: int, fundamentos_reserva: str = "") -> str:
+    """El modelo (4B) suele darse por terminado tras el primer apartado. Cada apartado que falta
+    se le pide por separado, en el orden de la sesión: el código escribe el comienzo del apartado
+    y el modelo lo continúa viendo todo lo ya escrito. Cada apartado se pide una sola vez."""
+    orden = ["calentamiento"] + [c for h in huecos for c in h.claves_del_modelo()] + ["vuelta", "fundamentos"]
+    for clave in orden:
+        bloques = extraer_bloques(texto)
+        _normalizar_claves(huecos, bloques)
+        if bloques.get(clave, "").strip():
+            continue
+        inicio = inicios[clave]
+        parar = ("\n\n", "**") if clave == "fundamentos" else ("\n**", "\nEjercicio ")
+        presupuesto = 900 if clave.startswith("ej:") else 600
+        continuacion, _ = _pedir_texto_sesion(f"{cuerpo}{texto}\n\n{inicio}", presupuesto, num_ctx, parar)
+        propia = _CABECERA_PROPIA[clave.split(":")[0]].match(continuacion)
+        if propia:
+            # el modelo repitió la cabecera que ya se le había dado: se usa su versión, sin duplicarla
+            texto = f"{texto}\n\n{continuacion.lstrip()}"
+        elif _ABRE_SECCION.match(continuacion) or not continuacion.strip():
+            # abrió otra sección o no escribió nada: este apartado queda sin generar
+            if clave == "fundamentos" and fundamentos_reserva:
+                texto = f"{texto}\n\n**Fundamentos**: {fundamentos_reserva}"
+        else:
+            texto = f"{texto}\n\n{_unir(inicio, continuacion)}"
+    return texto
+
+
+def _unir(inicio: str, continuacion: str) -> str:
+    """Arranque + continuación. Si el modelo repite la etiqueta con la que acaba el arranque
+    ('Juego:'), se queda con una sola."""
+    ultima = inicio.split("\n")[-1]
+    if ultima.endswith(":") and continuacion.lstrip().startswith(ultima):
+        return inicio[:len(inicio) - len(ultima)] + continuacion.lstrip()
+    return inicio + continuacion
+
+
+def _fundamentos_de_las_fichas(huecos: list[_Hueco]) -> str:
+    """Fundamentos de reserva, sin inventar nada: los objetivos técnicos de las fichas de la sesión."""
+    vistos: list[str] = []
+    for h in huecos:
+        for tecnico in (h.ficha or {}).get("objetivos", {}).get("tecnicos", []):
+            if tecnico not in vistos:
+                vistos.append(tecnico)
+    return (", ".join(vistos[:6]) + ".") if vistos else ""
 
 
 def _nombre_de_pieza(clave: str) -> str:
@@ -468,7 +535,9 @@ def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
     prohibido = instruccion_prompt(edad)
     prohibido = f"{prohibido}\n\n" if prohibido else ""
 
-    def construir_prompt(correccion: str = "") -> str:
+    inicio_respuesta = f"**CALENTAMIENTO ({t_calent} min)**\nJuego:"
+
+    def cuerpo_prompt(correccion: str = "") -> str:
         return f"""Eres MiPizarra, asistente de entrenamiento de baloncesto.
 Rellena la plantilla de abajo con contenido concreto. No añadas texto fuera de la plantilla.
 Escribe SOLO los apartados que aparecen en la plantilla: los ejercicios con ficha del entrenador
@@ -488,14 +557,34 @@ secundario o terciario si eso da más variedad a la sesión.
 {prohibido}{correccion}EJERCICIOS DE LA SESIÓN:
 {lineas_ejercicios}
 
-{plantilla}"""
+{plantilla}
+
+RESPUESTA (rellena TODOS los apartados de la plantilla, en este orden, sin saltarte ninguno):
+"""
+
+    inicios = {
+        "calentamiento": inicio_respuesta,
+        "vuelta": f"**VUELTA A LA CALMA ({t_vuelta} min)**\nJuego:",
+        "fundamentos": "**Fundamentos**: En esta sesión se trabajan",
+    }
+    for h in huecos:
+        if h.ficha is None:
+            for clave in h.claves_del_modelo():
+                inicios[clave] = f"Ejercicio {clave[3:]}:"
+        elif h.partido and h.variante_curada is None:
+            inicios[h.clave_variante()] = (f'Ejercicio {h.numero}.2 (variante de "{h.ficha["nombre"]}"):\n'
+                                           f"Duración: {h.t2} min\nQué cambia respecto a {h.numero}.1:")
 
     claves_modelo = ["calentamiento", "vuelta", "fundamentos"] + [c for h in huecos for c in h.claves_del_modelo()]
 
     try:
         correccion = ""
         for intento in (1, 2):
-            texto = _texto_del_modelo(construir_prompt(correccion), num_predict_sesion, num_ctx_sesion)
+            cuerpo = cuerpo_prompt(correccion)
+            texto = _texto_del_modelo(cuerpo + inicio_respuesta, inicio_respuesta,
+                                     num_predict_sesion, num_ctx_sesion)
+            texto = _limpiar_respuesta(_completar_apartados(
+                cuerpo, texto, huecos, inicios, num_ctx_sesion, _fundamentos_de_las_fichas(huecos)))
             bloques = extraer_bloques(texto)
             _normalizar_claves(huecos, bloques)
             malas = _piezas_con_linea_roja(bloques, claves_modelo, edad)
