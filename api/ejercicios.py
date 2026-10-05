@@ -1,6 +1,8 @@
 # api/ejercicios.py
 """Biblioteca de ejercicios: carga, filtrado por edad/objetivo y selección de los tres de la sesión."""
 import json
+import re
+import unicodedata
 
 from config import EDAD_A_CATEGORIA, EXERCISES_PATH
 
@@ -165,3 +167,49 @@ def construir_contexto_ejercicios(ejercicios: list, max_ejs: int = 10) -> str:
             f"{obj_str}. {desc}"
         )
     return "\n".join(lineas)
+
+
+# ─── Umbral de relevancia ────────────────────────────────────────────────
+
+# Palabras que aparecen en cualquier objetivo («trabajar el bote») y no indican tema.
+_PALABRAS_VACIAS = {
+    "para", "como", "sobre", "desde", "entre", "hacia", "tras", "mediante", "trabajo",
+    "trabajar", "trabajando", "sesion", "equipo", "ejercicio", "ejercicios", "jugadores",
+    "mejorar", "entrenamiento", "ejercitar",
+}
+
+
+def _sin_acentos(texto: str) -> str:
+    descompuesto = unicodedata.normalize("NFD", texto.lower())
+    return "".join(c for c in descompuesto if unicodedata.category(c) != "Mn")
+
+
+def _raiz(palabra: str) -> str:
+    """Prefijo con el que se compara una palabra: la palabra entera si es corta o lleva
+    números (1c1) y, si no, sin las últimas letras para cubrir flexiones (defensa/defensivo)."""
+    if len(palabra) <= 4 or any(c.isdigit() for c in palabra):
+        return palabra
+    return palabra[:max(4, len(palabra) - 3)]
+
+
+def _palabras_significativas(objetivo: str) -> list[str]:
+    palabras = re.findall(r"[a-z0-9]+", _sin_acentos(objetivo))
+    return [p for p in palabras
+            if p not in _PALABRAS_VACIAS and (len(p) >= 4 or any(c.isdigit() for c in p))]
+
+
+def es_relevante(ej: dict, objetivo: str) -> bool:
+    """¿Encaja el ejercicio con el objetivo? Sí si alguna palabra significativa del objetivo
+    (o un fundamento analítico asociado a él) aparece al inicio de una palabra del nombre, la
+    descripción o los tags tácticos. Si no encaja, ese hueco de la sesión lo propone la IA."""
+    palabras = _palabras_significativas(objetivo)
+    raices = {_raiz(p) for p in palabras}
+    for clave, fundamentos in COMPONENTES_ANALITICOS.items():
+        clave_norm = _sin_acentos(clave)
+        if any(clave_norm.startswith(r) or r.startswith(_raiz(clave_norm)) for r in raices):
+            raices.update(_raiz(_sin_acentos(f)) for f in fundamentos)
+    if not raices:
+        return False
+    tags = " ".join(ej.get("objetivos", {}).get("tacticos", []))
+    texto = _sin_acentos(f"{ej.get('nombre', '')} {ej.get('descripcion', '')} {tags}")
+    return any(re.search(rf"(?<!\w){re.escape(r)}", texto) for r in raices)
