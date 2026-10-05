@@ -174,3 +174,60 @@ def test_extraer_bloques_conserva_solo_la_primera_aparicion_de_cada_bloque():
 def test_extraer_bloques_de_un_texto_vacio_es_un_diccionario_vacio():
     from bloques import extraer_bloques
     assert extraer_bloques("") == {}
+
+
+# ── Fase 1.2: campos nuevos opcionales de la ficha ───────────────────────────
+
+FICHA_NUEVA = {
+    "nombre": "Circuito de bote",
+    "descripcion": "ORGANIZACIÓN: fila en la esquina. PROGRESIÓN: sin defensa → con defensa.",
+    "puntos_clave": ["Cabeza arriba."],
+    "material": "Un balón por jugador y 5 conos.",
+    "consigna": "Bote bajo y cabeza arriba.",
+    "errores_frecuentes": ["Mirar el balón.", "Botar con la palma."],
+    "que_observar": ["Cambia de mano sin perder el ritmo."],
+    "progresion": {"facilitar": "Sin conos, en línea recta.", "complicar": "Con un defensor pasivo."},
+}
+
+
+def test_los_campos_nuevos_salen_despues_de_los_puntos_clave():
+    texto = bloque_curado(1, FICHA_NUEVA, 10, False)
+    lineas = texto.split("\n")
+    assert lineas.index("Puntos clave:") < lineas.index("Material: Un balón por jugador y 5 conos.")
+    assert "Consigna: Bote bajo y cabeza arriba." in lineas
+    assert lineas[lineas.index("Errores frecuentes:") + 1:lineas.index("Errores frecuentes:") + 3] == [
+        "- Mirar el balón.", "- Botar con la palma."]
+    assert lineas[lineas.index("Qué observar:") + 1] == "- Cambia de mano sin perder el ritmo."
+    assert "Cómo facilitar: Sin conos, en línea recta." in lineas
+    assert "Cómo complicar: Con un defensor pasivo." in lineas
+
+
+def test_una_ficha_sin_campos_nuevos_no_cambia():
+    ficha = {k: v for k, v in FICHA_NUEVA.items()
+             if k not in ("material", "consigna", "errores_frecuentes", "que_observar", "progresion")}
+    texto = bloque_curado(1, ficha, 10, False)
+    for etiqueta in ("Material:", "Consigna:", "Errores frecuentes:", "Qué observar:", "Cómo facilitar:", "Cómo complicar:"):
+        assert etiqueta not in texto
+
+
+def test_los_campos_nuevos_vacios_no_generan_lineas():
+    ficha = dict(FICHA_NUEVA, material="", consigna="  ", errores_frecuentes=[], que_observar=[], progresion={})
+    texto = bloque_curado(1, ficha, 10, False)
+    for etiqueta in ("Material:", "Consigna:", "Errores frecuentes:", "Qué observar:", "Cómo facilitar:"):
+        assert etiqueta not in texto
+
+
+def test_los_campos_nuevos_no_rompen_el_parser_de_sesion():
+    parseados = parsear_ejercicios_de_sesion(bloque_curado(1, FICHA_NUEVA, 10, False))
+    assert [p["nombre"] for p in parseados] == ["Circuito de bote"]
+    assert "Material" not in parseados[0]["descripcion"]
+
+
+def test_la_variante_prefiere_la_progresion_curada_del_campo_nuevo():
+    texto = bloque_variante_curada("1", FICHA_NUEVA, 5)
+    assert "Qué cambia respecto a 1.1: Con un defensor pasivo." in texto
+
+
+def test_la_variante_sigue_saliendo_de_la_descripcion_si_no_hay_campo_progresion():
+    ficha = {k: v for k, v in FICHA_NUEVA.items() if k != "progresion"}
+    assert "sin defensa → con defensa" in bloque_variante_curada("1", ficha, 5)
