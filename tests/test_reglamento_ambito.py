@@ -3,7 +3,8 @@
 import pytest
 from pydantic import ValidationError
 
-import rag_engine
+import contexto
+import reglamento
 from main import ReglamentoRequest
 from rag_engine import (
     AMBITO_GENERAL, listar_ambitos, nombre_ambito, normalizar_ambito, responder_duda_reglamento,
@@ -19,7 +20,7 @@ def carpeta_ambitos(tmp_path, monkeypatch):
         if con_md:
             (d / "norma.md").write_text("# norma\n", encoding="utf-8")
     (tmp_path / "suelto.md").write_text("# suelto\n", encoding="utf-8")
-    monkeypatch.setattr(rag_engine, "REGLAMENTO_DIR", str(tmp_path))
+    monkeypatch.setattr(contexto, "REGLAMENTO_DIR", str(tmp_path))
     return tmp_path
 
 
@@ -30,7 +31,7 @@ def test_listar_ambitos_general_primero_y_solo_carpetas_validas(carpeta_ambitos)
 
 
 def test_listar_ambitos_sin_carpeta_devuelve_general(tmp_path, monkeypatch):
-    monkeypatch.setattr(rag_engine, "REGLAMENTO_DIR", str(tmp_path / "no_existe"))
+    monkeypatch.setattr(contexto, "REGLAMENTO_DIR", str(tmp_path / "no_existe"))
     assert [a["id"] for a in listar_ambitos()] == ["general"]
 
 
@@ -94,8 +95,8 @@ def espia(carpeta_ambitos, monkeypatch):
         reg["mensaje"] = json["messages"][1]["content"]
         return _Resp()
 
-    monkeypatch.setattr(rag_engine, "consultar_coleccion", consulta)
-    monkeypatch.setattr(rag_engine.requests, "post", post)
+    monkeypatch.setattr(reglamento, "consultar_coleccion", consulta)
+    monkeypatch.setattr(reglamento.requests, "post", post)
     return reg
 
 
@@ -128,8 +129,8 @@ def test_ambito_desconocido_cae_en_general(espia):
 
 def test_sin_resultados_el_modelo_recibe_solo_la_instruccion_y_la_pregunta(carpeta_ambitos, monkeypatch):
     mensajes = []
-    monkeypatch.setattr(rag_engine, "consultar_coleccion", lambda *a, **k: "")
-    monkeypatch.setattr(rag_engine.requests, "post",
+    monkeypatch.setattr(reglamento, "consultar_coleccion", lambda *a, **k: "")
+    monkeypatch.setattr(reglamento.requests, "post",
                         lambda url, json=None, timeout=None: (mensajes.append(json["messages"][1]["content"]), _Resp())[1])
     responder_duda_reglamento("¿Cuántos tiempos muertos?", "aragon")
     assert mensajes[0].endswith("PREGUNTA: ¿Cuántos tiempos muertos?")

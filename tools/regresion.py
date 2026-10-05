@@ -44,7 +44,6 @@ import os
 import re
 import sys
 import time
-import types
 import unicodedata
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -169,30 +168,24 @@ def _normalizar(texto: str) -> str:
 # ─── Validador de diagramas de la API (opcional) ─────────────────────────────
 
 def _cargar_validador():
-    """Carga _validar_diagrama de rag_engine sin arrancar ChromaDB ni Ollama.
-    rag_engine crea un cliente de ChromaDB y un embedding de Ollama al importarse;
-    se sustituyen temporalmente por módulos vacíos (la validación no los usa) y se
-    restaura sys.modules al terminar. Funciona tanto en el repo (api/) como dentro del
-    contenedor (rag_engine.py en /app). Devuelve None si no se encuentra."""
+    """Carga _validar_diagrama (api/diagramas.py) sin arrancar ChromaDB ni Ollama.
+    diagramas.py solo depende de config, ejercicios y prompts, así que no se importa
+    contexto (que crea el cliente de ChromaDB y el embedding de Ollama). Los módulos
+    importados se retiran de sys.modules al terminar. Funciona tanto en el repo (api/)
+    como dentro del contenedor (módulos en /app). Devuelve None si no se encuentra."""
     candidatos = [RAIZ / "api", RAIZ]
-    api_dir = next((d for d in candidatos if (d / "rag_engine.py").exists()), None)
+    api_dir = next((d for d in candidatos if (d / "diagramas.py").exists()), None)
     if api_dir is None:
         return None
 
-    nombres = ["chromadb", "llama_index", "llama_index.embeddings", "llama_index.embeddings.ollama", "prompts"]
-    guardados = {n: sys.modules.get(n) for n in nombres}
+    modulos_api = ["config", "ejercicios", "prompts", "diagramas"]
+    guardados = {n: sys.modules.get(n) for n in modulos_api}
     path_original = list(sys.path)
     try:
-        for n in nombres[:-1]:
-            sys.modules[n] = types.ModuleType(n)
-        sys.modules["chromadb"].PersistentClient = lambda *a, **k: None
-        sys.modules["llama_index.embeddings.ollama"].OllamaEmbedding = lambda *a, **k: None
-        sys.modules.pop("prompts", None)
+        for n in modulos_api:
+            sys.modules.pop(n, None)
         sys.path.insert(0, str(api_dir))
-        spec = importlib.util.spec_from_file_location("_rag_engine_regresion", api_dir / "rag_engine.py")
-        modulo = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(modulo)
-        return modulo._validar_diagrama
+        return importlib.import_module("diagramas")._validar_diagrama
     except Exception as e:
         print(f"⚠ No se pudo cargar _validar_diagrama ({e}); se omite la validación semántica.")
         return None
