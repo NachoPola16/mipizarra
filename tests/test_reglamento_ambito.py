@@ -190,3 +190,12 @@ def test_se_piden_mas_fragmentos_del_reglamento_curado_que_del_resto(espia_larga
     n = espia_larga["n"]
     assert n[("reglamento_md", AMBITO_GENERAL)] >= 6
     assert n[("reglamento_md", AMBITO_GENERAL)] > n[("reglamento", AMBITO_GENERAL)]
+
+
+def test_la_peticion_de_reglamento_desactiva_el_razonamiento(carpeta_ambitos, monkeypatch):
+    enviados = []
+    monkeypatch.setattr(reglamento, "consultar_coleccion", lambda *a, **k: "")
+    monkeypatch.setattr(reglamento.requests, "post",
+                        lambda url, json=None, timeout=None: (enviados.append(json), _Resp())[1])
+    responder_duda_reglamento("¿Qué es el paso cero?")
+    assert enviados and enviados[0].get("think") is False

@@ -502,3 +502,10 @@ def test_la_variante_de_un_hueco_propuesto_tampoco_lleva_la_pista(sesion_falsa):
     sesion_falsa([FICHA_SIN_RELACION, FICHA_B, FICHA_C], [respuesta])
     texto = sesion.generar_sesion("U10", 90, "bote")["texto"]
     assert "(nombre propio" not in texto
+
+
+def test_la_peticion_al_modelo_desactiva_el_razonamiento(sesion_falsa):
+    # modelos con razonamiento por defecto (Qwen3.5, Gemma 4) gastarían el presupuesto pensando
+    peticiones = sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [RESPUESTA_BASE])
+    sesion.generar_sesion("U16", 90, "bote")
+    assert peticiones and all(p.get("think") is False for p in peticiones)
