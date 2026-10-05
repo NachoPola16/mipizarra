@@ -132,7 +132,7 @@ y en el JSON siempre escribe `bloqueo`.
 | Cadete en adelante   | U16+ (~15+)    | ✓                | ✓                 | ✓                 |
 
 - **U12 e inferiores**: solo acciones individuales (1c1, mano a mano, bote).
-- **U14 (Infantil)**: bloqueos indirectos con normalidad; bloqueo directo todavía no.
+- **U14 (Infantil)**: bloqueos indirectos con normalidad; bloqueo directo solo de forma puntual (según el nivel del equipo o en una jugada concreta), no como contenido central.
 - **U16 (Cadete) en adelante**: bloqueo directo e indirecto con plena normalidad.
 
 **Juego de poste bajo**: no es una acción ilegal en categorías de formación (U8-U12),
