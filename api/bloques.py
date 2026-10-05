@@ -55,13 +55,37 @@ def bloque_curado(numero, ej: dict, duracion: int, partido: bool) -> str:
     if puntos:
         lineas.append("Puntos clave:")
         lineas.extend(f"- {punto}" for punto in puntos)
+    lineas.extend(_lineas_campos_nuevos(ej))
     return "\n".join(lineas)
 
 
+def _lineas_campos_nuevos(ej: dict) -> list[str]:
+    """Campos opcionales de la ficha (Fase 1.2), tal cual y solo si traen contenido. Van tras los
+    puntos clave para que el texto de 'Organización' (que lee el generador de diagramas) no cambie."""
+    lineas: list[str] = []
+    for campo, etiqueta in (("material", "Material"), ("consigna", "Consigna")):
+        valor = (ej.get(campo) or "").strip()
+        if valor:
+            lineas.append(f"{etiqueta}: {valor}")
+    for campo, etiqueta in (("errores_frecuentes", "Errores frecuentes"), ("que_observar", "Qué observar")):
+        items = [i.strip() for i in ej.get(campo) or [] if i and i.strip()]
+        if items:
+            lineas.append(f"{etiqueta}:")
+            lineas.extend(f"- {i}" for i in items)
+    progresion = ej.get("progresion") or {}
+    for campo, etiqueta in (("facilitar", "Cómo facilitar"), ("complicar", "Cómo complicar")):
+        valor = (progresion.get(campo) or "").strip()
+        if valor:
+            lineas.append(f"{etiqueta}: {valor}")
+    return lineas
+
+
 def bloque_variante_curada(numero, ej: dict, duracion: int) -> str | None:
-    """Variante 'Ejercicio N.2' construida con la progresión curada de la ficha, o None
-    si la ficha no trae sección de progresión/variantes (entonces la propone el modelo)."""
-    cambio = extraer_seccion(ej.get("descripcion", ""), SECCIONES_PROGRESION)
+    """Variante 'Ejercicio N.2' construida con la progresión curada de la ficha (campo
+    `progresion.complicar` o, si no hay, la sección PROGRESIÓN/VARIANTES de la descripción), o
+    None si no trae ninguna (entonces la propone el modelo)."""
+    cambio = ((ej.get("progresion") or {}).get("complicar") or "").strip() \
+        or extraer_seccion(ej.get("descripcion", ""), SECCIONES_PROGRESION)
     if not cambio:
         return None
     return "\n".join([
