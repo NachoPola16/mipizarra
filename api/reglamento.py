@@ -85,6 +85,7 @@ def responder_duda_reglamento(pregunta: str, ambito: str = AMBITO_GENERAL) -> st
                     {"role": "user", "content": mensaje_usuario},
                 ],
                 "stream": False,
+                "think": False,    # modelos con razonamiento por defecto no deben gastar el presupuesto pensando
                 "options": {"temperature": 0.3, "num_predict": 500, "num_ctx": 6144},
             },
             timeout=90,

@@ -296,6 +296,7 @@ def _pedir_texto_sesion(prompt: str, num_predict: int, num_ctx: int,
             "model":   MODEL_SESION,
             "prompt":  prompt,
             "stream":  False,
+            "think":   False,          # modelos con razonamiento por defecto no deben gastar el presupuesto pensando
             "options": {
                 "temperature": 0.4,
                 "num_predict": num_predict,
