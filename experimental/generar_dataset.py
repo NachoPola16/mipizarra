@@ -8,9 +8,9 @@ Produce ejemplos para 3 tareas:
   3. Estructuración de ejercicios desde descripción (JSON)
 
 Uso:
-  python tools/generar_dataset.py --todo              # usa el profesor por defecto (qwen2.5:7b)
-  python tools/generar_dataset.py --model qwen2.5:14b-instruct-q4_K_M --todo  # mejor calidad, más lento
-  python tools/generar_dataset.py --solo-estructura   # esqueleto sin llamar al LLM
+  python experimental/generar_dataset.py --todo              # usa el profesor por defecto (qwen2.5:7b)
+  python experimental/generar_dataset.py --model qwen2.5:14b-instruct-q4_K_M --todo  # mejor calidad, más lento
+  python experimental/generar_dataset.py --solo-estructura   # esqueleto sin llamar al LLM
 """
 import hashlib
 import json
@@ -531,7 +531,7 @@ def main():
     print(f"📄 JSONL listo para fine-tuning: {OUTPUT_FILE}")
     print(f"📋 Para revisar manualmente: {REVIEW_FILE}")
     print(f"\nPróximo paso:")
-    print(f"  python tools/finetune_qwen.py --dataset {OUTPUT_FILE}")
+    print(f"  python experimental/finetune_qwen.py --dataset {OUTPUT_FILE}")
 
 
 if __name__ == "__main__":

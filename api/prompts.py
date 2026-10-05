@@ -3,8 +3,8 @@ Módulo único de SYSTEM prompts para MiPizarra.
 
 IMPORTANTE: Este es el fichero autoritativo.
 - api/rag_engine.py   → importa de aquí (inferencia)
-- tools/generar_dataset.py → importa de aquí (training)
-- tools/exportar_a_ollama.py → importa SYSTEM_SESION para el Modelfile
+- experimental/generar_dataset.py → importa de aquí (training)
+- experimental/exportar_a_ollama.py → importa SYSTEM_SESION para el Modelfile
 
 Si cambias un prompt aquí, se actualiza en los tres sitios automáticamente.
 Los prompts de entrenamiento y de inferencia son IDÉNTICOS byte a byte.
