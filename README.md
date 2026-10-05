@@ -58,8 +58,8 @@ pip install -r requirements-dev.txt
 pytest
 ```
 
-**Arnés en vivo** (`tools/regresion.py`): lanza 14 casos fijos (6 sesiones, 2 ejercicios
-con diagrama y 6 preguntas de reglamento) contra la API real y comprueba estructura de
+**Arnés en vivo** (`tools/regresion.py`): lanza 15 casos fijos (6 sesiones, 2 ejercicios
+con diagrama y 7 preguntas de reglamento) contra la API real y comprueba estructura de
 la sesión, diagramas, reglas de edad (≤U12) y que no se citen fuentes. Necesita la API
 levantada con Ollama y GPU.
 

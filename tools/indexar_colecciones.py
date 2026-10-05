@@ -21,6 +21,7 @@ import chromadb
 BASE_DIR      = Path(__file__).resolve().parent.parent / "data"
 PDFS_BASE_DIR = Path(os.environ.get("PDFS_BASE_DIR", "/app/data/pdfs" if os.path.exists("/app/data/pdfs") else str(BASE_DIR / "pdfs")))
 TEORIA_MD_DIR = Path(os.environ.get("TEORIA_MD_DIR", "/app/data/teoria" if os.path.exists("/app/data/teoria") else str(BASE_DIR / "teoria")))
+REGLAMENTO_DIR = Path(os.environ.get("REGLAMENTO_DIR", "/app/data/reglamento" if os.path.exists("/app/data/reglamento") else str(BASE_DIR / "reglamento")))
 CHROMA_DB_DIR = os.environ.get("CHROMA_DB_DIR", "/app/data/chroma_db" if os.path.exists("/app/data") else str(BASE_DIR / "chroma_db"))
 EMBED_MODEL   = os.environ.get("EMBED_MODEL", "nomic-embed-text")
 OLLAMA_URL    = os.environ.get("OLLAMA_URL", "http://ollama:11434")
@@ -117,13 +118,18 @@ def insertar_en_chroma(chroma_collection, nodos: list):
         logger.info(f"   💾 Insertados {min(end, len(ids))}/{len(ids)} nodos...")
 
 
-def indexar_coleccion(nombre: str, rutas: list[Path]):
+def indexar_coleccion(nombre: str, rutas: list):
+    """`rutas` admite Path o (Path, ambito): con ámbito, cada documento lleva ese dato en
+    su metadato, para filtrar por comunidad autónoma al consultar el reglamento."""
     logger.info(f"\n📂 Colección '{nombre}' ← {[str(r) for r in rutas]}")
 
     documentos = []
     reader = None
 
     for ruta in rutas:
+        ambito = None
+        if isinstance(ruta, tuple):
+            ruta, ambito = ruta
         if not ruta.exists():
             continue
 
@@ -139,6 +145,8 @@ def indexar_coleccion(nombre: str, rutas: list[Path]):
                         d.metadata["fuente"]    = pdf.name
                         d.metadata["coleccion"] = nombre
                         d.metadata["tipo"]      = "pdf"
+                        if ambito:
+                            d.metadata["ambito"] = ambito
                     documentos.extend(docs)
                     logger.info(f"   📄 [PDF] {pdf.name} ({len(docs)} páginas)")
                 except Exception as e:
@@ -157,7 +165,8 @@ def indexar_coleccion(nombre: str, rutas: list[Path]):
                             metadata={
                                 "fuente": md.name,
                                 "coleccion": nombre,
-                                "tipo": "markdown"
+                                "tipo": "markdown",
+                                **({"ambito": ambito} if ambito else {}),
                             }
                         )
                         documentos.append(doc)
@@ -203,11 +212,23 @@ if __name__ == "__main__":
     # "teoria_md" separada de "teoria": los 20 .md curados de data/teoria/ competían
     # en la misma colección contra PDFs enteros (p.ej. un libro de 225 KB sobre tiro),
     # así que el vecino más cercano casi nunca era el documento escrito a propósito.
+    # Reglamento por ámbito. Los .md curados viven en data/reglamento/<ámbito>/ ("general" = FIBA y
+    # federación española; una carpeta por comunidad autónoma). Los PDF oficiales (capa local
+    # opcional) siguen la misma convención: los sueltos en coleccion_reglamento/ son "general" y los
+    # de cada comunidad van en una subcarpeta con su nombre.
+    def _subcarpetas(base: Path) -> list:
+        return sorted(d for d in base.iterdir() if d.is_dir()) if base.exists() else []
+
+    reglamento_pdf_dir = PDFS_BASE_DIR / "coleccion_reglamento"
+    reglamento_md  = [(d, d.name) for d in _subcarpetas(REGLAMENTO_DIR)]
+    reglamento_pdf = [(reglamento_pdf_dir, "general")] + [(d, d.name) for d in _subcarpetas(reglamento_pdf_dir)]
+
     colecciones = {
         "teoria_md":     [TEORIA_MD_DIR],
         "teoria":        [PDFS_BASE_DIR / "coleccion_teoria"],
         "planificacion": [PDFS_BASE_DIR / "coleccion_planificacion"],
-        "reglamento":    [PDFS_BASE_DIR / "coleccion_reglamento"],
+        "reglamento_md": reglamento_md,
+        "reglamento":    reglamento_pdf,
     }
 
     for nombre, rutas in colecciones.items():

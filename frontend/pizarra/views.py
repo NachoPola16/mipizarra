@@ -23,8 +23,29 @@ def _api_headers():
     return h
 
 
+AMBITO_GENERAL = {'id': 'general', 'nombre': 'General (FIBA y normativa común)'}
+
+
+def _ambitos_reglamento():
+    """Ámbitos del modo reglamento (general y una entrada por comunidad autónoma). Si la API no
+    responde, la página sigue funcionando solo con el ámbito general."""
+    try:
+        resp = requests.get(f"{settings.API_URL}/ambitos_reglamento", headers=_api_headers(), timeout=3)
+        resp.raise_for_status()
+        ambitos = [
+            {'id': str(a['id']), 'nombre': str(a['nombre'])}
+            for a in resp.json().get('ambitos', [])
+            if isinstance(a, dict) and re.fullmatch(r'[a-z][a-z0-9_]{1,29}', str(a.get('id', ''))) and a.get('nombre')
+        ]
+        if ambitos and ambitos[0]['id'] == 'general':
+            return ambitos
+    except Exception as e:
+        logger.warning('No se pudo obtener la lista de ámbitos de reglamento: %s', e)
+    return [AMBITO_GENERAL]
+
+
 def index(request):
-    return render(request, 'pizarra/index.html')
+    return render(request, 'pizarra/index.html', {'ambitos': _ambitos_reglamento()})
 
 
 def privacidad(request):
