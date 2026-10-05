@@ -1,7 +1,9 @@
 # api/rag_engine.py
 import json
 import os
+import re
 import logging
+from pathlib import Path
 import requests
 import chromadb
 from llama_index.embeddings.ollama import OllamaEmbedding
@@ -32,6 +34,15 @@ MODEL          = os.environ.get("OLLAMA_MODEL", "qwen3:4b-instruct")
 MODEL_SESION   = os.environ.get("OLLAMA_MODEL_SESION", os.environ.get("OLLAMA_MODEL", "qwen3:4b-instruct"))
 EXERCISES_PATH = os.environ.get("EXERCISES_PATH", "/app/data/exercises.json")
 CHROMA_DB_DIR  = os.environ.get("CHROMA_DB_DIR", "/app/data/chroma_db")
+# Reglamento por ámbito: data/reglamento/<ámbito>/*.md ("general" = FIBA/FEB; una carpeta por
+# comunidad autónoma, p. ej. "aragon"). La consulta de una comunidad usa también el general.
+REGLAMENTO_DIR = os.environ.get("REGLAMENTO_DIR", "/app/data/reglamento")
+AMBITO_GENERAL = "general"
+NOMBRES_AMBITO = {
+    "general": "General (FIBA y normativa común)",
+    "aragon": "Aragón",
+}
+_AMBITO_RE = re.compile(r"^[a-z][a-z0-9_]{1,29}$")
 EMBED_MODEL    = "nomic-embed-text"
 
 # Inicialización única al arrancar el módulo
@@ -201,8 +212,35 @@ def construir_contexto_ejercicios(ejercicios: list, max_ejs: int = 10) -> str:
         )
     return "\n".join(lineas)
 
+# ─── Ámbitos de reglamento ───────────────────────────────────────────────
+def nombre_ambito(ambito: str) -> str:
+    return NOMBRES_AMBITO.get(ambito) or ambito.replace("_", " ").title()
+
+
+def listar_ambitos() -> list[dict]:
+    """Ámbitos disponibles: siempre "general" y una entrada por cada carpeta de
+    data/reglamento/ con al menos un .md. Añadir una comunidad es crear su carpeta."""
+    ids = [AMBITO_GENERAL]
+    try:
+        for d in sorted(Path(REGLAMENTO_DIR).iterdir()):
+            if (d.is_dir() and d.name != AMBITO_GENERAL and _AMBITO_RE.match(d.name)
+                    and any(d.glob("*.md"))):
+                ids.append(d.name)
+    except OSError:
+        pass
+    return [{"id": i, "nombre": nombre_ambito(i)} for i in ids]
+
+
+def normalizar_ambito(ambito) -> str:
+    """Devuelve un ámbito válido; cualquier valor desconocido cae en "general"."""
+    if not ambito:
+        return AMBITO_GENERAL
+    candidato = str(ambito).strip().lower()
+    return candidato if candidato in {a["id"] for a in listar_ambitos()} else AMBITO_GENERAL
+
+
 # ─── ChromaDB / PDFs ─────────────────────────────────────────────────────
-def consultar_coleccion(nombre: str, consulta: str, n_resultados: int = 4) -> str:
+def consultar_coleccion(nombre: str, consulta: str, n_resultados: int = 4, where: dict | None = None) -> str:
     try:
         coleccion = _chroma.get_collection(nombre)
     except Exception:
@@ -213,11 +251,14 @@ def consultar_coleccion(nombre: str, consulta: str, n_resultados: int = 4) -> st
 
     try:
         embedding  = _embed_model.get_text_embedding(consulta)
-        resultados = coleccion.query(
+        kwargs = dict(
             query_embeddings=[embedding],
             n_results=min(n_resultados, coleccion.count()),
             include=["documents", "metadatas"],
         )
+        if where:
+            kwargs["where"] = where
+        resultados = coleccion.query(**kwargs)
         fragmentos = resultados.get("documents", [[]])[0]
         # Sin etiqueta de origen: el modelo no debe poder citar documentos concretos.
         lineas = [texto.strip() for texto in fragmentos]
@@ -239,13 +280,13 @@ def construir_contexto_teoria(objetivo: str, edad: str, presupuesto_por_coleccio
     consulta = f"entrenamiento baloncesto {objetivo} categoria {edad}"
     partes   = []
     mapeo    = {
-        "teoria_md":     ("MATERIAL PROPIO (prioritario)", int(presupuesto_por_coleccion * 1.5)),
-        "teoria":        ("TEORIA Y METODOLOGIA",           presupuesto_por_coleccion),
-        "planificacion": ("PLANIFICACION",                  presupuesto_por_coleccion),
-        "reglamento":    ("REGLAMENTO",                      presupuesto_por_coleccion),
+        "teoria_md":     ("MATERIAL PROPIO (prioritario)", int(presupuesto_por_coleccion * 1.5), None),
+        "teoria":        ("TEORIA Y METODOLOGIA",           presupuesto_por_coleccion, None),
+        "planificacion": ("PLANIFICACION",                  presupuesto_por_coleccion, None),
+        "reglamento_md": ("REGLAMENTO",                     presupuesto_por_coleccion, {"ambito": AMBITO_GENERAL}),
     }
-    for nombre, (etiqueta, presupuesto) in mapeo.items():
-        fragmento = consultar_coleccion(nombre, consulta, n_resultados=4)
+    for nombre, (etiqueta, presupuesto, filtro) in mapeo.items():
+        fragmento = consultar_coleccion(nombre, consulta, n_resultados=4, where=filtro)
         if fragmento:
             partes.append(f"--- {etiqueta} ---\n{fragmento[:presupuesto]}")
 
@@ -1037,25 +1078,58 @@ def reprompt_ejercicio(edad: str, objetivo: str, nombre: str, descripcion: str, 
 # SYSTEM_REGLAMENTO importado de api/prompts.py
 
 
-def responder_duda_reglamento(pregunta: str) -> str:
+def responder_duda_reglamento(pregunta: str, ambito: str = AMBITO_GENERAL) -> str:
     """Modo 3: responde una duda de reglamento o fundamento técnico.
-    Antes respondía solo de memoria paramétrica del modelo pese a tener 1.238 chunks
-    de reglas FIBA/minibasket/normativa de competición ya indexados en ChromaDB sin
-    usar — normativa autonómica/long-tail es justo donde un 4B alucina más y donde
-    hay más que ganar con retrieval. También consulta "teoria_md": ahí viven los dos
-    .md curados de reglamento (normas clave FIBA, competición de formación en España),
-    más concisos y de más señal que extraer un fragmento suelto de un PDF de reglas."""
-    contexto_curado = consultar_coleccion("teoria_md", pregunta, n_resultados=3)
-    contexto_reglas  = consultar_coleccion("reglamento", pregunta, n_resultados=6)
-    partes = []
-    if contexto_curado:
-        partes.append(f"--- MATERIAL PROPIO ---\n{contexto_curado[:1500]}")
-    if contexto_reglas:
-        partes.append(f"--- REGLAMENTO FIBA / COMPETICIÓN ---\n{contexto_reglas[:2500]}")
 
-    mensaje_usuario = pregunta
+    `ambito` es "general" (FIBA / federación española) o una comunidad autónoma
+    (carpeta de data/reglamento/). Con una comunidad se recupera primero su normativa
+    y se completa con la general: la específica prevalece cuando ambas difieren.
+
+    Capas de recuperación: "reglamento_md" (los .md curados, por ámbito, siempre
+    disponibles), "reglamento" (PDF oficiales locales, opcionales; mismo filtro por
+    ámbito) y "teoria_md" (fundamentos técnicos). Todo sin etiqueta de origen."""
+    ambito = normalizar_ambito(ambito)
+    especifico = ambito != AMBITO_GENERAL
+    nombre = nombre_ambito(ambito)
+    filtro_general = {"ambito": AMBITO_GENERAL}
+    filtro_ccaa = {"ambito": ambito}
+
+    contexto_ccaa = ""
+    if especifico:
+        contexto_ccaa = "\n".join(filter(None, [
+            consultar_coleccion("reglamento_md", pregunta, n_resultados=4, where=filtro_ccaa),
+            consultar_coleccion("reglamento", pregunta, n_resultados=3, where=filtro_ccaa),
+        ]))
+    contexto_general = "\n".join(filter(None, [
+        consultar_coleccion("reglamento_md", pregunta, n_resultados=3, where=filtro_general),
+        consultar_coleccion("reglamento", pregunta, n_resultados=4, where=filtro_general),
+    ]))
+    contexto_curado = consultar_coleccion("teoria_md", pregunta, n_resultados=2)
+
+    partes = []
+    if contexto_ccaa:
+        partes.append(f"--- NORMATIVA DE {nombre.upper()} (prevalece sobre la general) ---\n{contexto_ccaa[:2000]}")
+    if contexto_general:
+        partes.append(f"--- REGLAMENTO GENERAL (FIBA / federación española) ---\n{contexto_general[:2000]}")
+    if contexto_curado:
+        partes.append(f"--- MATERIAL PROPIO ---\n{contexto_curado[:1000]}")
+
+    if especifico:
+        instruccion_ambito = (
+            f"ÁMBITO DE LA CONSULTA: {nombre}. Responde con la normativa de {nombre} cuando exista y "
+            f"complétala con el reglamento general; si ambas difieren, indica cuál se aplica en {nombre}. "
+            f"Si no hay norma específica de {nombre} sobre el asunto, dilo y aplica la general.\n"
+        )
+    else:
+        instruccion_ambito = (
+            "ÁMBITO DE LA CONSULTA: general (FIBA y federación española). No apliques normas de una "
+            "comunidad autónoma concreta; si la respuesta puede variar por comunidad, avísalo.\n"
+        )
+
+    mensaje_usuario = f"{instruccion_ambito}\nPREGUNTA: {pregunta}"
     if partes:
         mensaje_usuario = (
+            f"{instruccion_ambito}\n"
             f"EXTRACTOS DE REGLAMENTO (pueden no cubrir toda la pregunta; si no "
             f"encuentras la respuesta aquí, usa tu conocimiento pero dilo):\n"
             f"{chr(10).join(partes)}\n\nPREGUNTA: {pregunta}"

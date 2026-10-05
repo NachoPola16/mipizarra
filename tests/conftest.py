@@ -22,6 +22,7 @@ EXERCISES_JSON = DATA_DIR / "exercises.json"
 # Antes de importar nada de api/: la biblioteca de ejercicios del repo, no la del
 # contenedor (/app/data/...).
 os.environ["EXERCISES_PATH"] = str(EXERCISES_JSON)
+os.environ["REGLAMENTO_DIR"] = str(DATA_DIR / "reglamento")
 os.environ.setdefault("FEEDBACK_DIR", str(RAIZ / "data" / "sessions"))
 
 if str(API_DIR) not in sys.path:

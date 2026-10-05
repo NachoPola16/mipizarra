@@ -12,7 +12,7 @@ Navegador ──▶ frontend (Django) ──▶ api (FastAPI) ──▶ ollama (
 | Componente | Responsabilidad |
 |---|---|
 | `frontend/` | Interfaz web: formulario de sesión, modo reglamento, exportación a PDF, corrección de ejercicios. |
-| `api/main.py` | Endpoints HTTP (`/generar`, `/ejercicio`, `/reprompt_ejercicio`, `/reglamento`, ...), rate limiting y autenticación interna. |
+| `api/main.py` | Endpoints HTTP (`/generar`, `/ejercicio`, `/reprompt_ejercicio`, `/reglamento`, `/ambitos_reglamento`, ...), rate limiting y autenticación interna. |
 | `api/rag_engine.py` | Recuperación de contexto (RAG) y llamadas al LLM para cada modo. |
 | `api/prompts.py` | System prompts compartidos por inferencia y generación de dataset. |
 | `api/diagram_renderer.py` | Convierte el JSON de un diagrama en SVG de forma determinista. |
@@ -41,6 +41,10 @@ El LLM nunca dibuja: solo produce JSON de coordenadas (ver [coordenadas.md](coor
 | `teoria_md` | Documentos de teoría curados en `data/teoria/` (prioritarios). |
 | `teoria` | Material técnico y metodológico adicional. |
 | `planificacion` | Planificación de temporada. |
-| `reglamento` | Reglamento FIBA y normativa de competición de formación. |
+| `reglamento_md` | Reglamento curado en `data/reglamento/<ámbito>/` (`general` = FIBA y federación española; una carpeta por comunidad autónoma). Cada documento lleva su ámbito como metadato. |
+| `reglamento` | Documentos oficiales en PDF (capa local opcional), con la misma convención de ámbitos. |
 
-Solo `teoria_md` forma parte del repositorio; el resto de material de referencia no se distribuye.
+En el modo reglamento se elige el ámbito: con una comunidad autónoma se recupera primero su normativa y se
+completa con la general, que se usa siempre como base. Véase `docs/actualizar_reglamento.md`.
+
+Solo `teoria_md` y `reglamento_md` forman parte del repositorio; el resto de material de referencia no se distribuye.

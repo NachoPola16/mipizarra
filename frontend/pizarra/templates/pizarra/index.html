@@ -303,6 +303,24 @@ html, body {
             <div class="center-sub">Pregunta sobre reglas, tiempos, categorías o cualquier duda arbitral.</div>
         </div>
 
+        <div class="pill-row" style="margin-bottom:.9rem">
+            <div class="dd" id="dd-ambito" data-prefix="Ámbito">
+                <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false">
+                    <svg class="dd-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a5 5 0 1 0 0 10A5 5 0 0 0 8 1Z"/></svg>
+                    <span class="dd-label">Ámbito: {{ ambitos.0.nombre }}</span>
+                    <svg class="dd-caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>
+                </button>
+                <ul class="dd-list" role="listbox" aria-label="Ámbito del reglamento">
+                    {% for a in ambitos %}<li class="dd-opt{% if forloop.first %} selected{% endif %}" role="option" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" tabindex="-1" data-value="{{ a.id }}">{{ a.nombre }}</li>
+                    {% endfor %}
+                </ul>
+                <select id="ambito" class="dd-native" tabindex="-1" aria-hidden="true">
+                    {% for a in ambitos %}<option value="{{ a.id }}">{{ a.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
         <div class="prompt-box">
             <textarea id="pregunta" aria-label="Tu pregunta sobre el reglamento" placeholder="Ej: ¿Es falta técnica si el entrenador entra a la pista?" style="min-height:120px" rows="3"></textarea>
             <div class="prompt-actions" style="justify-content:flex-end;">
@@ -505,7 +523,7 @@ async function consultarReglamento() {
         const resp = await fetch('/reglamento/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
-            body: JSON.stringify({ pregunta }),
+            body: JSON.stringify({ pregunta, ambito: document.getElementById('ambito').value || 'general' }),
         });
         const data = await resp.json().catch(() => ({}));
         if (!resp.ok) throw new Error(data.error || `Error del servidor (${resp.status})`);
@@ -518,7 +536,9 @@ async function consultarReglamento() {
 }
 
 function renderReglamento(data) {
-    document.getElementById('results-heading').textContent = 'Respuesta sobre el reglamento';
+    const ambitoSel = document.querySelector('#dd-ambito .dd-opt.selected');
+    const ambitoTxt = (data.ambito && data.ambito !== 'general' && ambitoSel) ? ' · ' + ambitoSel.textContent : '';
+    document.getElementById('results-heading').textContent = 'Respuesta sobre el reglamento' + ambitoTxt;
     const respuesta = data.respuesta || data.texto || '';
     const html = `<div class='reglamento-card'>${mdToHtml(respuesta)}</div>`;
     document.getElementById('resultado-contenido').innerHTML = html;

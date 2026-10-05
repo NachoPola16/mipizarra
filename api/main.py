@@ -17,6 +17,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from rag_engine import (
     generar_sesion, generar_coordenadas_ejercicio,
     generar_ejercicio_unico, reprompt_ejercicio, responder_duda_reglamento,
+    listar_ambitos, normalizar_ambito,
 )
 from diagram_renderer import render_diagram, render_all_diagrams
 
@@ -181,6 +182,9 @@ class RepromptRequest(BaseModel):
 
 class ReglamentoRequest(BaseModel):
     pregunta: str = Field(min_length=3, max_length=MAX_OBJETIVO_LEN)
+    # "general" (FIBA / federación española) o una comunidad autónoma con carpeta propia en
+    # data/reglamento/. Un valor no disponible no falla: se responde con el reglamento general.
+    ambito: str = Field(default="general", max_length=30, pattern=r"^[a-z][a-z0-9_]{1,29}$")
 
 
 class FeedbackRequest(BaseModel):
@@ -427,13 +431,21 @@ async def corregir_ejercicio(request: Request, req: RepromptRequest):
 @limiter.limit("30/hour;10/minute")
 async def consulta_reglamento(request: Request, req: ReglamentoRequest):
     """Modo 3: responde dudas de reglamento y fundamentos técnicos."""
-    logger.info(f"Consulta reglamento: {req.pregunta[:80]}")
+    ambito = normalizar_ambito(req.ambito)
+    logger.info(f"Consulta reglamento [{ambito}]: {req.pregunta[:80]}")
     try:
-        respuesta = responder_duda_reglamento(req.pregunta)
+        respuesta = responder_duda_reglamento(req.pregunta, ambito)
     except Exception:
         logger.exception("Error en responder_duda_reglamento")
         raise HTTPException(status_code=500, detail="No se pudo responder la consulta")
-    return {"pregunta": req.pregunta, "respuesta": respuesta}
+    return {"pregunta": req.pregunta, "ambito": ambito, "respuesta": respuesta}
+
+
+@app.get("/ambitos_reglamento")
+@limiter.limit("60/minute")
+async def ambitos_reglamento(request: Request):
+    """Ámbitos de reglamento disponibles: "general" más una entrada por comunidad autónoma."""
+    return {"ambitos": listar_ambitos()}
 
 
 @app.post("/guardar_feedback")
