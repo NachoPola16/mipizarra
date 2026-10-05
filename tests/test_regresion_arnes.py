@@ -95,6 +95,7 @@ RESPUESTAS_REGLAMENTO = {
     "3 segundos": "Un atacante no puede permanecer más de tres segundos seguidos en la zona restringida "
                   "rival mientras su equipo controla el balón.",
     "minibasket": "En minibasket el aro está a 2,60 m de altura.",
+    "disruptiva": "La falta disruptiva es un contacto ilegal que no llega a flagrante y no descalifica al jugador.",
 }
 
 
@@ -209,7 +210,7 @@ def _fallidos(resultado):
 def test_casos_fijos():
     assert len(regresion.CASOS_SESIONES) == 6
     assert len(regresion.CASOS_EJERCICIOS) == 2
-    assert len(regresion.CASOS_REGLAMENTO) == 5
+    assert len(regresion.CASOS_REGLAMENTO) == 6
     ids = [c["id"] for c in regresion.CASOS_SESIONES + regresion.CASOS_EJERCICIOS + regresion.CASOS_REGLAMENTO]
     assert len(ids) == len(set(ids))
     for c in regresion.CASOS_SESIONES:
@@ -223,7 +224,7 @@ def test_api_buena_pasa(api, tmp_path):
     assert regresion.main(["--api", api, "--salida", str(salida)]) == 0
 
     informe = _leer(salida)
-    assert informe["resumen"]["casos"] == 13
+    assert informe["resumen"]["casos"] == 14
     assert informe["resumen"]["fallidos"] == []
     assert informe["version_api"] == "simulada"
     res = _por_id(informe)
@@ -285,7 +286,7 @@ def test_solo_reglamento(api, tmp_path):
     assert regresion.main(["--api", api, "--salida", str(salida), "--solo", "reglamento"]) == 0
     informe = _leer(salida)
     assert {r["tipo"] for r in informe["resultados"]} == {"reglamento"}
-    assert informe["resumen"]["casos"] == 5
+    assert informe["resumen"]["casos"] == 6
     assert all(ruta == "/reglamento" for ruta, _ in ApiSimulada.peticiones)
 
 
@@ -293,7 +294,7 @@ def test_reintenta_tras_429(api, tmp_path):
     ApiSimulada.modo = "429"
     salida = tmp_path / "429.json"
     assert regresion.main(["--api", api, "--salida", str(salida), "--solo", "reglamento"]) == 0
-    assert len(ApiSimulada.peticiones) == 6   # 5 casos + 1 reintento
+    assert len(ApiSimulada.peticiones) == 7   # 6 casos + 1 reintento
 
 
 def test_api_caida(tmp_path):
@@ -309,7 +310,7 @@ def test_cli_codigo_de_salida(api, tmp_path):
     ok = subprocess.run([sys.executable, str(script), "--api", api, "--solo", "reglamento",
                          "--salida", str(tmp_path / "a.json")], capture_output=True, text=True)
     assert ok.returncode == 0, ok.stdout + ok.stderr
-    assert "5/5 casos aprobados" in ok.stdout
+    assert "6/6 casos aprobados" in ok.stdout
 
     ApiSimulada.modo = "malo"
     mal = subprocess.run([sys.executable, str(script), "--api", api, "--solo", "reglamento",
