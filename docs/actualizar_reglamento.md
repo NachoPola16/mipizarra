@@ -19,7 +19,7 @@ El modo reglamento tiene un selector de **ámbito**:
   comunidad **y la completa con la general**. Si ambas difieren, prevalece la de la comunidad.
 
 El selector se genera solo a partir de las carpetas: **añadir una comunidad es crear su carpeta** con al menos
-un `.md`. El nombre que se muestra se toma de `NOMBRES_AMBITO` en `api/rag_engine.py` (por ejemplo,
+un `.md`. El nombre que se muestra se toma de `NOMBRES_AMBITO` en `api/config.py` (por ejemplo,
 `"aragon": "Aragón"`); si no está, se deriva del nombre de la carpeta.
 
 Para los PDF locales se sigue la misma convención: los PDF sueltos en `data/pdfs/coleccion_reglamento/` son

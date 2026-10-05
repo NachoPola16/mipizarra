@@ -3,9 +3,9 @@
 **Fuente de verdad única** para coordenadas de diagramas. Si cambias algo aquí, también hay que
 cambiarlo en los 3 SYSTEM prompts que ven al modelo:
 
-- `tools/generar_dataset.py` → constante `SYSTEM_DIAGRAMA`
-- `api/rag_engine.py` → función `generar_coordenadas_ejercicio` (texto del prompt)
-- `tools/exportar_a_ollama.py` → constante `MODELFILE_TEMPLATE` (SYSTEM del Modelfile)
+- `experimental/generar_dataset.py` → constante `SYSTEM_DIAGRAMA`
+- `api/diagramas.py` → función `generar_coordenadas_ejercicio` (texto del prompt)
+- `experimental/exportar_a_ollama.py` → constante `MODELFILE_TEMPLATE` (SYSTEM del Modelfile)
 
 ## Convenciones
 
@@ -137,7 +137,7 @@ y en el JSON siempre escribe `bloqueo`.
 
 **Juego de poste bajo**: no es una acción ilegal en categorías de formación (U8-U12),
 pero no se recomienda enseñarla — no aporta a esas edades. `vocabulario_tecnico()` en
-`rag_engine.py` ya excluye "poste bajo" y el vocabulario de bloqueos del prompt de
+`sesion.py` ya excluye "poste bajo" y el vocabulario de bloqueos del prompt de
 sesión para estas categorías.
 
 ## Campo opcional `curva`
