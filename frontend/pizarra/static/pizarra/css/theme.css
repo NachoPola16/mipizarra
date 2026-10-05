@@ -1,0 +1,36 @@
+/* Reset y paleta de color compartidos entre todas las plantillas de MiPizarra.
+   Antes duplicados de forma idéntica en index.html, privacidad.html y
+   aviso_legal.html; centralizados aquí para que un cambio de paleta no
+   requiera tocar tres ficheros a la vez. */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --accent:   #e8752c;
+    --accent-d: #c85f1f;
+    --bg:       #15120e;
+    --bg2:      #1e1a15;
+    --bg3:      #2a2118;
+    --border:   #332c22;
+    --text:     #f2ede4;
+    --text2:    #d8d0c4;
+    --muted:    #9c9186;
+}
+
+/* Oculta visualmente pero deja accesible a lectores de pantalla: úsalo para
+   encabezados de estructura que no necesitan verse (p. ej. el <h1> de la
+   vista de resultados). */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    @view-transition { navigation: auto; }
+}

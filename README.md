@@ -1,0 +1,55 @@
+# MiPizarra
+
+> Trabajo en progreso — proyecto personal de aprendizaje.
+
+Asistente de entrenamiento de baloncesto con IA 100% local. Dado un objetivo táctico, una categoría de edad y la duración disponible, genera una sesión completa con ejercicios y diagramas tácticos en SVG.
+
+No usa ninguna API externa: el LLM, los embeddings y la base de datos vectorial corren en tu propio hardware.
+
+## Funcionamiento
+
+1. El usuario describe el objetivo del entrenamiento (ej. "Entrenamiento de tiro, tipos de salidas y contraataque, 90 minutos").
+2. El RAG recupera ejercicios y teoría relevantes de la biblioteca JSON + ChromaDB.
+3. Un LLM local redacta la sesión.
+4. El renderer SVG determinista genera los diagramas tácticos (media pista / pista completa).
+
+Además de sesiones completas, permite pedir un ejercicio concreto, corregir ejercicios ya generados y consultar dudas de reglamento.
+
+## Stack
+
+- **LLM:** familia Qwen3 (4B) servida con Ollama, con opción de fine-tuning LoRA propio
+- **Embeddings:** `nomic-embed-text` via Ollama
+- **RAG:** biblioteca de ejercicios en JSON + ChromaDB
+- **Diagramas:** renderer SVG determinista (Python puro, sin dependencias gráficas)
+- **API:** FastAPI + rate limiting
+- **Frontend:** Django
+- **Infra:** Docker Compose con GPU NVIDIA
+
+## Arranque rápido
+
+Requiere Docker con soporte NVIDIA.
+
+```bash
+cp .env.example .env
+# Edita .env si quieres restringir BIND_IP a tu red local
+docker compose up -d
+docker exec -it mipizarra-ollama ollama pull qwen3:4b-instruct
+docker exec -it mipizarra-ollama ollama pull nomic-embed-text
+```
+
+## Uso de la API
+
+```bash
+curl -X POST http://localhost:8090/generar \
+  -H "Content-Type: application/json" \
+  -d '{"edad":"U16","duracion":90,"objetivo":"bloqueo directo"}'
+```
+
+## Documentación
+
+- [Arquitectura](docs/arquitectura.md)
+- [Entrenamiento del modelo](ENTRENAMIENTO_MODELO.md)
+- [Esquema de ejercicios](docs/esquema-ejercicios.md)
+- [Coordenadas del diagrama](docs/coordenadas.md)
+- [Seguridad y despliegue](SEGURIDAD.md)
+- [Hoja de ruta](docs/fases.md)

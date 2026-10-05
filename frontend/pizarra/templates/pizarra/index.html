@@ -1,0 +1,926 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiPizarra — Asistente de entrenamiento</title>
+<meta name="description" content="Genera sesiones de entrenamiento de baloncesto y diagramas tácticos con IA local, a partir de la categoría, la duración y el objetivo del entrenamiento.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#15120e">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="MiPizarra">
+<meta property="og:title" content="MiPizarra — Asistente de entrenamiento">
+<meta property="og:description" content="Genera sesiones de entrenamiento de baloncesto y diagramas tácticos con IA local, a partir de la categoría, la duración y el objetivo del entrenamiento.">
+<meta property="og:url" content="{{ request.build_absolute_uri }}">
+<meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'pizarra/brand/og-image.png' %}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="es_ES">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="MiPizarra — Asistente de entrenamiento">
+<meta name="twitter:description" content="Genera sesiones de entrenamiento de baloncesto y diagramas tácticos con IA local.">
+<meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'pizarra/brand/og-image.png' %}">
+<link rel="icon" type="image/svg+xml" href="{% static 'pizarra/brand/favicon.svg' %}">
+<link rel="alternate icon" href="{% static 'pizarra/brand/favicon.ico' %}">
+<link rel="apple-touch-icon" href="{% static 'pizarra/brand/apple-touch-icon.png' %}">
+<link rel="manifest" href="{% static 'pizarra/brand/site.webmanifest' %}">
+<link rel="stylesheet" href="{% static 'pizarra/css/fonts.css' %}">
+<link rel="stylesheet" href="{% static 'pizarra/css/theme.css' %}">
+<style>
+html, body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100%;
+    font-size: 15px;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── Top bar ── */
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.75rem; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.brand { display: flex; align-items: center; gap: .55rem; font-family: 'Sora', sans-serif; font-weight: 800; font-size: 1.25rem; letter-spacing: -.02em; color: inherit; text-decoration: none; }
+.brand em { font-style: normal; color: var(--accent); }
+.brand-mark { width: 26px; height: 26px; border-radius: 22%; flex-shrink: 0; transition: transform .3s cubic-bezier(.16,1,.3,1); }
+.brand:hover .brand-mark { transform: rotate(-8deg) scale(1.08); }
+.mode-tabs { display: flex; gap: .4rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
+.mode-tab { padding: .4rem .9rem; font-size: .82rem; font-weight: 600; border: none; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; font-family: 'Inter', sans-serif; transition: color .15s; }
+.mode-tab:hover { color: var(--text); }
+.mode-tab.active { background: var(--accent); color: var(--bg); }
+.mode-tab.active:hover { color: var(--bg); }
+
+/* ── Content ── */
+.content { max-width: 800px; margin: 0 auto; padding: 0 1.5rem 3rem; }
+
+/* ── Entrada suave (respeta prefers-reduced-motion más abajo) ── */
+@keyframes slideUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── Prompt section (estado inicial / "home") ── */
+.prompt-section { display: flex; flex-direction: column; align-items: center; gap: 2rem; padding-top: 3.5rem; animation: slideUp .4s ease both; }
+.center-heading { display: flex; flex-direction: column; align-items: center; gap: .65rem; }
+.center-title { font-size: 1.9rem; font-weight: 800; letter-spacing: -.02em; text-align: center; text-wrap: balance; font-family: 'Sora', sans-serif; }
+.center-sub { color: var(--muted); text-align: center; font-size: .95rem; line-height: 1.5; max-width: 46ch; }
+
+.pill-row { display: flex; gap: .6rem; flex-wrap: wrap; justify-content: center; width: 100%; }
+
+/* ── Desplegable a medida (sustituye el <select> nativo, que no se puede
+   estilar de forma consistente entre navegadores) ── */
+.dd { position: relative; }
+.dd-btn { display: flex; align-items: center; gap: .4rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: .4rem .9rem; font-size: .82rem; color: var(--text2); cursor: pointer; font-family: 'Inter', sans-serif; transition: border-color .15s; }
+.dd-btn:hover, .dd.open .dd-btn { border-color: var(--accent); }
+.dd-icon { width: 14px; height: 14px; opacity: .6; flex-shrink: 0; }
+.dd-caret { width: 11px; height: 11px; margin-left: .1rem; flex-shrink: 0; transition: transform .15s; }
+.dd.open .dd-caret { transform: rotate(180deg); }
+.dd-list { position: absolute; top: calc(100% + 6px); left: 0; min-width: 210px; background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: .4rem; box-shadow: 0 12px 32px rgba(0,0,0,.45); display: none; z-index: 5; list-style: none; margin: 0; max-height: 280px; overflow-y: auto; }
+.dd.open .dd-list { display: block; }
+.dd-opt { padding: .5rem .75rem; border-radius: 7px; font-size: .85rem; color: var(--text2); cursor: pointer; display: flex; align-items: center; justify-content: space-between; }
+.dd-opt:hover, .dd-opt:focus { background: var(--bg3); color: var(--text); outline: none; }
+.dd-opt.selected { color: var(--accent); font-weight: 600; }
+.dd-opt.selected::after { content: '✓'; font-size: .75rem; }
+.dd-native { display: none; }
+
+.prompt-box { width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: 16px; padding: 1.1rem 1.25rem; display: flex; flex-direction: column; gap: .9rem; transition: border-color .15s; }
+.prompt-box:focus-within { border-color: var(--accent); }
+.prompt-box textarea { width: 100%; background: none; border: none; color: var(--text); font-family: 'Inter', sans-serif; font-size: 1rem; line-height: 1.6; resize: none; min-height: 76px; outline: none; }
+.prompt-box textarea::placeholder { color: var(--muted); }
+.prompt-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .75rem; }
+.diag-toggle { display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: var(--muted); cursor: pointer; }
+.diag-toggle input { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+.btn-send { display: inline-flex; align-items: center; gap: .4rem; background: var(--accent); color: var(--bg); font-family: 'Inter', sans-serif; font-weight: 600; font-size: .88rem; letter-spacing: .02em; border: none; border-radius: 10px; padding: .65rem 1.4rem; cursor: pointer; transition: background .15s; }
+.btn-send svg { width: 15px; height: 15px; flex-shrink: 0; }
+.btn-send:hover { background: var(--accent-d); }
+.btn-send:disabled { opacity: .5; cursor: not-allowed; }
+
+.chips { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center; }
+.chip { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 20px; padding: .45rem 1rem; font-size: .8rem; cursor: pointer; font-family: 'Inter', sans-serif; transition: border-color .15s, color .15s; }
+.chip:hover { border-color: var(--accent); color: var(--text); }
+
+.btn-hint { text-align: center; font-size: .68rem; color: var(--muted); }
+
+/* ── Loading ── */
+.loading { display: none; flex-direction: column; align-items: center; justify-content: center; min-height: 40vh; gap: 1.5rem; }
+.loading.visible { display: flex; }
+.spinner { width: 48px; height: 48px; border: 4px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { color: var(--muted); font-size: .9rem; }
+
+/* ── Results ── */
+.results { display: none; padding-top: 2rem; }
+.results.visible { display: block; animation: slideUp .35s ease both; }
+.btn-back { background: none; border: none; color: var(--muted); font-family: 'Inter', sans-serif; font-size: .82rem; cursor: pointer; display: inline-flex; align-items: center; gap: .35rem; margin-bottom: 1.5rem; transition: color .15s; }
+.btn-back:hover { color: var(--text); }
+
+.badge { display: block; font-size: .72rem; color: var(--muted); margin-bottom: 1.25rem; }
+
+.ejercicio-block { border-radius: 10px; padding: .5rem .75rem; margin: 0 -.75rem; transition: background .15s; }
+.ejercicio-block.selected { background: var(--bg2); }
+.ej-select { display: flex; align-items: center; gap: .4rem; font-size: .75rem; color: var(--muted); cursor: pointer; width: fit-content; margin-bottom: .25rem; }
+.ej-select input { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
+.ejercicio-title { display: flex; align-items: center; gap: .55rem; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.1rem; margin: .5rem 0 .75rem; }
+.ejercicio-title::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+
+.reprompt-bar { display: flex; align-items: flex-end; gap: .75rem; background: var(--bg2); border: 1px solid var(--accent); border-radius: 10px; padding: .7rem 1rem; margin-top: 2rem; flex-wrap: wrap; }
+.reprompt-count { font-size: .8rem; color: var(--text2); white-space: nowrap; }
+.reprompt-bar textarea { flex: 1; min-width: 200px; background: var(--bg); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: .5rem .75rem; font-family: 'Inter', sans-serif; font-size: .85rem; outline: none; resize: none; overflow: hidden; max-height: 160px; line-height: 1.4; }
+.reprompt-bar textarea:focus { border-color: var(--accent); }
+.diagrama-label { font-size: .68rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.diagrama-wrap { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 1.5rem; }
+.diagrama-wrap svg { width: 100%; height: auto; display: block; }
+.sesion-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; font-size: .92rem; line-height: 1.8; white-space: pre-wrap; color: var(--text2); margin-bottom: .75rem; }
+.section-title { font-weight: 700; font-size: 1rem; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: .5rem; margin: 1.5rem 0 .75rem; }
+
+/* ── Consultados ── */
+.consultados { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; margin: 1.5rem 0; }
+.consultados summary { padding: .75rem 1.25rem; cursor: pointer; font-size: .88rem; color: var(--muted); font-weight: 500; list-style: none; display: flex; align-items: center; gap: .5rem; }
+.consultados summary::before { content: '▶'; font-size: .7rem; transition: transform .2s; }
+.consultados[open] summary::before { transform: rotate(90deg); }
+.consultados-body { padding: .5rem 1.25rem 1rem; font-size: .88rem; line-height: 2; color: var(--text2); }
+
+/* ── Downloads ── */
+.downloads { display: flex; gap: .75rem; margin: 1.5rem 0; flex-wrap: wrap; }
+.btn-dl { display: inline-flex; align-items: center; gap: .4rem; padding: .55rem 1.25rem; border-radius: 8px; font-size: .88rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--bg2); color: var(--text); transition: border-color .15s, background .15s; text-decoration: none; }
+.btn-dl:hover { border-color: var(--accent); background: var(--bg3); }
+
+/* ── Feedback ── */
+.feedback { border-top: 1px solid var(--border); margin-top: 2rem; padding-top: 1.5rem; }
+.feedback-title { font-size: .72rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+.feedback-row { display: flex; gap: .75rem; align-items: flex-start; }
+.feedback-row textarea { flex: 1; background: var(--bg2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: .5rem .75rem; font-family: 'Inter', sans-serif; font-size: .88rem; resize: vertical; }
+.feedback-row select { width: 110px; min-width: 110px; background: var(--bg2); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: .5rem .75rem; font-family: 'Inter', sans-serif; font-size: .88rem; }
+.btn-fb { margin-top: .75rem; background: var(--bg2); border: 1px solid var(--border); color: var(--text); font-family: 'Inter', sans-serif; font-weight: 600; font-size: .88rem; border-radius: 8px; padding: .55rem 1.25rem; cursor: pointer; transition: border-color .15s; }
+.btn-fb:hover { border-color: var(--accent); }
+.feedback-msg { font-size: .85rem; margin-top: .5rem; }
+.feedback-msg.ok { color: #3fb950; }
+.feedback-msg.err { color: #d98a6f; }
+.feedback-msg.err[id="form-error"] { max-width: 800px; margin: 1.5rem auto 0; padding: .7rem 1rem; background: #241a10; border: 1px solid #b3452f; border-radius: 8px; }
+
+/* ── Reglamento result ── */
+.reglamento-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; font-size: .95rem; line-height: 1.85; color: var(--text2); white-space: pre-wrap; }
+
+/* ── Movimiento reducido ── */
+@media (prefers-reduced-motion: reduce) {
+    .prompt-section, .results.visible { animation: none; }
+    .brand-mark, .dd-caret, .mode-tab, .chip, .dd-btn, .btn-send, .btn-dl, .btn-fb, .btn-back { transition: none; }
+    .brand:hover .brand-mark { transform: none; }
+}
+
+/* ── Responsive ── */
+@media (max-width: 560px) {
+    .topbar { justify-content: center; }
+    .prompt-section { padding-top: 2rem; }
+    .center-title { font-size: 1.5rem; }
+}
+
+/* ── Footer legal ── */
+.legal-footer {
+    text-align: center;
+    padding: .75rem 1rem;
+    font-size: .72rem;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+}
+.legal-footer a {
+    color: var(--muted);
+    text-decoration: none;
+    margin: 0 .5rem;
+}
+.legal-footer a:hover { color: var(--text2); }
+</style>
+</head>
+<body>
+<div class="app">
+
+<header class="topbar">
+    <a class="brand" href="{% url 'index' %}" aria-label="Ir al inicio de MiPizarra">
+        <svg class="brand-mark" viewBox="0 0 512 512" role="img" aria-label="MiPizarra">
+            <rect width="512" height="512" rx="114" fill="#15120e"/>
+            <rect x="224" y="80" width="64" height="48" rx="14" fill="#e8752c"/>
+            <rect x="118" y="110" width="276" height="308" rx="26" fill="none" stroke="#e8752c" stroke-width="30" stroke-linejoin="round"/>
+            <circle cx="200" cy="360" r="24" fill="#e8752c"/>
+            <path d="M200 360 Q160 260 280 180" fill="none" stroke="#e8752c" stroke-width="26" stroke-linecap="round"/>
+            <path d="M276.9 199.5 L286.5 175.3 L260.5 176.9" fill="none" stroke="#e8752c" stroke-width="22" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span>Mi<em>Pizarra</em></span>
+    </a>
+    <div class="mode-tabs">
+        <button class="mode-tab active" data-mode="sesion">⚡ Sesión</button>
+        <button class="mode-tab" data-mode="reglamento">📖 Reglamento</button>
+    </div>
+</header>
+
+<main class="content">
+
+    <div class="feedback-msg err" id="form-error" style="display:none;" role="alert"></div>
+
+    <!-- ── Sesión: estado inicial ── -->
+    <div id="form-sesion" class="prompt-section">
+        <div class="center-heading">
+            <h1 class="center-title">¿Qué quieres trabajar hoy?</h1>
+            <div class="center-sub">Describe el objetivo y genera una sesión completa con ejercicios y diagramas tácticos.</div>
+        </div>
+
+        <div class="pill-row">
+            <div class="dd" id="dd-edad" data-prefix="Categoría">
+                <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false">
+                    <svg class="dd-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a5 5 0 1 0 0 10A5 5 0 0 0 8 1Z"/></svg>
+                    <span class="dd-label">Categoría: sin especificar</span>
+                    <svg class="dd-caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>
+                </button>
+                <ul class="dd-list" role="listbox" aria-label="Categoría">
+                    <li class="dd-opt selected" role="option" aria-selected="true" tabindex="-1" data-value="">Sin especificar</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U8">Prebenjamín (U8)</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U10">Benjamín (U10)</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U12">Alevín (U12)</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U14">Infantil (U14)</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U16">Cadete (U16)</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U18">Junior (U18)</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="Senior">Senior</li>
+                </ul>
+                <select id="edad" class="dd-native" tabindex="-1" aria-hidden="true">
+                    <option value="">Sin especificar</option>
+                    <option value="U8">Prebenjamín (U8)</option>
+                    <option value="U10">Benjamín (U10)</option>
+                    <option value="U12">Alevín (U12)</option>
+                    <option value="U14">Infantil (U14)</option>
+                    <option value="U16">Cadete (U16)</option>
+                    <option value="U18">Junior (U18)</option>
+                    <option value="Senior">Senior</option>
+                </select>
+            </div>
+            <div class="dd" id="dd-duracion" data-prefix="Duración">
+                <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false">
+                    <svg class="dd-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm.5 3v4.3l3 1.8-.5.9-3.5-2.1V4h1Z"/></svg>
+                    <span class="dd-label">Duración: flexible</span>
+                    <svg class="dd-caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>
+                </button>
+                <ul class="dd-list" role="listbox" aria-label="Duración">
+                    <li class="dd-opt selected" role="option" aria-selected="true" tabindex="-1" data-value="">Flexible</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="45">45 min</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="60">60 min</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="75">75 min</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="90">90 min</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="105">105 min</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="120">120 min</li>
+                </ul>
+                <select id="duracion" class="dd-native" tabindex="-1" aria-hidden="true">
+                    <option value="">Flexible</option>
+                    <option value="45">45 min</option>
+                    <option value="60">60 min</option>
+                    <option value="75">75 min</option>
+                    <option value="90">90 min</option>
+                    <option value="105">105 min</option>
+                    <option value="120">120 min</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="prompt-box">
+            <textarea id="objetivo" aria-label="Descripción del entrenamiento" placeholder="Ej: Tiro en suspensión y defensa de bloqueo directo…" rows="3"></textarea>
+            <div class="prompt-actions">
+                <label class="diag-toggle"><input type="checkbox" id="gen-diagramas" checked> Generar diagramas</label>
+                <button class="btn-send" id="btn-generar">⚡ Generar sesión</button>
+            </div>
+        </div>
+
+        <div class="chips">
+            <button type="button" class="chip" data-fill="Tiro en suspensión">Tiro en suspensión</button>
+            <button type="button" class="chip" data-fill="Defensa de bloqueo directo">Defensa de bloqueo directo</button>
+            <button type="button" class="chip" data-fill="Transición rápida">Transición rápida</button>
+            <button type="button" class="chip" data-fill="Manejo de balón">Manejo de balón</button>
+        </div>
+
+        <div class="btn-hint">Enter para generar · Shift+Enter para nueva línea</div>
+    </div><!-- /form-sesion -->
+
+    <!-- ── Reglamento: estado inicial ── -->
+    <div id="form-reglamento" class="prompt-section" style="display:none">
+        <div class="center-heading">
+            <h1 class="center-title">¿Qué quieres saber del reglamento?</h1>
+            <div class="center-sub">Pregunta sobre reglas, tiempos, categorías o cualquier duda arbitral.</div>
+        </div>
+
+        <div class="prompt-box">
+            <textarea id="pregunta" aria-label="Tu pregunta sobre el reglamento" placeholder="Ej: ¿Es falta técnica si el entrenador entra a la pista?" style="min-height:120px" rows="3"></textarea>
+            <div class="prompt-actions" style="justify-content:flex-end;">
+                <button class="btn-send" id="btn-reglamento">🔍 Consultar</button>
+            </div>
+        </div>
+
+        <div class="chips">
+            <button type="button" class="chip" data-fill-pregunta="¿Cuántos tiempos muertos tiene Cadete?">¿Tiempos muertos en Cadete?</button>
+            <button type="button" class="chip" data-fill-pregunta="¿Qué es el paso cero?">¿Qué es el paso cero?</button>
+            <button type="button" class="chip" data-fill-pregunta="¿En qué categorías aplica el saque rápido?">Saque rápido, ¿en qué categorías?</button>
+        </div>
+
+        <div class="btn-hint">Enter para consultar · Shift+Enter para nueva línea</div>
+    </div><!-- /form-reglamento -->
+
+    <div class="loading" id="loading" role="status" aria-live="polite">
+        <div class="spinner"></div>
+        <div class="loading-text">Generando sesión… (puede tardar hasta 2 minutos)</div>
+    </div>
+
+    <div class="results" id="results" aria-live="polite">
+        <h1 id="results-heading" class="sr-only">Resultado</h1>
+        <button type="button" class="btn-back" id="btn-nueva">← Nueva consulta</button>
+
+        <div id="resultado-contenido"></div>
+
+        <details class="consultados" id="consultados-wrap" style="display:none">
+            <summary id="consultados-title">📋 Ejercicios consultados</summary>
+            <div class="consultados-body" id="consultados-body"></div>
+        </details>
+
+        <div class="downloads">
+            <button class="btn-dl" id="btn-txt">⬇ Descargar .txt</button>
+            <button class="btn-dl" id="btn-pdf">📄 Descargar PDF</button>
+        </div>
+
+        <div class="feedback">
+            <div class="feedback-title">¿Usaste esta sesión en un entrenamiento real?</div>
+            <div class="feedback-row">
+                <textarea id="fb-cambios" placeholder="Ej: Quité el 3c2 porque solo había 8 jugadores." rows="3" aria-label="Cambios realizados sobre la sesión"></textarea>
+                <select id="fb-rating" aria-label="Valoración de la sesión">
+                    <option value="1">⭐ 1</option>
+                    <option value="2">⭐⭐ 2</option>
+                    <option value="3" selected>⭐⭐⭐ 3</option>
+                    <option value="4">⭐⭐⭐⭐ 4</option>
+                    <option value="5">⭐⭐⭐⭐⭐ 5</option>
+                </select>
+            </div>
+            <button class="btn-fb" id="btn-feedback">💾 Guardar sesión usada</button>
+            <div class="feedback-msg" id="fb-msg"></div>
+        </div>
+
+        <div class="reprompt-bar" id="reprompt-bar" style="display:none;">
+            <span class="reprompt-count" id="reprompt-count">0 ejercicios seleccionados</span>
+            <textarea id="reprompt-instruccion" rows="1" placeholder="¿Qué quieres cambiar? Ej: sin defensor, más dinámico…"></textarea>
+            <button type="button" class="btn-send" id="btn-reprompt">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2.5v3.2h-3.2"/></svg>
+                Aplicar cambio
+            </button>
+        </div>
+    </div>
+
+</main>
+</div>
+
+<form style="display:none">{% csrf_token %}</form>
+
+<script>
+const csrf = document.querySelector('[name=csrfmiddlewaretoken]').value;
+let currentResult = null;
+let currentObjetivo = '';
+let currentEdad = '';
+let currentEdadSlug = 'general';
+let currentDuracion = 0;
+let currentMode = 'sesion';
+let currentBloques = [];
+let currentEjercicios = [];
+let selectedEjercicios = new Set();
+
+// ── Errores en línea (sin alert() bloqueante) ────────────────────────────────
+function showFormError(msg) {
+    const el = document.getElementById('form-error');
+    el.textContent = msg;
+    el.style.display = '';
+}
+function clearFormError() {
+    document.getElementById('form-error').style.display = 'none';
+}
+
+// ── Mode tabs ──────────────────────────────────────────────────────────────
+document.querySelectorAll('.mode-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+        currentMode = btn.dataset.mode;
+        document.querySelectorAll('.mode-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        clearFormError();
+        showEmpty();
+    });
+});
+
+// ── Desplegables a medida (edad, duración) ──────────────────────────────────
+document.querySelectorAll('.dd').forEach(dd => {
+    const btn    = dd.querySelector('.dd-btn');
+    const label  = dd.querySelector('.dd-label');
+    const native = dd.querySelector('.dd-native');
+    const prefix = dd.dataset.prefix;
+    const opts   = Array.from(dd.querySelectorAll('.dd-opt'));
+
+    function closeDd() { dd.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
+    function openDd() {
+        document.querySelectorAll('.dd.open').forEach(o => { if (o !== dd) o.classList.remove('open'); });
+        dd.classList.add('open');
+        btn.setAttribute('aria-expanded', 'true');
+    }
+    function selectOpt(opt) {
+        opts.forEach(o => { o.classList.remove('selected'); o.setAttribute('aria-selected', 'false'); });
+        opt.classList.add('selected');
+        opt.setAttribute('aria-selected', 'true');
+        native.value = opt.dataset.value;
+        label.textContent = `${prefix}: ${opt.textContent}`;
+        closeDd();
+    }
+
+    btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        dd.classList.contains('open') ? closeDd() : openDd();
+    });
+    btn.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openDd();
+            (dd.querySelector('.dd-opt.selected') || opts[0])?.focus();
+        }
+    });
+
+    opts.forEach((opt, i) => {
+        opt.addEventListener('click', () => selectOpt(opt));
+        opt.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowDown') { e.preventDefault(); (opts[i + 1] || opts[0]).focus(); }
+            else if (e.key === 'ArrowUp') { e.preventDefault(); (opts[i - 1] || opts[opts.length - 1]).focus(); }
+            else if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectOpt(opt); btn.focus(); }
+            else if (e.key === 'Escape') { closeDd(); btn.focus(); }
+        });
+    });
+});
+document.addEventListener('click', () => document.querySelectorAll('.dd.open').forEach(d => d.classList.remove('open')));
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') document.querySelectorAll('.dd.open').forEach(d => d.classList.remove('open'));
+});
+
+// ── Chips de ejemplo ───────────────────────────────────────────────────────
+document.querySelectorAll('.chip[data-fill]').forEach(chip => {
+    chip.addEventListener('click', () => {
+        const ta = document.getElementById('objetivo');
+        ta.value = chip.dataset.fill;
+        ta.focus();
+    });
+});
+document.querySelectorAll('.chip[data-fill-pregunta]').forEach(chip => {
+    chip.addEventListener('click', () => {
+        const ta = document.getElementById('pregunta');
+        ta.value = chip.dataset.fillPregunta;
+        ta.focus();
+    });
+});
+
+// ── Volver a la entrada desde resultados ────────────────────────────────────
+document.getElementById('btn-nueva').addEventListener('click', () => {
+    showEmpty();
+    document.getElementById(currentMode === 'sesion' ? 'objetivo' : 'pregunta').focus();
+});
+
+// ── Enter to submit ────────────────────────────────────────────────────────
+document.getElementById('objetivo').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); generar(); }
+});
+document.getElementById('pregunta').addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); consultarReglamento(); }
+});
+
+// ── Generar sesión ─────────────────────────────────────────────────────────
+document.getElementById('btn-generar').addEventListener('click', generar);
+
+// ── Consultar reglamento ───────────────────────────────────────────────────
+document.getElementById('btn-reglamento').addEventListener('click', consultarReglamento);
+
+async function consultarReglamento() {
+    const pregunta = document.getElementById('pregunta').value.trim();
+    if (!pregunta) { showFormError('Escribe una pregunta.'); return; }
+    clearFormError();
+
+    currentObjetivo = pregunta;
+    currentEdad = '';
+    currentEdadSlug = 'general';
+    currentDuracion = 0;
+    showLoading();
+
+    try {
+        const resp = await fetch('/reglamento/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+            body: JSON.stringify({ pregunta }),
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(data.error || `Error del servidor (${resp.status})`);
+        renderReglamento(data);
+    } catch (e) {
+        hideLoading();
+        showEmpty();
+        showFormError('Error: ' + e.message);
+    }
+}
+
+function renderReglamento(data) {
+    document.getElementById('results-heading').textContent = 'Respuesta sobre el reglamento';
+    const respuesta = data.respuesta || data.texto || '';
+    const html = `<div class='reglamento-card'>${mdToHtml(respuesta)}</div>`;
+    document.getElementById('resultado-contenido').innerHTML = html;
+    document.getElementById('consultados-wrap').style.display = 'none';
+    document.querySelector('.downloads').style.display = 'none';
+    document.querySelector('.feedback').style.display = 'none';
+    selectedEjercicios = new Set();
+    document.getElementById('reprompt-bar').style.display = 'none';
+    showResults();
+}
+
+async function generar() {
+    const objetivo = document.getElementById('objetivo').value.trim();
+    if (!objetivo) { showFormError('Describe qué quieres trabajar en el entrenamiento.'); return; }
+    clearFormError();
+
+    const edad = document.getElementById('edad').value;
+    const genDiagramas = document.getElementById('gen-diagramas').checked;
+    const duracion = parseInt(document.getElementById('duracion').value) || null;
+
+    currentObjetivo = objetivo;
+    currentEdad = document.getElementById('edad').options[document.getElementById('edad').selectedIndex].text;
+    currentEdadSlug = edad ? edad.toLowerCase() : 'general';
+    currentDuracion = duracion || 0;
+
+    showLoading();
+
+    const payload = { objetivo, generar_diagramas: genDiagramas };
+    if (edad) payload.edad = edad;
+    if (duracion) payload.duracion = duracion;
+
+    try {
+        const resp = await fetch('/generar/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+            body: JSON.stringify(payload),
+        });
+        const data = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(data.error || `Error del servidor (${resp.status})`);
+        if (data.duracion) currentDuracion = data.duracion;
+        currentResult = data;
+        renderResults(data);
+    } catch (e) {
+        hideLoading();
+        showEmpty();
+        showFormError('Error: ' + e.message);
+    }
+}
+
+// ── Markdown helper ────────────────────────────────────────────────────────
+function mdToHtml(s) {
+    return escHtml(s)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g, '<em>$1</em>');
+}
+
+// ── Render sesión ──────────────────────────────────────────────────────────
+function renderResults(data) {
+    document.getElementById('results-heading').textContent = 'Sesión de entrenamiento generada';
+    const texto = (data.sesion || data.texto || '').replace(/\[ej_\d+\]\s*/g, '');
+    const diagramas = data.diagramas || [];
+
+    // Agrupar diagramas por nombre de ejercicio (para multifase)
+    const diagGroups = [];
+    let di = 0;
+    while (di < diagramas.length) {
+        const nom = diagramas[di].nombre;
+        const grp = [];
+        while (di < diagramas.length && diagramas[di].nombre === nom) grp.push(diagramas[di++]);
+        diagGroups.push(grp);
+    }
+
+    // Badge
+    let html = data.teoria_usada
+        ? "<span class='badge'>✓ Enriquecido con teoría</span>"
+        : "<span class='badge'>Sin teoría adicional</span>";
+
+    // Parsear texto en bloques (secciones y ejercicios). Se guarda en
+    // currentBloques (no solo local) para poder sustituir un único bloque tras
+    // un reprompt y reconstruir el texto completo sin tocar el resto.
+    const lineas = texto.split('\n');
+    let bloques = [], bloque = [], ejIdx = -1;
+    for (const linea of lineas) {
+        if (/^\s*Ejercicio \d+/.test(linea)) {
+            if (bloque.length) bloques.push({ ejIdx, texto: bloque.join('\n') });
+            ejIdx++;
+            bloque = [linea];
+        } else {
+            bloque.push(linea);
+        }
+    }
+    if (bloque.length) bloques.push({ ejIdx, texto: bloque.join('\n') });
+    currentBloques = bloques;
+    currentEjercicios = [];
+    selectedEjercicios = new Set();
+
+    let ejercicioNum = 0;
+    bloques.forEach((b, bloqueIdx) => {
+        if (/^\s*Ejercicio \d+/.test(b.texto)) {
+            const ls = b.texto.split('\n');
+            const titulo = ls[0].trim();
+            const resto  = ls.slice(1).join('\n').trim();
+            const headerLine = (titulo.match(/^(Ejercicio \d+(?:\.\d+)?)/) || [null, titulo])[1];
+            const nombre = titulo.replace(/^Ejercicio \d+(?:\.\d+)?\s*(?:\([^)]*\))?\s*:\s*/, '').trim();
+            const diagNombre = (ejercicioNum < diagGroups.length && diagGroups[ejercicioNum][0])
+                ? diagGroups[ejercicioNum][0].nombre : nombre;
+
+            currentEjercicios.push({ bloqueIdx, headerLine, nombre, descripcion: resto, diagNombre });
+            const ejN = currentEjercicios.length - 1;
+
+            html += `<div class="ejercicio-block" data-ej-idx="${ejN}">`;
+            html += `<label class="ej-select"><input type="checkbox" class="ej-checkbox" data-ej-idx="${ejN}"> Editar este ejercicio</label>`;
+            html += `<h3 class='ejercicio-title'>${escHtml(titulo)}</h3>`;
+
+            // Mostrar TODOS los diagramas del ejercicio (multifase)
+            if (ejercicioNum < diagGroups.length) {
+                for (const d of diagGroups[ejercicioNum]) {
+                    if (d.titulo) html += `<div class='diagrama-label'>${escHtml(d.titulo)}</div>`;
+                    html += `<div class='diagrama-wrap'>${d.svg}</div>`;
+                }
+            }
+
+            if (resto) html += `<div class='sesion-card'>${mdToHtml(resto)}</div>`;
+            html += `</div>`;
+            ejercicioNum++;
+        } else {
+            const contenido = b.texto.trim();
+            if (!contenido) return;
+            // Secciones (**TEXTO**) en línea propia → título de sección
+            const soloTitulo = contenido.replace(/\*\*(.+?)\*\*/g, (_, t) =>
+                `<h2 class='section-title'>${escHtml(t)}</h2>`
+            );
+            html += (soloTitulo !== contenido) ? soloTitulo : `<div class='sesion-card'>${mdToHtml(contenido)}</div>`;
+        }
+    });
+
+    document.getElementById('resultado-contenido').innerHTML = html;
+    document.querySelectorAll('.ej-checkbox').forEach(cb => {
+        cb.addEventListener('change', () => {
+            const idx = parseInt(cb.dataset.ejIdx);
+            cb.closest('.ejercicio-block').classList.toggle('selected', cb.checked);
+            if (cb.checked) selectedEjercicios.add(idx); else selectedEjercicios.delete(idx);
+            actualizarBarraReprompt();
+        });
+    });
+    actualizarBarraReprompt();
+
+    // Restaurar secciones que el modo reglamento puede haber ocultado
+    document.querySelector('.downloads').style.display = '';
+    document.querySelector('.feedback').style.display = '';
+
+    // Ejercicios consultados
+    const ejs = data.ejercicios_usados || [];
+    if (ejs.length) {
+        document.getElementById('consultados-title').textContent = `📋 Ejercicios consultados (${ejs.length})`;
+        document.getElementById('consultados-body').innerHTML = ejs.map(ej => {
+            if (typeof ej === 'object') {
+                const icono = ej.tiene_diagrama ? '📐 ' : '';
+                return `<div>${icono}<strong>${escHtml(ej.nombre || ej.id || '?')}</strong>${ej.duracion_min ? ` (${ej.duracion_min} min)` : ''}</div>`;
+            }
+            return `<div>${escHtml(String(ej))}</div>`;
+        }).join('');
+        document.getElementById('consultados-wrap').style.display = '';
+    } else {
+        document.getElementById('consultados-wrap').style.display = 'none';
+    }
+
+    document.getElementById('fb-msg').textContent = '';
+    showResults();
+}
+
+// ── Reprompt: corregir uno o varios ejercicios ya generados ─────────────────
+function actualizarBarraReprompt() {
+    const bar = document.getElementById('reprompt-bar');
+    const n = selectedEjercicios.size;
+    if (n === 0) {
+        bar.style.display = 'none';
+        const ta = document.getElementById('reprompt-instruccion');
+        ta.value = '';
+        ta.style.height = 'auto';
+        return;
+    }
+    bar.style.display = '';
+    document.getElementById('reprompt-count').textContent =
+        n === 1 ? '1 ejercicio seleccionado' : `${n} ejercicios seleccionados`;
+}
+
+function formatEjercicioTexto(headerLine, ej, ejOriginal) {
+    const partes = [];
+    if (ej.objetivos && typeof ej.objetivos === 'object') {
+        ['tacticos', 'tecnicos', 'fisicos'].forEach(k => {
+            const v = ej.objetivos[k];
+            if (v) partes.push(Array.isArray(v) ? v.join(', ') : String(v));
+        });
+    }
+    // La corrección no siempre rellena los mismos campos que la sesión original
+    // (p.ej. "objetivos" u "organización" pueden venir vacíos). En vez de un
+    // texto de relleno que sustituya una descripción real por nada útil, se
+    // omite esa línea y se conserva la duración original si la corregida no
+    // trae una — así no se pierde información ya buena por culpa de un campo
+    // que esta vez no vino.
+    let out = `${headerLine}: ${ej.nombre || 'Ejercicio corregido'}\n`;
+    if (partes.length) out += `Organización: ${partes.join(' ')}\n`;
+    const duracion = ej.duracion_min || (ejOriginal.descripcion.match(/Duración:\s*(\d+)/) || [])[1];
+    if (duracion) out += `Duración: ${duracion} min\n`;
+    if (Array.isArray(ej.puntos_clave) && ej.puntos_clave.length) {
+        out += `Puntos clave: ${ej.puntos_clave.join('; ')}`;
+    }
+    return out.trim();
+}
+
+const repromptTextarea = document.getElementById('reprompt-instruccion');
+repromptTextarea.addEventListener('input', () => {
+    repromptTextarea.style.height = 'auto';
+    repromptTextarea.style.height = repromptTextarea.scrollHeight + 'px';
+});
+repromptTextarea.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); aplicarReprompt(); }
+});
+document.getElementById('btn-reprompt').addEventListener('click', aplicarReprompt);
+
+async function aplicarReprompt() {
+    const instruccion = document.getElementById('reprompt-instruccion').value.trim();
+    if (!instruccion) { showFormError('Describe qué quieres cambiar.'); return; }
+    if (!currentResult || selectedEjercicios.size === 0) return;
+    clearFormError();
+
+    const btn = document.getElementById('btn-reprompt');
+    const idxs = Array.from(selectedEjercicios);
+    btn.disabled = true;
+
+    for (const idx of idxs) {
+        const ej = currentEjercicios[idx];
+        btn.textContent = `⏳ Corrigiendo ${idxs.indexOf(idx) + 1}/${idxs.length}…`;
+        try {
+            const resp = await fetch('{% url "reprompt" %}', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+                body: JSON.stringify({
+                    edad: document.getElementById('edad').value,
+                    objetivo: currentObjetivo,
+                    nombre: ej.nombre,
+                    descripcion: ej.descripcion,
+                    instruccion,
+                }),
+            });
+            const data = await resp.json().catch(() => ({}));
+            if (!resp.ok) throw new Error(data.error || `Error del servidor (${resp.status})`);
+
+            const nuevoEjercicio = data.ejercicio || {};
+            const nuevasDiagramas = data.diagramas || [];
+
+            // Sustituir el texto del bloque, conservando la numeración "Ejercicio N".
+            currentBloques[ej.bloqueIdx].texto = formatEjercicioTexto(ej.headerLine, nuevoEjercicio, ej);
+
+            // Sustituir sus diagramas EN SU MISMA POSICIÓN (no al final): diagGroups
+            // se reconstruye por orden de array al volver a renderizar, así que un
+            // simple filter+push desalinearía los diagramas de los ejercicios
+            // siguientes.
+            const nuevoNombre = nuevoEjercicio.nombre || ej.nombre;
+            currentResult.diagramas = currentResult.diagramas || [];
+            const primeraPos = currentResult.diagramas.findIndex(d => d.nombre === ej.diagNombre);
+            const insertarEn = primeraPos === -1 ? currentResult.diagramas.length : primeraPos;
+            currentResult.diagramas = currentResult.diagramas.filter(d => d.nombre !== ej.diagNombre);
+            const nuevosConNombre = nuevasDiagramas.map(d => ({ id: ej.diagNombre, nombre: nuevoNombre, titulo: d.titulo || '', svg: d.svg }));
+            currentResult.diagramas.splice(insertarEn, 0, ...nuevosConNombre);
+        } catch (e) {
+            showFormError(`Error corrigiendo "${ej.nombre}": ${e.message}`);
+        }
+    }
+
+    // Reconstruir el texto completo de la sesión a partir de los bloques (solo
+    // cambió el/los que se corrigieron) y volver a pintar todo con los datos ya
+    // actualizados, para que "Nueva consulta" y las descargas reflejen el cambio.
+    currentResult.sesion = currentBloques.map(b => b.texto).join('\n');
+    repromptTextarea.value = '';
+    repromptTextarea.style.height = 'auto';
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2.5v3.2h-3.2"/></svg> Aplicar cambio';
+    renderResults(currentResult);
+}
+
+function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Downloads ──────────────────────────────────────────────────────────────
+document.getElementById('btn-txt').addEventListener('click', () => {
+    if (!currentResult) return;
+    const texto = currentResult.sesion || currentResult.texto || '';
+    const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `sesion_${currentEdadSlug}.txt`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+});
+
+document.getElementById('btn-pdf').addEventListener('click', async () => {
+    if (!currentResult) return;
+    const btn = document.getElementById('btn-pdf');
+    btn.textContent = '⏳ Generando PDF…';
+    btn.disabled = true;
+    try {
+        const resp = await fetch('/pdf/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+            body: JSON.stringify({
+                sesion: currentResult.sesion || currentResult.texto || '',
+                edad: currentEdad,
+                objetivo: currentObjetivo,
+                duracion: currentDuracion,
+                diagramas: currentResult.diagramas || [],
+            }),
+        });
+        if (!resp.ok) throw new Error('Error generando PDF');
+        const blob = await resp.blob();
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `sesion_${currentEdadSlug}.pdf`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+    } catch (e) {
+        const msgEl = document.getElementById('fb-msg');
+        msgEl.textContent = 'Error generando PDF: ' + e.message;
+        msgEl.className = 'feedback-msg err';
+    } finally {
+        btn.textContent = '📄 Descargar PDF';
+        btn.disabled = false;
+    }
+});
+
+// ── Feedback ───────────────────────────────────────────────────────────────
+document.getElementById('btn-feedback').addEventListener('click', async () => {
+    const cambios = document.getElementById('fb-cambios').value.trim();
+    const msgEl = document.getElementById('fb-msg');
+    if (!cambios) {
+        msgEl.textContent = 'Describe brevemente qué cambiaste.';
+        msgEl.className = 'feedback-msg err';
+        return;
+    }
+    const rating = parseInt(document.getElementById('fb-rating').value);
+    const ts = new Date().toISOString().replace(/[:.]/g,'').slice(0,15);
+    try {
+        const resp = await fetch('/feedback/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
+            body: JSON.stringify({
+                timestamp: ts,
+                edad: currentEdad,
+                duracion: currentDuracion,
+                objetivo: currentObjetivo,
+                sesion_generada: currentResult?.sesion || '',
+                cambios_realizados: cambios,
+                rating,
+                ejercicios_usados: currentResult?.ejercicios_usados || [],
+            }),
+        });
+        if (resp.ok) {
+            msgEl.textContent = '✓ Sesión guardada. ¡Gracias!';
+            msgEl.className = 'feedback-msg ok';
+        } else {
+            throw new Error();
+        }
+    } catch {
+        msgEl.textContent = 'Error guardando. Inténtalo de nuevo.';
+        msgEl.className = 'feedback-msg err';
+    }
+});
+
+// ── State helpers ──────────────────────────────────────────────────────────
+function showEmpty() {
+    document.getElementById('form-sesion').style.display = currentMode === 'sesion' ? '' : 'none';
+    document.getElementById('form-reglamento').style.display = currentMode === 'reglamento' ? '' : 'none';
+    document.getElementById('loading').classList.remove('visible');
+    document.getElementById('results').classList.remove('visible');
+}
+function showLoading() {
+    document.getElementById('form-sesion').style.display = 'none';
+    document.getElementById('form-reglamento').style.display = 'none';
+    document.getElementById('results').classList.remove('visible');
+    document.getElementById('loading').classList.add('visible');
+    document.getElementById('btn-generar').disabled = true;
+    document.getElementById('btn-reglamento').disabled = true;
+}
+function hideLoading() {
+    document.getElementById('loading').classList.remove('visible');
+    document.getElementById('btn-generar').disabled = false;
+    document.getElementById('btn-reglamento').disabled = false;
+}
+function showResults() {
+    hideLoading();
+    document.getElementById('form-sesion').style.display = 'none';
+    document.getElementById('form-reglamento').style.display = 'none';
+    document.getElementById('results').classList.add('visible');
+}
+</script>
+
+<footer class="legal-footer">
+    <span>MiPizarra &copy; {% now "Y" %}</span>
+    <a href="{% url 'privacidad' %}">Política de privacidad</a>
+    <a href="{% url 'aviso_legal' %}">Aviso legal</a>
+</footer>
+</body>
+</html>
