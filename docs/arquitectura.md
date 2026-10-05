@@ -17,7 +17,9 @@ Navegador ──▶ frontend (Django) ──▶ api (FastAPI) ──▶ ollama (
 | `api/config.py` | Variables de entorno, modelos, rutas, mapeo de categorías y nombres de ámbito de reglamento. Sin dependencias pesadas. |
 | `api/ejercicios.py` | Biblioteca de ejercicios: carga, filtrado por edad y objetivo, selección de los tres ejercicios de la sesión y contexto de ejercicios para el prompt. |
 | `api/contexto.py` | Recuperación (RAG): consulta a las colecciones de ChromaDB, presupuesto de contexto por colección y ámbitos de reglamento. |
-| `api/sesion.py` | Modo 1: generación de la sesión completa (plantilla, llamada al LLM y limpieza del texto). |
+| `api/sesion.py` | Modo 1: generación de la sesión completa. Elige los tres ejercicios, pide al LLM solo lo que no está curado (calentamiento, vuelta a la calma, fundamentos, variantes N.2 y huecos sin ficha), valida sus líneas rojas y ensambla el texto final. |
+| `api/bloques.py` | Bloques de la sesión que compone el código: ficha curada íntegra (descripción y puntos clave de `exercises.json`), variante desde la progresión de la ficha y troceado de la respuesta del modelo. |
+| `api/lineas_rojas.py` | Guardia léxica de líneas rojas por edad para todo texto generado por el modelo, e instrucción equivalente para el prompt. |
 | `api/diagramas.py` | Coordenadas JSON de los diagramas (JSON Schema + validador semántico + reintento). |
 | `api/ejercicio_unico.py` | Modo 2: ejercicio suelto y reprompt (corrección pedida por el entrenador). |
 | `api/reglamento.py` | Modo 3: dudas de reglamento y fundamentos técnicos, por ámbito. |
@@ -31,10 +33,14 @@ Navegador ──▶ frontend (Django) ──▶ api (FastAPI) ──▶ ollama (
 ```
 config            (no importa a ningún otro módulo)
 ejercicios        → config
+bloques           (no importa a ningún otro módulo)
+lineas_rojas      (no importa a ningún otro módulo)
+bloques           (no importa a ningún otro módulo)
+lineas_rojas      (no importa a ningún otro módulo)
 contexto          → config
 diagramas         → config, ejercicios, prompts
 ejercicio_unico   → config, ejercicios
-sesion            → config, contexto, ejercicios
+sesion            → config, contexto, ejercicios, bloques, lineas_rojas, bloques, lineas_rojas
 reglamento        → config, contexto, prompts
 rag_engine        → todos los anteriores (fachada)
 main              → rag_engine, diagram_renderer
@@ -50,9 +56,10 @@ Al parchear una función en un test hay que hacerlo en el módulo donde vive (po
 
 1. El frontend envía categoría, duración y objetivo a la API.
 2. `ejercicios` filtra ejercicios por edad y objetivos, y `contexto` recupera teoría relevante de ChromaDB (presupuesto de contexto por colección).
-3. El LLM redacta la sesión con una plantilla fija (calentamiento, parte principal, vuelta a la calma, fundamentos).
-4. Para cada ejercicio se usa el diagrama de la biblioteca si existe; si no, se genera uno desde la descripción.
-5. La sesión y los SVG se devuelven al frontend.
+3. Cada uno de los tres ejercicios usa su ficha de la biblioteca si encaja con el objetivo (`es_relevante`); si no, ese hueco lo propone la IA y se marca «Propuesto por la IA (sin revisar)».
+4. El código compone los ejercicios con la ficha curada íntegra (descripción y puntos clave tal cual). El LLM redacta solo calentamiento, vuelta a la calma, fundamentos, las variantes N.2 que la ficha no trae y los huecos propuestos; si algo incumple las líneas rojas de la edad se reintenta una vez y, si persiste, se omite esa pieza (queda en `avisos`).
+5. Para cada ejercicio se usa el diagrama de la biblioteca si existe; si no, se genera uno desde la descripción.
+6. La sesión y los SVG se devuelven al frontend.
 
 ## Diagramas fiables
 

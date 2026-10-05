@@ -28,7 +28,7 @@ from contexto import (  # noqa: F401
 from sesion import (  # noqa: F401
     CATEGORIAS_SIN_POSTE_NI_BLOQUEO, MAX_BLOQUE_POR_EDAD, MAX_BLOQUE_DEFECTO,
     vocabulario_tecnico, generar_sesion,
-    _eliminar_secciones_duplicadas, _desc_ej, _redondear_5, _bloque_ejercicio,
+    _eliminar_secciones_duplicadas, _redondear_5, _bloque_ejercicio,
 )
 from diagramas import (  # noqa: F401
     generar_diagrama_desde_texto, generar_coordenadas_ejercicio,

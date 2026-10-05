@@ -1,12 +1,24 @@
 # api/sesion.py
-"""Modo 1: generación de una sesión completa de entrenamiento."""
+"""Modo 1: generación de una sesión completa de entrenamiento.
+
+Los ejercicios de la biblioteca los compone el código con la ficha curada íntegra (ver
+bloques.py); el modelo solo redacta calentamiento, vuelta a la calma, fundamentos, las variantes
+N.2 que la ficha no trae y los huecos para los que no hay ficha relevante (marcados como
+«propuestos por la IA»). Todo lo que escribe el modelo pasa por la guardia de líneas rojas."""
 import logging
+import re
+from dataclasses import dataclass
 
 import requests
 
+from bloques import (
+    MARCA_PROPUESTO, bloque_curado, bloque_variante_curada, extraer_bloques,
+    formatear_descripcion, nombre_de_cabecera, reescribir_bloque,
+)
 from config import EDAD_A_CATEGORIA, MODEL_SESION, OLLAMA_URL
 from contexto import construir_contexto_teoria
-from ejercicios import cargar_ejercicios, filtrar_ejercicios, seleccionar_tres_ejercicios
+from ejercicios import cargar_ejercicios, es_relevante, filtrar_ejercicios, seleccionar_tres_ejercicios
+from lineas_rojas import CATEGORIAS_MINIBASKET, instruccion_prompt, violaciones
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +26,7 @@ logger = logging.getLogger(__name__)
 # Categorías de formación (minibasket y alevín) donde no se recomienda enseñar
 # juego de poste ni bloqueos — no es ilegal, pero no aporta a esas edades
 # (mismo criterio que la tabla de restricciones de docs/coordenadas.md).
-CATEGORIAS_SIN_POSTE_NI_BLOQUEO = {"U8", "U10", "U12", "Prebenjamín", "Benjamín", "Alevín"}
+CATEGORIAS_SIN_POSTE_NI_BLOQUEO = CATEGORIAS_MINIBASKET
 
 
 def vocabulario_tecnico(edad: str) -> str:
@@ -70,13 +82,6 @@ def _eliminar_secciones_duplicadas(texto: str) -> str:
     return '\n'.join(resultado)
 
 
-def _desc_ej(ej: dict) -> str:
-    """Línea corta de descripción para el prompt de sesión."""
-    tacticos = ", ".join(ej.get("objetivos", {}).get("tacticos", [])[:3])
-    desc = ej.get("descripcion", "")[:120]
-    return f"{tacticos}. {desc}".strip(". ")
-
-
 # Minutos máximos razonables haciendo lo mismo antes de perder la atención/
 # motivación del grupo. Categorías de formación aguantan menos que Cadete+.
 MAX_BLOQUE_POR_EDAD = {
@@ -86,6 +91,12 @@ MAX_BLOQUE_POR_EDAD = {
 }
 MAX_BLOQUE_DEFECTO = 20  # Cadete en adelante
 
+ROLES_EJERCICIO = {
+    1: "sin oposición o defensa pasiva",
+    2: "con superioridad numérica",
+    3: "con oposición igualada",
+}
+
 
 def _redondear_5(minutos: float, minimo: int = 5) -> int:
     """Las duraciones son una guía para el entrenador, no una medida exacta —
@@ -93,10 +104,23 @@ def _redondear_5(minutos: float, minimo: int = 5) -> int:
     return max(minimo, round(minutos / 5) * 5)
 
 
+def _plantilla_variante(numero: int, nombre: str, duracion: int) -> str:
+    referencia = f'variante de "{nombre}"' if nombre else f"variante del ejercicio {numero}.1"
+    return f"""Ejercicio {numero}.2 ({referencia} — mismo ejercicio con un cambio o regla nueva, no lo repitas igual):
+Duración: {duracion} min
+Qué cambia respecto a {numero}.1:
+Organización:
+Puntos clave:
+-
+-
+"""
+
+
 def _bloque_ejercicio(numero: int, nombre: str, duracion: int, edad: str) -> str:
-    """Plantilla para un ejercicio de la parte principal. Si la duración supera lo que
-    ese grupo de edad aguanta haciendo lo mismo, lo parte en N.1 (base) + N.2 (variante:
-    mismo ejercicio con un cambio/regla nueva) en vez de un único bloque monótono."""
+    """Plantilla que el modelo rellena para un ejercicio de la parte principal. Si la duración
+    supera lo que ese grupo de edad aguanta haciendo lo mismo, lo parte en N.1 (base) + N.2
+    (variante: mismo ejercicio con un cambio/regla nueva) en vez de un único bloque monótono.
+    Con nombre vacío, el modelo propone también el nombre del ejercicio."""
     max_bloque = MAX_BLOQUE_POR_EDAD.get(edad, MAX_BLOQUE_DEFECTO)
     if duracion <= max_bloque:
         return f"""Ejercicio {numero}: {nombre}
@@ -115,58 +139,340 @@ Puntos clave:
 -
 -
 
-Ejercicio {numero}.2 (variante de "{nombre}" — mismo ejercicio con un cambio o regla nueva, no lo repitas igual):
-Duración: {t2} min
-Qué cambia respecto a {numero}.1:
-Organización:
-Puntos clave:
--
--
-"""
+{_plantilla_variante(numero, nombre, t2)}"""
+
+
+@dataclass
+class _Hueco:
+    """Uno de los tres ejercicios de la parte principal."""
+    numero: int
+    ficha: dict | None   # ficha de la biblioteca, o None si el hueco lo propone la IA
+    t1: int              # minutos del bloque base (o del bloque entero si no se parte)
+    t2: int              # minutos de la variante N.2 (0 si no se parte)
+    variante_curada: str | None = None
+
+    @property
+    def partido(self) -> bool:
+        return self.t2 > 0
+
+    def clave_variante(self) -> str:
+        return f"ej:{self.numero}.2"
+
+    def claves_del_modelo(self) -> list[str]:
+        """Bloques que se piden al modelo para este hueco."""
+        if self.ficha is None:
+            return [f"ej:{self.numero}.1", f"ej:{self.numero}.2"] if self.partido else [f"ej:{self.numero}"]
+        if self.partido and self.variante_curada is None:
+            return [self.clave_variante()]
+        return []
+
+
+def _duraciones(duracion: int, partido: bool) -> tuple[int, int]:
+    if not partido:
+        return duracion, 0
+    t1 = _redondear_5(duracion / 2)
+    return t1, _redondear_5(duracion - t1)
+
+
+def _linea_prompt(hueco: _Hueco) -> str:
+    rol = ROLES_EJERCICIO[hueco.numero]
+    ficha = hueco.ficha
+    if ficha is None:
+        return (f"{hueco.numero}. SIN FICHA en la biblioteca para este hueco: propón tú un ejercicio "
+                f"{rol}, con nombre propio, coherente con el objetivo y la categoría, y escribe su bloque "
+                f"«Ejercicio {hueco.numero}» completo.")
+    descripcion = formatear_descripcion(ficha.get("descripcion", "")).replace("\n", "\n   ")
+    puntos = " | ".join(ficha.get("puntos_clave", []))
+    return (f'{hueco.numero}. "{ficha["nombre"]}" — {rol}.\n'
+            f"   Ficha del entrenador (se incluye sola en la sesión: NO la escribas ni la resumas):\n"
+            f"   {descripcion}\n   Puntos clave: {puntos}")
+
+
+def _plantilla_modelo(huecos: list[_Hueco], edad: str, t_calent: int, t_vuelta: int, t_descanso: int) -> str:
+    """Solo los apartados que redacta el modelo, en el orden de la sesión."""
+    bloques = []
+    for h in huecos:
+        if h.ficha is None:
+            bloques.append(_bloque_ejercicio(h.numero, "", h.t1 + h.t2, edad))
+        elif h.partido and h.variante_curada is None:
+            bloques.append(_plantilla_variante(h.numero, h.ficha["nombre"], h.t2))
+    principal = "\n".join(bloques)
+    return f"""**CALENTAMIENTO ({t_calent} min)**
+Juego:
+Reglas:
+Espacio:
+
+**PARTE PRINCIPAL**
+
+{principal}
+**VUELTA A LA CALMA ({t_vuelta} min)**
+Juego:
+Reglas:
+
+**Fundamentos**: """
+
+
+def _limpiar_respuesta(texto: str) -> str:
+    """Quita del texto del modelo el razonamiento, preámbulos, meta-comentarios y repeticiones."""
+    texto = texto.strip()
+
+    if texto.startswith("{") or texto.startswith("["):
+        logger.warning("Modelo devolvió JSON en lugar de texto, reintentando...")
+        raise ValueError("Respuesta en JSON no válida")
+
+    # ── 0. Eliminar bloques <think>...</think> (Qwen3 con think no desactivado) ──
+    texto = re.sub(r'<think>.*?</think>', '', texto, flags=re.DOTALL).strip()
+
+    # ── 0b. Cortar razonamiento previo y encontrar el inicio real de la sesión ──
+    # Busca el primer marcador estructural de la sesión (en cualquier orden)
+    match_inicio = re.search(
+        r'(\*\*CALENTAMIENTO|\*\*PARTE PRINCIPAL|^Ejercicio\s+\d(?:\.\d+)?\s*(?:\([^)]*\))?\s*:)',
+        texto, re.MULTILINE
+    )
+    if match_inicio:
+        texto = texto[match_inicio.start():]
+    else:
+        # Fallback: primera línea que comience una sección conocida
+        lineas = texto.split('\n')
+        primera_es = next(
+            (i for i, l in enumerate(lineas)
+             if re.match(r'(Ejercicio\s+\d|CALENTAMIENTO|\*\*CALENTAMIENTO|\*\*PARTE)', l.strip())),
+            None
+        )
+        if primera_es:
+            texto = '\n'.join(lineas[primera_es:]).strip()
+
+    # ── 1. Limpiar preámbulos que el modelo añade antes de la sesión ──────
+    preambles = ['"""', "'''", '""', "''"]
+    for p in preambles:
+        if texto.startswith(p):
+            texto = texto[len(p):].lstrip()
+    # Eliminar "Sesión:" o variantes en la primera línea
+    primera_linea, *resto = texto.split('\n')
+    if primera_linea.strip().rstrip(':') in ('Sesión', 'Sesion', 'SESIÓN', '"""', "'''"):
+        texto = '\n'.join(resto).lstrip()
+
+    # ── 2. Truncar en patrones que indican que el modelo se ha ido de madre ─
+    truncar_en = [
+        "INSTRUCCIONES CRÍTICAS", "**INSTRUCCIONES", "INSTRUCCIONES:",
+        "IMPORTANTE:", "REGLAS:", "FORMATO:",
+        "ESTRUCTURA OBLIGATORIA:", "REGLAS ABSOLUTAS:",
+        "Este es un texto", "Aquí tienes", "Aquí está",
+        "La respuesta completa", "A continuación te",
+        "¿Cómo", "NOTA:", "En resumen,", "También es importante",
+        "para ajustar este plan", "**SESIÓN**",
+    ]
+    for patron in truncar_en:
+        if patron in texto:
+            texto = texto.split(patron)[0].strip()
+
+    # ── 3. Eliminar Ejercicio 4+ si se ha colado ──────────────────────────
+    for patron_extra in ["\nEjercicio 4:", "\nEjercicio 5:"]:
+        if patron_extra in texto:
+            texto = texto.split(patron_extra)[0].strip()
+
+    # ── 3b. Eliminar "Ejercicio 1/2/3" repetidos (rambling tras terminar) ──
+    texto = _eliminar_secciones_duplicadas(texto)
+
+    # ── 4. Truncar al final natural (tras Fundamentos) ────────────────────
+    # Acepta: **Fundamentos**: texto | Fundamentos\ntexto | FUNDAMENTOS: texto
+    match_fund = re.search(
+        r'(?:\*\*)?(?:Fundamentos|FUNDAMENTOS)(?:\*\*)?:?\s*\n?[^\n]+',
+        texto, re.IGNORECASE
+    )
+    if match_fund:
+        texto = texto[:match_fund.end()].strip()
+    return texto
+
+
+def _pedir_texto_sesion(prompt: str, num_predict: int, num_ctx: int) -> tuple[str, str | None]:
+    """Devuelve (texto, done_reason). done_reason=='length' significa que Ollama
+    agotó num_predict y cortó a mitad de frase — señal real de truncado, a
+    diferencia de adivinar de antemano si el presupuesto alcanzará."""
+    response = requests.post(
+        f"{OLLAMA_URL}/api/generate",
+        json={
+            "model":   MODEL_SESION,
+            "prompt":  prompt,
+            "stream":  False,
+            "options": {
+                "temperature": 0.4,
+                "num_predict": num_predict,
+                "num_ctx":     num_ctx,
+                "top_p":       0.9,
+                "min_p":       0.05,
+                "repeat_penalty": 1.2,
+                "stop": [
+                    "```",
+                    # Instrucciones (con o sin "CRÍTICAS", con o sin negrita)
+                    "INSTRUCCIONES:", "INSTRUCCIONES CRÍTICAS", "**INSTRUCCIONES",
+                    # Meta-comentarios del LLM
+                    "Este es un texto", "Aquí tienes", "Aquí está",
+                    "La respuesta completa", "A continuación",
+                    # Secciones no deseadas
+                    "IMPORTANTE:", "FORMATO:", "REGLAS:",
+                    "{", "¿Cómo", "NOTA:", "En resumen",
+                    "También es importante", "para ajustar este plan",
+                    "**SESIÓN**",
+                    # Ejercicios extra
+                    "Ejercicio 4:", "Ejercicio 5:",
+                ],
+            },
+        },
+        timeout=300,
+    )
+    response.raise_for_status()
+    data = response.json()
+    return data["response"], data.get("done_reason")
+
+
+def _texto_del_modelo(prompt: str, num_predict: int, num_ctx: int) -> str:
+    """Pide el texto al modelo, con un reintento con más presupuesto si se trunca."""
+    texto, done_reason = _pedir_texto_sesion(prompt, num_predict, num_ctx)
+    if done_reason == "length":
+        logger.warning(
+            f"Sesión truncada (agotó num_predict={num_predict}), reintentando con más presupuesto..."
+        )
+        texto, done_reason = _pedir_texto_sesion(prompt, num_predict + 2500, num_ctx + 3000)
+        if done_reason == "length":
+            logger.warning(
+                "Sesión sigue truncada tras el reintento — se entrega el texto "
+                "parcial (mejor incompleto y avisado que nada)."
+            )
+    return _limpiar_respuesta(texto)
+
+
+def _nombre_de_pieza(clave: str) -> str:
+    return {"calentamiento": "Calentamiento", "vuelta": "Vuelta a la calma",
+            "fundamentos": "Fundamentos"}.get(clave, clave.replace("ej:", "Ejercicio "))
+
+
+def _normalizar_claves(huecos: list[_Hueco], bloques: dict[str, str]) -> None:
+    """El modelo a veces escribe 'Ejercicio N:' donde la plantilla pedía 'N.1' (o al revés)
+    para un hueco propuesto: se acepta cualquiera de las dos numeraciones."""
+    for h in huecos:
+        if h.ficha is not None:
+            continue
+        n = h.numero
+        if h.partido and f"ej:{n}.1" not in bloques and f"ej:{n}" in bloques:
+            bloques[f"ej:{n}.1"] = bloques.pop(f"ej:{n}")
+        elif not h.partido and f"ej:{n}" not in bloques and f"ej:{n}.1" in bloques:
+            bloques[f"ej:{n}"] = bloques.pop(f"ej:{n}.1")
+
+
+def _piezas_con_linea_roja(bloques: dict[str, str], claves: list[str], edad: str) -> dict[str, list[str]]:
+    """Piezas redactadas por el modelo que incumplen las líneas rojas de la edad."""
+    malas = {}
+    for clave in claves:
+        if clave in bloques:
+            encontradas = violaciones(bloques[clave], edad)
+            if encontradas:
+                malas[clave] = encontradas
+    return malas
+
+
+def _bloque_variante_del_modelo(hueco: _Hueco, bloque: str, nombre: str) -> str:
+    cabecera = f'Ejercicio {hueco.numero}.2 (variante de "{nombre}"):'
+    return reescribir_bloque(bloque, cabecera, hueco.t2)
+
+
+def _bloques_de_hueco(hueco: _Hueco, bloques: dict[str, str]) -> list[str]:
+    """Texto final de un hueco: ficha curada o bloque propuesto por el modelo (puede ser [])."""
+    n = hueco.numero
+    if hueco.ficha is not None:
+        variante = hueco.variante_curada
+        if variante is None and hueco.partido and hueco.clave_variante() in bloques:
+            variante = _bloque_variante_del_modelo(hueco, bloques[hueco.clave_variante()], hueco.ficha["nombre"])
+        if variante is None:  # sin variante disponible: el ejercicio no se parte
+            return [bloque_curado(n, hueco.ficha, hueco.t1 + hueco.t2, partido=False)]
+        return [bloque_curado(n, hueco.ficha, hueco.t1, partido=True), variante]
+
+    # Hueco propuesto por la IA
+    if hueco.partido:
+        base, variante = bloques.get(f"ej:{n}.1"), bloques.get(f"ej:{n}.2")
+        if base is None:
+            return []
+        nombre = nombre_de_cabecera(base) or "Ejercicio propuesto"
+        if variante is None:
+            return [reescribir_bloque(base, f"Ejercicio {n}: {nombre}", hueco.t1 + hueco.t2, propuesto=True)]
+        return [reescribir_bloque(base, f"Ejercicio {n}.1: {nombre}", hueco.t1, propuesto=True),
+                _bloque_variante_del_modelo(hueco, variante, nombre)]
+    bloque = bloques.get(f"ej:{n}")
+    if bloque is None:
+        return []
+    nombre = nombre_de_cabecera(bloque) or "Ejercicio propuesto"
+    return [reescribir_bloque(bloque, f"Ejercicio {n}: {nombre}", hueco.t1, propuesto=True)]
+
+
+def _ensamblar(huecos: list[_Hueco], bloques: dict[str, str],
+               t_calent: int, t_vuelta: int, t_descanso: int) -> tuple[str, list[int]]:
+    """Compone el texto final de la sesión y devuelve también qué huecos son propuestos."""
+    partes: list[str] = []
+    if bloques.get("calentamiento"):
+        partes.append(f"**CALENTAMIENTO ({t_calent} min)**\n{bloques['calentamiento']}")
+    partes.append("**PARTE PRINCIPAL**")
+    propuestos = []
+    for hueco in huecos:
+        textos = _bloques_de_hueco(hueco, bloques)
+        partes.extend(textos)
+        if textos and hueco.ficha is None:
+            propuestos.append(hueco.numero)
+        if hueco.numero == 2:
+            partes.append(f"**DESCANSO ({t_descanso} min)**")
+    if bloques.get("vuelta"):
+        partes.append(f"**VUELTA A LA CALMA ({t_vuelta} min)**\n{bloques['vuelta']}")
+    if bloques.get("fundamentos"):
+        partes.append(f"**Fundamentos**: {bloques['fundamentos']}")
+    return "\n\n".join(partes), propuestos
 
 
 def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
-    import re
-
     ejercicios = cargar_ejercicios()
     relevantes = filtrar_ejercicios(ejercicios, edad, objetivo)
-    ej1, ej2, ej3 = seleccionar_tres_ejercicios(relevantes)
-    ctx_teoria  = construir_contexto_teoria(objetivo, edad)
+    elegidos = seleccionar_tres_ejercicios(relevantes)
+    # Umbral de relevancia: una ficha que no encaja con el objetivo no ocupa el hueco; lo
+    # propone la IA y la sesión lo marca como tal.
+    fichas = [ej if ej and es_relevante(ej, objetivo) else None for ej in elegidos]
+    ctx_teoria = construir_contexto_teoria(objetivo, edad)
 
     # Sin truncado global aquí: construir_contexto_teoria ya aplica presupuesto por
     # colección, así que lo que devuelve ya está acotado a un tamaño razonable.
     teoria_intro = f"CONTEXTO METODOLÓGICO:\n{ctx_teoria}\n\n" if ctx_teoria else ""
 
     t_descanso = 3 if duracion >= 60 else 2
-    descanso_texto = f"**DESCANSO ({t_descanso} min)**"
-
     t_calent = _redondear_5(duracion / 6, minimo=10)
     t_vuelta = _redondear_5(duracion / 15, minimo=5)
     t_parte  = duracion - t_calent - t_vuelta - t_descanso
     t_ej     = _redondear_5(t_parte / 3)
     categoria_nombre = EDAD_A_CATEGORIA.get(edad, edad)
 
-    # Categorías de formación con sesiones largas parten los 3 ejercicios en N.1+N.2
-    # (ver _bloque_ejercicio) — la plantilla pasa de 3 a 6 bloques a rellenar, así que
-    # hace falta bastante más presupuesto de generación que con 3. Pero esto es solo
-    # un punto de partida razonable, no una garantía: la verbosidad del modelo varía
-    # de una generación a otra (confirmado con 2 sesiones reales que agotaron
-    # done_reason="length" con presupuestos distintos — una de 6 bloques con 2500 y
-    # otra de 3 bloques a 90 min con el "2500 de toda la vida" que hasta ahora parecía
-    # suficiente). Por eso el número de aquí abajo es solo el primer intento; el
-    # reintento en _pedir_texto_sesion() reacciona al truncado real en vez de confiar
-    # en una estimación fija.
     max_bloque = MAX_BLOQUE_POR_EDAD.get(edad, MAX_BLOQUE_DEFECTO)
     bloques_partidos = t_ej > max_bloque
-    num_predict_sesion = 5000 if bloques_partidos else 3200
+    t1, t2 = _duraciones(t_ej, bloques_partidos)
+    huecos = []
+    for numero, ficha in enumerate(fichas, start=1):
+        variante = bloque_variante_curada(numero, ficha, t2) if ficha and bloques_partidos else None
+        huecos.append(_Hueco(numero, ficha, t1, t2, variante))
+
+    # Presupuesto de generación: solo lo que escribe el modelo. Es un punto de partida, no una
+    # garantía (la verbosidad varía de una generación a otra); si se trunca de verdad,
+    # _texto_del_modelo reintenta con más en vez de confiar en una estimación fija.
+    n_variantes_modelo = sum(1 for h in huecos if h.ficha is not None and h.partido and h.variante_curada is None)
+    n_propuestos = sum(1 for h in huecos if h.ficha is None)
+    n_propuestos_partidos = sum(1 for h in huecos if h.ficha is None and h.partido)
+    num_predict_sesion = 1200 + 450 * (n_variantes_modelo + n_propuestos_partidos) + 800 * n_propuestos
     num_ctx_sesion     = 11000 if bloques_partidos else 9000
 
-    n1 = ej1['nombre'] if ej1 else "ejercicio analítico"
-    n2 = ej2['nombre'] if ej2 else "ejercicio con superioridad"
-    n3 = ej3['nombre'] if ej3 else "ejercicio aplicado"
+    lineas_ejercicios = "\n".join(_linea_prompt(h) for h in huecos)
+    plantilla = _plantilla_modelo(huecos, edad, t_calent, t_vuelta, t_descanso)
+    prohibido = instruccion_prompt(edad)
+    prohibido = f"{prohibido}\n\n" if prohibido else ""
 
-    prompt = f"""Eres MiPizarra, asistente de entrenamiento de baloncesto.
+    def construir_prompt(correccion: str = "") -> str:
+        return f"""Eres MiPizarra, asistente de entrenamiento de baloncesto.
 Rellena la plantilla de abajo con contenido concreto. No añadas texto fuera de la plantilla.
+Escribe SOLO los apartados que aparecen en la plantilla: los ejercicios con ficha del entrenador
+ya están redactados y se añaden solos (no escribas su bloque «Ejercicio N», ni repitas su contenido).
 
 CATEGORÍA: {categoria_nombre} ({edad}) | DURACIÓN: {duracion} min | OBJETIVO: {objetivo}
 
@@ -179,168 +485,54 @@ secundario o terciario si eso da más variedad a la sesión.
 
 {teoria_intro}{vocabulario_tecnico(edad)}
 
-EJERCICIOS DE LA SESIÓN (ya seleccionados — usa estos nombres exactos):
-1. "{n1}" — sin oposición o defensa pasiva. {_desc_ej(ej1) if ej1 else ''}
-2. "{n2}" — con superioridad numérica. {_desc_ej(ej2) if ej2 else ''}
-3. "{n3}" — con oposición igualada. {_desc_ej(ej3) if ej3 else ''}
+{prohibido}{correccion}EJERCICIOS DE LA SESIÓN:
+{lineas_ejercicios}
 
-**CALENTAMIENTO ({t_calent} min)**
-Juego:
-Reglas:
-Espacio:
+{plantilla}"""
 
-**PARTE PRINCIPAL**
-
-{_bloque_ejercicio(1, n1, t_ej, edad)}
-{_bloque_ejercicio(2, n2, t_ej, edad)}
-{descanso_texto}
-
-{_bloque_ejercicio(3, n3, t_ej, edad)}
-**VUELTA A LA CALMA ({t_vuelta} min)**
-Juego:
-Reglas:
-
-**Fundamentos**: """
-
-    def _pedir_texto_sesion(num_predict: int, num_ctx: int) -> tuple[str, str | None]:
-        """Devuelve (texto, done_reason). done_reason=='length' significa que Ollama
-        agotó num_predict y cortó a mitad de frase — señal real de truncado, a
-        diferencia de adivinar de antemano si el presupuesto alcanzará."""
-        response = requests.post(
-            f"{OLLAMA_URL}/api/generate",
-            json={
-                "model":   MODEL_SESION,
-                "prompt":  prompt,
-                "stream":  False,
-                "options": {
-                    "temperature": 0.4,
-                    "num_predict": num_predict,
-                    "num_ctx":     num_ctx,
-                    "top_p":       0.9,
-                    "min_p":       0.05,
-                    "repeat_penalty": 1.2,
-                    "stop": [
-                        "```",
-                        # Instrucciones (con o sin "CRÍTICAS", con o sin negrita)
-                        "INSTRUCCIONES:", "INSTRUCCIONES CRÍTICAS", "**INSTRUCCIONES",
-                        # Meta-comentarios del LLM
-                        "Este es un texto", "Aquí tienes", "Aquí está",
-                        "La respuesta completa", "A continuación",
-                        # Secciones no deseadas
-                        "IMPORTANTE:", "FORMATO:", "REGLAS:",
-                        "{", "¿Cómo", "NOTA:", "En resumen",
-                        "También es importante", "para ajustar este plan",
-                        "**SESIÓN**",
-                        # Ejercicios extra
-                        "Ejercicio 4:", "Ejercicio 5:",
-                    ],
-                },
-            },
-            timeout=300,
-        )
-        response.raise_for_status()
-        data = response.json()
-        return data["response"], data.get("done_reason")
+    claves_modelo = ["calentamiento", "vuelta", "fundamentos"] + [c for h in huecos for c in h.claves_del_modelo()]
 
     try:
-        texto, done_reason = _pedir_texto_sesion(num_predict_sesion, num_ctx_sesion)
-        if done_reason == "length":
-            logger.warning(
-                f"Sesión truncada (agotó num_predict={num_predict_sesion}), "
-                f"reintentando con más presupuesto..."
-            )
-            texto, done_reason = _pedir_texto_sesion(
-                num_predict_sesion + 2500, num_ctx_sesion + 3000
-            )
-            if done_reason == "length":
-                logger.warning(
-                    "Sesión sigue truncada tras el reintento — se entrega el texto "
-                    "parcial (mejor incompleto y avisado que nada)."
-                )
-        texto = texto.strip()
+        correccion = ""
+        for intento in (1, 2):
+            texto = _texto_del_modelo(construir_prompt(correccion), num_predict_sesion, num_ctx_sesion)
+            bloques = extraer_bloques(texto)
+            _normalizar_claves(huecos, bloques)
+            malas = _piezas_con_linea_roja(bloques, claves_modelo, edad)
+            if not malas or intento == 2:
+                break
+            detalle = "; ".join(f"{_nombre_de_pieza(c)}: {', '.join(v)}" for c, v in malas.items())
+            logger.warning(f"Línea roja en la sesión generada ({detalle}); reintentando...")
+            correccion = (f"CORRECCIÓN: tu respuesta anterior incumplió las reglas de la categoría "
+                          f"({detalle}). Reescríbela sin esos contenidos.\n\n")
 
-        if texto.startswith("{") or texto.startswith("["):
-            logger.warning("Modelo devolvió JSON en lugar de texto, reintentando...")
-            raise ValueError("Respuesta en JSON no válida")
+        avisos = []
+        for clave, encontradas in malas.items():
+            bloques.pop(clave, None)
+            avisos.append(f"{_nombre_de_pieza(clave)} omitido por incumplir las líneas rojas de {edad}: "
+                          f"{', '.join(encontradas)}")
+        if avisos:
+            logger.warning("Piezas omitidas tras el reintento: " + " | ".join(avisos))
 
-        # ── 0. Eliminar bloques <think>...</think> (Qwen3 con think no desactivado) ──
-        texto = re.sub(r'<think>.*?</think>', '', texto, flags=re.DOTALL).strip()
-
-        # ── 0b. Cortar razonamiento previo y encontrar el inicio real de la sesión ──
-        # Busca el primer marcador estructural de la sesión (en cualquier orden)
-        match_inicio = re.search(
-            r'(\*\*CALENTAMIENTO|\*\*PARTE PRINCIPAL|^Ejercicio\s+1(?:\.\d+)?\s*(?:\([^)]*\))?\s*:)',
-            texto, re.MULTILINE
-        )
-        if match_inicio:
-            texto = texto[match_inicio.start():]
-        else:
-            # Fallback: primera línea que comience una sección conocida
-            lineas = texto.split('\n')
-            primera_es = next(
-                (i for i, l in enumerate(lineas)
-                 if re.match(r'(Ejercicio\s+1|CALENTAMIENTO|\*\*CALENTAMIENTO|\*\*PARTE)', l.strip())),
-                None
-            )
-            if primera_es:
-                texto = '\n'.join(lineas[primera_es:]).strip()
-
-        # ── 1. Limpiar preámbulos que el modelo añade antes de la sesión ──────
-        preambles = ['"""', "'''", '""', "''"]
-        for p in preambles:
-            if texto.startswith(p):
-                texto = texto[len(p):].lstrip()
-        # Eliminar "Sesión:" o variantes en la primera línea
-        primera_linea, *resto = texto.split('\n')
-        if primera_linea.strip().rstrip(':') in ('Sesión', 'Sesion', 'SESIÓN', '"""', "'''"):
-            texto = '\n'.join(resto).lstrip()
-
-        # ── 2. Truncar en patrones que indican que el modelo se ha ido de madre ─
-        truncar_en = [
-            "INSTRUCCIONES CRÍTICAS", "**INSTRUCCIONES", "INSTRUCCIONES:",
-            "IMPORTANTE:", "REGLAS:", "FORMATO:",
-            "ESTRUCTURA OBLIGATORIA:", "REGLAS ABSOLUTAS:",
-            "Este es un texto", "Aquí tienes", "Aquí está",
-            "La respuesta completa", "A continuación te",
-            "¿Cómo", "NOTA:", "En resumen,", "También es importante",
-            "para ajustar este plan", "**SESIÓN**",
-        ]
-        for patron in truncar_en:
-            if patron in texto:
-                texto = texto.split(patron)[0].strip()
-
-        # ── 3. Eliminar Ejercicio 4+ si se ha colado ──────────────────────────
-        for patron_extra in ["\nEjercicio 4:", "\nEjercicio 5:"]:
-            if patron_extra in texto:
-                texto = texto.split(patron_extra)[0].strip()
-
-        # ── 3b. Eliminar "Ejercicio 1/2/3" repetidos (rambling tras terminar) ──
-        texto = _eliminar_secciones_duplicadas(texto)
-
-        # ── 4. Truncar al final natural (tras Fundamentos) ────────────────────
-        # Acepta: **Fundamentos**: texto | Fundamentos\ntexto | FUNDAMENTOS: texto
-        match_fund = re.search(
-            r'(?:\*\*)?(?:Fundamentos|FUNDAMENTOS)(?:\*\*)?:?\s*\n?[^\n]+',
-            texto, re.IGNORECASE
-        )
-        if match_fund:
-            texto = texto[:match_fund.end()].strip()
-        else:
-            for patron in ["¿Cómo", "NOTA:", "En resumen,", "También es importante",
-                           "para ajustar este plan", "**SESIÓN**"]:
-                if patron in texto:
-                    texto = texto.split(patron)[0].strip()
-
+        texto, propuestos = _ensamblar(huecos, bloques, t_calent, t_vuelta, t_descanso)
+        for h in huecos:
+            ya_avisado = any(a.startswith(f"Ejercicio {h.numero}") for a in avisos)
+            if h.ficha is None and h.numero not in propuestos and not ya_avisado:
+                avisos.append(f"Ejercicio {h.numero} no se pudo generar (sin ficha adecuada y sin propuesta del modelo)")
     except Exception as e:
         logger.error(f"Error generando sesión: {e}")
         return {
             "texto": f"**Error generando sesión**: {str(e)}",
-            "ejercicios_usados": [e for e in [ej1, ej2, ej3] if e],
+            "ejercicios_usados": [f for f in fichas if f],
             "teoria_usada": bool(ctx_teoria),
+            "propuestos": [],
+            "avisos": [],
         }
 
     return {
         "texto":             texto,
-        "ejercicios_usados": [e for e in [ej1, ej2, ej3] if e],
+        "ejercicios_usados": [f for f in fichas if f],
         "teoria_usada":      bool(ctx_teoria),
+        "propuestos":        propuestos,
+        "avisos":            avisos,
     }
