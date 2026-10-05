@@ -145,3 +145,48 @@ def test_los_md_de_cada_ambito_existen_y_no_estan_vacios():
         ficheros = list((DATA_DIR / "reglamento" / ambito).glob("*.md"))
         assert ficheros, f"sin .md en data/reglamento/{ambito}"
         assert all(f.stat().st_size > 500 for f in ficheros)
+
+
+# ── presupuesto de contexto por colección ──────────────────────────────
+
+@pytest.fixture
+def espia_larga(carpeta_ambitos, monkeypatch):
+    """Cada colección devuelve mucho texto con una marca propia al final; registra n_resultados."""
+    reg = {"n": {}, "mensaje": None}
+
+    def consulta(nombre, texto, n_resultados=4, where=None):
+        reg["n"][(nombre, (where or {}).get("ambito"))] = n_resultados
+        return ("relleno " * 400) + f"MARCA_{nombre.upper()}"
+
+    def post(url, json=None, timeout=None):
+        reg["mensaje"] = json["messages"][1]["content"]
+        return _Resp()
+
+    monkeypatch.setattr(reglamento, "consultar_coleccion", consulta)
+    monkeypatch.setattr(reglamento.requests, "post", post)
+    return reg
+
+
+def test_un_fragmento_largo_del_md_no_deja_fuera_a_los_pdf(espia_larga):
+    # el texto de cada colección acaba en su marca; si el recorte se hiciera sobre la suma de todas,
+    # las últimas (PDF y material propio) desaparecerían del prompt
+    responder_duda_reglamento("¿Cuántas faltas elimina a un jugador?")
+    msg = espia_larga["mensaje"]
+    assert "REGLAMENTO GENERAL" in msg and "MATERIAL PROPIO" in msg
+    assert msg.count("relleno") > 0
+    assert "relleno" in msg.split("MATERIAL PROPIO")[1]          # el material propio también llega
+
+
+def test_cada_coleccion_tiene_su_propio_recorte_en_el_mensaje(espia_larga):
+    responder_duda_reglamento("¿Cuántas faltas elimina a un jugador?")
+    msg = espia_larga["mensaje"]
+    general = msg.split("--- REGLAMENTO GENERAL")[1].split("--- MATERIAL PROPIO")[0]
+    assert "relleno" in general and len(general) > 2400            # md + pdf juntos superan el recorte antiguo (2000)
+
+
+def test_se_piden_mas_fragmentos_del_reglamento_curado_que_del_resto(espia_larga):
+    # el fragmento correcto puede quedar por debajo del tercero: el .md curado es la colección más fiable
+    responder_duda_reglamento("¿Cuántas faltas elimina a un jugador?")
+    n = espia_larga["n"]
+    assert n[("reglamento_md", AMBITO_GENERAL)] >= 6
+    assert n[("reglamento_md", AMBITO_GENERAL)] > n[("reglamento", AMBITO_GENERAL)]
