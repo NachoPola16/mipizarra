@@ -12,7 +12,7 @@ usuario.
 Casos (fijos y deterministas, ver CASOS_* más abajo):
   - 6 sesiones (POST /generar)
   - 2 ejercicios sueltos con diagrama (POST /ejercicio)
-  - 5 preguntas de reglamento (POST /reglamento)
+  - 6 preguntas de reglamento (POST /reglamento)
 
 Criterios duros (si alguno falla, código de salida 1):
   - Sesiones: HTTP 200; las 4 secciones (CALENTAMIENTO, PARTE PRINCIPAL, VUELTA A LA
@@ -100,6 +100,9 @@ CASOS_REGLAMENTO = [
     {"id": "reg_3_segundos",
      "pregunta": "¿En qué consiste la regla de los 3 segundos?",
      "claves": [["3 segundos", "tres segundos"], ["zona", "area restringida", "pintura"]]},
+    {"id": "reg_falta_disruptiva",
+     "pregunta": "¿Qué es una falta disruptiva en el reglamento FIBA actual y puede descalificar a un jugador?",
+     "claves": [["disruptiva"], ["flagrante"]]},
     {"id": "reg_aro_minibasket",
      "pregunta": "¿A qué altura está el aro en minibasket?",
      "claves": [["2,60", "2.60", "260 cm", "2 metros y 60", "2,6 m"]]},
