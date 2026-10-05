@@ -199,3 +199,27 @@ def test_la_peticion_de_reglamento_desactiva_el_razonamiento(carpeta_ambitos, mo
                         lambda url, json=None, timeout=None: (enviados.append(json), _Resp())[1])
     responder_duda_reglamento("¿Qué es el paso cero?")
     assert enviados and enviados[0].get("think") is False
+
+
+def test_el_reglamento_usa_su_propio_modelo(carpeta_ambitos, monkeypatch):
+    # cada modo puede usar un modelo distinto: el de reglamento se elige aparte del de sesión
+    enviados = []
+    monkeypatch.setattr(reglamento, "consultar_coleccion", lambda *a, **k: "")
+    monkeypatch.setattr(reglamento, "MODEL_REGLAMENTO", "modelo-de-reglamento")
+    monkeypatch.setattr(reglamento.requests, "post",
+                        lambda url, json=None, timeout=None: (enviados.append(json), _Resp())[1])
+    responder_duda_reglamento("¿Qué es el paso cero?")
+    assert enviados[0]["model"] == "modelo-de-reglamento"
+
+
+def test_sin_modelo_propio_el_reglamento_usa_el_de_sesion(monkeypatch):
+    import importlib
+    import config
+    monkeypatch.delenv("OLLAMA_MODEL_REGLAMENTO", raising=False)
+    monkeypatch.setenv("OLLAMA_MODEL_SESION", "modelo-de-sesion")
+    recargado = importlib.reload(config)
+    try:
+        assert recargado.MODEL_REGLAMENTO == "modelo-de-sesion"
+    finally:
+        monkeypatch.delenv("OLLAMA_MODEL_SESION", raising=False)
+        importlib.reload(config)

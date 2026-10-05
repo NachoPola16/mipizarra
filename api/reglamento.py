@@ -4,7 +4,7 @@ import logging
 
 import requests
 
-from config import AMBITO_GENERAL, MODEL_SESION, OLLAMA_URL
+from config import AMBITO_GENERAL, MODEL_REGLAMENTO, OLLAMA_URL
 from contexto import consultar_coleccion, nombre_ambito, normalizar_ambito
 from prompts import SYSTEM_REGLAMENTO
 
@@ -79,7 +79,7 @@ def responder_duda_reglamento(pregunta: str, ambito: str = AMBITO_GENERAL) -> st
         r = requests.post(
             f"{OLLAMA_URL}/api/chat",
             json={
-                "model": MODEL_SESION,
+                "model": MODEL_REGLAMENTO,
                 "messages": [
                     {"role": "system", "content": SYSTEM_REGLAMENTO},
                     {"role": "user", "content": mensaje_usuario},

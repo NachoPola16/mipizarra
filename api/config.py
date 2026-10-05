@@ -24,6 +24,9 @@ OLLAMA_URL     = os.environ.get("OLLAMA_URL", "http://ollama:11434")
 # colarse ningún razonamiento por ninguna de las dos rutas.
 MODEL          = os.environ.get("OLLAMA_MODEL", "qwen3:4b-instruct")
 MODEL_SESION   = os.environ.get("OLLAMA_MODEL_SESION", os.environ.get("OLLAMA_MODEL", "qwen3:4b-instruct"))
+# El modo reglamento puede usar un modelo distinto: responde con datos recuperados y se beneficia
+# de un modelo mayor sin alargar la generación de sesiones. Por defecto, el mismo que las sesiones.
+MODEL_REGLAMENTO = os.environ.get("OLLAMA_MODEL_REGLAMENTO", MODEL_SESION)
 EXERCISES_PATH = os.environ.get("EXERCISES_PATH", "/app/data/exercises.json")
 CHROMA_DB_DIR  = os.environ.get("CHROMA_DB_DIR", "/app/data/chroma_db")
 # Reglamento por ámbito: data/reglamento/<ámbito>/*.md ("general" = FIBA/FEB; una carpeta por

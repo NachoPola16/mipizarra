@@ -14,7 +14,7 @@ Al parchear una función en un test hay que hacerlo en el módulo donde vive, no
 """
 from config import (  # noqa: F401
     AMBITO_GENERAL, CHROMA_DB_DIR, EDAD_A_CATEGORIA, EMBED_MODEL, EXERCISES_PATH,
-    MODEL, MODEL_SESION, NOMBRES_AMBITO, OLLAMA_URL, REGLAMENTO_DIR, _AMBITO_RE,
+    MODEL, MODEL_REGLAMENTO, MODEL_SESION, NOMBRES_AMBITO, OLLAMA_URL, REGLAMENTO_DIR, _AMBITO_RE,
 )
 from ejercicios import (  # noqa: F401
     COMPONENTES_ANALITICOS, cargar_ejercicios, filtrar_ejercicios,
