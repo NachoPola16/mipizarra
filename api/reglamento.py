@@ -31,23 +31,27 @@ def responder_duda_reglamento(pregunta: str, ambito: str = AMBITO_GENERAL) -> st
     filtro_general = {"ambito": AMBITO_GENERAL}
     filtro_ccaa = {"ambito": ambito}
 
+    # Presupuesto de caracteres POR COLECCIÓN, no un recorte sobre la suma: los fragmentos del .md
+    # curado van primero y, si se recortaba el conjunto, los PDF (donde a veces está el dato)
+    # nunca llegaban al modelo. Del .md curado se piden más fragmentos porque es la colección más
+    # fiable y el fragmento correcto no siempre queda entre los tres primeros.
     contexto_ccaa = ""
     if especifico:
         contexto_ccaa = "\n".join(filter(None, [
-            consultar_coleccion("reglamento_md", pregunta, n_resultados=4, where=filtro_ccaa),
-            consultar_coleccion("reglamento", pregunta, n_resultados=3, where=filtro_ccaa),
+            consultar_coleccion("reglamento_md", pregunta, n_resultados=6, where=filtro_ccaa)[:1600],
+            consultar_coleccion("reglamento", pregunta, n_resultados=3, where=filtro_ccaa)[:800],
         ]))
     contexto_general = "\n".join(filter(None, [
-        consultar_coleccion("reglamento_md", pregunta, n_resultados=3, where=filtro_general),
-        consultar_coleccion("reglamento", pregunta, n_resultados=4, where=filtro_general),
+        consultar_coleccion("reglamento_md", pregunta, n_resultados=8, where=filtro_general)[:4800],
+        consultar_coleccion("reglamento", pregunta, n_resultados=4, where=filtro_general)[:1400],
     ]))
     contexto_curado = consultar_coleccion("teoria_md", pregunta, n_resultados=2)
 
     partes = []
     if contexto_ccaa:
-        partes.append(f"--- NORMATIVA DE {nombre.upper()} (prevalece sobre la general) ---\n{contexto_ccaa[:2000]}")
+        partes.append(f"--- NORMATIVA DE {nombre.upper()} (prevalece sobre la general) ---\n{contexto_ccaa}")
     if contexto_general:
-        partes.append(f"--- REGLAMENTO GENERAL (FIBA / federación española) ---\n{contexto_general[:2000]}")
+        partes.append(f"--- REGLAMENTO GENERAL (FIBA / federación española) ---\n{contexto_general}")
     if contexto_curado:
         partes.append(f"--- MATERIAL PROPIO ---\n{contexto_curado[:1000]}")
 
