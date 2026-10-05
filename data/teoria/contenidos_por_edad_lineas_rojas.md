@@ -94,7 +94,7 @@ Estos contenidos son cortoplacistas y frenan el desarrollo técnico individual:
 | Escuela / Prebenjamín | U6-U8 | Juego libre, coordinación, contacto con el balón |
 | Benjamín | U10 | Agarre, vista, paradas, crossover frontal, tiro estático |
 | Alevín | U12 | Cambios de ritmo, pies de pivote, pase en movimiento, tiro en carrera |
-| Infantil | U14 | Introdución a bloqueos indirectos, defensa activa, spacing, contraataque estructurado |
+| Infantil | U14 | Introdución a bloqueos indirectos (el bloqueo directo, solo de forma puntual según el nivel del equipo o en una jugada concreta), defensa activa, spacing, contraataque estructurado |
 | Cadete | U16 | Bloqueo directo, sistemas sencillos, defensa individual avanzada |
 | Junior/Senior | U18+ | Todo el repertorio con velocidad y complejidad de partido |
 
