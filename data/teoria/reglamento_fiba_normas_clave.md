@@ -1,7 +1,7 @@
-# Reglamento FIBA 2022 — Normas clave para entrenadores
+# Reglamento FIBA — Normas clave para entrenadores (edición 2022, actualizada con los cambios de 2026)
 
 > Extracto de las reglas más relevantes para el entrenamiento y la dirección de partido.
-> Fuente: Reglas Oficiales de Baloncesto FIBA 2022 (aplicables desde octubre 2022).
+> Fuente: Reglas Oficiales de Baloncesto FIBA 2022 (aplicables desde octubre 2022), con los cambios en vigor desde el 1 de octubre de 2026 (véase `reglamento_fiba_cambios_2026`).
 
 ---
 
@@ -84,11 +84,22 @@ Una pantalla es **ilegal** cuando el bloqueador:
 ### Semicírculo de no-carga (Art. 33.10)
 En cualquier penetración dentro del semicírculo bajo la canasta, **no se sancionará falta del atacante en el aire** por contacto que provoque una carga. El defensor dentro del semicírculo no puede "robar" una falta por carga.
 
-### Falta antideportiva (Art. 36)
-Contacto innecesario o excesivo. Se castiga con 2 tiros libres + posesión.
+### Faltas disruptiva y flagrante (Arts. 37 y 38) — desde el 1/10/2026
+Hasta el 30/9/2026 existía la falta antideportiva (contacto innecesario o excesivo: 2 tiros libres + posesión).
+**Desde el 1/10/2026 la antideportiva desaparece** y se sustituye por dos faltas:
+- **Disruptiva:** contacto innecesario, sin intentar jugar el balón, para parar una transición o el reloj, o
+  contacto ilegal por la espalda o lateral sobre un atacante que avanza solo hacia la canasta. Cuenta como falta de
+  equipo, da tiros libres y saque, y **no puede llevar a la descalificación**.
+- **Flagrante:** contacto temerario, violento o peligroso, o excesivo al jugar el balón. Da los mismos tiros libres
+  y saque, y **sí cuenta para la descalificación**.
+Detalle completo en el resumen de cambios 2026.
 
-### Falta técnica (Art. 38)
-Comportamiento antideportivo sin contacto (protestas, actos irrespetuosos). Se castiga con 1 tiro libre + posesión.
+### Falta técnica (Art. 36) — dos categorías desde el 1/10/2026
+Comportamiento sin contacto o conductual (protestas, actos irrespetuosos, simular una falta, retrasar el juego).
+- **Categoría 1** (conductual, más grave): cuenta para la descalificación.
+- **Categoría 2** (administrativa: retrasar el juego, colgarse del aro…): no cuenta para la descalificación.
+Un jugador queda descalificado con dos técnicas de categoría 1, dos flagrantes, o una técnica de categoría 1 y
+una flagrante.
 
 ### 5 faltas = exclusión (Art. 40)
 El jugador que acumule 5 faltas personales (o una combinación que llegue a 5) es excluido y debe abandonar el partido. Se sustituye en 30 segundos.
