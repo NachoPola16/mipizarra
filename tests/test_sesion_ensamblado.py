@@ -480,3 +480,25 @@ def test_si_el_modelo_no_da_fundamentos_se_componen_con_los_objetivos_tecnicos_d
 def test_sin_fichas_con_objetivos_tecnicos_y_sin_respuesta_no_hay_fundamentos(sesion_falsa):
     sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [CALENTAMIENTO_SOLO, " Estiramientos", ""])
     assert "**Fundamentos**" not in sesion.generar_sesion("U16", 90, "bote")["texto"]
+
+
+# ── la pista de la plantilla no puede acabar como nombre del ejercicio ───────────────────────
+
+def test_si_el_modelo_copia_la_pista_de_nombre_no_sale_como_nombre_del_ejercicio(sesion_falsa):
+    copiada = RESPUESTA_PROPUESTO.replace("Ejercicio 1: Cierre y recuperación",
+                                          "Ejercicio 1: (nombre propio del ejercicio)")
+    sesion_falsa([FICHA_SIN_RELACION, FICHA_B, FICHA_C], [copiada])
+    texto = sesion.generar_sesion("U16", 90, "bote")["texto"]
+    assert "(nombre propio" not in texto
+    assert "Ejercicio 1: Ejercicio propuesto\nDuración: 20 min\n" + MARCA_PROPUESTO in texto
+
+
+def test_la_variante_de_un_hueco_propuesto_tampoco_lleva_la_pista(sesion_falsa):
+    # U10 a 90 min: el hueco propuesto se parte en 1.1 y 1.2
+    base = ("Ejercicio 1.1: (nombre propio del ejercicio)\nDuración: 10 min\nOrganización: Dos filas.\n"
+            "Puntos clave:\n- Manos activas.\n\n"
+            "Ejercicio 1.2:\nDuración: 10 min\nQué cambia respecto a 1.1: Con defensor.\nOrganización: Igual.\n\n")
+    respuesta = RESPUESTA_BASE.replace("**VUELTA A LA CALMA", base + "**VUELTA A LA CALMA", 1)
+    sesion_falsa([FICHA_SIN_RELACION, FICHA_B, FICHA_C], [respuesta])
+    texto = sesion.generar_sesion("U10", 90, "bote")["texto"]
+    assert "(nombre propio" not in texto

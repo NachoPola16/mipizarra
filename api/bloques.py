@@ -156,9 +156,11 @@ MARCA_PROPUESTO = "Propuesto por la IA (sin revisar)"
 
 
 def nombre_de_cabecera(bloque: str) -> str:
-    """Nombre que el modelo puso en la cabecera 'Ejercicio N: nombre' (sin comillas)."""
+    """Nombre que el modelo puso en la cabecera 'Ejercicio N: nombre' (sin comillas). Cadena vacía
+    si no puso ninguno o si copió la pista de la plantilla, que va entre paréntesis."""
     primera = bloque.split("\n", 1)[0]
-    return primera.split(":", 1)[1].strip().strip('"') if ":" in primera else ""
+    nombre = primera.split(":", 1)[1].strip().strip('"') if ":" in primera else ""
+    return "" if nombre.startswith("(") else nombre
 
 
 def reescribir_bloque(bloque: str, cabecera: str, duracion: int, propuesto: bool = False) -> str:
