@@ -5,7 +5,7 @@ LLM, validación y renderer). Sirve para detectar si un cambio de modelo o de pr
 empeora la calidad: lanza siempre los mismos casos fijos y guarda métricas comparables
 entre ejecuciones.
 
-A diferencia de tools/evaluar_modelo.py (que llama a Ollama con prompts propios), aquí
+A diferencia de experimental/evaluar_modelo.py (que llama a Ollama con prompts propios), aquí
 se llama a los endpoints HTTP de la API, así que se evalúa exactamente lo que ve el
 usuario.
 

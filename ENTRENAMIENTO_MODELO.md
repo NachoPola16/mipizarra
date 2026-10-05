@@ -1,11 +1,14 @@
 # Entrenamiento del modelo
 
+> 🧪 **Experimental**: el fine-tuning no forma parte del flujo actual de MiPizarra. Los scripts viven
+> en [`experimental/`](experimental/README.md) y no se mantienen al ritmo del resto del proyecto.
+
 El fine-tuning es **opcional**: MiPizarra funciona con el modelo base + RAG.
 Entrena solo si la evaluación muestra que el modelo base no basta.
 
 > ⚠️ **GPU compartida**: si entrenas en la misma máquina que sirve Ollama y la
 > GPU no tiene memoria para ambos, para Ollama durante el entrenamiento. El
-> wrapper `./tools/finetune.sh` lo hace automáticamente.
+> wrapper `./experimental/finetune.sh` lo hace automáticamente.
 
 ## Estructura de carpetas
 
@@ -16,7 +19,7 @@ data/dataset/
   para_revisar.jsonl        ← Copia legible para revisar manualmente
 outputs/<version>/
   lora_adapters/            ← Pesos LoRA tras el fine-tuning
-docker/finetune/Dockerfile  ← Imagen de fine-tuning
+experimental/docker/finetune/Dockerfile  ← Imagen de fine-tuning
 cache/                      ← Caché de HuggingFace
 ```
 
@@ -35,7 +38,7 @@ fusionar con conjuntos de datos adicionales locales (`data/dataset/extra_*.jsonl
 `--incluir-entrenamientos`, `--incluir-conocimiento` o `--incluir-externo`:
 
 ```bash
-docker exec -it mipizarra-api python /app/tools/generar_dataset.py --todo
+docker exec -it mipizarra-api python /app/experimental/generar_dataset.py --todo
 ```
 
 ⚠️ Revisa `para_revisar.jsonl` y elimina ejemplos malos de `train.jsonl` antes
@@ -44,8 +47,8 @@ de entrenar. Un dataset pequeño y limpio es mejor que uno grande con ruido.
 ### 3. Fine-tuning
 
 ```bash
-./tools/finetune.sh               # 100 pasos por defecto
-./tools/finetune.sh --steps 150
+./experimental/finetune.sh               # 100 pasos por defecto
+./experimental/finetune.sh --steps 150
 ```
 
 - QLoRA 4-bit por defecto; `--no-quantize` para LoRA en bf16 si la GPU tiene memoria suficiente.
@@ -71,7 +74,7 @@ Opciones: `--rank 16` (solo con >500 ejemplos), `--solo-atencion` (menos VRAM),
 ### 4. Exportar a Ollama
 
 ```bash
-docker compose run --rm finetune python tools/exportar_a_ollama.py \
+docker compose run --rm finetune python experimental/exportar_a_ollama.py \
   --lora outputs/mipizarra-v1/lora_adapters --nombre mipizarra
 ```
 
@@ -82,7 +85,7 @@ comando `ollama create` equivalente.
 ### 5. Evaluar contra el modelo base
 
 ```bash
-docker exec -it mipizarra-api python /app/tools/evaluar_modelo.py \
+docker exec -it mipizarra-api python /app/experimental/evaluar_modelo.py \
   --base qwen3:4b-instruct --finetuned mipizarra --n 20
 ```
 

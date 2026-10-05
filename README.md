@@ -17,7 +17,7 @@ Además de sesiones completas, permite pedir un ejercicio concreto, corregir eje
 
 ## Stack
 
-- **LLM:** familia Qwen3 (4B) servida con Ollama, con opción de fine-tuning LoRA propio
+- **LLM:** familia Qwen3 (4B) servida con Ollama (el fine-tuning LoRA es experimental, ver `experimental/`)
 - **Embeddings:** `nomic-embed-text` via Ollama
 - **RAG:** biblioteca de ejercicios en JSON + ChromaDB
 - **Diagramas:** renderer SVG determinista (Python puro, sin dependencias gráficas)
@@ -78,7 +78,7 @@ resetea. Los resultados no se versionan (`data/regresion/` está en `.gitignore`
 ## Documentación
 
 - [Arquitectura](docs/arquitectura.md)
-- [Entrenamiento del modelo](ENTRENAMIENTO_MODELO.md)
+- [Entrenamiento del modelo](ENTRENAMIENTO_MODELO.md) (experimental, no forma parte del flujo actual)
 - [Esquema de ejercicios](docs/esquema-ejercicios.md)
 - [Coordenadas del diagrama](docs/coordenadas.md)
 - [Seguridad y despliegue](SEGURIDAD.md)

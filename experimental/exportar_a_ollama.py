@@ -4,7 +4,7 @@ Fusiona adaptadores LoRA con el modelo base, convierte a GGUF Q4_K_M y crea el m
 
 El GGUF se guarda en ./ollama/ (visible en el contenedor Ollama como /root/.ollama/).
 Debe ejecutarse en el contenedor finetune:
-  docker compose run --rm finetune python tools/exportar_a_ollama.py \
+  docker compose run --rm finetune python experimental/exportar_a_ollama.py \
     --lora outputs/mipizarra-v1/lora_adapters
 """
 import argparse

@@ -4,13 +4,13 @@ Fine-tuning Qwen3-4B con Unsloth (local, recomendado) o TRL estándar (servidor 
 
 Modo Unsloth  — GPU con ≥12 GB VRAM, sin cuantización (--no-quantize):
   pip install unsloth transformers peft trl datasets accelerate
-  python tools/finetune_qwen.py --no-quantize
+  python experimental/finetune_qwen.py --no-quantize
 
 Modo TRL      — GPU modesta (~6 GB, incl. Pascal), QLoRA 4-bit (dentro del contenedor finetune):
-  docker compose run --rm finetune python tools/finetune_qwen.py
+  docker compose run --rm finetune python experimental/finetune_qwen.py
 
 Más pasos / más rank (con ≥12 GB VRAM):
-  python tools/finetune_qwen.py --no-quantize --rank 16 --steps 150
+  python experimental/finetune_qwen.py --no-quantize --rank 16 --steps 150
 """
 import argparse
 import json
@@ -270,9 +270,9 @@ def main():
     print(f"   Adaptadores LoRA: {lora_path}")
     if args.no_quantize:
         print(f"\nSi entrenaste en local, copia lora_adapters/ al servidor:")
-        print(f"  scp -r {lora_path} usuario@<SERVER_IP>:~/docker/mipizarra/{lora_path}")
+        print(f"  scp -r {lora_path} <USUARIO>@<SERVIDOR>:<RUTA_DEL_REPOSITORIO>/{lora_path}")
     print(f"\nPróximo paso — exportar a Ollama (dentro del contenedor finetune en el servidor):")
-    print(f"  python tools/exportar_a_ollama.py --lora {lora_path} --output {output_path}/gguf")
+    print(f"  python experimental/exportar_a_ollama.py --lora {lora_path} --output {output_path}/gguf")
 
 
 if __name__ == "__main__":
