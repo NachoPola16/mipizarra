@@ -1,6 +1,6 @@
 # Sistema de coordenadas MiPizarra
 
-**Fuente de verdad única** para coordenadas de diagramas. Si cambias algo aquí, también hay que
+**Referencia única** para coordenadas de diagramas. Si cambias algo aquí, también hay que
 cambiarlo en los 3 SYSTEM prompts que ven al modelo:
 
 - `experimental/generar_dataset.py` → constante `SYSTEM_DIAGRAMA`
