@@ -34,6 +34,7 @@ services:
       - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen3:4b-instruct}
       - OLLAMA_MODEL_SESION=${OLLAMA_MODEL_SESION:-qwen3:4b-instruct}
       - OLLAMA_MODEL_REGLAMENTO=${OLLAMA_MODEL_REGLAMENTO:-${OLLAMA_MODEL_SESION:-qwen3:4b-instruct}}
+      - EMBED_MODEL=${EMBED_MODEL:-qwen3-embedding:0.6b}
       - EXERCISES_PATH=/app/data/exercises.json
       - CHROMA_DB_DIR=/app/data/chroma_db
       # Si se setea, la API exige header X-Internal-Secret en cada request.

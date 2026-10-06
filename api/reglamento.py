@@ -34,7 +34,9 @@ def responder_duda_reglamento(pregunta: str, ambito: str = AMBITO_GENERAL) -> st
     # Presupuesto de caracteres POR COLECCIÓN, no un recorte sobre la suma: los fragmentos del .md
     # curado van primero y, si se recortaba el conjunto, los PDF (donde a veces está el dato)
     # nunca llegaban al modelo. Del .md curado se piden más fragmentos porque es la colección más
-    # fiable y el fragmento correcto no siempre queda entre los tres primeros.
+    # fiable y el fragmento correcto no siempre queda entre los tres primeros. Los PDF, sin curar, pesan
+    # poco: con 4 fragmentos de PDF el modelo contestaba con cifras de una tabla ajena (31/35 aciertos en
+    # 7 preguntas x 5 repeticiones); con 2 y el .md como base, 35/35.
     contexto_ccaa = ""
     if especifico:
         contexto_ccaa = "\n".join(filter(None, [
@@ -42,8 +44,8 @@ def responder_duda_reglamento(pregunta: str, ambito: str = AMBITO_GENERAL) -> st
             consultar_coleccion("reglamento", pregunta, n_resultados=3, where=filtro_ccaa)[:800],
         ]))
     contexto_general = "\n".join(filter(None, [
-        consultar_coleccion("reglamento_md", pregunta, n_resultados=8, where=filtro_general)[:4800],
-        consultar_coleccion("reglamento", pregunta, n_resultados=4, where=filtro_general)[:1400],
+        consultar_coleccion("reglamento_md", pregunta, n_resultados=6, where=filtro_general)[:3600],
+        consultar_coleccion("reglamento", pregunta, n_resultados=2, where=filtro_general)[:700],
     ]))
     contexto_curado = consultar_coleccion("teoria_md", pregunta, n_resultados=2)
 

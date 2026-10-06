@@ -9,12 +9,17 @@ from llama_index.embeddings.ollama import OllamaEmbedding
 from config import (
     AMBITO_GENERAL, CHROMA_DB_DIR, EMBED_MODEL, NOMBRES_AMBITO, OLLAMA_URL, REGLAMENTO_DIR, _AMBITO_RE,
 )
+from modelo_indice import desajuste
 
 logger = logging.getLogger(__name__)
 
 # Inicialización única al arrancar el módulo
 _embed_model = OllamaEmbedding(model_name=EMBED_MODEL, base_url=OLLAMA_URL)
 _chroma      = chromadb.PersistentClient(path=CHROMA_DB_DIR)
+
+_aviso_modelo = desajuste(CHROMA_DB_DIR, EMBED_MODEL)
+if _aviso_modelo:
+    logger.warning(_aviso_modelo)
 
 
 # ─── Ámbitos de reglamento ───────────────────────────────────────────────

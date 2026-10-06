@@ -16,6 +16,14 @@ from llama_index.core.node_parser import SentenceSplitter
 from llama_index.readers.file import PDFReader
 from llama_index.embeddings.ollama import OllamaEmbedding
 import chromadb
+import sys
+
+# modelo_indice.py vive en api/ (en el contenedor, api/ es /app y tools/ es /app/tools)
+for _base in (Path(__file__).resolve().parent.parent / "api", Path(__file__).resolve().parent.parent):
+    if (_base / "modelo_indice.py").exists():
+        sys.path.insert(0, str(_base))
+        break
+from modelo_indice import escribir_marca
 
 # --- CONFIGURACIÓN ---
 BASE_DIR      = Path(__file__).resolve().parent.parent / "data"
@@ -23,7 +31,7 @@ PDFS_BASE_DIR = Path(os.environ.get("PDFS_BASE_DIR", "/app/data/pdfs" if os.path
 TEORIA_MD_DIR = Path(os.environ.get("TEORIA_MD_DIR", "/app/data/teoria" if os.path.exists("/app/data/teoria") else str(BASE_DIR / "teoria")))
 REGLAMENTO_DIR = Path(os.environ.get("REGLAMENTO_DIR", "/app/data/reglamento" if os.path.exists("/app/data/reglamento") else str(BASE_DIR / "reglamento")))
 CHROMA_DB_DIR = os.environ.get("CHROMA_DB_DIR", "/app/data/chroma_db" if os.path.exists("/app/data") else str(BASE_DIR / "chroma_db"))
-EMBED_MODEL   = os.environ.get("EMBED_MODEL", "nomic-embed-text")
+EMBED_MODEL   = os.environ.get("EMBED_MODEL", "qwen3-embedding:0.6b")
 OLLAMA_URL    = os.environ.get("OLLAMA_URL", "http://ollama:11434")
 CHUNK_SIZE    = 256
 CHUNK_OVERLAP = 20
@@ -234,4 +242,5 @@ if __name__ == "__main__":
     for nombre, rutas in colecciones.items():
         indexar_coleccion(nombre, rutas)
 
+    escribir_marca(CHROMA_DB_DIR, EMBED_MODEL)       # la API avisa si consulta con otro modelo
     logger.info("\n🏁 Indexado completo.")
