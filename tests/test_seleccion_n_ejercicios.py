@@ -75,3 +75,10 @@ def test_en_la_biblioteca_real_son_n_sin_repetir_y_de_la_edad(ejercicios, edad, 
     ids = [e["id"] for e in elegidos if e]
     assert len(ids) == len(set(ids))
     assert all(e["id"] in {r["id"] for r in relevantes} for e in elegidos if e)
+
+
+def test_elegir_fichas_vive_en_ejercicios_y_sesion_la_reutiliza():
+    # así se puede medir cuántos huecos propone la IA sin cargar ChromaDB (tools/huecos_biblioteca.py)
+    import ejercicios
+    import sesion
+    assert callable(ejercicios.elegir_fichas) and sesion._elegir_fichas is ejercicios.elegir_fichas

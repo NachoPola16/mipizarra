@@ -175,6 +175,15 @@ def seleccionar_ejercicios(relevantes: list, n: int) -> list:
     return elegidos
 
 
+def elegir_fichas(ejercicios: list, edad: str, objetivo: str, n: int) -> list:
+    """n fichas de la biblioteca para la parte principal, siguiendo el arco de oposición. Solo entran
+    las que encajan con el objetivo (umbral de relevancia): se filtran antes de elegir para que una
+    ficha irrelevante no ocupe un hueco cuando hay otras relevantes sin usar. Los huecos que no se
+    pueden cubrir quedan a None: los propone la IA, marcados como tales."""
+    relevantes = [e for e in filtrar_ejercicios(ejercicios, edad, objetivo) if es_relevante(e, objetivo)]
+    return seleccionar_ejercicios(relevantes, n)
+
+
 def construir_contexto_ejercicios(ejercicios: list, max_ejs: int = 10) -> str:
     analiticos = [e for e in ejercicios if e.get("_fase") == "ANALÍTICO"]
     directos   = [e for e in ejercicios if e.get("_fase") != "ANALÍTICO"]
