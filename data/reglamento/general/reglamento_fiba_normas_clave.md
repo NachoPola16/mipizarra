@@ -1,7 +1,7 @@
 # Reglamento FIBA — Normas clave para entrenadores (edición 2022, actualizada con los cambios de 2026)
 
 > Extracto de las reglas más relevantes para el entrenamiento y la dirección de partido.
-> Fuente: Reglas Oficiales de Baloncesto FIBA 2022 (aplicables desde octubre 2022), con los cambios en vigor desde el 1 de octubre de 2026 (véase `reglamento_fiba_cambios_2026`).
+> Reglas FIBA en la edición de 2022 (aplicables desde octubre de 2022), con los cambios en vigor desde el 1 de octubre de 2026 (véase `reglamento_fiba_cambios_2026`).
 
 ---
 

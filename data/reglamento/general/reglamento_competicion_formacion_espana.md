@@ -98,7 +98,7 @@ Ejemplo típico: el rival comete pasos o doble en su campo de ataque (el campo d
 - ✅ **Cadete (U16) → Senior**: aplica en competiciones autonómicas y provinciales + Campeonatos de España FEB.
 - ❌ **Infantil (U14) y Minibasket (U8-U12)**: excluidas — mantienen su normativa propia con saque estándar.
 
-Fuente: FEB + federaciones autonómicas (FBPA, FBCYL, FBM y otras) — implementación generalizada en 2025/2026.
+Implementación generalizada en 2025/2026 en la FEB y en las federaciones autonómicas.
 
 ### Cómo entrenarlo
 
