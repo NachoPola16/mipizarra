@@ -6,6 +6,7 @@ from pathlib import Path
 import chromadb
 from llama_index.embeddings.ollama import OllamaEmbedding
 
+from colecciones import COLECCIONES_PDF
 from config import (
     AMBITO_GENERAL, CHROMA_DB_DIR, EMBED_MODEL, NOMBRES_AMBITO, OLLAMA_URL, REGLAMENTO_DIR, _AMBITO_RE,
 )
@@ -51,6 +52,8 @@ def normalizar_ambito(ambito) -> str:
 
 # ─── ChromaDB / PDFs ─────────────────────────────────────────────────────
 def consultar_coleccion(nombre: str, consulta: str, n_resultados: int = 4, where: dict | None = None) -> str:
+    if nombre in COLECCIONES_PDF:
+        return ""          # los PDF de terceros están aislados: la IA solo ve documentos propios (.md)
     try:
         coleccion = _chroma.get_collection(nombre)
     except Exception:

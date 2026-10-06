@@ -27,7 +27,12 @@ services:
     ports:
       - "${BIND_IP:-0.0.0.0}:8090:8090"
     volumes:
-      - ./data:/app/data
+      # Solo lo que la API necesita: los PDF de terceros (data/pdfs) NO se montan, el sistema no puede verlos.
+      - ./data/exercises.json:/app/data/exercises.json:ro
+      - ./data/teoria:/app/data/teoria:ro
+      - ./data/reglamento:/app/data/reglamento:ro
+      - ./data/chroma_db:/app/data/chroma_db
+      - ./data/sessions:/app/data/sessions
       - ./api:/app
       - ./tools:/app/tools
       - ./experimental:/app/experimental

@@ -68,6 +68,18 @@ Al parchear una función en un test hay que hacerlo en el módulo donde vive (po
 5. Para cada ejercicio se usa el diagrama de la biblioteca si existe; si no, se genera uno desde la descripción.
 6. La sesión y los SVG se devuelven al frontend.
 
+## Los PDF de terceros están aislados
+
+La IA solo ve documentos propios: los `.md` de `data/teoria` y `data/reglamento` (reescritos por el entrenador) y la
+biblioteca `data/exercises.json`. Los PDF (`data/pdfs/`, ignorada por git) son material de trabajo en local para
+escribir documentos nuevos con palabras propias, y quedan fuera del sistema:
+
+- el contenedor de la API **no monta** `data/pdfs` (solo monta, una a una, las carpetas que necesita);
+- no hay ningún ajuste para activarlos y `consultar_coleccion` bloquea las colecciones que antes se construían con ellos;
+- `tools/indexar_colecciones.py` no sabe leer PDF y, al ejecutarse, elimina esas colecciones de la base.
+
+Un test (`tests/test_aislamiento_pdf.py`) falla si alguien vuelve a montar la carpeta o a leer PDF.
+
 ## Diagramas fiables
 
 El LLM nunca dibuja: solo produce JSON de coordenadas (ver [coordenadas.md](coordenadas.md)).
