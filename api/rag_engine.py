@@ -18,9 +18,11 @@ from config import (  # noqa: F401
 )
 from ejercicios import (  # noqa: F401
     COMPONENTES_ANALITICOS, cargar_ejercicios, filtrar_ejercicios,
-    seleccionar_tres_ejercicios, construir_contexto_ejercicios,
+    seleccionar_tres_ejercicios, seleccionar_ejercicios, nivel_objetivo, es_relevante,
+    construir_contexto_ejercicios,
     _extraer_conteo_nc_m, _nivel_oposicion, _palabras_objetivo,
 )
+from plan_sesion import PlanDeTiempos, plan_de_tiempos  # noqa: F401
 from contexto import (  # noqa: F401
     nombre_ambito, listar_ambitos, normalizar_ambito,
     consultar_coleccion, construir_contexto_teoria,

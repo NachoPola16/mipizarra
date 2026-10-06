@@ -16,7 +16,8 @@ Casos (fijos y deterministas, ver CASOS_* más abajo):
 
 Criterios duros (si alguno falla, código de salida 1):
   - Sesiones: HTTP 200; las 4 secciones (CALENTAMIENTO, PARTE PRINCIPAL, VUELTA A LA
-    CALMA, Fundamentos); exactamente 3 ejercicios; texto no truncado; un diagrama por
+    CALMA, Fundamentos); los ejercicios que pide el plan para su edad y duración (de 5 a 8
+    contando calentamiento y vuelta a la calma); texto no truncado; un diagrama por
     cada bloque esperado y todos los SVG bien formados.
   - Ejercicios: HTTP 200; nombre y descripción; diagrama presente, semánticamente
     válido (_validar_diagrama) y SVG bien formado.
@@ -256,8 +257,34 @@ def svg_bien_formado(svg: str) -> bool:
     return raiz.tag in ("svg", "{http://www.w3.org/2000/svg}svg")
 
 
+def _cargar_plan():
+    """plan_de_tiempos (api/plan_sesion.py): cuántos ejercicios pide el plan según edad y duración.
+    No tiene dependencias, así que se carga por ruta sin arrancar nada más. None si no se encuentra."""
+    api_dir = next((d for d in (RAIZ / "api", RAIZ) if (d / "plan_sesion.py").exists()), None)
+    if api_dir is None:
+        return None
+    try:
+        spec = importlib.util.spec_from_file_location("plan_sesion", api_dir / "plan_sesion.py")
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        return modulo.plan_de_tiempos
+    except Exception as e:
+        print(f"⚠ No se pudo cargar plan_de_tiempos ({e}); se acepta de 3 a 6 ejercicios.")
+        return None
+
+
+_PLAN_DE_TIEMPOS = _cargar_plan()
+
+
+def ejercicios_esperados(caso: dict) -> int | None:
+    """Ejercicios de la parte principal que debe tener la sesión del caso (None si no se puede saber)."""
+    if _PLAN_DE_TIEMPOS is None:
+        return None
+    return len(_PLAN_DE_TIEMPOS(caso["duracion"], caso["edad"]).duraciones)
+
+
 def diagramas_esperados_sesion(texto: str) -> int:
-    """Mismo criterio que /generar: un diagrama por bloque 'Ejercicio N[.M]:' (máx. 6)
+    """Mismo criterio que /generar: un diagrama por bloque 'Ejercicio N[.M]:' (máx. 12)
     más uno por el juego de calentamiento y otro por el de vuelta a la calma."""
     _, bloques = contar_ejercicios(texto)
     juegos = 0
@@ -266,7 +293,7 @@ def diagramas_esperados_sesion(texto: str) -> int:
         m = re.search(patron, texto or "", re.DOTALL | re.IGNORECASE)
         if m and re.search(r"Juego:\s*\S", m.group(1)):
             juegos += 1
-    return min(bloques, 6) + juegos
+    return min(bloques, 12) + juegos
 
 
 def _criterio(ok: bool, detalle: str = "") -> dict:
@@ -283,7 +310,11 @@ def evaluar_sesion(caso: dict, status: int, datos: dict | None, latencia: float)
     criterios["secciones"] = _criterio(not faltan, f"faltan: {', '.join(faltan)}" if faltan else "")
 
     n_ej, n_bloques = contar_ejercicios(texto)
-    criterios["tres_ejercicios"] = _criterio(n_ej == 3, f"{n_ej} ejercicio(s)")
+    esperado = ejercicios_esperados(caso)
+    if esperado is None:      # sin plan_sesion disponible: el rango posible de la parte principal
+        criterios["num_ejercicios"] = _criterio(3 <= n_ej <= 6, f"{n_ej} ejercicio(s), se esperan de 3 a 6")
+    else:
+        criterios["num_ejercicios"] = _criterio(n_ej == esperado, f"{n_ej} ejercicio(s), el plan pide {esperado}")
     criterios["no_truncado"] = _criterio(texto_completo(texto), "" if texto_completo(texto)
                                          else f"termina en: «{texto.rstrip()[-60:]}»")
 
