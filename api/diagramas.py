@@ -7,7 +7,9 @@ import requests
 
 from config import MODEL, OLLAMA_URL
 from ejercicios import _extraer_conteo_nc_m
+from posiciones import posicion_de
 from prompts import SYSTEM_DIAGRAMA
+from solapes import DISTANCIA_MINIMA, separar_puntos
 
 logger = logging.getLogger(__name__)
 
@@ -123,12 +125,95 @@ _DIAGRAMA_JSON_SCHEMA = {
 }
 
 
+_TIPOS_CON_DESTINO = ("desplazamiento", "bote", "bloqueo")
+
+
+def _orden_movimiento(mov: dict) -> float:
+    """Clave de orden de un movimiento; un 'orden' ausente o no numérico cuenta como 0."""
+    orden = mov.get("orden", 0)
+    return orden if isinstance(orden, (int, float)) and not isinstance(orden, bool) else 0
+
+
+def _punto_xy(punto, tipo_pista: str) -> dict | None:
+    """{"x", "y"} de un punto ({x, y}, {pos} o nombre), o None si no se puede resolver."""
+    try:
+        x, y = posicion_de(punto, tipo_pista)
+    except ValueError:
+        return None
+    return {"x": x, "y": y}
+
+
+def _reparar_a_pos(diagrama: dict, ids_defensa: set, tipo_pista: str) -> list[str]:
+    """Rellena el a_pos que falta en desplazamientos, botes y bloqueos solo cuando el
+    propio diagrama lo dice sin ambigüedad (nunca se inventan coordenadas):
+      1. 'a' es una posición ({x, y} o nombre de la tabla de posiciones canónicas);
+      2. bloqueo con 'a' = id de un defensor → donde está ese defensor en ese momento;
+      3. el siguiente movimiento del mismo jugador (por 'orden') indica dónde empieza
+         ('desde', con {x, y} o nombre).
+    Modifica el diagrama y devuelve la descripción de cada reparación."""
+    movimientos = diagrama.get("movimientos") or []
+    secuencia = [m for _, m in sorted(enumerate(movimientos), key=lambda t: (_orden_movimiento(t[1]), t[0]))
+                 if isinstance(m, dict)]
+    actuales = {}
+    for j in (diagrama.get("jugadores_ataque") or []) + (diagrama.get("jugadores_defensa") or []):
+        actuales[j.get("id")] = _punto_xy(j, tipo_pista)
+
+    reparaciones = []
+    for i, mov in enumerate(secuencia):
+        tipo, de = mov.get("tipo"), mov.get("de")
+        if tipo not in _TIPOS_CON_DESTINO:
+            continue
+        if "a_pos" not in mov:
+            destino, origen = None, ""
+            a = mov.get("a")
+            if isinstance(a, dict):
+                destino, origen = _punto_xy(a, tipo_pista), "'a' con coordenadas"
+            elif isinstance(a, str) and a in actuales:
+                if tipo == "bloqueo" and a in ids_defensa:
+                    destino, origen = actuales[a], f"posición de {a}"
+            elif isinstance(a, str):
+                destino, origen = _punto_xy(a, tipo_pista), f"'a'='{a}'"
+            if destino is None:
+                siguiente = next((m for m in secuencia[i + 1:] if m.get("de") == de), None)
+                if siguiente is not None and "desde" in siguiente:
+                    destino, origen = _punto_xy(siguiente["desde"], tipo_pista), "inicio del siguiente movimiento"
+            if destino is not None:
+                mov["a_pos"] = dict(destino)
+                if origen.startswith("'a'"):
+                    mov.pop("a", None)
+                reparaciones.append(f"a_pos de '{tipo}' de {de} tomado de {origen}")
+        if "a_pos" in mov and de in actuales:
+            actuales[de] = _punto_xy(mov["a_pos"], tipo_pista)
+    return reparaciones
+
+
+def _separar_jugadores(jugadores: list, tipo_pista: str) -> list[str]:
+    """Separa lo mínimo los jugadores a menos de DISTANCIA_MINIMA (solapes.separar_puntos;
+    el primero declarado se queda, el siguiente se aparta). Solo modifica el diagrama si
+    todos caben; si alguno no tiene hueco cerca no toca nada y el validador lo rechaza."""
+    puntos = [posicion_de(j, tipo_pista) for j in jugadores]
+    nuevos, sin_sitio = separar_puntos(puntos)
+    if sin_sitio:
+        return []
+    reparaciones = []
+    for j, antes, despues in zip(jugadores, puntos, nuevos):
+        if despues is not antes:
+            j["x"], j["y"] = despues
+            j.pop("pos", None)
+            reparaciones.append(f"{j.get('id')} separado de ({antes[0]}, {antes[1]}) a ({despues[0]}, {despues[1]})")
+    return reparaciones
+
+
 def _validar_diagrama(diagrama: dict, nombre_ejercicio: str = "") -> str | None:
     """Valida coherencia semántica del diagrama que el JSON Schema no puede expresar:
-    referencias de movimientos a jugadores realmente declarados, y que el nº de
-    jugadores coincide con lo que dice el nombre (p.ej. "1c1" = 1 atacante + 1
-    defensor). Devuelve None si es válido, o una descripción del error (para
-    reintentar con el modelo señalándoselo) si no lo es."""
+    referencias de movimientos a jugadores realmente declarados, posiciones con nombre
+    conocidas, y que el nº de jugadores coincide con lo que dice el nombre (p.ej. "1c1"
+    = 1 atacante + 1 defensor). Devuelve None si es válido, o una descripción del error
+    (para reintentar con el modelo señalándoselo) si no lo es.
+
+    Antes de rechazar, repara en el propio diagrama lo que tiene arreglo determinista:
+    a_pos que se deduce del diagrama (_reparar_a_pos) y jugadores demasiado cerca que
+    caben separándolos un poco (_separar_jugadores)."""
     ataque  = diagrama.get("jugadores_ataque") or []
     defensa = diagrama.get("jugadores_defensa") or []
     if not ataque:
@@ -139,23 +224,49 @@ def _validar_diagrama(diagrama: dict, nombre_ejercicio: str = "") -> str | None:
         return "hay ids de jugador repetidos entre jugadores_ataque y jugadores_defensa"
     ids = set(ids)
 
+    # Toda posición (x/y o nombre de la tabla de posiciones canónicas) tiene que resolverse.
+    tipo_pista = diagrama.get("tipo", "media_pista")
+    for j in ataque + defensa:
+        try:
+            posicion_de(j, tipo_pista)
+        except ValueError as e:
+            return f"jugador '{j.get('id')}': {e}"
+    for n, cono in enumerate(diagrama.get("conos") or [], start=1):
+        try:
+            posicion_de(cono, tipo_pista)
+        except ValueError as e:
+            return f"cono {n}: {e}"
+    for mov in diagrama.get("movimientos") or []:
+        if "a_pos" in mov:
+            try:
+                posicion_de(mov["a_pos"], tipo_pista)
+            except ValueError as e:
+                return f"movimiento '{mov.get('tipo')}' de '{mov.get('de')}': {e}"
+
+    reparaciones = _reparar_a_pos(diagrama, {j.get("id") for j in defensa}, tipo_pista)
+
     # Distancia mínima entre jugadores: en ejercicios "cara a cara muy cerca"
     # (p.ej. 1c1 de protección) el modelo a veces coloca atacante y defensor casi
     # en la misma coordenada — sus círculos se solapan en el render y uno queda
     # ilegible. 8 unidades (sistema 0-100) da un margen visible sin impedir
     # emparejamientos realmente pegados (un defensor presionando de cerca).
-    MIN_DIST_JUGADORES = 8
+    # Si hay sitio, se separan lo mínimo; si no, se rechaza.
+    MIN_DIST_JUGADORES = DISTANCIA_MINIMA
     todos = ataque + defensa
+    reparaciones += _separar_jugadores(todos, tipo_pista)
     for i in range(len(todos)):
         for j in range(i + 1, len(todos)):
             p1, p2 = todos[i], todos[j]
-            dist = ((p1.get("x", 0) - p2.get("x", 0)) ** 2 + (p1.get("y", 0) - p2.get("y", 0)) ** 2) ** 0.5
+            (x1, y1), (x2, y2) = posicion_de(p1, tipo_pista), posicion_de(p2, tipo_pista)
+            dist = ((x1 - x2) ** 2 + (y1 - y2) ** 2) ** 0.5
             if dist < MIN_DIST_JUGADORES:
                 return (
                     f"jugadores '{p1.get('id')}' y '{p2.get('id')}' están demasiado cerca "
                     f"({dist:.1f} unidades, mínimo {MIN_DIST_JUGADORES}) — sus círculos se solaparían "
                     "en el diagrama, sepáralos aunque el ejercicio sea de marca cercana"
                 )
+    if reparaciones:
+        logger.info(f"  ↺ Diagrama reparado: {'; '.join(reparaciones)}")
 
     conteo = _extraer_conteo_nc_m(nombre_ejercicio)
     if conteo:
