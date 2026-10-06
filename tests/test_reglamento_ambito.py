@@ -238,3 +238,15 @@ def test_el_pdf_sin_curar_pesa_menos_que_el_md_curado(espia_larga):
 def test_el_md_curado_conserva_seis_fragmentos(espia_larga):
     responder_duda_reglamento("¿A qué altura está el aro en minibasket?")
     assert espia_larga["n"][("reglamento_md", AMBITO_GENERAL)] == 6
+
+
+def test_la_peticion_de_reglamento_aguanta_la_carga_del_modelo_y_lo_mantiene_cargado(carpeta_ambitos, monkeypatch):
+    # la primera pregunta tras un rato inactivo obliga a cargar el modelo en la GPU (35 a 100 s); con 90 s de límite
+    # fallaba con la respuesta vacía. Se da margen y se pide a Ollama que lo mantenga cargado entre preguntas.
+    enviados = []
+    monkeypatch.setattr(reglamento, "consultar_coleccion", lambda *a, **k: "")
+    monkeypatch.setattr(reglamento.requests, "post",
+                        lambda url, json=None, timeout=None: (enviados.append((json, timeout)), _Resp())[1])
+    responder_duda_reglamento("¿Qué es el paso cero?")
+    carga, tiempo = enviados[0]
+    assert tiempo >= 180 and carga.get("keep_alive") == "30m"

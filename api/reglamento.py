@@ -88,9 +88,10 @@ def responder_duda_reglamento(pregunta: str, ambito: str = AMBITO_GENERAL) -> st
                 ],
                 "stream": False,
                 "think": False,    # modelos con razonamiento por defecto no deben gastar el presupuesto pensando
+                "keep_alive": "30m",   # tras un rato inactivo, cargar el modelo en la GPU tarda 35-100 s: se mantiene cargado
                 "options": {"temperature": 0.3, "num_predict": 500, "num_ctx": 6144},
             },
-            timeout=90,
+            timeout=180,
         )
         r.raise_for_status()
         return r.json()["message"]["content"].strip()

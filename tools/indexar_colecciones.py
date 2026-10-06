@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Indexa PDFs organizados en subcarpetas dentro de /app/data/pdfs/
-Cada subcarpeta se convierte en una colección separada en ChromaDB.
+Indexa los documentos propios (.md) en ChromaDB: teoría (data/teoria) y reglamento por ámbito
+(data/reglamento/<ámbito>). Cada grupo es una colección.
+
+Los PDF de terceros están aislados del sistema: este indexador no sabe leerlos y, al ejecutarse, elimina de la
+base las colecciones que antes se construían con ellos.
 """
 import os
 import time
@@ -13,7 +16,6 @@ from pathlib import Path
 from llama_index.core import Settings
 from llama_index.core.ingestion import IngestionPipeline
 from llama_index.core.node_parser import SentenceSplitter
-from llama_index.readers.file import PDFReader
 from llama_index.embeddings.ollama import OllamaEmbedding
 import chromadb
 import sys
@@ -23,11 +25,11 @@ for _base in (Path(__file__).resolve().parent.parent / "api", Path(__file__).res
     if (_base / "modelo_indice.py").exists():
         sys.path.insert(0, str(_base))
         break
+from colecciones import COLECCIONES_PDF, colecciones_a_indexar
 from modelo_indice import escribir_marca
 
 # --- CONFIGURACIÓN ---
 BASE_DIR      = Path(__file__).resolve().parent.parent / "data"
-PDFS_BASE_DIR = Path(os.environ.get("PDFS_BASE_DIR", "/app/data/pdfs" if os.path.exists("/app/data/pdfs") else str(BASE_DIR / "pdfs")))
 TEORIA_MD_DIR = Path(os.environ.get("TEORIA_MD_DIR", "/app/data/teoria" if os.path.exists("/app/data/teoria") else str(BASE_DIR / "teoria")))
 REGLAMENTO_DIR = Path(os.environ.get("REGLAMENTO_DIR", "/app/data/reglamento" if os.path.exists("/app/data/reglamento") else str(BASE_DIR / "reglamento")))
 CHROMA_DB_DIR = os.environ.get("CHROMA_DB_DIR", "/app/data/chroma_db" if os.path.exists("/app/data") else str(BASE_DIR / "chroma_db"))
@@ -132,7 +134,6 @@ def indexar_coleccion(nombre: str, rutas: list):
     logger.info(f"\n📂 Colección '{nombre}' ← {[str(r) for r in rutas]}")
 
     documentos = []
-    reader = None
 
     for ruta in rutas:
         ambito = None
@@ -141,26 +142,7 @@ def indexar_coleccion(nombre: str, rutas: list):
         if not ruta.exists():
             continue
 
-        # 1. Leer PDFs
-        pdf_files = list(ruta.glob("*.pdf"))
-        if pdf_files:
-            if reader is None:
-                reader = PDFReader(return_full_document=False)
-            for pdf in pdf_files:
-                try:
-                    docs = reader.load_data(file=pdf)
-                    for d in docs:
-                        d.metadata["fuente"]    = pdf.name
-                        d.metadata["coleccion"] = nombre
-                        d.metadata["tipo"]      = "pdf"
-                        if ambito:
-                            d.metadata["ambito"] = ambito
-                    documentos.extend(docs)
-                    logger.info(f"   📄 [PDF] {pdf.name} ({len(docs)} páginas)")
-                except Exception as e:
-                    logger.error(f"   ❌ {pdf.name}: {e}")
-
-        # 2. Leer archivos Markdown (.md)
+        # Leer archivos Markdown (.md): los documentos propios
         md_files = list(ruta.glob("*.md"))
         if md_files:
             for md in md_files:
@@ -171,7 +153,7 @@ def indexar_coleccion(nombre: str, rutas: list):
                         doc = Document(
                             text=texto,
                             metadata={
-                                "fuente": md.name,
+                                "documento": md.name,
                                 "coleccion": nombre,
                                 "tipo": "markdown",
                                 **({"ambito": ambito} if ambito else {}),
@@ -217,29 +199,26 @@ def indexar_coleccion(nombre: str, rutas: list):
 
 
 if __name__ == "__main__":
-    # "teoria_md" separada de "teoria": los 20 .md curados de data/teoria/ competían
-    # en la misma colección contra PDFs enteros (p.ej. un libro de 225 KB sobre tiro),
-    # así que el vecino más cercano casi nunca era el documento escrito a propósito.
-    # Reglamento por ámbito. Los .md curados viven en data/reglamento/<ámbito>/ ("general" = FIBA y
-    # federación española; una carpeta por comunidad autónoma). Los PDF oficiales (capa local
-    # opcional) siguen la misma convención: los sueltos en coleccion_reglamento/ son "general" y los
-    # de cada comunidad van en una subcarpeta con su nombre.
+    # Reglamento por ámbito: los .md viven en data/reglamento/<ámbito>/ ("general" = FIBA y federación
+    # española; una carpeta por comunidad autónoma).
     def _subcarpetas(base: Path) -> list:
         return sorted(d for d in base.iterdir() if d.is_dir()) if base.exists() else []
 
-    reglamento_pdf_dir = PDFS_BASE_DIR / "coleccion_reglamento"
-    reglamento_md  = [(d, d.name) for d in _subcarpetas(REGLAMENTO_DIR)]
-    reglamento_pdf = [(reglamento_pdf_dir, "general")] + [(d, d.name) for d in _subcarpetas(reglamento_pdf_dir)]
-
     colecciones = {
         "teoria_md":     [TEORIA_MD_DIR],
-        "teoria":        [PDFS_BASE_DIR / "coleccion_teoria"],
-        "planificacion": [PDFS_BASE_DIR / "coleccion_planificacion"],
-        "reglamento_md": reglamento_md,
-        "reglamento":    reglamento_pdf,
+        "reglamento_md": [(d, d.name) for d in _subcarpetas(REGLAMENTO_DIR)],
     }
 
-    for nombre, rutas in colecciones.items():
+    # Los PDF de terceros están aislados: se eliminan de la base las colecciones que se hubieran construido con ellos.
+    cliente = chromadb.PersistentClient(path=CHROMA_DB_DIR)
+    for nombre in sorted(COLECCIONES_PDF):
+        try:
+            cliente.delete_collection(nombre)
+            logger.info(f"🗑️  Colección '{nombre}' eliminada (antes se construía con PDF de terceros).")
+        except Exception:
+            pass
+
+    for nombre, rutas in colecciones_a_indexar(colecciones).items():
         indexar_coleccion(nombre, rutas)
 
     escribir_marca(CHROMA_DB_DIR, EMBED_MODEL)       # la API avisa si consulta con otro modelo
