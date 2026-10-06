@@ -148,3 +148,17 @@ def test_los_ejercicios_de_la_biblioteca_se_ofrecen_como_referencia_solo_de_esa_
     ejercicio_unico.generar_ejercicio_unico("U8", "bote")
     prompt = estado["peticiones"][0]["prompt"]
     assert "poste bajo" not in prompt.lower()
+
+
+def test_si_el_objetivo_pedido_es_una_linea_roja_se_hace_con_aviso(modelo_falso):
+    pedido = dict(EJERCICIO_BUENO, descripcion="Bloqueo directo sencillo entre A1 y A2, de forma puntual.")
+    estado = modelo_falso([pedido])
+    ej = ejercicio_unico.generar_ejercicio_unico("U12", "bloqueo directo")
+    assert ej["descripcion"] == pedido["descripcion"] and len(estado["peticiones"]) == 1
+    assert len(ej["avisos"]) == 1 and "bloqueo" in ej["avisos"][0]
+    assert "EXCEPCIÓN" in estado["peticiones"][0]["prompt"]
+
+
+def test_sin_peticion_vetada_el_ejercicio_no_lleva_avisos(modelo_falso):
+    modelo_falso([EJERCICIO_BUENO])
+    assert "avisos" not in ejercicio_unico.generar_ejercicio_unico("U12", "1c1")

@@ -37,29 +37,50 @@ _NEGACION = re.compile(r"\b(?:sin|no|nunca|ni|evit\w*|prohib\w*|todavia|aun)\b")
 _FRASES = re.compile(r"[.\n;:!?]+")
 
 
-def violaciones(texto: str, edad: str) -> list[str]:
-    """Términos del texto que son línea roja para esa edad (lista vacía si no hay ninguno)."""
-    if edad in CATEGORIAS_MINIBASKET:
-        patrones = _VETADOS_MINIBASKET
-    else:
+def _coincidencias(texto: str, edad: str) -> list[str]:
+    """Términos vetados para esa edad que aparecen en el texto sin negar, normalizados y sin repetir."""
+    if edad not in CATEGORIAS_MINIBASKET:
         return []
     encontrados: list[str] = []
     for frase in _FRASES.split(_normalizar(texto)):
-        for patron in patrones:
+        for patron in _VETADOS_MINIBASKET:
             for m in re.finditer(patron, frase):
                 if _NEGACION.search(frase[:m.start()]):
                     continue
-                motivo = f"«{m.group(0).strip()}» no se trabaja en {edad} (línea roja)"
-                if motivo not in encontrados:
-                    encontrados.append(motivo)
+                termino = m.group(0).strip()
+                if termino not in encontrados:
+                    encontrados.append(termino)
     return encontrados
 
 
-def instruccion_prompt(edad: str) -> str:
+def violaciones(texto: str, edad: str, permitidos=()) -> list[str]:
+    """Términos del texto que son línea roja para esa edad (lista vacía si no hay ninguno). `permitidos`
+    son términos que el entrenador pidió expresamente (ver terminos_pedidos): no cuentan."""
+    return [f"«{t}» no se trabaja en {edad} (línea roja)"
+            for t in _coincidencias(texto, edad) if t not in set(permitidos)]
+
+
+def terminos_pedidos(pedido: str, edad: str) -> list[str]:
+    """Términos vetados para esa edad que el entrenador pide de forma expresa en su texto. Se hacen, con aviso:
+    las líneas rojas orientan al generador, no desautorizan al entrenador."""
+    return _coincidencias(pedido, edad)
+
+
+def aviso_pedido(terminos: list[str], edad: str) -> str:
+    lista = ", ".join(f"«{t}»" for t in terminos)
+    return (f"Has pedido {lista}, que no es habitual en {edad} (línea roja de la categoría). Se ha hecho porque "
+            f"lo pides; revisa que sea adecuado para tu grupo.")
+
+
+def instruccion_prompt(edad: str, permitidos=()) -> str:
     """Aviso para el prompt de sesión con lo que no se puede incluir en esa edad ('' si nada)."""
     if edad in CATEGORIAS_MINIBASKET:
-        return ("PROHIBIDO en esta categoría (no lo uses en ningún apartado): bloqueos, pantallas, "
-                "mano a mano, defensa zonal, juego de poste y trampas defensivas.")
+        texto = ("PROHIBIDO en esta categoría (no lo uses en ningún apartado): bloqueos, pantallas, "
+                 "mano a mano, defensa zonal, juego de poste y trampas defensivas.")
+        if permitidos:
+            texto += (f" EXCEPCIÓN: el entrenador pide expresamente {', '.join(permitidos)}; hazlo, de forma "
+                      f"sencilla y adaptada a la edad. Lo demás sigue prohibido.")
+        return texto
     if edad in CATEGORIAS_BLOQUEO_DIRECTO_PUNTUAL:
         return ("El bloqueo directo solo de forma puntual y sencilla (una jugada concreta o si el "
                 "nivel del equipo lo permite), nunca como contenido central; el indirecto sí se puede trabajar.")

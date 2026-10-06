@@ -754,6 +754,13 @@ function formatEjercicioTexto(headerLine, ej, ejOriginal) {
     return out.trim();
 }
 
+// Avisos de la API al corregir un ejercicio (p. ej. «has pedido algo que no es habitual en esta categoría»):
+// se hace igualmente y se avisa. Sin avisos no se muestra nada; los repetidos se juntan.
+function textoAvisos(avisos) {
+    const lista = [...new Set((avisos || []).filter(Boolean))];
+    return lista.length ? '⚠ Aviso: ' + lista.join(' ') : '';
+}
+
 // Diagramas de la sesión tras corregir un ejercicio: los nuevos ocupan EN SU MISMA POSICIÓN el sitio de los viejos
 // (diagGroups se reconstruye por orden de array, así que un filter+push desalinearía los de los ejercicios
 // siguientes). Si la corrección no trae diagrama (solo tocó el texto), se conserva el que ya había.
@@ -784,6 +791,7 @@ async function aplicarReprompt() {
 
     const btn = document.getElementById('btn-reprompt');
     const idxs = Array.from(selectedEjercicios);
+    const avisosReprompt = [];
     btn.disabled = true;
 
     for (const idx of idxs) {
@@ -806,6 +814,7 @@ async function aplicarReprompt() {
 
             const nuevoEjercicio = data.ejercicio || {};
             const nuevasDiagramas = data.diagramas || [];
+            avisosReprompt.push(...(nuevoEjercicio.avisos || []));
 
             // Sustituir el texto del bloque, conservando la numeración "Ejercicio N".
             currentBloques[ej.bloqueIdx].texto = formatEjercicioTexto(ej.headerLine, nuevoEjercicio, ej);
@@ -828,6 +837,8 @@ async function aplicarReprompt() {
     btn.disabled = false;
     btn.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2.5v3.2h-3.2"/></svg> Aplicar cambio';
     renderResults(currentResult);
+    const aviso = textoAvisos(avisosReprompt);
+    if (aviso) showFormError(aviso);
 }
 
 function escHtml(s) {
