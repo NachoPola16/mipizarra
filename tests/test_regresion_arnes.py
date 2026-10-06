@@ -13,6 +13,7 @@ import pytest
 
 from conftest import RAIZ
 from diagram_renderer import render_diagram
+from plan_sesion import plan_de_tiempos
 
 _spec = importlib.util.spec_from_file_location("regresion", RAIZ / "tools" / "regresion.py")
 regresion = importlib.util.module_from_spec(_spec)
@@ -65,27 +66,38 @@ def _bloque(n, nombre, partido):
             f"Organización: Igual, con defensor.\nPuntos clave:\n- Proteger el balón.\n")
 
 
-def sesion_buena(edad, objetivo):
+NOMBRES_EJERCICIOS = ["Rueda de bote", "2c1 desde medio campo", "3c3 en media pista",
+                      "Pase y corte 3c0", "1c1 desde el codo", "4c4 en transición"]
+
+
+def sesion_buena(edad, objetivo, duracion=90):
+    """Sesión como la de la API real: n ejercicios en la parte principal (n según plan_de_tiempos),
+    el descanso hacia la mitad y, en formación, el primero partido en base + variante."""
+    NL = "\n"
+    plan = plan_de_tiempos(duracion, edad)
+    n = len(plan.duraciones)
     partido = edad in FORMACION
     contenido = "bote de protección y cambio de mano" if partido else f"{objetivo} con lectura de la defensa"
-    texto = (
-        "**CALENTAMIENTO (10 min)**\nJuego: Cazadores\n"
-        "Reglas: Dos cazadores persiguen a los demás, que botan sin salir de media pista.\n"
-        "Espacio: Media pista.\n\n**PARTE PRINCIPAL**\n\n"
-        + _bloque(1, "Rueda de bote", partido) + "\n"
-        + _bloque(2, "2c1 desde medio campo", partido)
-        + "\n**DESCANSO (3 min)**\n\n"
-        + _bloque(3, "3c3 en media pista", partido)
-        + "\n**VUELTA A LA CALMA (5 min)**\nJuego: Tiros libres\nReglas: Cada acierto suma un punto.\n\n"
-        f"**Fundamentos**: {contenido}."
+    partes = [
+        "**CALENTAMIENTO (10 min)**" + NL + "Juego: Cazadores" + NL
+        + "Reglas: Dos cazadores persiguen a los demás, que botan sin salir de media pista." + NL
+        + "Espacio: Media pista." + NL + NL + "**PARTE PRINCIPAL**" + NL + NL
+    ]
+    nombres = []
+    for i in range(1, n + 1):
+        nombre = NOMBRES_EJERCICIOS[(i - 1) % len(NOMBRES_EJERCICIOS)]
+        con_variante = partido and i == 1
+        partes.append(_bloque(i, nombre, con_variante) + NL)
+        nombres += [nombre, nombre + " (variante)"] if con_variante else [nombre]
+        if i == (n + 1) // 2:
+            partes.append("**DESCANSO (3 min)**" + NL + NL)
+    partes.append(
+        "**VUELTA A LA CALMA (5 min)**" + NL + "Juego: Tiros libres" + NL
+        + "Reglas: Cada acierto suma un punto." + NL + NL + f"**Fundamentos**: {contenido}."
     )
-    n_diag = (6 if partido else 3) + 2
-    nombres = (["Rueda de bote", "Rueda de bote (variante)", "2c1", "2c1 (variante)", "3c3", "3c3 (variante)"]
-               if partido else ["Rueda de bote", "2c1", "3c3"]) + ["Calentamiento: Cazadores",
-                                                                   "Vuelta a la calma: Tiros libres"]
-    assert len(nombres) == n_diag
-    return {"sesion": texto, "diagramas": [{"id": f"d{i}", "nombre": n, "titulo": "", "svg": SVG_OK}
-                                           for i, n in enumerate(nombres)]}
+    nombres += ["Calentamiento: Cazadores", "Vuelta a la calma: Tiros libres"]
+    return {"sesion": "".join(partes), "diagramas": [{"id": f"d{i}", "nombre": nom, "titulo": "", "svg": SVG_OK}
+                                                     for i, nom in enumerate(nombres)]}
 
 
 RESPUESTAS_REGLAMENTO = {
@@ -131,7 +143,7 @@ class ApiSimulada(BaseHTTPRequestHandler):
         malo = type(self).modo == "malo"
 
         if self.path == "/generar":
-            resp = sesion_buena(req["edad"], req["objetivo"])
+            resp = sesion_buena(req["edad"], req["objetivo"], req["duracion"])
             if malo and req["edad"] == "U10":
                 resp["sesion"] = resp["sesion"].replace(
                     "**Fundamentos**:", "Hoy trabajamos el bloqueo directo según el manual.\n\n**Fundamentos**:")
@@ -229,10 +241,12 @@ def test_api_buena_pasa(api, tmp_path):
     assert informe["resumen"]["fallidos"] == []
     assert informe["version_api"] == "simulada"
     res = _por_id(informe)
-    # U10 y U12 parten los ejercicios en N.1/N.2: 6 bloques + calentamiento + vuelta.
-    assert res["ses_u10_bote"]["metricas"]["diagramas_esperados"] == 8
-    assert res["ses_u10_bote"]["metricas"]["ejercicios"] == 3
-    assert res["ses_u16_bloqueo"]["metricas"]["diagramas_esperados"] == 5
+    # U10 a 60 min: 4 ejercicios y el primero partido en N.1/N.2 → 5 bloques + calentamiento + vuelta.
+    assert res["ses_u10_bote"]["metricas"]["diagramas_esperados"] == 7
+    assert res["ses_u10_bote"]["metricas"]["ejercicios"] == 4
+    # U16 a 90 min: 4 ejercicios sin variantes → 4 bloques + calentamiento + vuelta.
+    assert res["ses_u16_bloqueo"]["metricas"]["diagramas_esperados"] == 6
+    assert res["ses_u16_bloqueo"]["metricas"]["ejercicios"] == 4
     # El validador semántico real se ha aplicado a los ejercicios.
     assert "omitido" not in res["ej_u12_1c1_45"]["criterios"]["diagrama_valido"]["detalle"]
     # Peticiones exactas que se mandan a la API.
@@ -388,6 +402,39 @@ def test_texto_completo(texto, esperado):
 
 
 def test_contar_ejercicios_con_variantes():
-    texto = sesion_buena("U10", "bote")["sesion"]
-    assert regresion.contar_ejercicios(texto) == (3, 6)
-    assert regresion.diagramas_esperados_sesion(texto) == 8
+    texto = sesion_buena("U10", "bote", 60)["sesion"]
+    assert regresion.contar_ejercicios(texto) == (4, 5)
+    assert regresion.diagramas_esperados_sesion(texto) == 7
+
+
+# ─── Número de ejercicios esperado: sale del plan, no es fijo ────────────────
+
+@pytest.mark.parametrize("edad,duracion,esperado", [("U10", 60, 4), ("U12", 75, 5), ("U14", 90, 5), ("U16", 90, 4)])
+def test_ejercicios_esperados_salen_del_plan(edad, duracion, esperado):
+    assert regresion.ejercicios_esperados({"edad": edad, "duracion": duracion}) == esperado
+
+
+def _evaluar(edad, duracion, n_ejercicios_en_el_texto):
+    caso = {"id": "x", "edad": edad, "duracion": duracion, "objetivo": "bote"}
+    resp = sesion_buena(edad, "bote", duracion)
+    if n_ejercicios_en_el_texto is not None:
+        # quita ejercicios del final de la parte principal hasta dejar los pedidos
+        texto = resp["sesion"]
+        while regresion.contar_ejercicios(texto)[0] > n_ejercicios_en_el_texto:
+            ultimo = max(int(m) for m, _ in regresion.CAB_EJERCICIO.findall(texto))
+            ini = texto.index(f"Ejercicio {ultimo}")
+            fin = texto.index("**VUELTA A LA CALMA")
+            texto = texto[:ini] + texto[fin:]
+        resp["sesion"] = texto
+    return regresion.evaluar_sesion(caso, 200, resp, 1.0)
+
+
+def test_el_arnes_acepta_el_numero_de_ejercicios_que_pide_el_plan():
+    assert _evaluar("U10", 60, None)["criterios"]["num_ejercicios"]["ok"]
+    assert _evaluar("U16", 90, None)["criterios"]["num_ejercicios"]["ok"]
+
+
+def test_el_arnes_rechaza_un_numero_de_ejercicios_distinto_al_del_plan():
+    # el plan de U10 a 60 min pide 4 ejercicios: con 3 falla y lo dice
+    criterio = _evaluar("U10", 60, 3)["criterios"]["num_ejercicios"]
+    assert not criterio["ok"] and "3" in criterio["detalle"] and "4" in criterio["detalle"]

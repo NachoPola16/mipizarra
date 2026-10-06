@@ -246,13 +246,14 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
         ejercicios_db = resultado.get("ejercicios_usados", [])
 
         ejercicios_con_descripcion = []
-        # Hasta 6: cada uno de los 3 ejercicios principales puede venir partido en
-        # base + variante (N.1/N.2) cuando la duración supera lo que esa edad aguanta.
+        # Hasta 12: la parte principal tiene hasta 6 ejercicios y cada uno puede venir partido en
+        # base + variante (N.1/N.2) cuando la ficha trae progresión y la duración supera lo que
+        # esa edad aguanta.
         # La base usa el diagrama guardado de la ficha; la variante (mismo nombre,
         # segunda aparición) describe un cambio distinto, así que genera el suyo
         # propio en vez de repetir el mismo diagrama dos veces.
         ids_ya_usados = set()
-        for i, ej_texto in enumerate(ejercicios_del_texto[:6]):
+        for i, ej_texto in enumerate(ejercicios_del_texto[:12]):
             # Si el nombre que puso el modelo no coincide (ni de lejos) con ningún
             # ejercicio de la biblioteca, NO caer a "el i-ésimo de la lista" — eso
             # asignaba el diagrama de un ejercicio de biblioteca totalmente distinto

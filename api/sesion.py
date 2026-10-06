@@ -1,10 +1,12 @@
 # api/sesion.py
 """Modo 1: generación de una sesión completa de entrenamiento.
 
-Los ejercicios de la biblioteca los compone el código con la ficha curada íntegra (ver
-bloques.py); el modelo solo redacta calentamiento, vuelta a la calma, fundamentos, las variantes
-N.2 que la ficha no trae y los huecos para los que no hay ficha relevante (marcados como
-«propuestos por la IA»). Todo lo que escribe el modelo pasa por la guardia de líneas rojas."""
+La sesión tiene entre 5 y 8 ejercicios en total (cuentan el calentamiento y la vuelta a la calma);
+cuántos y cuánto dura cada uno lo decide plan_sesion según la duración y la edad. Los ejercicios de
+la biblioteca los compone el código con la ficha curada íntegra (ver bloques.py); el modelo solo
+redacta calentamiento, vuelta a la calma, fundamentos y los huecos para los que no hay ficha
+relevante (marcados como «propuestos por la IA»). La variante N.2 solo existe si la ficha trae
+progresión curada. Todo lo que escribe el modelo pasa por la guardia de líneas rojas."""
 import logging
 import re
 from dataclasses import dataclass
@@ -17,8 +19,11 @@ from bloques import (
 )
 from config import EDAD_A_CATEGORIA, MODEL_SESION, OLLAMA_URL
 from contexto import construir_contexto_teoria
-from ejercicios import cargar_ejercicios, es_relevante, filtrar_ejercicios, seleccionar_tres_ejercicios
+from ejercicios import (
+    cargar_ejercicios, es_relevante, filtrar_ejercicios, nivel_objetivo, seleccionar_ejercicios,
+)
 from lineas_rojas import CATEGORIAS_MINIBASKET, instruccion_prompt, violaciones
+from plan_sesion import plan_de_tiempos
 
 logger = logging.getLogger(__name__)
 
@@ -91,10 +96,12 @@ MAX_BLOQUE_POR_EDAD = {
 }
 MAX_BLOQUE_DEFECTO = 20  # Cadete en adelante
 
+# Qué se espera de un ejercicio según su nivel de oposición (el arco de la parte principal va de
+# sin oposición a oposición igualada; ver ejercicios.nivel_objetivo).
 ROLES_EJERCICIO = {
-    1: "sin oposición o defensa pasiva",
-    2: "con superioridad numérica",
-    3: "con oposición igualada",
+    0: "sin oposición o defensa pasiva",
+    1: "con superioridad numérica u oposición reducida",
+    2: "con oposición igualada",
 }
 
 
@@ -104,67 +111,36 @@ def _redondear_5(minutos: float, minimo: int = 5) -> int:
     return max(minimo, round(minutos / 5) * 5)
 
 
-def _plantilla_variante(numero: int, nombre: str, duracion: int) -> str:
-    referencia = f'variante de "{nombre}"' if nombre else f"variante del ejercicio {numero}.1"
-    return f"""Ejercicio {numero}.2 ({referencia} — mismo ejercicio con un cambio o regla nueva, no lo repitas igual):
-Duración: {duracion} min
-Qué cambia respecto a {numero}.1:
-Organización:
-Puntos clave:
--
--
-"""
-
-
-def _bloque_ejercicio(numero: int, nombre: str, duracion: int, edad: str) -> str:
-    """Plantilla que el modelo rellena para un ejercicio de la parte principal. Si la duración
-    supera lo que ese grupo de edad aguanta haciendo lo mismo, lo parte en N.1 (base) + N.2
-    (variante: mismo ejercicio con un cambio/regla nueva) en vez de un único bloque monótono.
-    Con nombre vacío, el modelo propone también el nombre del ejercicio."""
-    max_bloque = MAX_BLOQUE_POR_EDAD.get(edad, MAX_BLOQUE_DEFECTO)
-    if duracion <= max_bloque:
-        return f"""Ejercicio {numero}: {nombre}
+def _bloque_ejercicio(numero: int, nombre: str, duracion: int) -> str:
+    """Plantilla que el modelo rellena para un hueco sin ficha: siempre un bloque único (la variante
+    N.2 solo existe si la ficha trae progresión curada). Con nombre vacío, el modelo propone también
+    el nombre del ejercicio."""
+    return f"""Ejercicio {numero}: {nombre}
 Duración: {duracion} min
 Organización:
 Puntos clave:
 -
 -
 """
-    t1 = _redondear_5(duracion / 2)
-    t2 = _redondear_5(duracion - t1)
-    return f"""Ejercicio {numero}.1: {nombre}
-Duración: {t1} min
-Organización:
-Puntos clave:
--
--
-
-{_plantilla_variante(numero, nombre, t2)}"""
 
 
 @dataclass
 class _Hueco:
-    """Uno de los tres ejercicios de la parte principal."""
+    """Uno de los ejercicios de la parte principal."""
     numero: int
     ficha: dict | None   # ficha de la biblioteca, o None si el hueco lo propone la IA
     t1: int              # minutos del bloque base (o del bloque entero si no se parte)
-    t2: int              # minutos de la variante N.2 (0 si no se parte)
+    t2: int = 0          # minutos de la variante N.2 (0 si no se parte)
     variante_curada: str | None = None
+    nivel: int = 1       # nivel de oposición que le toca en el arco de la sesión (0, 1 o 2)
 
     @property
     def partido(self) -> bool:
-        return self.t2 > 0
-
-    def clave_variante(self) -> str:
-        return f"ej:{self.numero}.2"
+        return self.variante_curada is not None
 
     def claves_del_modelo(self) -> list[str]:
-        """Bloques que se piden al modelo para este hueco."""
-        if self.ficha is None:
-            return [f"ej:{self.numero}.1", f"ej:{self.numero}.2"] if self.partido else [f"ej:{self.numero}"]
-        if self.partido and self.variante_curada is None:
-            return [self.clave_variante()]
-        return []
+        """Bloques que se piden al modelo para este hueco: solo el propio ejercicio si no hay ficha."""
+        return [f"ej:{self.numero}"] if self.ficha is None else []
 
 
 def _duraciones(duracion: int, partido: bool) -> tuple[int, int]:
@@ -175,7 +151,7 @@ def _duraciones(duracion: int, partido: bool) -> tuple[int, int]:
 
 
 def _linea_prompt(hueco: _Hueco) -> str:
-    rol = ROLES_EJERCICIO[hueco.numero]
+    rol = ROLES_EJERCICIO[hueco.nivel]
     ficha = hueco.ficha
     if ficha is None:
         return (f"{hueco.numero}. SIN FICHA en la biblioteca para este hueco: propón tú un ejercicio "
@@ -188,15 +164,10 @@ def _linea_prompt(hueco: _Hueco) -> str:
             f"   {descripcion}\n   Puntos clave: {puntos}")
 
 
-def _plantilla_modelo(huecos: list[_Hueco], edad: str, t_calent: int, t_vuelta: int, t_descanso: int) -> str:
+def _plantilla_modelo(huecos: list[_Hueco], t_calent: int, t_vuelta: int) -> str:
     """Solo los apartados que redacta el modelo, en el orden de la sesión."""
-    bloques = []
-    for h in huecos:
-        if h.ficha is None:
-            bloques.append(_bloque_ejercicio(h.numero, "(nombre propio del ejercicio)", h.t1 + h.t2, edad))
-        elif h.partido and h.variante_curada is None:
-            bloques.append(_plantilla_variante(h.numero, h.ficha["nombre"], h.t2))
-    principal = "\n".join(bloques)
+    bloques = [_bloque_ejercicio(h.numero, "(nombre propio del ejercicio)", h.t1) for h in huecos if h.ficha is None]
+    principal = chr(10).join(bloques)
     return f"""**CALENTAMIENTO ({t_calent} min)**
 Juego:
 Reglas:
@@ -266,11 +237,6 @@ def _limpiar_respuesta(texto: str) -> str:
         if patron in texto:
             texto = texto.split(patron)[0].strip()
 
-    # ── 3. Eliminar Ejercicio 4+ si se ha colado ──────────────────────────
-    for patron_extra in ["\nEjercicio 4:", "\nEjercicio 5:"]:
-        if patron_extra in texto:
-            texto = texto.split(patron_extra)[0].strip()
-
     # ── 3b. Eliminar "Ejercicio 1/2/3" repetidos (rambling tras terminar) ──
     texto = _eliminar_secciones_duplicadas(texto)
 
@@ -316,8 +282,6 @@ def _pedir_texto_sesion(prompt: str, num_predict: int, num_ctx: int,
                     "{", "¿Cómo", "NOTA:", "En resumen",
                     "También es importante", "para ajustar este plan",
                     "**SESIÓN**",
-                    # Ejercicios extra
-                    "Ejercicio 4:", "Ejercicio 5:",
                     *parar_en,
                 ],
             },
@@ -416,15 +380,10 @@ def _nombre_de_pieza(clave: str) -> str:
 
 
 def _normalizar_claves(huecos: list[_Hueco], bloques: dict[str, str]) -> None:
-    """El modelo a veces escribe 'Ejercicio N:' donde la plantilla pedía 'N.1' (o al revés)
-    para un hueco propuesto: se acepta cualquiera de las dos numeraciones."""
+    """El modelo a veces escribe 'Ejercicio N.1:' donde la plantilla pedía 'N:': se acepta."""
     for h in huecos:
-        if h.ficha is not None:
-            continue
         n = h.numero
-        if h.partido and f"ej:{n}.1" not in bloques and f"ej:{n}" in bloques:
-            bloques[f"ej:{n}.1"] = bloques.pop(f"ej:{n}")
-        elif not h.partido and f"ej:{n}" not in bloques and f"ej:{n}.1" in bloques:
+        if h.ficha is None and f"ej:{n}" not in bloques and f"ej:{n}.1" in bloques:
             bloques[f"ej:{n}"] = bloques.pop(f"ej:{n}.1")
 
 
@@ -439,32 +398,16 @@ def _piezas_con_linea_roja(bloques: dict[str, str], claves: list[str], edad: str
     return malas
 
 
-def _bloque_variante_del_modelo(hueco: _Hueco, bloque: str, nombre: str) -> str:
-    cabecera = f'Ejercicio {hueco.numero}.2 (variante de "{nombre}"):'
-    return reescribir_bloque(bloque, cabecera, hueco.t2)
-
-
 def _bloques_de_hueco(hueco: _Hueco, bloques: dict[str, str]) -> list[str]:
-    """Texto final de un hueco: ficha curada o bloque propuesto por el modelo (puede ser [])."""
+    """Texto final de un hueco: ficha curada (con su variante si la trae) o bloque propuesto por el
+    modelo (puede ser [])."""
     n = hueco.numero
     if hueco.ficha is not None:
-        variante = hueco.variante_curada
-        if variante is None and hueco.partido and hueco.clave_variante() in bloques:
-            variante = _bloque_variante_del_modelo(hueco, bloques[hueco.clave_variante()], hueco.ficha["nombre"])
-        if variante is None:  # sin variante disponible: el ejercicio no se parte
-            return [bloque_curado(n, hueco.ficha, hueco.t1 + hueco.t2, partido=False)]
-        return [bloque_curado(n, hueco.ficha, hueco.t1, partido=True), variante]
+        if hueco.partido:
+            return [bloque_curado(n, hueco.ficha, hueco.t1, partido=True), hueco.variante_curada]
+        return [bloque_curado(n, hueco.ficha, hueco.t1, partido=False)]
 
     # Hueco propuesto por la IA
-    if hueco.partido:
-        base, variante = bloques.get(f"ej:{n}.1"), bloques.get(f"ej:{n}.2")
-        if base is None:
-            return []
-        nombre = nombre_de_cabecera(base) or "Ejercicio propuesto"
-        if variante is None:
-            return [reescribir_bloque(base, f"Ejercicio {n}: {nombre}", hueco.t1 + hueco.t2, propuesto=True)]
-        return [reescribir_bloque(base, f"Ejercicio {n}.1: {nombre}", hueco.t1, propuesto=True),
-                _bloque_variante_del_modelo(hueco, variante, nombre)]
     bloque = bloques.get(f"ej:{n}")
     if bloque is None:
         return []
@@ -485,7 +428,7 @@ def _ensamblar(huecos: list[_Hueco], bloques: dict[str, str],
         partes.extend(textos)
         if textos and hueco.ficha is None:
             propuestos.append(hueco.numero)
-        if hueco.numero == 2:
+        if hueco.numero == (len(huecos) + 1) // 2:     # el descanso va hacia la mitad
             partes.append(f"**DESCANSO ({t_descanso} min)**")
     if bloques.get("vuelta"):
         partes.append(f"**VUELTA A LA CALMA ({t_vuelta} min)**\n{bloques['vuelta']}")
@@ -494,45 +437,50 @@ def _ensamblar(huecos: list[_Hueco], bloques: dict[str, str],
     return "\n\n".join(partes), propuestos
 
 
+def _elegir_fichas(ejercicios: list, edad: str, objetivo: str, n: int) -> list:
+    """n fichas de la biblioteca para la parte principal, siguiendo el arco de oposición. Solo entran
+    las que encajan con el objetivo (umbral de relevancia): se filtran antes de elegir para que una
+    ficha irrelevante no ocupe un hueco cuando hay otras relevantes sin usar. Los huecos que no se
+    pueden cubrir quedan a None: los propone la IA, marcados como tales."""
+    relevantes = [e for e in filtrar_ejercicios(ejercicios, edad, objetivo) if es_relevante(e, objetivo)]
+    return seleccionar_ejercicios(relevantes, n)
+
+
 def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
-    ejercicios = cargar_ejercicios()
-    relevantes = filtrar_ejercicios(ejercicios, edad, objetivo)
-    elegidos = seleccionar_tres_ejercicios(relevantes)
-    # Umbral de relevancia: una ficha que no encaja con el objetivo no ocupa el hueco; lo
-    # propone la IA y la sesión lo marca como tal.
-    fichas = [ej if ej and es_relevante(ej, objetivo) else None for ej in elegidos]
+    plan = plan_de_tiempos(duracion, edad)
+    n = len(plan.duraciones)
+    fichas = _elegir_fichas(cargar_ejercicios(), edad, objetivo, n)
     ctx_teoria = construir_contexto_teoria(objetivo, edad)
 
     # Sin truncado global aquí: construir_contexto_teoria ya aplica presupuesto por
     # colección, así que lo que devuelve ya está acotado a un tamaño razonable.
     teoria_intro = f"CONTEXTO METODOLÓGICO:\n{ctx_teoria}\n\n" if ctx_teoria else ""
 
-    t_descanso = 3 if duracion >= 60 else 2
-    t_calent = _redondear_5(duracion / 6, minimo=10)
-    t_vuelta = _redondear_5(duracion / 15, minimo=5)
-    t_parte  = duracion - t_calent - t_vuelta - t_descanso
-    t_ej     = _redondear_5(t_parte / 3)
+    t_calent, t_vuelta, t_descanso = plan.t_calentamiento, plan.t_vuelta, plan.t_descanso
     categoria_nombre = EDAD_A_CATEGORIA.get(edad, edad)
 
+    # Una ficha con progresión curada se parte en N.1 + N.2 si el ejercicio dura más de lo que esa
+    # edad aguanta haciendo lo mismo; sin progresión curada va entera (el modelo no inventa variantes).
     max_bloque = MAX_BLOQUE_POR_EDAD.get(edad, MAX_BLOQUE_DEFECTO)
-    bloques_partidos = t_ej > max_bloque
-    t1, t2 = _duraciones(t_ej, bloques_partidos)
     huecos = []
-    for numero, ficha in enumerate(fichas, start=1):
-        variante = bloque_variante_curada(numero, ficha, t2) if ficha and bloques_partidos else None
-        huecos.append(_Hueco(numero, ficha, t1, t2, variante))
+    for numero, (ficha, minutos) in enumerate(zip(fichas, plan.duraciones), start=1):
+        t1, t2, variante = minutos, 0, None
+        if ficha and minutos > max_bloque:
+            parte1, parte2 = _duraciones(minutos, True)
+            variante = bloque_variante_curada(numero, ficha, parte2)
+            if variante:
+                t1, t2 = parte1, parte2
+        huecos.append(_Hueco(numero, ficha, t1, t2, variante, nivel_objetivo(numero - 1, n)))
 
     # Presupuesto de generación: solo lo que escribe el modelo. Es un punto de partida, no una
     # garantía (la verbosidad varía de una generación a otra); si se trunca de verdad,
     # _texto_del_modelo reintenta con más en vez de confiar en una estimación fija.
-    n_variantes_modelo = sum(1 for h in huecos if h.ficha is not None and h.partido and h.variante_curada is None)
     n_propuestos = sum(1 for h in huecos if h.ficha is None)
-    n_propuestos_partidos = sum(1 for h in huecos if h.ficha is None and h.partido)
-    num_predict_sesion = 1200 + 450 * (n_variantes_modelo + n_propuestos_partidos) + 800 * n_propuestos
-    num_ctx_sesion     = 11000 if bloques_partidos else 9000
+    num_predict_sesion = 1200 + 800 * n_propuestos
+    num_ctx_sesion     = 9000 + 800 * max(0, n - 3)
 
     lineas_ejercicios = "\n".join(_linea_prompt(h) for h in huecos)
-    plantilla = _plantilla_modelo(huecos, edad, t_calent, t_vuelta, t_descanso)
+    plantilla = _plantilla_modelo(huecos, t_calent, t_vuelta)
     prohibido = instruccion_prompt(edad)
     prohibido = f"{prohibido}\n\n" if prohibido else ""
 
@@ -547,10 +495,10 @@ ya están redactados y se añaden solos (no escribas su bloque «Ejercicio N», 
 CATEGORÍA: {categoria_nombre} ({edad}) | DURACIÓN: {duracion} min | OBJETIVO: {objetivo}
 
 Si el objetivo es amplio o genérico (p.ej. solo "tiro", sin más detalle), no lo trates
-igual en los tres ejercicios: cada uno debe concretar un aspecto distinto (tiro en
+igual en todos los ejercicios: cada uno debe concretar un aspecto distinto (tiro en
 estático, pies de tiro, mano/muñeca, tiro tras bote, tiro en movimiento...) en vez de
 repetir siempre la misma idea general. Además, el objetivo no tiene que ser
-necesariamente el foco principal de los tres ejercicios — está bien que en alguno sea
+necesariamente el foco principal de todos los ejercicios — está bien que en alguno sea
 secundario o terciario si eso da más variedad a la sesión.
 
 {teoria_intro}{vocabulario_tecnico(edad)}
@@ -569,12 +517,8 @@ RESPUESTA (rellena TODOS los apartados de la plantilla, en este orden, sin salta
         "fundamentos": "**Fundamentos**: En esta sesión se trabajan",
     }
     for h in huecos:
-        if h.ficha is None:
-            for clave in h.claves_del_modelo():
-                inicios[clave] = f"Ejercicio {clave[3:]}:"
-        elif h.partido and h.variante_curada is None:
-            inicios[h.clave_variante()] = (f'Ejercicio {h.numero}.2 (variante de "{h.ficha["nombre"]}"):\n'
-                                           f"Duración: {h.t2} min\nQué cambia respecto a {h.numero}.1:")
+        for clave in h.claves_del_modelo():
+            inicios[clave] = f"Ejercicio {clave[3:]}:"
 
     claves_modelo = ["calentamiento", "vuelta", "fundamentos"] + [c for h in huecos for c in h.claves_del_modelo()]
 

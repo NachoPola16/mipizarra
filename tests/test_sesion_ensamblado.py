@@ -1,11 +1,12 @@
 # tests/test_sesion_ensamblado.py
-"""Fase 1.1: generar_sesion compone con el código los ejercicios de la biblioteca (ficha
-curada íntegra) y deja al modelo solo calentamiento, vuelta a la calma, fundamentos, las
-variantes N.2 sin progresión curada y los huecos sin ficha relevante (propuestos por la IA).
+"""generar_sesion compone con el código los ejercicios de la biblioteca (ficha curada íntegra) y
+deja al modelo solo calentamiento, vuelta a la calma, fundamentos y los huecos sin ficha relevante
+(propuestos por la IA). La sesión tiene entre 5 y 8 ejercicios en total, según plan_sesion.
 El modelo se simula: no hay Ollama ni red."""
 import pytest
 
 import sesion
+from plan_sesion import PlanDeTiempos
 
 MARCA_PROPUESTO = "Propuesto por la IA (sin revisar)"
 
@@ -61,16 +62,21 @@ class _Resp:
 
 @pytest.fixture
 def sesion_falsa(monkeypatch):
-    """Devuelve una función que prepara la selección de fichas y las respuestas del modelo,
-    y la lista de peticiones que recibió el 'modelo'."""
+    """Devuelve una función que prepara las fichas elegidas (None = hueco que propone la IA), el plan
+    de tiempos y las respuestas del modelo, y la lista de peticiones que recibió el 'modelo'.
+    Por defecto, tres ejercicios de 20 min (calentamiento 15, vuelta 5, descanso 3)."""
     peticiones = []
 
-    def preparar(fichas, respuestas):
+    def preparar(fichas, respuestas, duraciones=None, plan_real=False):
         respuestas = list(respuestas)
+        fichas = list(fichas)
         monkeypatch.setattr(sesion, "cargar_ejercicios", lambda: [])
-        monkeypatch.setattr(sesion, "filtrar_ejercicios", lambda ejs, edad, obj: [])
-        monkeypatch.setattr(sesion, "seleccionar_tres_ejercicios", lambda rel: tuple(fichas))
+        monkeypatch.setattr(sesion, "_elegir_fichas",
+                            lambda ejercicios, edad, objetivo, n: (fichas + [None] * n)[:n])
         monkeypatch.setattr(sesion, "construir_contexto_teoria", lambda obj, edad: "")
+        if not plan_real:
+            tiempos = tuple(duraciones or (20,) * len(fichas))
+            monkeypatch.setattr(sesion, "plan_de_tiempos", lambda d, e: PlanDeTiempos(15, 5, 3, tiempos))
 
         def post(url, json, timeout):
             peticiones.append(json)
@@ -144,53 +150,103 @@ def test_ejercicios_usados_son_solo_los_de_biblioteca(sesion_falsa):
     assert r["propuestos"] == []
 
 
-# ── variante N.2 ─────────────────────────────────────────────────────────────
+# ── cuántos ejercicios: el plan manda (entre 5 y 8 en total) ─────────────────
 
-RESPUESTA_VARIANTE_MODELO = RESPUESTA_BASE.replace(
-    "**VUELTA A LA CALMA",
-    '''Ejercicio 2.2 (variante de "Zigzag con cambio" — mismo ejercicio con un cambio o regla nueva):
-Duración: 99 min
-Qué cambia respecto a 2.1: Con límite de dos botes entre conos.
-Organización: Igual, con un defensor al final.
-Puntos clave:
-- Tope de botes.
+def test_se_piden_a_la_seleccion_tantas_fichas_como_ejercicios_tiene_el_plan(monkeypatch):
+    pedidas = []
+    monkeypatch.setattr(sesion, "cargar_ejercicios", lambda: [])
+    monkeypatch.setattr(sesion, "construir_contexto_teoria", lambda obj, edad: "")
+    monkeypatch.setattr(sesion, "_elegir_fichas",
+                        lambda ejercicios, edad, objetivo, n: (pedidas.append(n), [None] * n)[1])
+    monkeypatch.setattr(sesion.requests, "post", lambda url, json, timeout: _Resp(RESPUESTA_BASE))
+    for edad, duracion, esperado in (("U10", 60, 4), ("U10", 90, 6), ("U16", 60, 3), ("U16", 90, 4)):
+        sesion.generar_sesion(edad, duracion, "bote")
+        assert pedidas[-1] == esperado, (edad, duracion)
 
-**VUELTA A LA CALMA''',
-)
+
+@pytest.mark.parametrize("edad,duracion", [("U10", 90), ("U10", 60), ("U14", 90), ("U16", 60), ("U16", 120)])
+def test_la_sesion_completa_tiene_entre_5_y_8_ejercicios_contando_calentamiento_y_vuelta(
+        sesion_falsa, edad, duracion):
+    fichas = [FICHA_A, FICHA_B, FICHA_C, FICHA_A, FICHA_B, FICHA_C]
+    sesion_falsa(fichas, [RESPUESTA_BASE], plan_real=True)
+    texto = sesion.generar_sesion(edad, duracion, "bote")["texto"]
+    principales = {linea.split(":")[0] for linea in texto.split("\n")
+                   if linea.startswith("Ejercicio ") and "." not in linea.split(":")[0]}
+    assert 5 <= len(principales) + 2 <= 8, (edad, duracion, sorted(principales))
 
 
-def test_bloque_partido_la_variante_sale_de_la_progresion_curada_o_del_modelo(sesion_falsa):
-    sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [RESPUESTA_VARIANTE_MODELO])
+def test_los_minutos_de_cada_ejercicio_son_los_del_plan(sesion_falsa):
+    sesion_falsa([FICHA_A, FICHA_B, FICHA_C, FICHA_B], [RESPUESTA_BASE], duraciones=(15, 10, 10, 5), plan_real=False)
+    texto = sesion.generar_sesion("U16", 90, "bote")["texto"]
+    for numero, minutos in ((1, 15), (2, 10), (3, 10), (4, 5)):
+        assert f"Ejercicio {numero}: " in texto
+        bloque = texto.split(f"Ejercicio {numero}: ")[1].split("\n")[1]
+        assert bloque == f"Duración: {minutos} min", numero
+
+
+@pytest.mark.parametrize("n,tras", [(3, 2), (4, 2), (5, 3), (6, 3)])
+def test_el_descanso_va_hacia_la_mitad_de_la_parte_principal(sesion_falsa, n, tras):
+    fichas = [FICHA_B] * n
+    sesion_falsa(fichas, [RESPUESTA_BASE])
+    texto = sesion.generar_sesion("U16", 90, "bote")["texto"]
+    assert texto.count("**DESCANSO") == 1
+    descanso = texto.index("**DESCANSO")
+    assert texto.index(f"Ejercicio {tras}:") < descanso < texto.index(f"Ejercicio {tras + 1}:")
+
+
+# ── variante N.2: solo si la ficha trae progresión curada y el ejercicio es largo para esa edad ──
+
+def test_la_variante_sale_de_la_progresion_curada_solo_en_las_fichas_que_la_traen(sesion_falsa):
+    # U10 aguanta 10 min seguidos: a 20 min se parten A y C (traen PROGRESIÓN); B no la trae y va entero
+    sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [RESPUESTA_BASE])
     texto = sesion.generar_sesion("U10", 90, "bote")["texto"]
 
     assert "Ejercicio 1.1: Rueda de bote\nDuración: 10 min" in texto
     assert 'Ejercicio 1.2 (variante de "Rueda de bote"):\nDuración: 10 min' in texto
-    assert "Qué cambia respecto a 1.1: sin defensa → con defensa pasiva." in texto   # curada
+    assert "Qué cambia respecto a 1.1: sin defensa → con defensa pasiva." in texto
 
-    assert "Ejercicio 2.1: Zigzag con cambio\nDuración: 10 min" in texto
-    assert 'Ejercicio 2.2 (variante de "Zigzag con cambio"):\nDuración: 10 min' in texto  # duración fijada por el código
-    assert "Con límite de dos botes entre conos." in texto                               # del modelo
-    assert "99 min" not in texto
-
-    assert "Qué cambia respecto a 3.1: defensor pasivo → defensor activo." in texto      # curada
-
-
-def test_si_el_modelo_no_da_variante_el_ejercicio_no_se_parte(sesion_falsa):
-    sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [RESPUESTA_BASE])
-    texto = sesion.generar_sesion("U10", 90, "bote")["texto"]
     assert "Ejercicio 2: Zigzag con cambio\nDuración: 20 min" in texto
     assert "Ejercicio 2.1" not in texto and "Ejercicio 2.2" not in texto
 
+    assert "Ejercicio 3.1: Bote 1c1 desde el codo\nDuración: 10 min" in texto
+    assert "Qué cambia respecto a 3.1: defensor pasivo → defensor activo." in texto
 
-def test_el_prompt_pide_variante_solo_a_las_fichas_sin_progresion(sesion_falsa):
-    peticiones = sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [RESPUESTA_VARIANTE_MODELO])
+
+def test_el_modelo_no_inventa_variantes(sesion_falsa):
+    respuesta = RESPUESTA_BASE.replace(
+        "**VUELTA A LA CALMA",
+        'Ejercicio 2.2 (variante de "Zigzag con cambio"):\nDuración: 99 min\nQué cambia respecto a 2.1: algo inventado.\n\n'
+        "**VUELTA A LA CALMA",
+    )
+    sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [respuesta])
+    texto = sesion.generar_sesion("U10", 90, "bote")["texto"]
+    assert "algo inventado" not in texto and "99 min" not in texto
+
+
+def test_el_prompt_no_pide_variantes_al_modelo(sesion_falsa):
+    peticiones = sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [RESPUESTA_BASE])
     sesion.generar_sesion("U10", 90, "bote")
     prompt = peticiones[0]["prompt"]
-    assert "Ejercicio 2.2" in prompt
-    assert "Ejercicio 1.2" not in prompt and "Ejercicio 3.2" not in prompt
+    assert "Ejercicio 1.2" not in prompt and "Ejercicio 2.2" not in prompt and "Ejercicio 3.2" not in prompt
 
 
-# ── umbral de relevancia: huecos propuestos por la IA ────────────────────────
+def test_un_ejercicio_que_no_supera_lo_que_aguanta_su_edad_no_se_parte(sesion_falsa):
+    # Cadete aguanta 20 min seguidos: a 20 min no hace falta variante aunque la ficha la traiga
+    sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [RESPUESTA_BASE])
+    texto = sesion.generar_sesion("U16", 90, "bote")["texto"]
+    assert "Ejercicio 1.1" not in texto and "variante de" not in texto
+
+
+def test_pueden_convivir_ejercicios_con_variante_y_sin_ella(sesion_falsa):
+    sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [RESPUESTA_BASE], duraciones=(15, 10, 20))
+    texto = sesion.generar_sesion("U10", 90, "bote")["texto"]
+    assert "Ejercicio 1.1: Rueda de bote\nDuración: 10 min" in texto        # 15 > 10: se parte (10 + 5)
+    assert 'Ejercicio 1.2 (variante de "Rueda de bote"):\nDuración: 5 min' in texto
+    assert "Ejercicio 2: Zigzag con cambio\nDuración: 10 min" in texto       # 10 no supera 10: entero
+    assert "Ejercicio 3.1: Bote 1c1 desde el codo\nDuración: 10 min" in texto
+
+
+# ── huecos sin ficha: los propone la IA y van marcados ──────────────────────
 
 RESPUESTA_PROPUESTO = RESPUESTA_BASE.replace(
     "**VUELTA A LA CALMA",
@@ -204,29 +260,76 @@ Puntos clave:
 )
 
 
-def test_un_hueco_sin_ficha_relevante_lo_propone_la_ia_y_va_marcado(sesion_falsa):
-    r_prompt = sesion_falsa([FICHA_SIN_RELACION, FICHA_B, FICHA_C], [RESPUESTA_PROPUESTO])
+def test_un_hueco_sin_ficha_lo_propone_la_ia_y_va_marcado(sesion_falsa):
+    peticiones = sesion_falsa([None, FICHA_B, FICHA_C], [RESPUESTA_PROPUESTO])
     r = sesion.generar_sesion("U16", 90, "bote")
     texto = r["texto"]
 
     assert ("Ejercicio 1: Cierre y recuperación\nDuración: 20 min\n" + MARCA_PROPUESTO +
             "\nOrganización: Dos filas; el defensor cierra tras el pase.") in texto
-    assert "Circuito de conos" not in texto                    # la ficha sin relación no se fuerza
     assert texto.count(MARCA_PROPUESTO) == 1                   # solo el propuesto lleva marca
     assert r["propuestos"] == [1]
     assert [e["id"] for e in r["ejercicios_usados"]] == ["t_b", "t_c"]
-    assert "Circuito de conos" not in r_prompt[0]["prompt"]
+    assert "SIN FICHA" in peticiones[0]["prompt"]
 
 
-def test_si_ninguna_ficha_es_relevante_los_tres_huecos_son_propuestos(sesion_falsa):
+def test_si_todos_los_huecos_son_propuestos(sesion_falsa):
     respuesta = RESPUESTA_BASE.replace("**VUELTA A LA CALMA", "\n".join(
         f"Ejercicio {n}: Propuesta {n}\nDuración: 5 min\nOrganización: algo {n}.\nPuntos clave:\n- clave {n}\n"
         for n in (1, 2, 3)) + "\n**VUELTA A LA CALMA")
-    sesion_falsa([FICHA_SIN_RELACION] * 3, [respuesta])
+    sesion_falsa([None, None, None], [respuesta])
     r = sesion.generar_sesion("U16", 90, "defensa")
     assert r["propuestos"] == [1, 2, 3]
     assert r["texto"].count(MARCA_PROPUESTO) == 3
     assert r["ejercicios_usados"] == []
+
+
+def test_un_hueco_propuesto_no_se_parte_aunque_sea_largo_para_su_edad(sesion_falsa):
+    respuesta = RESPUESTA_PROPUESTO.replace("Ejercicio 1: Cierre", "Ejercicio 1: Cierre")
+    sesion_falsa([None, FICHA_B, FICHA_C], [respuesta])
+    texto = sesion.generar_sesion("U10", 90, "bote")["texto"]
+    assert "Ejercicio 1.1" not in texto and "Ejercicio 1.2" not in texto
+    assert "Ejercicio 1: Cierre y recuperación\nDuración: 20 min" in texto
+
+
+# ── elegir las fichas: solo relevantes, y se aprovechan todas las que haya ───
+
+def _ficha_sintetica(nombre, tacticos=(), edades=("U12",)):
+    return {"id": nombre, "nombre": nombre, "categoria": "juego_equipo", "edades": list(edades),
+            "descripcion": "", "objetivos": {"tacticos": list(tacticos)}}
+
+
+def test_elegir_fichas_solo_devuelve_las_relevantes_para_el_objetivo():
+    biblioteca = [_ficha_sintetica("Circuito de bote", ["bote"]), _ficha_sintetica("Zigzag con bote 2c0"),
+                  _ficha_sintetica("Rueda de conos", ["agilidad"])]
+    elegidas = sesion._elegir_fichas(biblioteca, "U12", "bote", 3)
+    assert all(e is None or "bote" in e["nombre"].lower() for e in elegidas)
+    assert [e["nombre"] for e in elegidas if e] and "Rueda de conos" not in [e["nombre"] for e in elegidas if e]
+
+
+def test_elegir_fichas_aprovecha_las_relevantes_en_vez_de_dejar_huecos_por_una_irrelevante():
+    # tres relevantes y una irrelevante para tres huecos: no debe quedar ningún hueco propuesto
+    biblioteca = [_ficha_sintetica("Rueda de conos", ["agilidad"]), _ficha_sintetica("Bote en zigzag"),
+                  _ficha_sintetica("Bote 1c1 desde el codo"), _ficha_sintetica("Bote y pase 3c0")]
+    elegidas = sesion._elegir_fichas(biblioteca, "U12", "bote", 3)
+    assert all(elegidas) and "Rueda de conos" not in [e["nombre"] for e in elegidas]
+
+
+def test_elegir_fichas_devuelve_n_con_none_si_no_hay_suficientes():
+    biblioteca = [_ficha_sintetica("Bote en zigzag")]
+    elegidas = sesion._elegir_fichas(biblioteca, "U12", "bote", 5)
+    assert len(elegidas) == 5 and sum(e is not None for e in elegidas) == 1
+
+
+@pytest.mark.parametrize("edad", ["U8", "U10", "U12", "U14", "U16", "Senior"])
+@pytest.mark.parametrize("objetivo", ["bote", "defensa", "tiro", "contraataque", "1c1", "pase"])
+@pytest.mark.parametrize("n", [3, 4, 5, 6])
+def test_elegir_fichas_en_la_biblioteca_real(ejercicios, edad, objetivo, n):
+    from ejercicios import es_relevante
+    elegidas = sesion._elegir_fichas(ejercicios, edad, objetivo, n)
+    ids = [e["id"] for e in elegidas if e]
+    assert len(elegidas) == n and len(ids) == len(set(ids))
+    assert all(es_relevante(e, objetivo) for e in elegidas if e)
 
 
 # ── truncado: se mantiene el reintento por done_reason ───────────────────────
@@ -253,22 +356,20 @@ def test_el_presupuesto_inicial_baja_cuando_el_modelo_escribe_menos(sesion_falsa
     assert peticiones[0]["options"]["num_predict"] < 3200
 
 
+def test_el_presupuesto_crece_con_los_huecos_que_escribe_el_modelo(sesion_falsa):
+    con_fichas = sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [RESPUESTA_BASE])
+    sesion.generar_sesion("U16", 90, "bote")
+    base = con_fichas[0]["options"]["num_predict"]
+    con_fichas.clear()
+    sesion_falsa([None, None, FICHA_C], [RESPUESTA_BASE])
+    sesion.generar_sesion("U16", 90, "bote")
+    assert con_fichas[0]["options"]["num_predict"] > base
+
+
 # ── guardia de líneas rojas ──────────────────────────────────────────────────
 
-VARIANTE_ZIGZAG = (
-    'Ejercicio 2.2 (variante de "Zigzag con cambio"):\nDuración: 10 min\n'
-    "Qué cambia respecto a 2.1: Se añade un defensor pasivo.\nOrganización: Igual que en 2.1.\n\n"
-)
-
-
-def _con_variante(respuesta):
-    """En U12 a 90 min los ejercicios se parten: una respuesta completa incluye la variante
-    de «Zigzag con cambio», que no trae progresión curada."""
-    return respuesta.replace("**VUELTA A LA CALMA", VARIANTE_ZIGZAG + "**VUELTA A LA CALMA", 1)
-
-
 def _con_calentamiento(juego):
-    return _con_variante(RESPUESTA_BASE.replace("Pañuelo con balón", juego))
+    return RESPUESTA_BASE.replace("Pañuelo con balón", juego)
 
 
 def test_si_el_modelo_incumple_una_linea_roja_se_reintenta_avisando(sesion_falsa):
@@ -298,7 +399,7 @@ def test_si_sigue_incumpliendo_tras_el_reintento_se_quita_esa_pieza(sesion_falsa
 
 def test_la_guardia_tambien_vigila_a_los_ejercicios_propuestos(sesion_falsa):
     malo = RESPUESTA_PROPUESTO.replace("Dos filas; el defensor cierra", "Pick and roll; el defensor cierra")
-    sesion_falsa([FICHA_SIN_RELACION, FICHA_B, FICHA_C], [malo])
+    sesion_falsa([None, FICHA_B, FICHA_C], [malo])
     r = sesion.generar_sesion("U12", 90, "bote")
     assert "pick and roll" not in r["texto"].lower()
     assert MARCA_PROPUESTO not in r["texto"]
@@ -308,30 +409,22 @@ def test_la_guardia_tambien_vigila_a_los_ejercicios_propuestos(sesion_falsa):
 def test_las_fichas_curadas_no_pasan_por_la_guardia(sesion_falsa):
     # una ficha del entrenador con «pantalla» en U12 no se toca, ni genera avisos ni reintentos
     ficha = dict(FICHA_B, descripcion="ORGANIZACIÓN: Pantalla indirecta para el tirador.")
-    peticiones = sesion_falsa([FICHA_A, ficha, FICHA_C], [_con_variante(RESPUESTA_BASE)])
+    peticiones = sesion_falsa([FICHA_A, ficha, FICHA_C], [RESPUESTA_BASE])
     r = sesion.generar_sesion("U12", 90, "bote")
     assert len(peticiones) == 1 and "Pantalla indirecta" in r["texto"] and r["avisos"] == []
 
 
 # ── robustez ante la numeración que escriba el modelo ────────────────────────
 
-def test_hueco_propuesto_partido_acepta_cabecera_sin_sufijo(sesion_falsa):
-    # U10 a 90 min parte los ejercicios; el modelo escribe «Ejercicio 1:» en vez de «1.1»
-    sesion_falsa([FICHA_SIN_RELACION, FICHA_B, FICHA_C], [RESPUESTA_PROPUESTO])
-    r = sesion.generar_sesion("U10", 90, "bote")
-    assert "Ejercicio 1: Cierre y recuperación\nDuración: 20 min\n" + MARCA_PROPUESTO in r["texto"]
-    assert r["propuestos"] == [1]
-
-
-def test_hueco_propuesto_no_partido_acepta_cabecera_con_sufijo(sesion_falsa):
+def test_hueco_propuesto_acepta_cabecera_con_sufijo(sesion_falsa):
     respuesta = RESPUESTA_PROPUESTO.replace("Ejercicio 1: Cierre", "Ejercicio 1.1: Cierre")
-    sesion_falsa([FICHA_SIN_RELACION, FICHA_B, FICHA_C], [respuesta])
+    sesion_falsa([None, FICHA_B, FICHA_C], [respuesta])
     r = sesion.generar_sesion("U16", 90, "bote")
     assert "Ejercicio 1: Cierre y recuperación\nDuración: 20 min" in r["texto"]
 
 
 def test_si_el_modelo_no_escribe_un_hueco_propuesto_se_avisa(sesion_falsa):
-    sesion_falsa([FICHA_SIN_RELACION, FICHA_B, FICHA_C], [RESPUESTA_BASE])
+    sesion_falsa([None, FICHA_B, FICHA_C], [RESPUESTA_BASE])
     r = sesion.generar_sesion("U16", 90, "bote")
     assert r["propuestos"] == []
     assert any("Ejercicio 1" in a for a in r["avisos"])
@@ -366,7 +459,7 @@ def test_si_el_modelo_repite_la_cabecera_no_se_duplica(sesion_falsa):
 
 
 def test_la_plantilla_del_hueco_propuesto_pide_el_nombre(sesion_falsa):
-    peticiones = sesion_falsa([FICHA_SIN_RELACION, FICHA_B, FICHA_C], [CONTINUACION])
+    peticiones = sesion_falsa([None, FICHA_B, FICHA_C], [CONTINUACION])
     sesion.generar_sesion("U16", 90, "bote")
     assert "Ejercicio 1: (nombre propio del ejercicio)" in peticiones[0]["prompt"]
 
@@ -391,19 +484,18 @@ def test_si_el_modelo_se_para_tras_el_calentamiento_se_piden_los_apartados_que_f
     assert r["avisos"] == []
 
 
-def test_los_pasos_se_piden_en_el_orden_de_la_sesion_incluida_la_variante(sesion_falsa):
-    # U12 a 90 min parte los ejercicios; Zigzag no trae progresión curada → la variante la escribe el modelo
+def test_los_pasos_se_piden_en_el_orden_de_la_sesion_incluido_el_hueco_propuesto(sesion_falsa):
     peticiones = sesion_falsa(
-        [FICHA_A, FICHA_B, FICHA_C],
-        [CALENTAMIENTO_SOLO, " Cambia el cono por un defensor pasivo.\nOrganización: Igual.",
+        [None, FICHA_B, FICHA_C],
+        [CALENTAMIENTO_SOLO,
+         " Cierre y recuperación\nDuración: 20 min\nOrganización: Dos filas.\nPuntos clave:\n- Manos activas.",
          " Estiramientos\nReglas: Sin balón.", " Bote protegido."],
     )
-    r = sesion.generar_sesion("U12", 90, "bote")
+    r = sesion.generar_sesion("U16", 90, "bote")
     assert len(peticiones) == 4
-    assert peticiones[1]["prompt"].endswith(
-        'Ejercicio 2.2 (variante de "Zigzag con cambio"):\nDuración: 10 min\nQué cambia respecto a 2.1:')
+    assert peticiones[1]["prompt"].endswith("Ejercicio 1:")
     assert peticiones[2]["prompt"].endswith("**VUELTA A LA CALMA (5 min)**\nJuego:")
-    assert "Qué cambia respecto a 2.1: Cambia el cono por un defensor pasivo." in r["texto"]
+    assert "Ejercicio 1: Cierre y recuperación" in r["texto"] and MARCA_PROPUESTO in r["texto"]
 
 
 def test_un_apartado_que_el_modelo_no_da_se_pide_una_sola_vez(sesion_falsa):
@@ -416,7 +508,6 @@ def test_un_apartado_que_el_modelo_no_da_se_pide_una_sola_vez(sesion_falsa):
 def test_los_pasos_de_relleno_cortan_en_la_siguiente_cabecera(sesion_falsa):
     peticiones = sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [CALENTAMIENTO_SOLO, " Algo", " Algo"])
     sesion.generar_sesion("U16", 90, "bote")
-    assert "\n**" in peticiones[1]["options"]["stop"]
     assert "\n**" in peticiones[1]["options"]["stop"] and "\nEjercicio " in peticiones[1]["options"]["stop"]
 
 
@@ -487,21 +578,10 @@ def test_sin_fichas_con_objetivos_tecnicos_y_sin_respuesta_no_hay_fundamentos(se
 def test_si_el_modelo_copia_la_pista_de_nombre_no_sale_como_nombre_del_ejercicio(sesion_falsa):
     copiada = RESPUESTA_PROPUESTO.replace("Ejercicio 1: Cierre y recuperación",
                                           "Ejercicio 1: (nombre propio del ejercicio)")
-    sesion_falsa([FICHA_SIN_RELACION, FICHA_B, FICHA_C], [copiada])
+    sesion_falsa([None, FICHA_B, FICHA_C], [copiada])
     texto = sesion.generar_sesion("U16", 90, "bote")["texto"]
     assert "(nombre propio" not in texto
     assert "Ejercicio 1: Ejercicio propuesto\nDuración: 20 min\n" + MARCA_PROPUESTO in texto
-
-
-def test_la_variante_de_un_hueco_propuesto_tampoco_lleva_la_pista(sesion_falsa):
-    # U10 a 90 min: el hueco propuesto se parte en 1.1 y 1.2
-    base = ("Ejercicio 1.1: (nombre propio del ejercicio)\nDuración: 10 min\nOrganización: Dos filas.\n"
-            "Puntos clave:\n- Manos activas.\n\n"
-            "Ejercicio 1.2:\nDuración: 10 min\nQué cambia respecto a 1.1: Con defensor.\nOrganización: Igual.\n\n")
-    respuesta = RESPUESTA_BASE.replace("**VUELTA A LA CALMA", base + "**VUELTA A LA CALMA", 1)
-    sesion_falsa([FICHA_SIN_RELACION, FICHA_B, FICHA_C], [respuesta])
-    texto = sesion.generar_sesion("U10", 90, "bote")["texto"]
-    assert "(nombre propio" not in texto
 
 
 def test_la_peticion_al_modelo_desactiva_el_razonamiento(sesion_falsa):
@@ -509,3 +589,40 @@ def test_la_peticion_al_modelo_desactiva_el_razonamiento(sesion_falsa):
     peticiones = sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [RESPUESTA_BASE])
     sesion.generar_sesion("U16", 90, "bote")
     assert peticiones and all(p.get("think") is False for p in peticiones)
+
+
+# ── más de tres ejercicios: nada heredado del límite de tres ─────────────────
+
+def _respuesta_con_propuestas(numeros):
+    bloques = "\n".join(
+        f"Ejercicio {n}: Propuesta {n}\nDuración: 10 min\nOrganización: algo {n}.\nPuntos clave:\n- clave {n}\n"
+        for n in numeros)
+    return RESPUESTA_BASE.replace("**VUELTA A LA CALMA", bloques + "\n**VUELTA A LA CALMA")
+
+
+def test_los_ejercicios_propuestos_a_partir_del_cuarto_no_se_recortan(sesion_falsa):
+    fichas = [FICHA_B, FICHA_B, FICHA_B, None, None, None]
+    sesion_falsa(fichas, [_respuesta_con_propuestas([4, 5, 6])], duraciones=(10,) * 6)
+    r = sesion.generar_sesion("U16", 90, "bote")
+    for n in (4, 5, 6):
+        assert f"Ejercicio {n}: Propuesta {n}" in r["texto"], n
+    assert r["propuestos"] == [4, 5, 6] and r["avisos"] == []
+
+
+def test_las_paradas_del_modelo_no_incluyen_numeros_de_ejercicio(sesion_falsa):
+    # «Ejercicio 4:» como parada cortaba en seco al modelo cuando repetía la cabecera de su hueco
+    peticiones = sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [RESPUESTA_BASE])
+    sesion.generar_sesion("U16", 90, "bote")
+    assert not any(p.startswith("Ejercicio ") for p in peticiones[0]["options"]["stop"])
+
+
+def test_un_paso_de_hueco_acepta_que_el_modelo_repita_su_cabecera(sesion_falsa):
+    peticiones = sesion_falsa(
+        [FICHA_B, FICHA_B, FICHA_B, None],
+        [CALENTAMIENTO_SOLO,
+         "Ejercicio 4: Propuesta 4\nDuración: 10 min\nOrganización: algo.\nPuntos clave:\n- clave",
+         " Estiramientos", " el bote."],
+        duraciones=(10, 10, 10, 10),
+    )
+    r = sesion.generar_sesion("U16", 90, "bote")
+    assert "Ejercicio 4: Propuesta 4" in r["texto"] and r["propuestos"] == [4]
