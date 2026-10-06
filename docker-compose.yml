@@ -3,6 +3,7 @@ services:
   ollama:
     image: ollama/ollama:latest
     container_name: mipizarra-ollama
+    mem_limit: ${OLLAMA_MEM_LIMIT:-4g}
     restart: unless-stopped
     ports:
       - "${BIND_IP:-0.0.0.0}:11434:11434"
@@ -21,6 +22,7 @@ services:
   api:
     build: ./api
     container_name: mipizarra-api
+    mem_limit: ${API_MEM_LIMIT:-768m}
     restart: unless-stopped
     ports:
       - "${BIND_IP:-0.0.0.0}:8090:8090"
@@ -46,6 +48,7 @@ services:
   frontend:
     build: ./frontend
     container_name: mipizarra-frontend
+    mem_limit: ${FRONTEND_MEM_LIMIT:-128m}
     restart: unless-stopped
     ports:
       - "${BIND_IP:-0.0.0.0}:8501:8000"
