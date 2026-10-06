@@ -25,7 +25,10 @@ Navegador ──▶ frontend (Django) ──▶ api (FastAPI) ──▶ ollama (
 | `api/ejercicio_unico.py` | Modo 2: ejercicio suelto y reprompt (corrección pedida por el entrenador). |
 | `api/reglamento.py` | Modo 3: dudas de reglamento y fundamentos técnicos, por ámbito. |
 | `api/prompts.py` | System prompts compartidos por la inferencia y el entrenamiento. |
-| `api/diagram_renderer.py` | Convierte el JSON de un diagrama en SVG de forma determinista. |
+| `api/diagram_renderer.py` | Convierte el JSON de un diagrama en SVG de forma determinista. Separa al dibujar los marcadores solapados sin cambiar el JSON. |
+| `api/posiciones.py` | Diccionario único de posiciones con nombre (`codo_derecho`, `poste_bajo_izquierdo`...) y lectura de cualquier punto de un diagrama (`x`/`y` o nombre). |
+| `api/solapes.py` | Separación mínima y determinista de marcadores a menos de 8 unidades. La usan el renderer y el validador. |
+| `api/plantillas.py` | Plantillas de diagrama de calentamiento y vuelta a la calma (rondo, cuatro esquinas, zigzag de conos...) generadas sin modelo. |
 | `tools/` | Indexación de colecciones, arnés de regresión y exportación/importación editable de la biblioteca. |
 | `experimental/` | Fine-tuning, exportación y evaluación del modelo. No forma parte del flujo actual (ver `experimental/README.md`). |
 
@@ -38,7 +41,11 @@ bloques           (no importa a ningún otro módulo)
 lineas_rojas      (no importa a ningún otro módulo)
 plan_sesion       (no importa a ningún otro módulo)
 contexto          → config
-diagramas         → config, ejercicios, prompts
+posiciones        (no importa a ningún otro módulo)
+solapes           (no importa a ningún otro módulo)
+plantillas        → posiciones
+diagram_renderer  → posiciones, solapes
+diagramas         → config, ejercicios, prompts, posiciones, solapes
 ejercicio_unico   → config, ejercicios
 sesion            → config, contexto, ejercicios, bloques, lineas_rojas, plan_sesion
 reglamento        → config, contexto, prompts
@@ -66,8 +73,11 @@ Al parchear una función en un test hay que hacerlo en el módulo donde vive (po
 El LLM nunca dibuja: solo produce JSON de coordenadas (ver [coordenadas.md](coordenadas.md)).
 
 - La salida se restringe con un **JSON Schema** (decodificación guiada por gramática en Ollama).
-- Un **validador semántico** comprueba lo que el schema no puede expresar: referencias a jugadores declarados, número de atacantes/defensores coherente con el nombre (`2c1`, `3c2`...), distancia mínima entre jugadores.
+- Un **validador semántico** comprueba lo que el schema no puede expresar: referencias a jugadores declarados, posiciones con nombre conocidas, número de atacantes/defensores coherente con el nombre (`2c1`, `3c2`...), distancia mínima entre jugadores.
+- Antes de rechazar, el validador **repara** lo que tiene arreglo determinista: el `a_pos` que falta cuando el propio diagrama lo indica y los jugadores demasiado cerca si caben separándolos un poco (detalle en [coordenadas.md](coordenadas.md#reparación-en-el-validador)).
 - Si la validación falla, se reintenta una vez indicando el error; si vuelve a fallar, se devuelve "diagrama no disponible" en lugar de un dibujo incorrecto.
+- Al dibujar, el renderer separa los marcadores que siguen solapados (por ejemplo, en la biblioteca curada) sin modificar el JSON.
+- Para calentamiento y vuelta a la calma hay plantillas que producen un diagrama válido sin modelo (`api/plantillas.py`); todavía no están conectadas a la generación de sesiones.
 
 ## Colecciones RAG
 
