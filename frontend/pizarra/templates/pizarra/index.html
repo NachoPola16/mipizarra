@@ -740,14 +740,30 @@ function formatEjercicioTexto(headerLine, ej, ejOriginal) {
     // omite esa línea y se conserva la duración original si la corregida no
     // trae una — así no se pierde información ya buena por culpa de un campo
     // que esta vez no vino.
+    // Mismo formato que el resto de la sesión (cabecera, Duración, Organización, Puntos clave), que es el que
+    // entienden el PDF y el analizador de la API. La descripción corregida es lo principal del cambio: va en
+    // «Organización» (si no trae, los objetivos como antes).
     let out = `${headerLine}: ${ej.nombre || 'Ejercicio corregido'}\n`;
-    if (partes.length) out += `Organización: ${partes.join(' ')}\n`;
     const duracion = ej.duracion_min || (ejOriginal.descripcion.match(/Duración:\s*(\d+)/) || [])[1];
     if (duracion) out += `Duración: ${duracion} min\n`;
+    const organizacion = String(ej.descripcion || '').trim() || partes.join(' ');
+    if (organizacion) out += `Organización:\n${organizacion}\n`;
     if (Array.isArray(ej.puntos_clave) && ej.puntos_clave.length) {
-        out += `Puntos clave: ${ej.puntos_clave.join('; ')}`;
+        out += `Puntos clave:\n${ej.puntos_clave.map(p => `- ${p}`).join('\n')}`;
     }
     return out.trim();
+}
+
+// Diagramas de la sesión tras corregir un ejercicio: los nuevos ocupan EN SU MISMA POSICIÓN el sitio de los viejos
+// (diagGroups se reconstruye por orden de array, así que un filter+push desalinearía los de los ejercicios
+// siguientes). Si la corrección no trae diagrama (solo tocó el texto), se conserva el que ya había.
+function reemplazarDiagramas(diagramas, diagNombre, nuevoNombre, nuevos) {
+    if (!nuevos || nuevos.length === 0) return diagramas.slice();
+    const primeraPos = diagramas.findIndex(d => d.nombre === diagNombre);
+    const insertarEn = primeraPos === -1 ? diagramas.length : primeraPos;
+    const resto = diagramas.filter(d => d.nombre !== diagNombre);
+    resto.splice(insertarEn, 0, ...nuevos.map(d => ({ id: diagNombre, nombre: nuevoNombre, titulo: d.titulo || '', svg: d.svg })));
+    return resto;
 }
 
 const repromptTextarea = document.getElementById('reprompt-instruccion');
@@ -794,17 +810,10 @@ async function aplicarReprompt() {
             // Sustituir el texto del bloque, conservando la numeración "Ejercicio N".
             currentBloques[ej.bloqueIdx].texto = formatEjercicioTexto(ej.headerLine, nuevoEjercicio, ej);
 
-            // Sustituir sus diagramas EN SU MISMA POSICIÓN (no al final): diagGroups
-            // se reconstruye por orden de array al volver a renderizar, así que un
-            // simple filter+push desalinearía los diagramas de los ejercicios
-            // siguientes.
+            // Sustituir sus diagramas en su misma posición (ver reemplazarDiagramas).
             const nuevoNombre = nuevoEjercicio.nombre || ej.nombre;
-            currentResult.diagramas = currentResult.diagramas || [];
-            const primeraPos = currentResult.diagramas.findIndex(d => d.nombre === ej.diagNombre);
-            const insertarEn = primeraPos === -1 ? currentResult.diagramas.length : primeraPos;
-            currentResult.diagramas = currentResult.diagramas.filter(d => d.nombre !== ej.diagNombre);
-            const nuevosConNombre = nuevasDiagramas.map(d => ({ id: ej.diagNombre, nombre: nuevoNombre, titulo: d.titulo || '', svg: d.svg }));
-            currentResult.diagramas.splice(insertarEn, 0, ...nuevosConNombre);
+            currentResult.diagramas = reemplazarDiagramas(
+                currentResult.diagramas || [], ej.diagNombre, nuevoNombre, nuevasDiagramas);
         } catch (e) {
             showFormError(`Error corrigiendo "${ej.nombre}": ${e.message}`);
         }
