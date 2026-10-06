@@ -19,9 +19,7 @@ from bloques import (
 )
 from config import EDAD_A_CATEGORIA, MODEL_SESION, OLLAMA_URL
 from contexto import construir_contexto_teoria
-from ejercicios import (
-    cargar_ejercicios, es_relevante, filtrar_ejercicios, nivel_objetivo, seleccionar_ejercicios,
-)
+from ejercicios import cargar_ejercicios, elegir_fichas as _elegir_fichas, nivel_objetivo
 from lineas_rojas import CATEGORIAS_MINIBASKET, instruccion_prompt, violaciones
 from plan_sesion import plan_de_tiempos
 
@@ -435,15 +433,6 @@ def _ensamblar(huecos: list[_Hueco], bloques: dict[str, str],
     if bloques.get("fundamentos"):
         partes.append(f"**Fundamentos**: {bloques['fundamentos']}")
     return "\n\n".join(partes), propuestos
-
-
-def _elegir_fichas(ejercicios: list, edad: str, objetivo: str, n: int) -> list:
-    """n fichas de la biblioteca para la parte principal, siguiendo el arco de oposición. Solo entran
-    las que encajan con el objetivo (umbral de relevancia): se filtran antes de elegir para que una
-    ficha irrelevante no ocupe un hueco cuando hay otras relevantes sin usar. Los huecos que no se
-    pueden cubrir quedan a None: los propone la IA, marcados como tales."""
-    relevantes = [e for e in filtrar_ejercicios(ejercicios, edad, objetivo) if es_relevante(e, objetivo)]
-    return seleccionar_ejercicios(relevantes, n)
 
 
 def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
