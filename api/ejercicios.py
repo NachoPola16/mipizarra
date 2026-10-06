@@ -142,6 +142,39 @@ def seleccionar_tres_ejercicios(relevantes: list) -> tuple:
     return ej1, ej2, ej3
 
 
+def nivel_objetivo(posicion: int, n: int) -> int:
+    """Nivel de oposición que toca en la posición `posicion` (desde 0) de una parte principal de n
+    ejercicios: el primer tercio sin oposición, el segundo con oposición reducida y el último igualada."""
+    return min(2, (3 * posicion) // n)
+
+
+def seleccionar_ejercicios(relevantes: list, n: int) -> list:
+    """Elige n ejercicios de la biblioteca siguiendo el arco sin oposición → reducida → igualada
+    (con n = 3 coincide con seleccionar_tres_ejercicios). Si faltan candidatos, esos huecos quedan a
+    None: los propone la IA."""
+    analiticos = [e for e in relevantes if e.get('_fase') == 'ANALÍTICO']
+    directos   = [e for e in relevantes if e.get('_fase') == 'OBJETIVO']
+    if not analiticos:
+        analiticos = [e for e in directos if _nivel_oposicion(e) == 0] or directos[:1]
+
+    elegidos: list = []
+    for posicion in range(n):
+        objetivo = nivel_objetivo(posicion, n)
+        usados = [id(e) for e in elegidos if e is not None]
+        libres = [e for e in directos if id(e) not in usados]
+        elegido = None
+        if objetivo == 0:
+            elegido = next((e for e in analiticos if id(e) not in usados), None)
+            if elegido is None and libres:
+                elegido = min(libres, key=lambda e: abs(_nivel_oposicion(e)))   # estable: el primero entre empates
+        elif objetivo == 1:
+            elegido = min(libres, key=lambda e: abs(_nivel_oposicion(e) - 1), default=None)
+        else:
+            elegido = min(libres, key=lambda e: -_nivel_oposicion(e), default=None)
+        elegidos.append(elegido)
+    return elegidos
+
+
 def construir_contexto_ejercicios(ejercicios: list, max_ejs: int = 10) -> str:
     analiticos = [e for e in ejercicios if e.get("_fase") == "ANALÍTICO"]
     directos   = [e for e in ejercicios if e.get("_fase") != "ANALÍTICO"]
