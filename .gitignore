@@ -39,3 +39,6 @@ notas/
 
 # Puntos de montaje vacíos que crea Docker dentro de api/ (los datos viven en data/)
 api/data/
+
+# Fichas candidatas en revisión (se promueven a exercises.json solo cuando se aprueban)
+data/candidatos/
