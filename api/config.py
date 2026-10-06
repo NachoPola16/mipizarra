@@ -38,4 +38,7 @@ NOMBRES_AMBITO = {
     "aragon": "Aragón",
 }
 _AMBITO_RE = re.compile(r"^[a-z][a-z0-9_]{1,29}$")
-EMBED_MODEL    = "nomic-embed-text"
+# Modelo de embeddings de la búsqueda (RAG). Medido con tools/evaluar_recuperacion.py sobre 20 preguntas fijas:
+# qwen3-embedding:0.6b acierta en la primera posición el 80 % (nomic-embed-text, el 45 %) y es multilingüe.
+# Cambiarlo obliga a reindexar (tools/indexar_colecciones.py): la base recuerda con cuál se indexó.
+EMBED_MODEL    = os.environ.get("EMBED_MODEL", "qwen3-embedding:0.6b")

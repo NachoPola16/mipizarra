@@ -223,3 +223,18 @@ def test_sin_modelo_propio_el_reglamento_usa_el_de_sesion(monkeypatch):
     finally:
         monkeypatch.delenv("OLLAMA_MODEL_SESION", raising=False)
         importlib.reload(config)
+
+
+def test_el_pdf_sin_curar_pesa_menos_que_el_md_curado(espia_larga):
+    # medido con 7 preguntas x 5 repeticiones: con 4 fragmentos de PDF (1400 car.) el modelo acertaba 31/35;
+    # con 2 (700 car.) y el .md curado como base, 35/35. Los PDF contradicen a veces a los resúmenes curados.
+    responder_duda_reglamento("¿A qué altura está el aro en minibasket?")
+    n = espia_larga["n"]
+    assert n[("reglamento", AMBITO_GENERAL)] <= 2
+    general = espia_larga["mensaje"].split("--- REGLAMENTO GENERAL")[1].split("--- MATERIAL PROPIO")[0]
+    assert len(general) <= 3600 + 700 + 120                       # recorte del .md + recorte del PDF + cabecera
+
+
+def test_el_md_curado_conserva_seis_fragmentos(espia_larga):
+    responder_duda_reglamento("¿A qué altura está el aro en minibasket?")
+    assert espia_larga["n"][("reglamento_md", AMBITO_GENERAL)] == 6
