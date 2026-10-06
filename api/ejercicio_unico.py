@@ -12,7 +12,7 @@ import requests
 from config import MODEL, OLLAMA_URL
 from diagramas import generar_coordenadas_ejercicio
 from ejercicios import cargar_ejercicios, construir_contexto_ejercicios, filtrar_ejercicios
-from lineas_rojas import instruccion_prompt, violaciones
+from lineas_rojas import aviso_pedido, instruccion_prompt, terminos_pedidos, violaciones
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +74,7 @@ def _pedir_ejercicio(prompt: str) -> dict | None:
         return None
 
 
-def _ejercicio_validado(edad: str, construir_prompt) -> dict:
+def _ejercicio_validado(edad: str, construir_prompt, permitidos=()) -> dict:
     """Pide el ejercicio, lo pasa por la guardia de líneas rojas (un reintento avisando) y le añade el
     diagrama validado. `construir_prompt(correccion)` arma el prompt; devuelve {} si no hay ejercicio válido."""
     correccion = ""
@@ -82,7 +82,7 @@ def _ejercicio_validado(edad: str, construir_prompt) -> dict:
         ej = _pedir_ejercicio(construir_prompt(correccion))
         if ej is not None:
             texto = " ".join([ej["nombre"], ej["descripcion"], *ej["puntos_clave"]])
-            malas = violaciones(texto, edad)
+            malas = violaciones(texto, edad, permitidos)
             if not malas:
                 break
             detalle = ", ".join(malas)
@@ -94,6 +94,8 @@ def _ejercicio_validado(edad: str, construir_prompt) -> dict:
     diagrama = generar_coordenadas_ejercicio(ej["descripcion"], ej["nombre"])
     if diagrama:
         ej["diagrama"] = diagrama
+    if permitidos:
+        ej["avisos"] = [aviso_pedido(list(permitidos), edad)]
     return ej
 
 
@@ -104,7 +106,9 @@ def _contexto(edad: str, objetivo: str) -> str:
 def generar_ejercicio_unico(edad: str, objetivo: str, descripcion: str = "") -> dict:
     """Modo 2: genera un único ejercicio con diagrama. Devuelve {} si no se consigue uno válido."""
     ctx = _contexto(edad, objetivo)
-    prohibido = instruccion_prompt(edad)
+    # Lo que el entrenador pide expresamente se hace, con aviso: las líneas rojas orientan, no desautorizan.
+    permitidos = terminos_pedidos(f"{objetivo}. {descripcion}", edad)
+    prohibido = instruccion_prompt(edad, permitidos)
     prohibido = f"{prohibido}\n\n" if prohibido else ""
 
     def construir_prompt(correccion: str = "") -> str:
@@ -115,7 +119,7 @@ def generar_ejercicio_unico(edad: str, objetivo: str, descripcion: str = "") -> 
         )
 
     try:
-        ej = _ejercicio_validado(edad, construir_prompt)
+        ej = _ejercicio_validado(edad, construir_prompt, permitidos)
         if ej:
             logger.info(f"Ejercicio generado: {ej['nombre']}")
         return ej
@@ -128,7 +132,8 @@ def reprompt_ejercicio(edad: str, objetivo: str, nombre: str, descripcion: str, 
     """Regenera un ejercicio ya existente aplicando una corrección pedida por el entrenador. Solo viaja ese
     ejercicio (no la sesión entera): el contexto no crece con el número de ejercicios de la sesión."""
     ctx = _contexto(edad, objetivo)
-    prohibido = instruccion_prompt(edad)
+    permitidos = terminos_pedidos(instruccion, edad)      # lo que pide el entrenador se hace, con aviso
+    prohibido = instruccion_prompt(edad, permitidos)
     prohibido = f"{prohibido}\n\n" if prohibido else ""
 
     def construir_prompt(correccion: str = "") -> str:
@@ -149,7 +154,7 @@ def reprompt_ejercicio(edad: str, objetivo: str, nombre: str, descripcion: str, 
         )
 
     try:
-        ej = _ejercicio_validado(edad, construir_prompt)
+        ej = _ejercicio_validado(edad, construir_prompt, permitidos)
         if ej:
             logger.info(f"Ejercicio corregido: {ej['nombre']}")
         return ej

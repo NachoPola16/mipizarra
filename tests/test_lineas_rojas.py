@@ -91,3 +91,35 @@ def test_negar_un_contenido_vetado_no_es_trabajarlo(texto):
 ])
 def test_si_el_contenido_se_trabaja_de_verdad_sigue_detectandose(texto):
     assert violaciones(texto, "U12"), texto
+
+
+# ── lo que pide expresamente el entrenador se hace, con aviso ────────────────
+
+from lineas_rojas import aviso_pedido, instruccion_prompt, terminos_pedidos  # noqa: E402
+
+
+def test_terminos_pedidos_detecta_lo_vetado_que_pide_el_entrenador():
+    t = terminos_pedidos("añade un bloqueo directo y una defensa zonal", "U12")
+    assert "bloqueo" in t and "defensa zonal" in t
+
+
+def test_terminos_pedidos_ignora_lo_negado_y_las_edades_sin_veto():
+    assert terminos_pedidos("hazlo sin bloqueos", "U12") == []
+    assert terminos_pedidos("añade un bloqueo directo", "U16") == []
+
+
+def test_lo_permitido_no_cuenta_como_violacion_pero_lo_demas_si():
+    texto = "Hacen un bloqueo directo y defensa zonal 2-3."
+    assert violaciones(texto, "U12", permitidos=["bloqueo"]) == [m for m in violaciones(texto, "U12") if "bloqueo" not in m]
+    assert not any("bloqueo" in m for m in violaciones(texto, "U12", permitidos=["bloqueo"]))
+    assert any("zonal" in m for m in violaciones(texto, "U12", permitidos=["bloqueo"]))
+
+
+def test_el_aviso_dice_que_se_hace_porque_lo_pide_y_que_no_es_habitual():
+    aviso = aviso_pedido(["bloqueo"], "U12")
+    assert "bloqueo" in aviso and "U12" in aviso and "pides" in aviso.lower() and "habitual" in aviso.lower()
+
+
+def test_el_prompt_con_excepcion_sigue_prohibiendo_el_resto():
+    texto = instruccion_prompt("U12", permitidos=["bloqueo"])
+    assert "PROHIBIDO" in texto and "EXCEPCIÓN" in texto and "bloqueo" in texto

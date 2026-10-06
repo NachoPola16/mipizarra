@@ -98,3 +98,24 @@ def test_si_la_correccion_no_trae_diagrama_se_conserva_el_que_habia():
 def test_los_diagramas_de_los_demas_ejercicios_no_se_tocan():
     r = _reemplazar(SESION, "A", "A2", [{"titulo": "x", "svg": "<svg>X</svg>"}])
     assert [d["svg"] for d in r][1:] == ["<svg>B1</svg>", "<svg>B2</svg>", "<svg>C</svg>"]
+
+
+# ── avisos del reprompt ─────────────────────────────────────────────────────
+
+def _avisos(lista):
+    html = PLANTILLA.read_text(encoding="utf-8")
+    m = re.search(r"function textoAvisos\(.*?\n\}\n", html, re.DOTALL)
+    assert m, "no se encuentra textoAvisos en la plantilla"
+    codigo = m.group(0) + f"\nprocess.stdout.write(textoAvisos({json.dumps(lista)}));"
+    r = subprocess.run(["node", "-e", codigo], capture_output=True, text=True, encoding="utf-8", timeout=30)
+    assert r.returncode == 0, r.stderr
+    return r.stdout
+
+
+def test_sin_avisos_no_se_muestra_nada():
+    assert _avisos([]) == "" and _avisos([None, ""]) == ""
+
+
+def test_los_avisos_se_juntan_sin_repetir():
+    texto = _avisos(["Has pedido «bloqueo».", "Has pedido «bloqueo».", "Has pedido «mano a mano»."])
+    assert texto.startswith("⚠ Aviso:") and texto.count("«bloqueo»") == 1 and "«mano a mano»" in texto

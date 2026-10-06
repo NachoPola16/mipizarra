@@ -133,3 +133,26 @@ def test_el_prompt_pide_que_el_nombre_refleje_un_cambio_en_el_numero_de_jugadore
     _reprompt()
     prompt = estado["peticiones"][0]["prompt"]
     assert "situación numérica" in prompt and "1c0" in prompt
+
+
+# ── lo que pide expresamente el entrenador se hace, con aviso ────────────────
+
+def test_si_el_entrenador_pide_una_linea_roja_se_hace_con_aviso(modelo_falso):
+    pedido = dict(CORREGIDO, descripcion="A1 recibe y hace un bloqueo directo sencillo con A2 antes de tirar.")
+    estado = modelo_falso([pedido])
+    ej = _reprompt(edad="U12", instruccion="añade un bloqueo directo con un compañero")
+    assert ej["descripcion"] == pedido["descripcion"] and len(estado["peticiones"]) == 1     # sin reintento
+    assert len(ej["avisos"]) == 1 and "bloqueo" in ej["avisos"][0] and "U12" in ej["avisos"][0]
+    prompt = estado["peticiones"][0]["prompt"]
+    assert "EXCEPCIÓN" in prompt and "PROHIBIDO" in prompt
+
+
+def test_lo_demas_sigue_vetado_aunque_el_entrenador_pida_una_linea_roja(modelo_falso):
+    mezcla = dict(CORREGIDO, descripcion="Bloqueo directo y además defensa zonal 2-3 todo el rato.")
+    estado = modelo_falso([mezcla])
+    assert _reprompt(edad="U12", instruccion="añade un bloqueo directo") == {} and len(estado["peticiones"]) == 2
+
+
+def test_sin_peticion_vetada_no_hay_aviso(modelo_falso):
+    modelo_falso([CORREGIDO])
+    assert "avisos" not in _reprompt(edad="U12", instruccion="hazlo más dinámico")
