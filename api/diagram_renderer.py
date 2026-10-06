@@ -2,6 +2,9 @@
 import math
 import logging
 
+from posiciones import posicion_de
+from solapes import separar_puntos
+
 logger = logging.getLogger(__name__)
 
 ESCALA         = 45
@@ -164,20 +167,38 @@ def _half_court_elements(svg: list, cx: float, base_y: float, pad_x: float,
         logger.info("  → Triple MINIBASKET (rectángulo, 4m cada lado hasta línea de tiro libre)")
 
 
+def _posiciones_dibujo(data: dict, tipo_pista: str) -> tuple[list, list, list]:
+    """Posiciones (x, y) con las que se dibujan atacantes, defensores y conos.
+    Si dos marcadores (jugador-jugador o jugador-cono) quedan a menos de 8 unidades,
+    se separan lo mínimo (solapes.separar_puntos) solo en el dibujo: el JSON no cambia.
+    Orden de prioridad: atacantes, defensores y conos (el último en llegar se aparta)."""
+    ataque  = [posicion_de(j, tipo_pista) for j in data.get("jugadores_ataque", [])]
+    defensa = [posicion_de(j, tipo_pista) for j in data.get("jugadores_defensa", [])]
+    conos   = [posicion_de(c, tipo_pista) for c in data.get("conos", [])]
+    es_cono = [False] * (len(ataque) + len(defensa)) + [True] * len(conos)
+    puntos, sin_sitio = separar_puntos(ataque + defensa + conos, es_cono)
+    if sin_sitio:
+        logger.info(f"  → {len(sin_sitio)} marcador(es) solapado(s) sin hueco cercano; se dibujan donde están")
+    n_a, n_d = len(ataque), len(defensa)
+    return puntos[:n_a], puntos[n_a:n_a + n_d], puntos[n_a + n_d:]
+
+
 def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
+    tipo_pista = data.get("tipo", "media_pista")
+    pos_ataque, pos_defensa, pos_conos = _posiciones_dibujo(data, tipo_pista)
     posiciones = {}
 
-    for j in data.get("jugadores_ataque", []):
+    for j, p in zip(data.get("jugadores_ataque", []), pos_ataque):
         jid = j["id"]
-        x, y = to_px(j["x"], j["y"])
-        posiciones[jid] = (j["x"], j["y"])
+        posiciones[jid] = p
+        x, y = to_px(*p)
         svg.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{RADIO_JUGADOR}" fill="#ffffff" stroke="#1a202c" stroke-width="3"/>')
         svg.append(f'<text x="{x:.1f}" y="{y+7:.1f}" text-anchor="middle" font-size="15" font-weight="bold" fill="#1a202c">{jid}</text>')
 
-    for j in data.get("jugadores_defensa", []):
+    for j, p in zip(data.get("jugadores_defensa", []), pos_defensa):
         jid = j["id"]
-        x, y = to_px(j["x"], j["y"])
-        posiciones[jid] = (j["x"], j["y"])
+        posiciones[jid] = p
+        x, y = to_px(*p)
         t = RADIO_JUGADOR * 1.7
         svg.append(f'<rect x="{x-t/2:.1f}" y="{y-t/2:.1f}" width="{t:.1f}" height="{t:.1f}" '
                    f'fill="#1a202c" stroke="#ffffff" stroke-width="3" rx="5"/>')
@@ -189,8 +210,8 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
             bx, by = to_px(*posiciones[portador])
             svg.append(f'<circle cx="{bx+28:.1f}" cy="{by-28:.1f}" r="11" fill="#ff8c00" stroke="#1a202c" stroke-width="2"/>')
 
-    for cono in data.get("conos", []):
-        cx, cy = to_px(cono["x"], cono["y"])
+    for p in pos_conos:
+        cx, cy = to_px(*p)
         svg.append(f'<polygon points="{cx:.0f},{cy-16:.0f} {cx-10:.0f},{cy+10:.0f} {cx+10:.0f},{cy+10:.0f}" '
                    f'fill="#fbbf24" stroke="#1a202c" stroke-width="1.5"/>')
 
@@ -219,8 +240,8 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
         x1, y1 = to_px(*posiciones[de])
 
         if tipo in ("desplazamiento", "bote") and "a_pos" in mov:
-            p = mov["a_pos"]
-            x2, y2 = to_px(p["x"], p["y"])
+            p = posicion_de(mov["a_pos"], tipo_pista)
+            x2, y2 = to_px(*p)
             a, b, c, d2 = shorten(x1, y1, x2, y2, 26)
             if tipo == "bote":
                 if curvature is not None:
@@ -239,7 +260,7 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
                 else:
                     svg.append(f'<line x1="{a:.1f}" y1="{b:.1f}" x2="{c:.1f}" y2="{d2:.1f}" '
                                f'stroke="#334155" stroke-width="3" marker-end="url(#arr)"/>')
-            posiciones[de] = (p["x"], p["y"])
+            posiciones[de] = p
 
         elif tipo == "pase":
             a2 = mov.get("a")
@@ -260,7 +281,7 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
             # En pista_completa hay dos aros; el tiro va al más cercano al jugador
             # según en qué mitad esté (canasta lejana = espejo de (50,11): (50,89)).
             # En media_pista solo hay un aro en (50,11) sea cual sea la y del jugador.
-            if data.get("tipo") == "pista_completa" and posiciones[de][1] > 50:
+            if tipo_pista == "pista_completa" and posiciones[de][1] > 50:
                 x2, y2 = to_px(50, 89)
             else:
                 x2, y2 = to_px(50, 11)
@@ -275,8 +296,8 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
                            f'stroke="#15803d" stroke-width="3.5" marker-end="url(#arrs)"/>')
 
         elif tipo == "bloqueo" and "a_pos" in mov:
-            p = mov["a_pos"]
-            x2, y2 = to_px(p["x"], p["y"])
+            p = posicion_de(mov["a_pos"], tipo_pista)
+            x2, y2 = to_px(*p)
             # Línea de recorrido del bloqueador: acortada para que termine en el borde
             # del símbolo del defensor, no en su centro
             a, b, c, d2 = shorten(x1, y1, x2, y2, RADIO_JUGADOR)
@@ -296,7 +317,7 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
                        f'x2="{x2 + bar*px_u:.1f}" y2="{y2 + bar*py_u:.1f}" '
                        f'stroke="#dc2626" stroke-width="7"/>')
             # El bloqueador queda en a_pos para movimientos posteriores (rol a canasta, etc.)
-            posiciones[de] = (p["x"], p["y"])
+            posiciones[de] = p
 
 
 def render_diagram(data: dict, edad: str = "U16") -> str:

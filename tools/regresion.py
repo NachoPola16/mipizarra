@@ -170,8 +170,8 @@ def _normalizar(texto: str) -> str:
 
 def _cargar_validador():
     """Carga _validar_diagrama (api/diagramas.py) sin arrancar ChromaDB ni Ollama.
-    diagramas.py solo depende de config, ejercicios y prompts, así que no se importa
-    contexto (que crea el cliente de ChromaDB y el embedding de Ollama). Los módulos
+    diagramas.py solo depende de config, ejercicios, prompts, posiciones y solapes, así
+    que no se importa contexto (que crea el cliente de ChromaDB y el embedding de Ollama). Los módulos
     importados se retiran de sys.modules al terminar. Funciona tanto en el repo (api/)
     como dentro del contenedor (módulos en /app). Devuelve None si no se encuentra."""
     candidatos = [RAIZ / "api", RAIZ]
@@ -179,7 +179,7 @@ def _cargar_validador():
     if api_dir is None:
         return None
 
-    modulos_api = ["config", "ejercicios", "prompts", "diagramas"]
+    modulos_api = ["config", "ejercicios", "prompts", "posiciones", "solapes", "diagramas"]
     guardados = {n: sys.modules.get(n) for n in modulos_api}
     path_original = list(sys.path)
     try:

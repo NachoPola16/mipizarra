@@ -135,18 +135,49 @@ def test_defensores_de_mas_para_el_nombre():
     assert _validar_diagrama(d, "2c2 en media pista") is None
 
 
-def test_jugadores_demasiado_cerca():
+def _dist(p, q):
+    return ((p["x"] - q["x"]) ** 2 + (p["y"] - q["y"]) ** 2) ** 0.5
+
+
+def test_jugadores_demasiado_cerca_se_separan():
     d = _diagrama()
-    # A1 en (50, 65): D1 a ~5 unidades → por debajo del mínimo de 8.
+    # A1 en (50, 65): D1 a ~5 unidades → por debajo del mínimo de 8. Hay sitio:
+    # el validador separa a D1 lo mínimo (A1 no se mueve) y el diagrama es válido.
     d["jugadores_defensa"][0].update({"x": 53, "y": 61})
-    error = _validar_diagrama(d, "")
-    assert error and "demasiado cerca" in error
+    assert _validar_diagrama(d, "") is None
+    a1, d1 = d["jugadores_ataque"][0], d["jugadores_defensa"][0]
+    assert (a1["x"], a1["y"]) == (50, 65)
+    assert 8 <= _dist(a1, d1) < 8.05
+    assert _dist(d1, {"x": 53, "y": 61}) < 3.1
 
 
-def test_atacantes_demasiado_cerca_entre_si():
+def test_atacantes_demasiado_cerca_entre_si_se_separan():
     d = _diagrama()
     d["jugadores_ataque"][1].update({"x": 47, "y": 60})
-    assert "demasiado cerca" in _validar_diagrama(d, "")
+    assert _validar_diagrama(d, "") is None
+    assert _dist(d["jugadores_ataque"][0], d["jugadores_ataque"][1]) >= 8
+
+
+def test_separacion_del_validador_es_determinista():
+    d1, d2 = _diagrama(), _diagrama()
+    for d in (d1, d2):
+        d["jugadores_defensa"][0].update({"x": 50, "y": 65})   # encima de A1
+        _validar_diagrama(d, "")
+    assert d1 == d2
+
+
+def test_jugadores_demasiado_cerca_sin_sitio_sigue_siendo_invalido():
+    # Retícula 3x3 de atacantes con paso 8 y un defensor en el centro de una celda:
+    # no hay hueco a menos de 8 unidades → se mantiene el error y no se toca nada.
+    d = _diagrama()
+    d["jugadores_ataque"] = [{"id": f"A{i + 1}", "x": x, "y": y}
+                             for i, (x, y) in enumerate((x, y) for y in (42, 50, 58) for x in (42, 50, 58))]
+    d["jugadores_defensa"] = [{"id": "D1", "x": 46, "y": 46}]
+    d["movimientos"] = []
+    antes = copy.deepcopy(d)
+    error = _validar_diagrama(d, "")
+    assert error and "demasiado cerca" in error
+    assert d == antes
 
 
 def test_distancia_exactamente_en_el_minimo_es_valida():
@@ -154,3 +185,116 @@ def test_distancia_exactamente_en_el_minimo_es_valida():
     # D1 a exactamente 8 unidades de A1 (y 65 → 57) y lejos de A2.
     d["jugadores_defensa"][0].update({"x": 50, "y": 57})
     assert _validar_diagrama(d, "") is None
+    assert d == {**_diagrama(), "jugadores_defensa": [{"id": "D1", "x": 50, "y": 57}]}
+
+
+def test_diagrama_valido_no_se_modifica():
+    d = _diagrama()
+    assert _validar_diagrama(d, "2c1") is None
+    assert d == DIAGRAMA_2C1
+
+
+# ── Reparación determinista de a_pos ─────────────────────────────────────────
+
+@pytest.mark.parametrize("tipo", ["desplazamiento", "bote", "bloqueo"])
+def test_a_pos_desde_nombre_de_posicion_en_a(tipo):
+    d = _diagrama()
+    d["movimientos"].append({"de": "A2", "tipo": tipo, "a": "codo_derecho", "orden": 5})
+    assert _validar_diagrama(d, "") is None
+    mov = d["movimientos"][-1]
+    assert mov["a_pos"] == {"x": 35, "y": 41}
+    assert "a" not in mov
+
+
+def test_a_pos_desde_nombre_en_pista_completa():
+    d = _diagrama()
+    d["tipo"] = "pista_completa"
+    d["movimientos"].append({"de": "A2", "tipo": "bote", "a": "Codo derecho", "orden": 5})
+    assert _validar_diagrama(d, "") is None
+    assert d["movimientos"][-1]["a_pos"] == {"x": 35, "y": 20.5}
+
+
+def test_a_pos_desde_coordenadas_en_a():
+    d = _diagrama()
+    d["movimientos"].append({"de": "A2", "tipo": "desplazamiento", "a": {"x": 30, "y": 20}, "orden": 5})
+    assert _validar_diagrama(d, "") is None
+    assert d["movimientos"][-1]["a_pos"] == {"x": 30, "y": 20}
+
+
+def test_bloqueo_sobre_defensor_toma_su_posicion_actual():
+    d = _diagrama()
+    # D1 se desplaza antes del bloqueo: el bloqueo va a donde está D1 en ese momento.
+    d["movimientos"].insert(0, {"de": "D1", "tipo": "desplazamiento", "a_pos": {"x": 40, "y": 40}, "orden": 0})
+    d["movimientos"].append({"de": "A2", "tipo": "bloqueo", "a": "D1", "orden": 5})
+    assert _validar_diagrama(d, "") is None
+    assert d["movimientos"][-1]["a_pos"] == {"x": 40, "y": 40}
+
+
+def test_bloqueo_sobre_defensor_sin_moverse_toma_su_posicion_inicial():
+    d = _diagrama()
+    d["movimientos"].append({"de": "A2", "tipo": "bloqueo", "a": "D1", "orden": 5})
+    assert _validar_diagrama(d, "") is None
+    assert d["movimientos"][-1]["a_pos"] == {"x": 50, "y": 45}
+
+
+@pytest.mark.parametrize("tipo", ["desplazamiento", "bote"])
+def test_bote_o_desplazamiento_hacia_un_jugador_no_se_inventa(tipo):
+    # Botar «hacia A1» no dice dónde termina: no es seguro inferirlo.
+    d = _diagrama()
+    d["movimientos"].append({"de": "A2", "tipo": tipo, "a": "A1", "orden": 5})
+    assert _validar_diagrama(d, "") == f"movimiento '{tipo}' sin 'a_pos'"
+
+
+def test_bloqueo_sobre_companero_no_se_inventa():
+    d = _diagrama()
+    d["movimientos"].append({"de": "A2", "tipo": "bloqueo", "a": "A1", "orden": 5})
+    assert _validar_diagrama(d, "") == "movimiento 'bloqueo' sin 'a_pos'"
+
+
+@pytest.mark.parametrize("tipo", ["desplazamiento", "bote", "bloqueo"])
+def test_a_pos_desde_el_inicio_del_siguiente_movimiento_del_mismo_jugador(tipo):
+    d = _diagrama()
+    d["movimientos"] += [
+        {"de": "A2", "tipo": tipo, "orden": 5},
+        {"de": "A1", "tipo": "desplazamiento", "a_pos": {"x": 70, "y": 70}, "desde": {"x": 1, "y": 1}, "orden": 6},
+        {"de": "A2", "tipo": "tiro", "desde": {"x": 30, "y": 25}, "orden": 7},
+    ]
+    assert _validar_diagrama(d, "") is None
+    assert d["movimientos"][4]["a_pos"] == {"x": 30, "y": 25}
+
+
+def test_inicio_del_siguiente_movimiento_por_nombre():
+    d = _diagrama()
+    d["movimientos"] += [
+        {"de": "A2", "tipo": "bote", "orden": 5},
+        {"de": "A2", "tipo": "tiro", "desde": "poste_bajo_derecho", "orden": 6},
+    ]
+    assert _validar_diagrama(d, "") is None
+    assert d["movimientos"][4]["a_pos"] == {"x": 38, "y": 18}
+
+
+def test_siguiente_movimiento_sin_inicio_no_repara():
+    d = _diagrama()
+    d["movimientos"] += [
+        {"de": "A2", "tipo": "bote", "orden": 5},
+        {"de": "A2", "tipo": "tiro", "orden": 6},
+    ]
+    assert _validar_diagrama(d, "") == "movimiento 'bote' sin 'a_pos'"
+
+
+def test_orden_por_campo_orden_no_por_lista():
+    # El siguiente movimiento se busca por 'orden', no por posición en la lista.
+    d = _diagrama()
+    d["movimientos"] += [
+        {"de": "A2", "tipo": "tiro", "desde": {"x": 90, "y": 90}, "orden": 9},
+        {"de": "A2", "tipo": "bote", "orden": 5},
+        {"de": "A2", "tipo": "tiro", "desde": {"x": 30, "y": 25}, "orden": 6},
+    ]
+    assert _validar_diagrama(d, "") is None
+    assert d["movimientos"][5]["a_pos"] == {"x": 30, "y": 25}
+
+
+def test_a_con_nombre_desconocido_mantiene_el_error():
+    d = _diagrama()
+    d["movimientos"].append({"de": "A2", "tipo": "bote", "a": "nube", "orden": 5})
+    assert _validar_diagrama(d, "") == "movimiento 'bote' sin 'a_pos'"
