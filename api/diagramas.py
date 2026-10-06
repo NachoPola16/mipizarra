@@ -248,11 +248,20 @@ def generar_coordenadas_ejercicio(descripcion: str, nombre: str) -> dict | None:
         }
     ]
 
+    # Si el nombre indica la situación numérica (1c1, 2c1, 3c0...), el recuento exacto de jugadores es un dato
+    # del ejercicio, no una regla más entre otras once: así se le da al modelo, de forma destacada.
+    conteo = _extraer_conteo_nc_m(nombre)
+    recuento = (
+        f"\nNÚMERO DE JUGADORES (obligatorio, lo dice el nombre «{nombre}»): jugadores_ataque debe tener "
+        f"EXACTAMENTE {conteo[0]} y jugadores_defensa debe tener EXACTAMENTE {conteo[1]}.\n"
+        if conteo else ""
+    )
+
     prompt = f"""Genera coordenadas JSON para este ejercicio de baloncesto.
 
 EJERCICIO: {nombre}
 DESCRIPCIÓN: {descripcion}
-
+{recuento}
 SISTEMA DE COORDENADAS (media pista, 0-100):
 - X=0 lateral izquierdo, X=100 lateral derecho, X=50 centro
 - Y=0 baseline (bajo el aro), Y=100 línea de medio campo

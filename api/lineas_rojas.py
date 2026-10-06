@@ -31,19 +31,27 @@ def _normalizar(texto: str) -> str:
     return "".join(c for c in sin_acentos if unicodedata.category(c) != "Mn")
 
 
+# Decir que algo NO se trabaja («sin bloqueos», «no hay pantallas», «evitar el mano a mano») no es trabajarlo.
+# Mismo criterio que el arnés (tools/regresion.py): la negación va antes del término, en la misma frase.
+_NEGACION = re.compile(r"\b(?:sin|no|nunca|ni|evit\w*|prohib\w*|todavia|aun)\b")
+_FRASES = re.compile(r"[.\n;:!?]+")
+
+
 def violaciones(texto: str, edad: str) -> list[str]:
     """Términos del texto que son línea roja para esa edad (lista vacía si no hay ninguno)."""
     if edad in CATEGORIAS_MINIBASKET:
         patrones = _VETADOS_MINIBASKET
     else:
         return []
-    normalizado = _normalizar(texto)
     encontrados: list[str] = []
-    for patron in patrones:
-        for m in re.finditer(patron, normalizado):
-            motivo = f"«{m.group(0).strip()}» no se trabaja en {edad} (línea roja)"
-            if motivo not in encontrados:
-                encontrados.append(motivo)
+    for frase in _FRASES.split(_normalizar(texto)):
+        for patron in patrones:
+            for m in re.finditer(patron, frase):
+                if _NEGACION.search(frase[:m.start()]):
+                    continue
+                motivo = f"«{m.group(0).strip()}» no se trabaja en {edad} (línea roja)"
+                if motivo not in encontrados:
+                    encontrados.append(motivo)
     return encontrados
 
 

@@ -67,3 +67,27 @@ def test_instruccion_prompt_por_edad():
     u14 = instruccion_prompt("U14")
     assert "bloqueo directo" in u14 and "puntual" in u14 and "PROHIBIDO" not in u14
     assert instruccion_prompt("U16") == ""
+
+
+# ── negación: decir que algo NO se trabaja no es trabajarlo ──────────────────
+
+@pytest.mark.parametrize("texto", [
+    "Sin bloqueos ni pantallas: es un ejercicio individual.",
+    "No se trabaja la defensa zonal en esta categoría.",
+    "Evitar el mano a mano y los bloqueos.",
+    "Nunca se utilizan pantallas en minibasket.",
+    "Está prohibido el bloqueo directo en esta etapa.",
+    "No hay bloqueos, pantallas ni defensa zonal.",
+    "Trabajo de 1c1 sin bloqueos.",
+])
+def test_negar_un_contenido_vetado_no_es_trabajarlo(texto):
+    assert violaciones(texto, "U12") == [], texto
+
+
+@pytest.mark.parametrize("texto", [
+    "Primero hacen un bloqueo directo y después tiran.",
+    "No paran de moverse. Después hacen una pantalla.",       # la negación es de otra frase
+    "Defensa zonal 2-3 durante cinco minutos.",
+])
+def test_si_el_contenido_se_trabaja_de_verdad_sigue_detectandose(texto):
+    assert violaciones(texto, "U12"), texto
