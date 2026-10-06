@@ -36,3 +36,6 @@ repomix-output.xml
 # Notas internas (contexto local, no públicas)
 PRIVADO.md
 notas/
+
+# Puntos de montaje vacíos que crea Docker dentro de api/ (los datos viven en data/)
+api/data/
