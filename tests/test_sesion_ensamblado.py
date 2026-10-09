@@ -159,7 +159,7 @@ def test_se_piden_a_la_seleccion_tantas_fichas_como_ejercicios_tiene_el_plan(mon
     monkeypatch.setattr(sesion, "_elegir_fichas",
                         lambda ejercicios, edad, objetivo, n: (pedidas.append(n), [None] * n)[1])
     monkeypatch.setattr(sesion.requests, "post", lambda url, json, timeout: _Resp(RESPUESTA_BASE))
-    for edad, duracion, esperado in (("U10", 60, 4), ("U10", 90, 6), ("U16", 60, 3), ("U16", 90, 4)):
+    for edad, duracion, esperado in (("U10", 60, 4), ("U10", 90, 7), ("U16", 60, 4), ("U16", 90, 5)):
         sesion.generar_sesion(edad, duracion, "bote")
         assert pedidas[-1] == esperado, (edad, duracion)
 

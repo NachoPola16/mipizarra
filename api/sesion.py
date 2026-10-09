@@ -1,7 +1,8 @@
 # api/sesion.py
 """Modo 1: generación de una sesión completa de entrenamiento.
 
-La sesión tiene entre 5 y 8 ejercicios en total (cuentan el calentamiento y la vuelta a la calma);
+La sesión tiene entre 5 y 8 ejercicios en total (cuenta el calentamiento; acaba con un ejercicio más,
+sin bloque de vuelta a la calma salvo que plan_sesion.CON_VUELTA_A_LA_CALMA lo active);
 cuántos y cuánto dura cada uno lo decide plan_sesion según la duración y la edad. Los ejercicios de
 la biblioteca los compone el código con la ficha curada íntegra (ver bloques.py); el modelo solo
 redacta calentamiento, vuelta a la calma, fundamentos y los huecos para los que no hay ficha
@@ -166,6 +167,7 @@ def _plantilla_modelo(huecos: list[_Hueco], t_calent: int, t_vuelta: int) -> str
     """Solo los apartados que redacta el modelo, en el orden de la sesión."""
     bloques = [_bloque_ejercicio(h.numero, "(nombre propio del ejercicio)", h.t1) for h in huecos if h.ficha is None]
     principal = chr(10).join(bloques)
+    vuelta = f"**VUELTA A LA CALMA ({t_vuelta} min)**{chr(10)}Juego:{chr(10)}Reglas:{chr(10)}{chr(10)}" if t_vuelta else ""
     return f"""**CALENTAMIENTO ({t_calent} min)**
 Juego:
 Reglas:
@@ -174,11 +176,7 @@ Espacio:
 **PARTE PRINCIPAL**
 
 {principal}
-**VUELTA A LA CALMA ({t_vuelta} min)**
-Juego:
-Reglas:
-
-**Fundamentos**: """
+{vuelta}**Fundamentos**: """
 
 
 def _limpiar_respuesta(texto: str) -> str:
@@ -331,7 +329,7 @@ def _completar_apartados(cuerpo: str, texto: str, huecos: list[_Hueco], inicios:
     se le pide por separado, en el orden de la sesión: el código escribe el comienzo del apartado
     y el modelo lo continúa viendo todo lo ya escrito. Cada apartado se pide una sola vez."""
     orden = ["calentamiento"] + [c for h in huecos for c in h.claves_del_modelo()] + ["vuelta", "fundamentos"]
-    for clave in orden:
+    for clave in (c for c in orden if c in inicios):
         bloques = extraer_bloques(texto)
         _normalizar_claves(huecos, bloques)
         if bloques.get(clave, "").strip():
@@ -428,7 +426,7 @@ def _ensamblar(huecos: list[_Hueco], bloques: dict[str, str],
             propuestos.append(hueco.numero)
         if hueco.numero == (len(huecos) + 1) // 2:     # el descanso va hacia la mitad
             partes.append(f"**DESCANSO ({t_descanso} min)**")
-    if bloques.get("vuelta"):
+    if t_vuelta and bloques.get("vuelta"):
         partes.append(f"**VUELTA A LA CALMA ({t_vuelta} min)**\n{bloques['vuelta']}")
     if bloques.get("fundamentos"):
         partes.append(f"**Fundamentos**: {bloques['fundamentos']}")
@@ -502,14 +500,16 @@ RESPUESTA (rellena TODOS los apartados de la plantilla, en este orden, sin salta
 
     inicios = {
         "calentamiento": inicio_respuesta,
-        "vuelta": f"**VUELTA A LA CALMA ({t_vuelta} min)**\nJuego:",
         "fundamentos": "**Fundamentos**: En esta sesión se trabajan",
     }
+    if t_vuelta:
+        inicios["vuelta"] = f"**VUELTA A LA CALMA ({t_vuelta} min)**\nJuego:"
     for h in huecos:
         for clave in h.claves_del_modelo():
             inicios[clave] = f"Ejercicio {clave[3:]}:"
 
-    claves_modelo = ["calentamiento", "vuelta", "fundamentos"] + [c for h in huecos for c in h.claves_del_modelo()]
+    claves_modelo = (["calentamiento"] + (["vuelta"] if t_vuelta else []) + ["fundamentos"]
+                     + [c for h in huecos for c in h.claves_del_modelo()])
 
     try:
         correccion = ""
