@@ -59,3 +59,13 @@ def test_una_ficha_no_puede_ser_sin_diagrama_y_traer_diagrama(ejercicios):
     for ej in ejercicios:
         if ej.get("sin_diagrama"):
             assert "diagrama" not in ej and "diagramas" not in ej, ej["id"]
+
+
+def test_el_calentamiento_estandar_se_dibuja_con_su_plantilla(monkeypatch, cliente):
+    texto = TEXTO + ("\n**CALENTAMIENTO (10 min)**\nJuego: Zigzag con bote\n"
+                     "Reglas: Cada jugador zigzaguea entre conos.\nEspacio: media pista.\n")
+    monkeypatch.setattr(main, "generar_sesion", lambda **k: {"texto": texto, "ejercicios_usados": []})
+    r = cliente.post("/generar", json={"edad": "U10", "duracion": 60, "objetivo": "bote"})
+    d = next(x for x in r.json()["diagramas"] if x["id"] == "calentamiento")
+    assert "<svg" in d["svg"] and "no disponible" not in d["svg"]
+    assert not any("Zigzag" in n for n in cliente.llamadas)

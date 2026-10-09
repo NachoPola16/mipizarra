@@ -344,3 +344,44 @@ def generar_plantilla(nombre: str, n_jugadores: int, n_conos: int | None = None)
     if not p.conos_min <= n_conos <= p.conos_max:
         raise ValueError(f"'{nombre}' admite de {p.conos_min} a {p.conos_max} conos, no {n_conos}")
     return p.funcion(n_jugadores, n_conos)
+
+
+# ── Elección de plantilla a partir del texto que redactó el modelo ──────────
+# (palabra clave en el nombre o las reglas → plantilla, en orden de prioridad)
+_CLAVES = {
+    "calentamiento": (
+        ("pilla", "pilla_pilla"),
+        ("rondo", "rondo_circular"),
+        ("cuatro esquinas", "cuatro_esquinas"),
+        ("4 esquinas", "cuatro_esquinas"),
+        ("zigzag", "zigzag_conos"),
+        ("zig-zag", "zigzag_conos"),
+        ("circuito", "circuito_conos"),
+        ("rueda", "rueda_de_tiro"),
+        ("dos filas", "dos_filas_enfrentadas"),
+        ("pareja", "pases_por_parejas"),
+    ),
+    "vuelta_a_la_calma": (
+        ("estiramiento", "estiramientos_en_lineas"),
+        ("tiros libres", "tiros_libres_rotacion"),
+        ("tiro libre", "tiros_libres_rotacion"),
+        ("trote", "trote_en_circulo"),
+        ("caminar", "trote_en_circulo"),
+        ("camina", "trote_en_circulo"),
+    ),
+}
+
+N_JUGADORES_DEFECTO = 8
+
+
+def plantilla_para_texto(momento: str, texto: str, n_jugadores: int = N_JUGADORES_DEFECTO) -> dict | None:
+    """Diagrama de la plantilla cuyo juego describe `texto` (nombre + reglas que escribió el
+    modelo), o None si ninguna encaja: entonces se queda el diagrama generado como hasta ahora.
+    Sirve para que un juego estándar tenga un diagrama válido sin depender del modelo."""
+    t = texto.lower()
+    for clave, nombre in _CLAVES.get(momento, ()):
+        if clave in t:
+            p = PLANTILLAS[nombre]
+            n = max(p.jugadores_min, min(p.jugadores_max, n_jugadores))
+            return generar_plantilla(nombre, n)
+    return None
