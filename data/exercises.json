@@ -7067,5 +7067,708 @@
       "complicar": "Avanzar por la pista con las dos pelotas y finalizar con bomba sobre un pie."
     },
     "sin_diagrama": true
+  },
+  {
+    "id": "ej_072",
+    "nombre": "Tiro cercano: pies, equilibrio y reto",
+    "categoria": "tiro",
+    "subcategoria": "mecanica",
+    "edades": [
+      "U8",
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 10,
+    "intensidad": 2,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 4,
+    "objetivos": {
+      "tacticos": [],
+      "tecnicos": [
+        "pies orientados al aro",
+        "equilibrio en el tiro",
+        "extensión completa del brazo"
+      ],
+      "fisicos": [
+        "equilibrio"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: parejas por canasta, un balón por pareja y tres aros en el suelo a metro y medio del aro (frente, derecha e izquierda). SECUENCIA: el jugador tira cinco veces desde un aro; su compañero cuenta los aciertos, recoge el rebote y le devuelve el balón con un pase. Si acierta tres de cinco, pasa al aro siguiente; si no, repite. ROTACIÓN: se cambian los papeles cada serie de cinco tiros. PROGRESIÓN: tirar apoyado sobre un solo pie sin perder el equilibrio; usar el tablero desde los aros laterales; alejar los aros un paso.",
+    "puntos_clave": [
+      "Pies y hombros orientados al aro antes de tirar.",
+      "Balón por encima de la frente y brazo estirado hasta el final.",
+      "Caer en el mismo sitio, con los pies juntos y equilibrados.",
+      "Cada uno lleva la cuenta de su propio récord."
+    ],
+    "material": "Un balón por pareja y tres aros por canasta.",
+    "consigna": "Pies al aro, brazo arriba y caes donde saltaste.",
+    "errores_frecuentes": [
+      "Tirar con los pies girados respecto al aro.",
+      "Empujar el balón desde el pecho sin estirar el brazo.",
+      "Caer hacia delante o con los pies muy separados."
+    ],
+    "que_observar": [
+      "Orienta los pies al aro antes de subir el balón.",
+      "Termina el tiro con el brazo estirado y cae equilibrado."
+    ],
+    "progresion": {
+      "facilitar": "Tirar desde un solo aro, a un metro del aro, hasta dominar la mecánica.",
+      "complicar": "Alejar los aros un paso y tirar sobre un pie o usando el tablero."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_073",
+    "nombre": "Estaciones de tiro con retos personales",
+    "categoria": "tiro",
+    "subcategoria": "volumen",
+    "edades": [
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 10,
+    "intensidad": 3,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 6,
+    "objetivos": {
+      "tacticos": [],
+      "tecnicos": [
+        "repetición del gesto de tiro",
+        "concentración",
+        "uso del tablero"
+      ],
+      "fisicos": []
+    },
+    "descripcion": "ORGANIZACIÓN: tres estaciones con canasta, grupos de dos o tres jugadores por estación y un balón por jugador. En cada estación hay una distancia y un reto: tiro frontal cercano, tiro desde el lateral con tablero y tiro libre. SECUENCIA: cada jugador tira diez veces y apunta sus aciertos; al sonar la señal, el grupo cambia de estación en el sentido de las agujas del reloj. ROTACIÓN: sin esperas; mientras uno tira, los demás recogen y devuelven el balón. PROGRESIÓN: superar el propio número de aciertos de la ronda anterior; añadir una segunda ronda con una distancia más.",
+    "puntos_clave": [
+      "El reto es contra uno mismo: mejorar el récord de la ronda anterior.",
+      "Misma rutina antes de cada tiro: pies, balón arriba, tiro.",
+      "Recoger el balón y devolverlo con un pase, sin lanzarlo.",
+      "Se celebra el acierto del compañero."
+    ],
+    "material": "Un balón por jugador, un papel y un lápiz o pizarra pequeña por estación.",
+    "consigna": "Tu reto: un acierto más que la ronda anterior.",
+    "errores_frecuentes": [
+      "Tirar muy rápido, sin colocar los pies.",
+      "Cambiar la distancia o la posición sin avisar.",
+      "Distraerse mientras el compañero tira."
+    ],
+    "que_observar": [
+      "Repite la misma rutina antes de cada tiro.",
+      "Recoge y devuelve el balón sin parar el ritmo del grupo."
+    ],
+    "progresion": {
+      "facilitar": "Reducir la distancia de todas las estaciones y bajar el reto a seis tiros.",
+      "complicar": "Añadir una ronda con diez tiros seguidos sin bajar el ritmo."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_074",
+    "nombre": "Pasa y tira: recibir ya mirando al aro",
+    "categoria": "tiro",
+    "subcategoria": "recepcion",
+    "edades": [
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 10,
+    "intensidad": 3,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 4,
+    "objetivos": {
+      "tacticos": [
+        "recepción orientada al aro"
+      ],
+      "tecnicos": [
+        "recepción con pies preparados",
+        "tiro tras recepción"
+      ],
+      "fisicos": []
+    },
+    "descripcion": "ORGANIZACIÓN: dos filas de tres jugadores por canasta: una fila de pasadores en el lateral y otra de tiradores frente al aro, a unos tres metros. SECUENCIA: el pasador pasa al tirador; este recibe con los pies ya orientados al aro y tira sin botar. El pasador recoge el rebote y se lo entrega al siguiente de su fila, que pasa al siguiente tirador. ROTACIÓN: el tirador pasa a la fila de pasadores y el pasador a la de tiradores. PROGRESIÓN: dar un paso hacia el balón al recibir; recibir de espaldas al aro y girar sobre un pie antes de tirar.",
+    "puntos_clave": [
+      "Manos preparadas y pies ya orientados al aro antes de recibir.",
+      "Dar un paso hacia el balón en lugar de esperarlo.",
+      "Recibir, subir el balón y tirar sin pensar en el pase.",
+      "El pasador entrega el balón a la altura del pecho."
+    ],
+    "material": "Un balón por canasta (mejor dos) y un aro de referencia en el suelo.",
+    "consigna": "Manos listas, pies al aro y tiras al recibir.",
+    "errores_frecuentes": [
+      "Recibir con los pies girados y tener que corregirse antes de tirar.",
+      "Esperar el balón parado en lugar de salir a por él.",
+      "Pasar demasiado fuerte o por encima de la cabeza."
+    ],
+    "que_observar": [
+      "Recibe con las manos arriba y los pies ya orientados.",
+      "Tira en el primer movimiento tras la recepción."
+    ],
+    "progresion": {
+      "facilitar": "Tirador a dos metros del aro y pase suave de pecho.",
+      "complicar": "Recibir de espaldas al aro y girar sobre un pie antes de tirar."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_075",
+    "nombre": "Pase de pecho en parejas: cuántos seguidos",
+    "categoria": "juego_equipo",
+    "subcategoria": "pase",
+    "edades": [
+      "U8",
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 8,
+    "intensidad": 2,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 2,
+    "objetivos": {
+      "tacticos": [],
+      "tecnicos": [
+        "pase de pecho",
+        "pase picado",
+        "recepción con dos manos"
+      ],
+      "fisicos": []
+    },
+    "descripcion": "ORGANIZACIÓN: parejas enfrentadas a tres metros de distancia con un balón por pareja, repartidas por media pista. SECUENCIA: se pasan el balón con pase de pecho y cuentan cuántos pases seguidos consiguen sin que caiga; a la señal alternan pase de pecho y pase picado. ROTACIÓN: sin colas; todos juegan a la vez y las parejas se cambian cada serie. PROGRESIÓN: cada diez pases seguidos, una pareja se aleja un paso; pasar dando un paso hacia el balón; pasar tras un bote.",
+    "puntos_clave": [
+      "Recibir con las dos manos y los dedos abiertos.",
+      "Dar un paso hacia el compañero al pasar.",
+      "Pase a la altura del pecho, con los pulgares abajo al soltar.",
+      "Nombrar al compañero antes de pasar."
+    ],
+    "material": "Un balón por pareja.",
+    "consigna": "Pasa con un paso, recibe con dos manos.",
+    "errores_frecuentes": [
+      "Pasar sin dar el paso, solo con los brazos.",
+      "Recibir con una mano o con los brazos rígidos.",
+      "Lanzar sin mirar al compañero."
+    ],
+    "que_observar": [
+      "Recibe con las dos manos sin que el balón rebote.",
+      "Da el paso hacia el compañero al pasar."
+    ],
+    "progresion": {
+      "facilitar": "Distancia de dos metros y solo pase de pecho.",
+      "complicar": "Alejarse un paso cada diez pases y alternar pase picado y pase de pecho."
+    },
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {
+          "id": "A1",
+          "x": 43.0,
+          "y": 28.0
+        },
+        {
+          "id": "A2",
+          "x": 43.0,
+          "y": 52.0
+        },
+        {
+          "id": "A3",
+          "x": 57.0,
+          "y": 28.0
+        },
+        {
+          "id": "A4",
+          "x": 57.0,
+          "y": 52.0
+        }
+      ],
+      "jugadores_defensa": [],
+      "movimientos": [
+        {
+          "de": "A1",
+          "tipo": "pase",
+          "a": "A2",
+          "orden": 1
+        },
+        {
+          "de": "A3",
+          "tipo": "pase",
+          "a": "A4",
+          "orden": 2
+        }
+      ],
+      "conos": [],
+      "balon_inicio": {
+        "portador": "A1"
+      }
+    }
+  },
+  {
+    "id": "ej_076",
+    "nombre": "Pasa y sigue tu pase en dos filas",
+    "categoria": "juego_equipo",
+    "subcategoria": "pase",
+    "edades": [
+      "U8",
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 8,
+    "intensidad": 3,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 6,
+    "objetivos": {
+      "tacticos": [
+        "pasar y moverse"
+      ],
+      "tecnicos": [
+        "pase de pecho",
+        "pase en movimiento"
+      ],
+      "fisicos": [
+        "agilidad"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: dos filas enfrentadas a cinco metros, el primero de una fila con balón. Si hay más de ocho jugadores, se hacen dos grupos. SECUENCIA: el primero pasa a su compañero de enfrente y corre a ocupar el final de la fila contraria; quien recibe pasa al siguiente de la fila contraria y repite. ROTACIÓN: todos se mueven tras su pase, nadie se queda parado. PROGRESIÓN: dos balones por grupo, contando cuántas veces da la vuelta el balón sin que caiga; pasar de pase picado.",
+    "puntos_clave": [
+      "Pasar y moverse enseguida: el balón no se queda parado.",
+      "Pase a las manos del compañero, a la altura del pecho.",
+      "Mirar al receptor antes de soltar el balón.",
+      "Correr por fuera de la fila para no chocar."
+    ],
+    "material": "Uno o dos balones por grupo y conos para marcar las filas.",
+    "consigna": "Pasas y corres al final de la otra fila.",
+    "errores_frecuentes": [
+      "Quedarse mirando el pase en lugar de correr a la otra fila.",
+      "Pasar al compañero equivocado.",
+      "Correr por el medio y chocar con el balón en el aire."
+    ],
+    "que_observar": [
+      "Sale corriendo justo después de soltar el pase.",
+      "El pase llega a las manos del compañero, sin que bote."
+    ],
+    "progresion": {
+      "facilitar": "Filas a tres metros, un solo balón y pase de pecho.",
+      "complicar": "Meter un segundo balón o alternar pase de pecho y pase picado."
+    },
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {
+          "id": "A1",
+          "x": 41.0,
+          "y": 72.0
+        },
+        {
+          "id": "A2",
+          "x": 32.5,
+          "y": 72.0
+        },
+        {
+          "id": "A3",
+          "x": 24.0,
+          "y": 72.0
+        },
+        {
+          "id": "A4",
+          "x": 15.5,
+          "y": 72.0
+        },
+        {
+          "id": "A5",
+          "x": 59.0,
+          "y": 72.0
+        },
+        {
+          "id": "A6",
+          "x": 67.5,
+          "y": 72.0
+        },
+        {
+          "id": "A7",
+          "x": 76.0,
+          "y": 72.0
+        },
+        {
+          "id": "A8",
+          "x": 84.5,
+          "y": 72.0
+        }
+      ],
+      "jugadores_defensa": [],
+      "movimientos": [
+        {
+          "de": "A1",
+          "tipo": "pase",
+          "a": "A5",
+          "orden": 1
+        },
+        {
+          "de": "A1",
+          "tipo": "desplazamiento",
+          "a_pos": {
+            "x": 84.5,
+            "y": 82.0
+          },
+          "curva": true,
+          "orden": 2
+        }
+      ],
+      "conos": [],
+      "balon_inicio": {
+        "portador": "A1"
+      }
+    }
+  },
+  {
+    "id": "ej_077",
+    "nombre": "El cuadrado: pasa y busca un hueco",
+    "categoria": "juego_equipo",
+    "subcategoria": "pase",
+    "edades": [
+      "U8",
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 10,
+    "intensidad": 3,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [
+        "pasar y moverse a un espacio libre",
+        "visión de campo"
+      ],
+      "tecnicos": [
+        "pase de pecho",
+        "pase en movimiento"
+      ],
+      "fisicos": []
+    },
+    "descripcion": "ORGANIZACIÓN: grupos de cuatro jugadores con un balón en un cuadrado de ocho por ocho metros marcado con conos. SECUENCIA: el jugador con balón pasa a un compañero y se mueve a un hueco libre del cuadrado para volver a recibir; no se puede pasar al que te acaba de pasar. Cada diez pases seguidos suman un punto. ROTACIÓN: todos juegan a la vez; el jugador que pierde el balón lo recoge y sigue sin cambiar de grupo. PROGRESIÓN: dos balones por grupo; añadir un defensor pasivo que solo se mueve sin tocar el balón; pasar sin botar.",
+    "puntos_clave": [
+      "Después de pasar, moverse a un hueco y ofrecerse.",
+      "Levantar la vista antes de pasar para ver el espacio libre.",
+      "Pasar al que está solo, no al más cercano.",
+      "Hablar: llamar al compañero que va a recibir."
+    ],
+    "material": "Un balón por grupo de cuatro y cuatro conos por cuadrado.",
+    "consigna": "Pasas, te mueves y te ofreces en un hueco.",
+    "errores_frecuentes": [
+      "Quedarse parado después de pasar.",
+      "Pasar siempre al compañero más cercano.",
+      "Agruparse todos en la misma esquina del cuadrado."
+    ],
+    "que_observar": [
+      "Se mueve a un hueco libre justo después de pasar.",
+      "Elige al compañero que está solo."
+    ],
+    "progresion": {
+      "facilitar": "Un jugador más por cuadrado y sin contar puntos.",
+      "complicar": "Añadir un defensor pasivo o un segundo balón por grupo."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_078",
+    "nombre": "Rebote: el balón es de quien llega",
+    "categoria": "juego_equipo",
+    "subcategoria": "rebote",
+    "edades": [
+      "U8",
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 10,
+    "intensidad": 4,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 6,
+    "objetivos": {
+      "tacticos": [
+        "ir a por el rebote"
+      ],
+      "tecnicos": [
+        "rebote a dos manos",
+        "salto",
+        "caída equilibrada"
+      ],
+      "fisicos": [
+        "salto",
+        "agilidad"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: grupos de tres jugadores por canasta con un balón. SECUENCIA: un jugador tira a canasta desde cerca y los otros dos van a por el rebote; quien lo coge con dos manos lo protege con el cuerpo y tira desde donde ha caído. Si el tiro entra, el punto es para el tirador; si el rebote entra, para quien cogió el rebote. ROTACIÓN: cada tres tiros se cambia el tirador. PROGRESIÓN: el rebotero debe coger el balón antes del segundo bote; tiro desde más lejos; solo vale el tiro de quien coge el rebote tras un salto.",
+    "puntos_clave": [
+      "Mirar el balón y seguirlo hasta que toque el aro.",
+      "Ir a por el balón con las manos arriba y los brazos abiertos.",
+      "Cogerlo con las dos manos y protegerlo con el cuerpo.",
+      "Caer equilibrado antes de tirar de nuevo."
+    ],
+    "material": "Un balón por canasta.",
+    "consigna": "Mira el aro, ve a por el balón y cógelo con las dos manos.",
+    "errores_frecuentes": [
+      "Quedarse mirando al tirador en lugar del aro.",
+      "Esperar a que caiga el balón sin salir a por él.",
+      "Coger el balón con una mano y perderlo."
+    ],
+    "que_observar": [
+      "Sale hacia el balón en cuanto sale del aro.",
+      "Lo coge con las dos manos y aterriza equilibrado."
+    ],
+    "progresion": {
+      "facilitar": "Tiro a menos distancia y solo dos jugadores por canasta.",
+      "complicar": "Tirar desde más lejos o exigir tomar el rebote con un salto."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_079",
+    "nombre": "Salta y coge: rebote de tablero",
+    "categoria": "juego_equipo",
+    "subcategoria": "rebote",
+    "edades": [
+      "U8",
+      "U10"
+    ],
+    "duracion_min": 8,
+    "intensidad": 3,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 4,
+    "objetivos": {
+      "tacticos": [],
+      "tecnicos": [
+        "salto vertical",
+        "rebote a dos manos",
+        "caída equilibrada"
+      ],
+      "fisicos": [
+        "salto",
+        "coordinación"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: parejas por canasta; un balón por pareja. SECUENCIA: un jugador lanza el balón suavemente contra el tablero; su compañero lo coge en el aire con las dos manos, sin dejar que bote, y cae con los pies juntos. Después se devuelven el balón con un pase y repiten. ROTACIÓN: cada cinco lanzamientos se cambian los papeles. PROGRESIÓN: lanzar desde un lado del tablero para que el compañero deba desplazarse; cogerlo en el aire y tirar antes de caer; contar los rebotes seguidos.",
+    "puntos_clave": [
+      "Salir a por el balón con las dos manos arriba.",
+      "Coger el balón en lo más alto posible y no esperarlo abajo.",
+      "Caer con los pies juntos y el balón protegido.",
+      "Ver el balón hasta que está en las manos."
+    ],
+    "material": "Un balón por pareja.",
+    "consigna": "Salta, coge con las dos manos y cae equilibrado.",
+    "errores_frecuentes": [
+      "Esperar a que el balón bote para cogerlo.",
+      "Cogerlo con una mano.",
+      "Caer con los pies muy separados o girados."
+    ],
+    "que_observar": [
+      "Coge el balón en el aire, sin que bote.",
+      "Aterriza con los pies juntos y equilibrado."
+    ],
+    "progresion": {
+      "facilitar": "Lanzar con más suavidad y desde la misma posición.",
+      "complicar": "Lanzar desde un lado y coger el balón en el aire para tirar antes de caer."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_080",
+    "nombre": "Rebote y pase de salida",
+    "categoria": "juego_equipo",
+    "subcategoria": "rebote",
+    "edades": [
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 10,
+    "intensidad": 4,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 6,
+    "objetivos": {
+      "tacticos": [
+        "pase de salida tras el rebote"
+      ],
+      "tecnicos": [
+        "rebote a dos manos",
+        "pase de pecho",
+        "protección del balón"
+      ],
+      "fisicos": []
+    },
+    "descripcion": "ORGANIZACIÓN: grupos de tres jugadores por canasta: un tirador, un rebotero y un receptor situado en el lateral a unos cinco metros. SECUENCIA: el tirador lanza desde cerca; el rebotero coge el rebote con las dos manos, se gira hacia el lateral y pasa al receptor. Si el tiro entra, el rebotero coge el balón bajo el aro y pasa igualmente. ROTACIÓN: tras cada tiro rotan en el sentido de las agujas del reloj: el tirador pasa a rebotero, el rebotero a receptor. PROGRESIÓN: el receptor se mueve para ofrecerse; el rebotero debe pasar antes de dar el tercer paso; añadir un segundo rebotero que compite.",
+    "puntos_clave": [
+      "Coger el rebote con las dos manos y protegerlo con el cuerpo.",
+      "Girar buscando al receptor antes de botar.",
+      "Pase de pecho firme y a las manos.",
+      "El receptor sale al encuentro del pase."
+    ],
+    "material": "Un balón por canasta y un cono o aro para el receptor.",
+    "consigna": "Coges con dos manos, miras y pasas al lateral.",
+    "errores_frecuentes": [
+      "Bajar el balón al suelo antes de mirar.",
+      "Pasar sin girar el cuerpo hacia el receptor.",
+      "Quedarse parado después del pase."
+    ],
+    "que_observar": [
+      "Mira al receptor antes de pasar.",
+      "Pasa antes de dar tres pasos con el balón."
+    ],
+    "progresion": {
+      "facilitar": "Rebote desde menos distancia y el receptor sin moverse.",
+      "complicar": "Un segundo rebotero compite por el rebote y el receptor debe ofrecerse en movimiento."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_081",
+    "nombre": "Los trozos de tela",
+    "categoria": "juego_equipo",
+    "subcategoria": "defensa",
+    "edades": [
+      "U8",
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 8,
+    "intensidad": 4,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 4,
+    "objetivos": {
+      "tacticos": [
+        "defensa individual",
+        "distancia con el rival"
+      ],
+      "tecnicos": [
+        "posición defensiva",
+        "desplazamiento lateral",
+        "uso de las manos"
+      ],
+      "fisicos": [
+        "agilidad",
+        "reacción"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: parejas enfrentadas en media pista, cada jugador con dos trozos de tela o pañuelos colgados a los lados de la cintura. SECUENCIA: cada jugador intenta quitar un trozo al compañero y proteger los suyos, siempre sin agarrar ni empujar; se cuentan los trozos conseguidos en cada minuto. ROTACIÓN: al acabar cada minuto, los que han ganado cambian de pareja. PROGRESIÓN: solo vale robar con la mano contraria al lado del trozo; añadir un balón que cada uno bota con una mano mientras roba con la otra.",
+    "puntos_clave": [
+      "Rodillas flexionadas y peso en la parte delantera de los pies.",
+      "Moverse sin cruzar los pies, con pasos cortos.",
+      "Manos activas, pero sin agarrar al compañero.",
+      "Mirar al pecho del compañero, no a sus manos."
+    ],
+    "material": "Dos pañuelos o trozos de tela por jugador.",
+    "consigna": "Roba sus trozos y cuida los tuyos con pasos cortos.",
+    "errores_frecuentes": [
+      "Perseguir con el cuerpo erguido y los talones.",
+      "Cruzar los pies al desplazarse.",
+      "Agarrar al compañero en lugar de tocar el trozo."
+    ],
+    "que_observar": [
+      "Mantiene las rodillas flexionadas durante el juego.",
+      "Se desplaza con pasos cortos, sin cruzar los pies."
+    ],
+    "progresion": {
+      "facilitar": "Un solo trozo de tela por jugador y espacio más amplio.",
+      "complicar": "Robar solo con la mano contraria o botando un balón con la otra."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_082",
+    "nombre": "El espejo defensivo",
+    "categoria": "juego_equipo",
+    "subcategoria": "defensa",
+    "edades": [
+      "U8",
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 8,
+    "intensidad": 3,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 4,
+    "objetivos": {
+      "tacticos": [
+        "distancia con el rival"
+      ],
+      "tecnicos": [
+        "posición defensiva",
+        "deslizamiento lateral",
+        "cambio de dirección"
+      ],
+      "fisicos": [
+        "agilidad",
+        "equilibrio"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: parejas enfrentadas a un metro de distancia dentro de un pasillo de tres metros de ancho marcado con conos. SECUENCIA: uno de la pareja se mueve a los lados y hacia delante y atrás; el otro lo copia como un espejo, en posición defensiva y sin cruzar los pies. Cada treinta segundos se cambian los papeles. ROTACIÓN: todos a la vez; las parejas se mezclan cada dos series. PROGRESIÓN: el que dirige bota un balón en el sitio con una mano; añadir un cono que hay que tocar con la mano; el que copia debe mantener los brazos activos.",
+    "puntos_clave": [
+      "Posición defensiva: rodillas flexionadas, espalda recta y manos activas.",
+      "Deslizar los pies sin cruzarlos ni juntarlos.",
+      "Seguir el pecho del compañero, no sus pies.",
+      "Mantener la distancia a un brazo de separación."
+    ],
+    "material": "Conos para marcar los pasillos y, en la progresión, un balón por pareja.",
+    "consigna": "Sigue a tu pareja como un espejo, sin cruzar los pies.",
+    "errores_frecuentes": [
+      "Erguirse al cambiar de dirección.",
+      "Cruzar los pies y perder el equilibrio.",
+      "Alejarse del compañero hasta perder el contacto visual."
+    ],
+    "que_observar": [
+      "Cambia de dirección sin cruzar los pies.",
+      "Mantiene una distancia constante con su pareja."
+    ],
+    "progresion": {
+      "facilitar": "El que dirige se mueve despacio y solo hacia los lados.",
+      "complicar": "El que dirige bota un balón y cambia de ritmo, y el espejo mantiene la distancia."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_083",
+    "nombre": "1c1 en el pasillo: tocar el balón",
+    "categoria": "1c1",
+    "subcategoria": "defensa_al_balon",
+    "edades": [
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 10,
+    "intensidad": 4,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 4,
+    "objetivos": {
+      "tacticos": [
+        "defensa del jugador con balón",
+        "distancia con el rival"
+      ],
+      "tecnicos": [
+        "posición defensiva",
+        "deslizamiento",
+        "mano activa"
+      ],
+      "fisicos": [
+        "agilidad"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: pasillos de tres metros de ancho y diez de largo marcados con conos; en cada uno, un atacante con balón y un defensor frente a él. SECUENCIA: el atacante bota hacia delante intentando llegar al final del pasillo; el defensor se desliza por delante sin que le pase, intentando tocar el balón con la mano sin agarrar ni empujar. Gana un punto el atacante si llega al final y el defensor si toca el balón. ROTACIÓN: al llegar o perder el balón, cambian los papeles y pasan al pasillo siguiente. PROGRESIÓN: pasillo más estrecho; el atacante puede cambiar de mano una sola vez; cuando el defensor toca el balón, ataca él.",
+    "puntos_clave": [
+      "Mantener el cuerpo entre el atacante y el final del pasillo.",
+      "Deslizar con pasos cortos y las rodillas flexionadas.",
+      "Mano activa para tocar el balón sin agarrar.",
+      "Cambiar de dirección con el atacante, sin quedarse mirando."
+    ],
+    "material": "Conos para marcar los pasillos y un balón por pasillo.",
+    "consigna": "Cuerpo delante, pasos cortos y toca el balón sin agarrar.",
+    "errores_frecuentes": [
+      "Quedarse parado y dejar que el atacante pase.",
+      "Agarrar al atacante en vez de tocar el balón.",
+      "Cruzar los pies y perder la posición."
+    ],
+    "que_observar": [
+      "Mantiene el cuerpo delante del atacante durante el recorrido.",
+      "Toca el balón con la mano sin agarrar."
+    ],
+    "progresion": {
+      "facilitar": "Atacante sin cambios de mano y pasillo más ancho.",
+      "complicar": "Pasillo más estrecho y el atacante puede cambiar de mano una vez."
+    },
+    "sin_diagrama": true
   }
 ]
