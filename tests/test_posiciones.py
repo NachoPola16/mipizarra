@@ -198,7 +198,7 @@ def test_validador_rechaza_nombre_desconocido(donde):
     assert error and "posición desconocida" in error and "banquillo" in error
 
 
-# ── Compatibilidad con los 67 diagramas de la biblioteca ─────────────────────
+# ── Compatibilidad con los 69 diagramas de la biblioteca ─────────────────────
 
 with open(EXERCISES_JSON, encoding="utf-8") as _f:
     _EJERCICIOS = json.load(_f)
@@ -210,8 +210,8 @@ _DIAGRAMAS = [
 ]
 
 
-def test_la_biblioteca_tiene_67_diagramas():
-    assert len(_DIAGRAMAS) == 67
+def test_la_biblioteca_tiene_69_diagramas():
+    assert len(_DIAGRAMAS) == 69
 
 
 @pytest.mark.parametrize("id_, i, d", _DIAGRAMAS, ids=[f"{a}_{b}" for a, b, _ in _DIAGRAMAS])
