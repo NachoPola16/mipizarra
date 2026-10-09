@@ -16,7 +16,7 @@ def test_huecos_devuelve_cuantos_faltan_y_el_total_del_plan(ejercicios):
 
 def test_sin_biblioteca_todos_los_huecos_son_de_la_ia():
     h, n = huecos_biblioteca.huecos("U12", 90, "bote", [])
-    assert h == n == 6
+    assert h == n == 7
 
 
 def test_la_tabla_incluye_cada_edad_y_el_total(capsys):

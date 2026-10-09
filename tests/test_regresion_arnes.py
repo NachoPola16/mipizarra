@@ -91,11 +91,9 @@ def sesion_buena(edad, objetivo, duracion=90):
         nombres += [nombre, nombre + " (variante)"] if con_variante else [nombre]
         if i == (n + 1) // 2:
             partes.append("**DESCANSO (3 min)**" + NL + NL)
-    partes.append(
-        "**VUELTA A LA CALMA (5 min)**" + NL + "Juego: Tiros libres" + NL
-        + "Reglas: Cada acierto suma un punto." + NL + NL + f"**Fundamentos**: {contenido}."
-    )
-    nombres += ["Calentamiento: Cazadores", "Vuelta a la calma: Tiros libres"]
+    # la sesión acaba con un ejercicio más, sin bloque de vuelta a la calma (plan_sesion.CON_VUELTA_A_LA_CALMA)
+    partes.append(f"**Fundamentos**: {contenido}.")
+    nombres += ["Calentamiento: Cazadores"]
     return {"sesion": "".join(partes), "diagramas": [{"id": f"d{i}", "nombre": nom, "titulo": "", "svg": SVG_OK}
                                                      for i, nom in enumerate(nombres)]}
 
@@ -152,7 +150,7 @@ class ApiSimulada(BaseHTTPRequestHandler):
                 resp["sesion"] = resp["sesion"].rsplit("**Fundamentos**", 1)[0] + \
                     "**Fundamentos**: posición básica, deslizamiento y"
             elif malo and req["edad"] == "U16":
-                resp["sesion"] = resp["sesion"].replace("**VUELTA A LA CALMA (5 min)**", "")
+                resp["sesion"] = resp["sesion"].replace("**CALENTAMIENTO (10 min)**", "")
                 resp["diagramas"] = resp["diagramas"][:2]
             elif malo and req["edad"] == "U18":
                 return self._responder(500, {"detail": "No se pudo generar la sesión"})
@@ -241,12 +239,12 @@ def test_api_buena_pasa(api, tmp_path):
     assert informe["resumen"]["fallidos"] == []
     assert informe["version_api"] == "simulada"
     res = _por_id(informe)
-    # U10 a 60 min: 4 ejercicios y el primero partido en N.1/N.2 → 5 bloques + calentamiento + vuelta.
-    assert res["ses_u10_bote"]["metricas"]["diagramas_esperados"] == 7
+    # U10 a 60 min: 4 ejercicios y el primero partido en N.1/N.2 → 5 bloques + calentamiento.
+    assert res["ses_u10_bote"]["metricas"]["diagramas_esperados"] == 6
     assert res["ses_u10_bote"]["metricas"]["ejercicios"] == 4
-    # U16 a 90 min: 4 ejercicios sin variantes → 4 bloques + calentamiento + vuelta.
+    # U16 a 90 min: 5 ejercicios sin variantes → 5 bloques + calentamiento.
     assert res["ses_u16_bloqueo"]["metricas"]["diagramas_esperados"] == 6
-    assert res["ses_u16_bloqueo"]["metricas"]["ejercicios"] == 4
+    assert res["ses_u16_bloqueo"]["metricas"]["ejercicios"] == 5
     # El validador semántico real se ha aplicado a los ejercicios.
     assert "omitido" not in res["ej_u12_1c1_45"]["criterios"]["diagrama_valido"]["detalle"]
     # Peticiones exactas que se mandan a la API.
@@ -404,12 +402,12 @@ def test_texto_completo(texto, esperado):
 def test_contar_ejercicios_con_variantes():
     texto = sesion_buena("U10", "bote", 60)["sesion"]
     assert regresion.contar_ejercicios(texto) == (4, 5)
-    assert regresion.diagramas_esperados_sesion(texto) == 7
+    assert regresion.diagramas_esperados_sesion(texto) == 6
 
 
 # ─── Número de ejercicios esperado: sale del plan, no es fijo ────────────────
 
-@pytest.mark.parametrize("edad,duracion,esperado", [("U10", 60, 4), ("U12", 75, 5), ("U14", 90, 5), ("U16", 90, 4)])
+@pytest.mark.parametrize("edad,duracion,esperado", [("U10", 60, 4), ("U12", 75, 6), ("U14", 90, 6), ("U16", 90, 5)])
 def test_ejercicios_esperados_salen_del_plan(edad, duracion, esperado):
     assert regresion.ejercicios_esperados({"edad": edad, "duracion": duracion}) == esperado
 
@@ -423,7 +421,7 @@ def _evaluar(edad, duracion, n_ejercicios_en_el_texto):
         while regresion.contar_ejercicios(texto)[0] > n_ejercicios_en_el_texto:
             ultimo = max(int(m) for m, _ in regresion.CAB_EJERCICIO.findall(texto))
             ini = texto.index(f"Ejercicio {ultimo}")
-            fin = texto.index("**VUELTA A LA CALMA")
+            fin = texto.index("**Fundamentos**")
             texto = texto[:ini] + texto[fin:]
         resp["sesion"] = texto
     return regresion.evaluar_sesion(caso, 200, resp, 1.0)
