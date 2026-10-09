@@ -40,6 +40,19 @@ def _svg_diagrama_no_disponible() -> str:
     )
 
 
+def _svg_sin_diagrama() -> str:
+    """Recuadro neutro para las fichas marcadas «sin_diagrama» (juego libre, todos a la vez).
+    Ocupa su sitio: el PDF asigna los diagramas por posición de ejercicio y un hueco
+    desalinearía los siguientes."""
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 200">'
+        '<rect width="500" height="200" fill="#faf8f0" stroke="#cbd5e0" stroke-width="2"/>'
+        '<text x="250" y="100" text-anchor="middle" font-family="sans-serif" font-size="14" '
+        'fill="#6b7280">Juego libre: no necesita diagrama.</text>'
+        '</svg>'
+    )
+
+
 def parsear_ejercicios_de_sesion(texto: str) -> list:
     """Extrae nombre y organización de cada ejercicio del texto de sesión generado.
     Reconoce tanto 'Ejercicio N:' como 'Ejercicio N.1:' / 'Ejercicio N.2 (variante):'
@@ -274,6 +287,7 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
                 "descripcion": ej_texto["descripcion"] or ("" if es_variante else ej_db.get("descripcion", "")),
                 "diagrama":    None if es_variante else ej_db.get("diagrama"),
                 "id":          f"{ej_db.get('id', f'ej_texto_{i}')}{'_variante' if es_variante else ''}",
+                "sin_diagrama": bool(ej_db.get("sin_diagrama")),
             })
 
         if not ejercicios_con_descripcion:
@@ -317,6 +331,16 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
                         "titulo": "",
                         "svg":    _svg_diagrama_no_disponible(),
                     })
+                continue
+
+            # Ficha marcada «sin_diagrama» (juego libre): recuadro neutro, no se intenta dibujar.
+            if ej.get("sin_diagrama") and not ej.get("diagrama"):
+                diagramas.append({
+                    "id":     ej.get("id", f"ej_{idx}"),
+                    "nombre": nombre,
+                    "titulo": "",
+                    "svg":    _svg_sin_diagrama(),
+                })
                 continue
 
             # Ejercicio con un único diagrama (o sin diagrama → generar automático)
