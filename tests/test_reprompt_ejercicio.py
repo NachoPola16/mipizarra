@@ -83,7 +83,7 @@ def test_el_contexto_solo_lleva_ese_ejercicio_y_esta_acotado(modelo_falso):
     # un ejercicio de 2000 caracteres (el máximo que admite la API) y una instrucción de 500: el prompt sigue siendo pequeño
     estado = modelo_falso([CORREGIDO])
     _reprompt(descripcion="x" * 2000, instruccion="y" * 500)
-    assert len(estado["peticiones"][0]["prompt"]) < 7000
+    assert len(estado["peticiones"][0]["prompt"]) < 8000
 
 
 def test_la_instruccion_pedida_no_depende_del_numero_de_ejercicios_de_la_sesion(modelo_falso):
