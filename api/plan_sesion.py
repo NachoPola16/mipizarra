@@ -1,8 +1,9 @@
 # api/plan_sesion.py
 """Reparto de tiempo de una sesión: cuántos ejercicios y cuánto dura cada uno.
 
-Cada sesión tiene entre 5 y 8 ejercicios EN TOTAL (cuentan el calentamiento y la vuelta a la
-calma). Dependen de la duración y de la edad: los pequeños aguantan menos haciendo lo mismo, así
+Cada sesión tiene entre 5 y 8 ejercicios EN TOTAL (cuenta el calentamiento; la sesión acaba con un
+ejercicio más de la parte principal, no con un bloque de vuelta a la calma, salvo que
+CON_VUELTA_A_LA_CALMA lo vuelva a activar). Dependen de la duración y de la edad: los pequeños aguantan menos haciendo lo mismo, así
 que hacen más ejercicios y más cortos. Los minutos son una guía: siempre múltiplos de 5."""
 from dataclasses import dataclass
 
@@ -13,8 +14,13 @@ BLOQUE_OBJETIVO_DEFECTO = 15         # Cadete en adelante
 CATEGORIAS_MINIBASKET = {"U8", "U10", "U12", "Prebenjamín", "Benjamín", "Alevín"}
 CATEGORIAS_U14 = {"U14", "Infantil"}
 
-MIN_EJERCICIOS_PRINCIPAL = 3         # + calentamiento + vuelta a la calma = 5 en total
-MAX_EJERCICIOS_PRINCIPAL = 6         # + calentamiento + vuelta a la calma = 8 en total
+# A veces no hace falta acabar con una vuelta a la calma: se acaba con otro ejercicio. El bloque que
+# inventaba el modelo era el que más fallaba (texto movido para una vuelta a la calma y diagrama inválido).
+CON_VUELTA_A_LA_CALMA = False
+
+_BLOQUES_FIJOS = 2 if CON_VUELTA_A_LA_CALMA else 1                 # calentamiento (+ vuelta a la calma)
+MIN_EJERCICIOS_PRINCIPAL = 5 - _BLOQUES_FIJOS                     # total mínimo: 5
+MAX_EJERCICIOS_PRINCIPAL = 8 - _BLOQUES_FIJOS                     # total máximo: 8
 
 
 @dataclass(frozen=True)
@@ -40,7 +46,7 @@ def _bloque_objetivo(edad: str) -> int:
 def plan_de_tiempos(duracion: int, edad: str) -> PlanDeTiempos:
     t_descanso = 3 if duracion >= 60 else 2
     t_calentamiento = _redondear_5(duracion / 6, minimo=10)
-    t_vuelta = _redondear_5(duracion / 15, minimo=5)
+    t_vuelta = _redondear_5(duracion / 15, minimo=5) if CON_VUELTA_A_LA_CALMA else 0
     t_parte = duracion - t_calentamiento - t_vuelta - t_descanso
     unidades = max(1, t_parte // 5)                  # bloques de 5 min: la suma nunca pasa de la duración
 

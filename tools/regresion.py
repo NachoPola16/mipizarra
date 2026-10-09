@@ -15,9 +15,9 @@ Casos (fijos y deterministas, ver CASOS_* más abajo):
   - 7 preguntas de reglamento (POST /reglamento)
 
 Criterios duros (si alguno falla, código de salida 1):
-  - Sesiones: HTTP 200; las 4 secciones (CALENTAMIENTO, PARTE PRINCIPAL, VUELTA A LA
-    CALMA, Fundamentos); los ejercicios que pide el plan para su edad y duración (de 5 a 8
-    contando calentamiento y vuelta a la calma); texto no truncado; un diagrama por
+  - Sesiones: HTTP 200; las 3 secciones (CALENTAMIENTO, PARTE PRINCIPAL, Fundamentos); los
+    ejercicios que pide el plan para su edad y duración (de 5 a 8 contando el calentamiento;
+    la sesión acaba con un ejercicio, sin vuelta a la calma); texto no truncado; un diagrama por
     cada bloque esperado y todos los SVG bien formados.
   - Ejercicios: HTTP 200; nombre y descripción; diagrama presente, semánticamente
     válido (_validar_diagrama) y SVG bien formado.
@@ -117,7 +117,6 @@ CASOS_REGLAMENTO = [
 SECCIONES = {
     "CALENTAMIENTO":     re.compile(r"CALENTAMIENTO"),
     "PARTE PRINCIPAL":   re.compile(r"PARTE PRINCIPAL"),
-    "VUELTA A LA CALMA": re.compile(r"VUELTA A LA CALMA"),
     "Fundamentos":       re.compile(r"fundamentos", re.IGNORECASE),
 }
 
@@ -312,7 +311,7 @@ def evaluar_sesion(caso: dict, status: int, datos: dict | None, latencia: float)
     n_ej, n_bloques = contar_ejercicios(texto)
     esperado = ejercicios_esperados(caso)
     if esperado is None:      # sin plan_sesion disponible: el rango posible de la parte principal
-        criterios["num_ejercicios"] = _criterio(3 <= n_ej <= 6, f"{n_ej} ejercicio(s), se esperan de 3 a 6")
+        criterios["num_ejercicios"] = _criterio(4 <= n_ej <= 7, f"{n_ej} ejercicio(s), se esperan de 4 a 7")
     else:
         criterios["num_ejercicios"] = _criterio(n_ej == esperado, f"{n_ej} ejercicio(s), el plan pide {esperado}")
     criterios["no_truncado"] = _criterio(texto_completo(texto), "" if texto_completo(texto)

@@ -6,14 +6,14 @@ calentamiento y la vuelta a la calma), según la duración y la edad. Los minuto
 múltiplos de 5."""
 import pytest
 
-from plan_sesion import plan_de_tiempos
+from plan_sesion import CON_VUELTA_A_LA_CALMA, plan_de_tiempos
 
 EDADES = ["U8", "U10", "U12", "U14", "U16", "U18", "Senior"]
 DURACIONES = list(range(45, 181, 5))
 
 
 def _total(plan):
-    return len(plan.duraciones) + 2          # + calentamiento + vuelta a la calma
+    return len(plan.duraciones) + (2 if CON_VUELTA_A_LA_CALMA else 1)   # + calentamiento (+ vuelta a la calma)
 
 
 @pytest.mark.parametrize("edad", EDADES)
@@ -26,7 +26,7 @@ def test_el_total_de_ejercicios_esta_entre_5_y_8(edad, duracion):
 @pytest.mark.parametrize("duracion", DURACIONES)
 def test_los_minutos_son_multiplos_de_5_y_desde_60_min_ningun_ejercicio_baja_de_10(edad, duracion):
     plan = plan_de_tiempos(duracion, edad)
-    for t in [plan.t_calentamiento, plan.t_vuelta, *plan.duraciones]:
+    for t in [plan.t_calentamiento, *([plan.t_vuelta] if CON_VUELTA_A_LA_CALMA else []), *plan.duraciones]:
         assert t % 5 == 0 and t >= 5
     if duracion >= 60:      # en sesiones cortas, los bloques bajan a 5 min antes que perder ejercicios
         assert all(t >= 10 for t in plan.duraciones), (edad, duracion, plan.duraciones)
@@ -56,12 +56,12 @@ def test_minibasket_hace_al_menos_tantos_ejercicios_como_cadete(duracion):
 def test_ejemplos_de_referencia():
     # (edad, duración) → (nº total de ejercicios, minutos de cada ejercicio de la parte principal)
     esperado = {
-        ("U10", 60): (6, [10, 10, 10, 10]),
-        ("U16", 60): (5, [15, 15, 10]),
-        ("U10", 90): (8, [15, 10, 10, 10, 10, 10]),
-        ("U16", 90): (6, [20, 15, 15, 15]),
-        ("U14", 90): (7, [15, 15, 15, 10, 10]),
-        ("U14", 60): (5, [15, 15, 10]),
+        ("U10", 60): (5, [15, 10, 10, 10]),
+        ("U16", 60): (5, [15, 10, 10, 10]),
+        ("U10", 90): (8, [10, 10, 10, 10, 10, 10, 10]),
+        ("U16", 90): (6, [15, 15, 15, 15, 10]),
+        ("U14", 90): (7, [15, 15, 10, 10, 10, 10]),
+        ("U14", 60): (5, [15, 10, 10, 10]),
     }
     for (edad, duracion), (total, duraciones) in esperado.items():
         plan = plan_de_tiempos(duracion, edad)
@@ -74,8 +74,8 @@ def test_sesion_muy_corta_hace_los_ejercicios_que_caben_y_no_se_pasa_de_tiempo()
     assert plan.t_calentamiento + plan.t_vuelta + plan.t_descanso + sum(plan.duraciones) <= 30
 
 
-def test_en_45_min_caben_tres_ejercicios_de_parte_principal():
-    assert len(plan_de_tiempos(45, "U16").duraciones) == 3          # total 5, con bloques de 5 min si hace falta
+def test_en_45_min_caben_cuatro_ejercicios_de_parte_principal():
+    assert len(plan_de_tiempos(45, "U16").duraciones) == 4          # total 5, con bloques de 5 min si hace falta
 
 
 def test_el_descanso_es_de_3_min_desde_60_y_de_2_antes():
