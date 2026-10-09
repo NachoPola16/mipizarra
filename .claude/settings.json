@@ -1,0 +1,12 @@
+{
+  "env": {
+    "GIT_AUTHOR_NAME": "NachoPola16",
+    "GIT_AUTHOR_EMAIL": "nachopolac@gmail.com",
+    "GIT_COMMITTER_NAME": "NachoPola16",
+    "GIT_COMMITTER_EMAIL": "nachopolac@gmail.com"
+  },
+  "attribution": {
+    "commit": "",
+    "pr": ""
+  }
+}
