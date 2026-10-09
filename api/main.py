@@ -20,6 +20,7 @@ from rag_engine import (
     listar_ambitos, normalizar_ambito,
 )
 from diagram_renderer import render_diagram, render_all_diagrams
+from plantillas import plantilla_para_texto
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -296,11 +297,16 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
         # Calentamiento y vuelta a la calma son juegos inventados por el modelo, sin
         # entrada en exercises.json — igual se benefician de diagrama automático.
         for extra in parsear_calentamiento_y_vuelta(resultado["texto"]):
+            momento = extra["nombre"].split(":")[0].strip().lower().replace(" ", "_")
+            # Si el juego es uno estándar (zigzag, rondo, estiramientos...) se usa la plantilla
+            # validada; si no encaja ninguna, se genera el diagrama como antes.
+            de_plantilla = plantilla_para_texto(momento, f"{extra['nombre']} {extra['descripcion']}")
             ejercicios_con_descripcion.append({
                 "nombre":      extra["nombre"],
                 "descripcion": extra["descripcion"],
-                "diagrama":    None,
-                "id":          extra["nombre"].split(":")[0].strip().lower().replace(" ", "_"),
+                "diagrama":    de_plantilla,
+                "de_plantilla": de_plantilla is not None,
+                "id":          momento,
             })
 
         logger.info(f"Intentando generar {len(ejercicios_con_descripcion)} diagramas")
@@ -351,7 +357,7 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
                 diagrama_data = generar_coordenadas_ejercicio(texto_para_diagrama, nombre)
 
             if diagrama_data:
-                if desc and any(word in desc.lower() for word in FULL_COURT):
+                if desc and not ej.get("de_plantilla") and any(word in desc.lower() for word in FULL_COURT):
                     diagrama_data["tipo"] = "pista_completa"
                 else:
                     diagrama_data["tipo"] = diagrama_data.get("tipo", "media_pista")
