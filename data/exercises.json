@@ -6651,7 +6651,8 @@
     "progresion": {
       "facilitar": "Solo hacer rodar el aro, sin cambiar de mano ni de gesto.",
       "complicar": "Cambiar de gesto cada tres botes y finalizar con una consigna de color."
-    }
+    },
+    "sin_diagrama": true
   },
   {
     "id": "ej_065",
@@ -6699,7 +6700,8 @@
     "progresion": {
       "facilitar": "Consignas de un solo paso y menos aros en el campo.",
       "complicar": "Encadenar dos consignas y cambiar de mano de bote en cada aro."
-    }
+    },
+    "sin_diagrama": true
   },
   {
     "id": "ej_066",
@@ -6746,7 +6748,8 @@
     "progresion": {
       "facilitar": "Menos bolas y todo el espacio de media pista para moverse.",
       "complicar": "Reducir el espacio a la zona del triple y exigir tres aciertos antes de salir a anotar."
-    }
+    },
+    "sin_diagrama": true
   },
   {
     "id": "ej_067",
@@ -6921,7 +6924,8 @@
     "progresion": {
       "facilitar": "Solo mantener el globo en el aire sin cambios de mano.",
       "complicar": "Circuito en zigzag con el globo arriba y finalización a canasta."
-    }
+    },
+    "sin_diagrama": true
   },
   {
     "id": "ej_069",
@@ -6967,7 +6971,8 @@
     "progresion": {
       "facilitar": "Jugar en parejas, cada pareja con un solo globo.",
       "complicar": "Dos globos por jugador y rondas de menos tiempo."
-    }
+    },
+    "sin_diagrama": true
   },
   {
     "id": "ej_070",
@@ -7012,7 +7017,8 @@
     "progresion": {
       "facilitar": "Un solo globo y sin contar los toques.",
       "complicar": "Más globos y obligar a que los toque cada jugador en orden."
-    }
+    },
+    "sin_diagrama": true
   },
   {
     "id": "ej_071",
@@ -7059,6 +7065,7 @@
     "progresion": {
       "facilitar": "Con la misma mano y solo botes altos y pequeños alternados.",
       "complicar": "Avanzar por la pista con las dos pelotas y finalizar con bomba sobre un pie."
-    }
+    },
+    "sin_diagrama": true
   }
 ]
