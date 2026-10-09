@@ -6605,5 +6605,460 @@
       "La presión social de fallar delante del grupo es parte del objetivo: trabajar la rutina de tiro también bajo esa presión, no solo la mecánica."
     ],
     "descripcion": "Por parejas o tríos. Cada ronda, un jugador manda: elige el tipo de tiro (tiro sobre presión, tiro tras bote, etc.) y lo intenta. Los demás deben realizar el mismo tipo de tiro. Si alguno de ellos falla, el jugador que ha mandado el tiro suma un punto, pero solo si él mismo lo había metido."
+  },
+  {
+    "id": "ej_064",
+    "nombre": "Bote con aro de gimnasia en la otra mano",
+    "categoria": "calentamiento",
+    "subcategoria": "manejo_balon",
+    "edades": [
+      "U8",
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 10,
+    "intensidad": 2,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 6,
+    "objetivos": {
+      "tacticos": [],
+      "tecnicos": [
+        "disociación mano-balón",
+        "bote con la cabeza alta"
+      ],
+      "fisicos": [
+        "coordinación"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: cada jugador con un balón y un aro de plástico, repartidos por media pista con espacio libre alrededor. SECUENCIA: botan con una mano mientras con la otra hacen rodar el aro o lo sostienen; a la señal del entrenador cambian la mano de bote y el aro de mano. Al terminar, finalizan en canasta con bomba sobre un pie. ROTACIÓN: de tres en tres a canasta mientras el resto sigue botando en su sitio. PROGRESIÓN: a la señal, soltar el aro y botar dentro del aro, fuera de él o sentarse sin dejar de botar; pasar el cuerpo entero por el aro; pasar el balón por dentro del aro y por debajo.",
+    "puntos_clave": [
+      "Cabeza alta: mirar al entrenador y no al balón.",
+      "Bote alejado del cuerpo, a la altura de la cintura.",
+      "Cambiar de mano de bote y de aro a la vez, sin pararse.",
+      "Terminar siempre con una finalización a canasta."
+    ],
+    "material": "Un balón y un aro de plástico por jugador; canastas libres para finalizar.",
+    "consigna": "Una mano bota, la otra trabaja: ¡cabeza arriba!",
+    "errores_frecuentes": [
+      "Mirar el balón en lugar de levantar la cabeza.",
+      "Botar pegado al cuerpo o con la palma de la mano.",
+      "Dejar de botar al manejar el aro."
+    ],
+    "que_observar": [
+      "Mantiene el bote al cambiar el aro de mano.",
+      "Levanta la cabeza al oír la señal del entrenador."
+    ],
+    "progresion": {
+      "facilitar": "Solo hacer rodar el aro, sin cambiar de mano ni de gesto.",
+      "complicar": "Cambiar de gesto cada tres botes y finalizar con una consigna de color."
+    }
+  },
+  {
+    "id": "ej_065",
+    "nombre": "Aros por el suelo: consigna y tiro",
+    "categoria": "calentamiento",
+    "subcategoria": "manejo_balon",
+    "edades": [
+      "U8",
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 10,
+    "intensidad": 3,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 6,
+    "objetivos": {
+      "tacticos": [],
+      "tecnicos": [
+        "control del bote",
+        "atención a una consigna",
+        "finalización"
+      ],
+      "fisicos": [
+        "agilidad"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: aros de colores repartidos por el campo, un balón por jugador, canastas libres. SECUENCIA: el entrenador da una consigna y los jugadores la cumplen botando antes de tirar a canasta: botar dentro de un número de aros, caer dentro de un aro y dar ese número de botes, pasar por los aros de unos colores en orden. ROTACIÓN: al acabar la consigna, tiro a canasta y vuelta al centro a esperar la siguiente. PROGRESIÓN: aros alineados a distinta distancia; aros en zigzag que se recorren en orden; dos consignas encadenadas.",
+    "puntos_clave": [
+      "Escuchar la consigna entera antes de moverse.",
+      "Cabeza alta para ver los aros libres y a los compañeros.",
+      "Bote controlado también al cambiar de dirección.",
+      "Se tira solo cuando se ha cumplido la consigna."
+    ],
+    "material": "Entre 10 y 15 aros de colores, un balón por jugador.",
+    "consigna": "Escucha, bota y cumple: ¡luego tiras!",
+    "errores_frecuentes": [
+      "Empezar a moverse antes de terminar de oír la consigna.",
+      "Mirar el balón y chocar con otros jugadores.",
+      "Saltarse un aro de la secuencia."
+    ],
+    "que_observar": [
+      "Cumple la consigna completa antes de tirar.",
+      "Evita chocar con los compañeros mientras bota."
+    ],
+    "progresion": {
+      "facilitar": "Consignas de un solo paso y menos aros en el campo.",
+      "complicar": "Encadenar dos consignas y cambiar de mano de bote en cada aro."
+    }
+  },
+  {
+    "id": "ej_066",
+    "nombre": "Lluvia de bolas de papel",
+    "categoria": "calentamiento",
+    "subcategoria": "manejo_balon",
+    "edades": [
+      "U8",
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 8,
+    "intensidad": 3,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [],
+      "tecnicos": [
+        "bote con visión periférica",
+        "puntería"
+      ],
+      "fisicos": [
+        "agilidad"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: todo el grupo en media pista, un balón por jugador y muchas bolas de papel repartidas por el suelo. SECUENCIA: todos botan por el campo, recogen las bolas sin dejar de botar y las lanzan a un compañero, alternando manos. ROTACIÓN: sin colas ni esperas; todos juegan a la vez. PROGRESIÓN: botar solo dentro de la zona del triple; al acertar tres bolas a un compañero se sale a anotar a canasta.",
+    "puntos_clave": [
+      "No dejar de botar al agacharse a por la bola.",
+      "Mirar al compañero antes de lanzar.",
+      "Alternar la mano de bote y la de lanzamiento.",
+      "Evitar los choques moviéndose con la cabeza alta."
+    ],
+    "material": "Un balón por jugador y unas veinte bolas de papel.",
+    "consigna": "Agáchate sin perder el bote.",
+    "errores_frecuentes": [
+      "Detener el bote para recoger la bola.",
+      "Lanzar sin mirar a quién.",
+      "Botar siempre con la misma mano."
+    ],
+    "que_observar": [
+      "Recoge la bola sin parar de botar.",
+      "Alterna las dos manos."
+    ],
+    "progresion": {
+      "facilitar": "Menos bolas y todo el espacio de media pista para moverse.",
+      "complicar": "Reducir el espacio a la zona del triple y exigir tres aciertos antes de salir a anotar."
+    }
+  },
+  {
+    "id": "ej_067",
+    "nombre": "Periódico en el pecho: relevos con bote",
+    "categoria": "calentamiento",
+    "subcategoria": "manejo_balon",
+    "edades": [
+      "U8",
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 10,
+    "intensidad": 4,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [],
+      "tecnicos": [
+        "bote en velocidad",
+        "tronco estable"
+      ],
+      "fisicos": [
+        "velocidad",
+        "resistencia"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: relevos en varias filas con un balón por fila, a lo largo de la pista, y una hoja de periódico por jugador. SECUENCIA: cada jugador se pega la hoja al pecho con la presión del avance, cruza la pista botando sin que se caiga y entrega el balón y la hoja al siguiente de su fila. ROTACIÓN: el que termina se coloca al final de su fila; todos repiten varias veces. PROGRESIÓN: finalizar en canasta antes de entregar; hacerlo por equipos contando el tiempo de toda la fila.",
+    "puntos_clave": [
+      "Correr hacia delante con el pecho adelantado, para que la hoja no se caiga.",
+      "Bote bajo y controlado a máxima velocidad que se pueda.",
+      "Si la hoja se cae, se recoge y se sigue sin cambiar de fila.",
+      "Mínimo ocho jugadores trabajando a la vez: nadie parado."
+    ],
+    "material": "Una hoja de periódico por jugador y un balón por fila.",
+    "consigna": "Pecho adelante, bote bajo, ¡no se cae el periódico!",
+    "errores_frecuentes": [
+      "Frenar para sujetar la hoja con la mano.",
+      "Botar alto y perder el control por la velocidad.",
+      "Esperar parado a que llegue el relevo."
+    ],
+    "que_observar": [
+      "Mantiene la hoja pegada sin usar la mano.",
+      "Entrega el relevo sin detener el bote."
+    ],
+    "progresion": {
+      "facilitar": "Recorrer solo media pista y sin finalizar.",
+      "complicar": "Finalizar en canasta antes de entregar y competir por equipos."
+    },
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {
+          "id": "A1",
+          "x": 6.0,
+          "y": 22.0
+        },
+        {
+          "id": "A2",
+          "x": 6.0,
+          "y": 30.5
+        },
+        {
+          "id": "A3",
+          "x": 6.0,
+          "y": 39.0
+        },
+        {
+          "id": "A4",
+          "x": 6.0,
+          "y": 47.5
+        },
+        {
+          "id": "A5",
+          "x": 94.0,
+          "y": 22.0
+        },
+        {
+          "id": "A6",
+          "x": 94.0,
+          "y": 30.5
+        },
+        {
+          "id": "A7",
+          "x": 94.0,
+          "y": 39.0
+        },
+        {
+          "id": "A8",
+          "x": 94.0,
+          "y": 47.5
+        }
+      ],
+      "jugadores_defensa": [],
+      "movimientos": [
+        {
+          "de": "A1",
+          "tipo": "bote",
+          "a_pos": {
+            "x": 38.0,
+            "y": 18.0
+          },
+          "orden": 1
+        },
+        {
+          "de": "A1",
+          "tipo": "tiro",
+          "orden": 2
+        },
+        {
+          "de": "A5",
+          "tipo": "bote",
+          "a_pos": {
+            "x": 62.0,
+            "y": 18.0
+          },
+          "orden": 3
+        },
+        {
+          "de": "A5",
+          "tipo": "tiro",
+          "orden": 4
+        }
+      ],
+      "conos": [],
+      "balon_inicio": {
+        "portador": "A1"
+      }
+    }
+  },
+  {
+    "id": "ej_068",
+    "nombre": "Bote y globo a la vez",
+    "categoria": "calentamiento",
+    "subcategoria": "manejo_balon",
+    "edades": [
+      "U8",
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 10,
+    "intensidad": 3,
+    "carga_cognitiva": 4,
+    "jugadores_minimos": 6,
+    "objetivos": {
+      "tacticos": [],
+      "tecnicos": [
+        "disociación mano-balón y mano-globo",
+        "bote con la cabeza alta"
+      ],
+      "fisicos": [
+        "coordinación"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: un balón y un globo inflado por jugador, repartidos por media pista. SECUENCIA: cada uno bota con una mano y golpea el globo hacia arriba con la otra para que no toque el suelo; a la señal, cambia de mano el balón y el globo a la vez. ROTACIÓN: todos a la vez; quien pierde el globo lo recoge y sigue. PROGRESIÓN: tocar el suelo cada vez que se toca el globo; recorrer un circuito de conos en zigzag; carreras por filas donde gana el primero que anota sin que se caiga el globo.",
+    "puntos_clave": [
+      "Mirar el globo con el rabillo del ojo y mantener la cabeza alta.",
+      "Bote constante: nunca se detiene por golpear el globo.",
+      "Golpear el globo con la mano abierta, hacia arriba.",
+      "Cambiar de mano de las dos cosas a la vez, no una después de otra."
+    ],
+    "material": "Un balón y un globo por jugador; conos para la variante del circuito.",
+    "consigna": "Una mano bota, la otra mantiene el globo arriba.",
+    "errores_frecuentes": [
+      "Detener el bote para alcanzar el globo.",
+      "Golpear el globo con fuerza y perderlo.",
+      "Cambiar de mano primero el balón y luego el globo."
+    ],
+    "que_observar": [
+      "Mantiene el globo en el aire más de cinco golpes seguidos.",
+      "El bote no se interrumpe al golpear."
+    ],
+    "progresion": {
+      "facilitar": "Solo mantener el globo en el aire sin cambios de mano.",
+      "complicar": "Circuito en zigzag con el globo arriba y finalización a canasta."
+    }
+  },
+  {
+    "id": "ej_069",
+    "nombre": "Guerra de globos",
+    "categoria": "calentamiento",
+    "subcategoria": "juego_dinamico",
+    "edades": [
+      "U8",
+      "U10"
+    ],
+    "duracion_min": 8,
+    "intensidad": 3,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 6,
+    "objetivos": {
+      "tacticos": [],
+      "tecnicos": [
+        "control y coordinación sin balón"
+      ],
+      "fisicos": [
+        "agilidad",
+        "coordinación"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: un globo inflado por jugador y todo el espacio de media pista, en parejas o en grupos de cinco. SECUENCIA: cada jugador intenta mantener su globo en el aire y, a la vez, tirar al suelo los globos de los demás con un toque de mano, sin agarrar nada. ROTACIÓN: cuando un globo cae, su dueño sale un momento y vuelve a empezar con otro globo; gana quien lo mantiene hasta el final de la ronda. PROGRESIÓN: jugar por equipos contando los globos que siguen en el aire.",
+    "puntos_clave": [
+      "Mantener el propio globo y vigilar los de los demás a la vez.",
+      "Los toques son con la mano abierta; sin empujones.",
+      "Moverse con la cabeza alta para no chocar.",
+      "Si cae el globo, se recoge y se sigue jugando."
+    ],
+    "material": "Un globo inflado por jugador y algunos de repuesto.",
+    "consigna": "Tu globo arriba y los demás... ¡al suelo!",
+    "errores_frecuentes": [
+      "Quedarse parado cuidando solo el propio globo.",
+      "Empujar o agarrar a los compañeros.",
+      "Chocar por mirar solo hacia arriba."
+    ],
+    "que_observar": [
+      "Se mueve por todo el espacio sin chocar.",
+      "Respeta las reglas de contacto."
+    ],
+    "progresion": {
+      "facilitar": "Jugar en parejas, cada pareja con un solo globo.",
+      "complicar": "Dos globos por jugador y rondas de menos tiempo."
+    }
+  },
+  {
+    "id": "ej_070",
+    "nombre": "Globos en equipo",
+    "categoria": "calentamiento",
+    "subcategoria": "juego_dinamico",
+    "edades": [
+      "U8",
+      "U10"
+    ],
+    "duracion_min": 6,
+    "intensidad": 2,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 6,
+    "objetivos": {
+      "tacticos": [],
+      "tecnicos": [
+        "coordinación y juego cooperativo"
+      ],
+      "fisicos": [
+        "coordinación"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: todo el grupo dentro de una mitad de pista, sin balones, con varios globos inflados. SECUENCIA: entre todos golpean los globos hacia arriba para que ninguno toque el suelo; cuantos más globos se añaden, más hay que ayudarse y comunicarse. ROTACIÓN: sin turnos, todos juegan a la vez. PROGRESIÓN: contar en voz alta los toques seguidos del grupo y batir su propio récord; añadir un globo cada vez que se llega a diez toques.",
+    "puntos_clave": [
+      "Avisar con la voz al compañero que va a golpear el globo.",
+      "Cada jugador cubre su zona sin invadir la de los demás.",
+      "Golpear con la mano abierta, hacia arriba.",
+      "Celebrar el récord del grupo, no el de uno solo."
+    ],
+    "material": "Entre cuatro y seis globos inflados, sin balones.",
+    "consigna": "Entre todos: ¡que no toque el suelo!",
+    "errores_frecuentes": [
+      "Ir todos a por el mismo globo.",
+      "Golpearlo con fuerza y mandarlo lejos.",
+      "No hablarse entre compañeros."
+    ],
+    "que_observar": [
+      "Se comunican y reparten el espacio.",
+      "El grupo mejora su récord de toques."
+    ],
+    "progresion": {
+      "facilitar": "Un solo globo y sin contar los toques.",
+      "complicar": "Más globos y obligar a que los toque cada jugador en orden."
+    }
+  },
+  {
+    "id": "ej_071",
+    "nombre": "Dos pelotas: baloncesto y tenis a la vez",
+    "categoria": "calentamiento",
+    "subcategoria": "manejo_balon",
+    "edades": [
+      "U10",
+      "U12",
+      "U14"
+    ],
+    "duracion_min": 10,
+    "intensidad": 2,
+    "carga_cognitiva": 4,
+    "jugadores_minimos": 6,
+    "objetivos": {
+      "tacticos": [],
+      "tecnicos": [
+        "disociación",
+        "control del bote con dos pelotas"
+      ],
+      "fisicos": [
+        "coordinación"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: cada jugador con un balón de baloncesto y una pelota de tenis, repartidos por media pista. SECUENCIA: botan las dos pelotas a la vez, con la misma mano o una en cada mano, empezando por botes altos y pequeños alternados; después, brazo en alto con una pelota mientras la otra bota, y vaivén frontal con botes horizontales delante del cuerpo. ROTACIÓN: todos a la vez durante el tiempo, con descansos de veinte segundos. PROGRESIÓN: tirar la pelota de tenis ligeramente hacia arriba mientras se bota la otra; avanzar por la pista con las dos pelotas hasta medio campo y finalizar en canasta.",
+    "puntos_clave": [
+      "Empezar despacio y subir el ritmo solo cuando salga limpio.",
+      "Cabeza alta: sentir las pelotas, no mirarlas.",
+      "Bote bajo y con la yema de los dedos, sin palmear.",
+      "No se trabajan gestos entre las piernas ni por la espalda con el grupo."
+    ],
+    "material": "Un balón de baloncesto y una pelota de tenis por jugador.",
+    "consigna": "Dos pelotas, dos ritmos: primero despacio.",
+    "errores_frecuentes": [
+      "Querer ir rápido antes de controlar las dos pelotas.",
+      "Mirar las pelotas en lugar de levantar la cabeza.",
+      "Botar con la palma de la mano."
+    ],
+    "que_observar": [
+      "Mantiene las dos pelotas botando varios segundos seguidos.",
+      "Sube la dificultad solo después de dominar la anterior."
+    ],
+    "progresion": {
+      "facilitar": "Con la misma mano y solo botes altos y pequeños alternados.",
+      "complicar": "Avanzar por la pista con las dos pelotas y finalizar con bomba sobre un pie."
+    }
   }
 ]
