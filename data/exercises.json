@@ -7770,5 +7770,739 @@
       "complicar": "Pasillo más estrecho y el atacante puede cambiar de mano una vez."
     },
     "sin_diagrama": true
+  },
+  {
+    "id": "ej_084",
+    "nombre": "El pañuelo con balón: 1c1 a la canasta",
+    "categoria": "1c1",
+    "subcategoria": "reaccion",
+    "edades": [
+      "U8",
+      "U10"
+    ],
+    "duracion_min": 12,
+    "intensidad": 4,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [
+        "1c1 tras ganar el balón",
+        "pasar de atacar a defender"
+      ],
+      "tecnicos": [
+        "salida con bote",
+        "bomba sobre un pie",
+        "posición defensiva"
+      ],
+      "fisicos": [
+        "velocidad de reacción",
+        "agilidad"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: se juega en cada media pista a la vez. En cada mitad, dos equipos de cuatro o cinco jugadores sentados en las bandas, uno frente al otro, numerados del uno al cinco; en el centro de la mitad, dos balones en el suelo, separados tres metros. SECUENCIA: el entrenador canta dos números (por ejemplo, «dos y cuatro»); los cuatro jugadores con esos números corren a por los balones: cada pareja con el mismo número va a por uno. Quien lo coge primero ataca la canasta y termina con una bomba sobre un pie o un tiro cercano parado; el otro defiende. Se juegan los dos 1c1 a la vez. La canasta vale un punto para su equipo; si el defensor recupera el balón, el punto es para el suyo. ROTACIÓN: los que juegan devuelven los balones al centro y se cantan otros números; el entrenador lleva la cuenta para que todos jueguen las mismas veces. PROGRESIÓN: los balones se colocan más cerca de una banda para que un equipo salga con ventaja y el otro tenga que recuperar; se canta un solo número por equipo y se juega 2c2 con un solo balón.",
+    "puntos_clave": [
+      "Reaccionar al oír el número sin esperar a ver qué hace el rival.",
+      "Quien coge el balón levanta la vista y ataca la canasta por el camino más corto.",
+      "Quien no lo coge se coloca entre el balón y la canasta.",
+      "Terminar cerca del aro con una bomba sobre un pie."
+    ],
+    "material": "Dos balones por media pista.",
+    "consigna": "Oyes tu número, corres; si tienes el balón, ataca; si no, ponte delante.",
+    "errores_frecuentes": [
+      "Quedarse parado esperando a ver quién llega primero.",
+      "Tirar desde lejos en vez de acercarse al aro.",
+      "El defensor persigue por detrás en lugar de colocarse delante."
+    ],
+    "que_observar": [
+      "Sale en cuanto oye su número.",
+      "El que se queda sin balón cambia enseguida a defender y se coloca delante."
+    ],
+    "progresion": {
+      "facilitar": "Un solo número y un solo balón, colocado más cerca de la canasta.",
+      "complicar": "Balones más cerca de una banda para jugar con ventaja y desventaja, o 2c2 con un solo balón."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_085",
+    "nombre": "1c1 en el cuadrado: guarda tu balón",
+    "categoria": "1c1",
+    "subcategoria": "manejo_balon",
+    "edades": [
+      "U8",
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 8,
+    "intensidad": 4,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [
+        "1c1 manteniendo el balón",
+        "uso del cuerpo para proteger"
+      ],
+      "tecnicos": [
+        "bote de protección",
+        "cambio de mano por delante (desde U10)",
+        "mano activa"
+      ],
+      "fisicos": [
+        "agilidad",
+        "equilibrio"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: cuadrados de cuatro por cuatro metros marcados con conos, repartidos por toda la pista; en cada uno, una pareja con un balón. SECUENCIA: el atacante bota sin salir del cuadrado durante treinta segundos; el defensor intenta tocar el balón con la mano, sin agarrar ni empujar. Cada toque es un punto para el defensor; si el atacante aguanta los treinta segundos sin que le toquen, gana dos puntos. ROTACIÓN: al pitido se cambian los papeles; cada dos rondas, el ganador de cada cuadrado pasa al cuadrado de la derecha. PROGRESIÓN: cuadrado más pequeño; el atacante debe avanzar hasta pisar un cono de la esquina contraria para puntuar; en U10 y U12, se permite y se premia el cambio de mano por delante cuando el defensor llega por un lado.",
+    "puntos_clave": [
+      "Botar bajo y al lado del cuerpo, lejos del defensor.",
+      "Usar el brazo libre y el hombro para proteger, sin empujar.",
+      "Levantar la vista para saber por dónde llega el defensor.",
+      "El defensor ataca el balón con la mano, nunca el cuerpo del rival."
+    ],
+    "material": "Conos para marcar los cuadrados y un balón por pareja.",
+    "consigna": "Balón bajo, cuerpo en medio y vista arriba.",
+    "errores_frecuentes": [
+      "Botar delante del cuerpo, donde el defensor lo toca fácil.",
+      "Darse la vuelta y quedarse de espaldas sin ver nada.",
+      "El defensor agarra el brazo del atacante."
+    ],
+    "que_observar": [
+      "Mantiene el cuerpo entre el defensor y el balón.",
+      "Cambia la mano de bote cuando el defensor cambia de lado."
+    ],
+    "progresion": {
+      "facilitar": "Cuadrado más grande y el defensor solo puede usar una mano.",
+      "complicar": "Cuadrado más pequeño y el atacante solo puntúa si llega a la esquina contraria."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_086",
+    "nombre": "Tiro cercano por equipos: cada canasta suma",
+    "categoria": "tiro",
+    "subcategoria": "competicion",
+    "edades": [
+      "U8",
+      "U10"
+    ],
+    "duracion_min": 10,
+    "intensidad": 3,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [
+        "tiro cercano con presión de tiempo"
+      ],
+      "tecnicos": [
+        "tiro estático cercano",
+        "pies orientados al aro",
+        "rebote a dos manos"
+      ],
+      "fisicos": [
+        "coordinación"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: un equipo de tres o cuatro jugadores por canasta, usando todas las canastas de la pista; cada equipo con dos balones y dos marcas en el suelo a un metro y medio del aro, una a cada lado. SECUENCIA: los dos primeros de cada equipo tiran a la vez desde su marca, cogen su propio rebote y pasan el balón al siguiente de su equipo, que ya espera en la marca. Cada canasta suma un punto para el equipo; gana el que más sume en dos minutos. ROTACIÓN: tras cada ronda de dos minutos, los equipos cambian de canasta; entre ronda y ronda, treinta segundos para que cada equipo elija una nueva meta de puntos. PROGRESIÓN: las marcas se alejan medio metro; solo cuentan las canastas que entran sin tocar el tablero; el equipo debe hacer dos canastas seguidas desde la misma marca para cambiar de lado.",
+    "puntos_clave": [
+      "Pies quietos y apuntando al aro antes de tirar.",
+      "Balón agarrado con la mano de tiro debajo y la otra al lado.",
+      "Subir el balón por delante de la cara y acabar con el brazo estirado.",
+      "Ir a por el propio rebote con las dos manos."
+    ],
+    "material": "Dos balones por canasta y marcas o aros de gimnasia en el suelo.",
+    "consigna": "Pies al aro, sube el balón y estira el brazo hasta el final.",
+    "errores_frecuentes": [
+      "Tirar con prisa sin colocar los pies.",
+      "Lanzar el balón con las dos manos desde el pecho.",
+      "Quedarse mirando el tiro en vez de ir a por el rebote."
+    ],
+    "que_observar": [
+      "Coloca los pies antes de cada tiro aunque haya prisa.",
+      "Acaba el tiro con el brazo estirado hacia el aro."
+    ],
+    "progresion": {
+      "facilitar": "Marcas a un metro del aro y canasta más baja si la hay.",
+      "complicar": "Marcas más alejadas y solo valen las canastas limpias."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_087",
+    "nombre": "Bomba sobre un pie en relevos",
+    "categoria": "tiro",
+    "subcategoria": "mecanica",
+    "edades": [
+      "U8",
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 10,
+    "intensidad": 3,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [
+        "finalizar con tiro cercano tras el bote"
+      ],
+      "tecnicos": [
+        "bomba sobre un pie",
+        "parada antes de finalizar",
+        "rebote a dos manos"
+      ],
+      "fisicos": [
+        "equilibrio",
+        "coordinación"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: en cada canasta de la pista, dos filas en los laterales, a unos cinco metros del aro, cada una con un balón. SECUENCIA: el primero de cada fila bota hasta un cono colocado a un metro y medio del aro, coge el balón con las dos manos, da dos apoyos y termina con una bomba sobre un pie: sube la rodilla del lado contrario a la mano de tiro y suelta el balón arriba. Coge su rebote y pasa al siguiente de su fila. Cada fila cuenta sus canastas. ROTACIÓN: el que termina va al final de la otra fila para alternar lado; a los cuatro minutos se cambian los conos al otro lado del aro. PROGRESIÓN: primero con dos apoyos, después con un solo apoyo; finalizar con la mano no dominante por el lado izquierdo; competir entre filas a quién llega antes a cinco canastas.",
+    "puntos_clave": [
+      "Coger el balón con las dos manos antes de los apoyos.",
+      "Subir la rodilla contraria a la mano de tiro.",
+      "Soltar el balón arriba, con el brazo estirado y la vista en el aro.",
+      "Caer equilibrado y salir a por el rebote."
+    ],
+    "material": "Dos balones y dos conos por canasta.",
+    "consigna": "Coge con dos manos, dos apoyos, sube la rodilla y suelta arriba.",
+    "errores_frecuentes": [
+      "Saltar con los dos pies y perder el equilibrio.",
+      "Subir la rodilla del mismo lado que la mano de tiro.",
+      "Lanzar el balón hacia delante en vez de arriba."
+    ],
+    "que_observar": [
+      "Coordina los apoyos con la subida de la rodilla contraria.",
+      "Termina con el brazo estirado y la vista en el aro."
+    ],
+    "progresion": {
+      "facilitar": "Sin bote: salir con el balón en las manos desde el cono y hacer solo los apoyos.",
+      "complicar": "Un solo apoyo, con la mano no dominante o llegando con más velocidad."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_088",
+    "nombre": "La vuelta al aro: tiro cercano en cinco marcas",
+    "categoria": "tiro",
+    "subcategoria": "volumen",
+    "edades": [
+      "U8",
+      "U10"
+    ],
+    "duracion_min": 10,
+    "intensidad": 2,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [
+        "tiro cercano desde distintos ángulos"
+      ],
+      "tecnicos": [
+        "tiro estático cercano",
+        "orientación de pies",
+        "uso del tablero"
+      ],
+      "fisicos": [
+        "coordinación"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: en cada canasta, cinco marcas en semicírculo a un metro y medio o dos metros del aro (dos laterales, dos en diagonal y una de frente); dos o tres jugadores por canasta, cada uno con su balón, empezando en marcas distintas. SECUENCIA: cada jugador tira desde su marca; si mete, avanza a la siguiente marca; si falla, coge su rebote y repite desde la misma. Desde las diagonales se busca el cuadrado del tablero. Gana quien da la vuelta completa primero y vuelve a empezar. ROTACIÓN: a los cinco minutos se cambia el sentido de la vuelta y los jugadores cambian de canasta. PROGRESIÓN: para avanzar hay que meter dos seguidas; marcas medio metro más lejos; si se falla dos veces seguidas, se retrocede una marca.",
+    "puntos_clave": [
+      "Girar los pies hacia el aro en cada marca antes de tirar.",
+      "Desde las diagonales, apuntar al cuadrado del tablero.",
+      "Mismo gesto en todas las marcas: subir el balón y estirar el brazo.",
+      "Recoger el rebote rápido para no perder turno."
+    ],
+    "material": "Un balón por jugador y cinco marcas o conos planos por canasta.",
+    "consigna": "En cada marca, pies al aro; en las diagonales, al cuadrado.",
+    "errores_frecuentes": [
+      "Tirar desde la marca sin girar los pies hacia el aro.",
+      "Buscar el aro directo desde la diagonal en vez del tablero.",
+      "Correr a la siguiente marca y tirar sin estar parado."
+    ],
+    "que_observar": [
+      "Orienta los pies hacia el aro en cada marca.",
+      "Usa el tablero desde las diagonales."
+    ],
+    "progresion": {
+      "facilitar": "Solo tres marcas, todas a un metro del aro.",
+      "complicar": "Meter dos seguidas para avanzar y marcas un poco más alejadas."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_089",
+    "nombre": "Defensa de la puerta: no dejes pasar al que bota",
+    "categoria": "1c1",
+    "subcategoria": "defensa_individual",
+    "edades": [
+      "U8",
+      "U10"
+    ],
+    "duracion_min": 10,
+    "intensidad": 4,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [
+        "defensa del jugador con balón",
+        "cerrar el camino en el 1c1"
+      ],
+      "tecnicos": [
+        "posición defensiva",
+        "deslizamiento",
+        "pasos cortos"
+      ],
+      "fisicos": [
+        "agilidad",
+        "fuerza de piernas"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: a lo ancho de la pista, cuatro zonas de juego de seis metros de ancho; en cada una, tres puertas de dos conos al fondo y una pareja con balón (atacante y defensor) frente a ellas, más una pareja esperando. SECUENCIA: el atacante bota e intenta cruzar caminando rápido o trotando por cualquiera de las tres puertas; el defensor, en posición defensiva, se desliza para quedarse siempre delante y cerrar el camino, sin tocar al atacante. Si el atacante cruza una puerta, punto para él; si a los diez segundos no ha cruzado, punto para la defensa. ROTACIÓN: cambian los papeles en cada jugada; cada dos jugadas entra la pareja que espera. PROGRESIÓN: el atacante puede ir a velocidad normal; solo dos puertas pero más anchas; el defensor puede tocar el balón para ganar el punto.",
+    "puntos_clave": [
+      "Rodillas flexionadas, espalda recta y brazos abiertos.",
+      "Deslizar con pasos cortos, sin juntar ni cruzar los pies.",
+      "Mirar el pecho del atacante, no el balón.",
+      "Quedarse entre el atacante y las puertas en todo momento."
+    ],
+    "material": "Conos para las puertas y un balón por zona.",
+    "consigna": "Bajito, pasos cortos y siempre delante de la puerta.",
+    "errores_frecuentes": [
+      "Ponerse de pie y perder la posición defensiva.",
+      "Cruzar los pies al desplazarse.",
+      "Lanzarse a por el balón y dejar el camino libre."
+    ],
+    "que_observar": [
+      "Se desplaza sin cruzar los pies.",
+      "Anticipa hacia qué puerta va el atacante y llega antes."
+    ],
+    "progresion": {
+      "facilitar": "El atacante camina y solo hay dos puertas.",
+      "complicar": "El atacante va a velocidad normal y hay tres puertas más anchas."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_090",
+    "nombre": "Defensa del pase: el del medio toca el balón",
+    "categoria": "juego_equipo",
+    "subcategoria": "defensa",
+    "edades": [
+      "U8",
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 10,
+    "intensidad": 3,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [
+        "defensa de la línea de pase",
+        "anticipación"
+      ],
+      "tecnicos": [
+        "posición defensiva",
+        "brazos activos",
+        "pase de pecho y picado"
+      ],
+      "fisicos": [
+        "agilidad",
+        "velocidad de reacción"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: grupos de cuatro en espacios de cinco por cinco metros marcados con conos, repartidos por la pista: tres atacantes en tres esquinas y un defensor dentro. SECUENCIA: los atacantes se pasan el balón sin botar, solo moviéndose entre las esquinas libres; el defensor se coloca cerca del que tiene el balón con los brazos activos para tocar el pase. Si toca o roba el balón, cambia el puesto con el último que pasó. Se cuentan los pases seguidos: si los atacantes llegan a diez, el defensor sigue una ronda más. ROTACIÓN: si a los cuarenta segundos no ha tocado ningún pase, entra el siguiente atacante a defender para que todos defiendan. PROGRESIÓN: espacio más pequeño; prohibido el pase por encima de la cabeza; en U12, dos defensores con cuatro atacantes.",
+    "puntos_clave": [
+      "El defensor va hacia quien tiene el balón, no se queda en el centro.",
+      "Brazos abiertos y activos para tapar el pase.",
+      "Pasos cortos y equilibrio para cambiar de dirección.",
+      "Los atacantes se mueven a la esquina libre para ofrecer otra línea de pase."
+    ],
+    "material": "Conos para marcar los espacios y un balón por grupo.",
+    "consigna": "Defensor: ve al balón y tápalo con los brazos. Atacantes: muévete a la esquina libre.",
+    "errores_frecuentes": [
+      "El defensor se queda quieto en el centro mirando el balón.",
+      "Saltar a por cada pase y perder el equilibrio.",
+      "Los atacantes se quedan quietos en su esquina."
+    ],
+    "que_observar": [
+      "El defensor se acerca al que tiene el balón tras cada pase.",
+      "Mueve los brazos para tapar la línea de pase."
+    ],
+    "progresion": {
+      "facilitar": "Espacio más grande y los atacantes no pueden pasar a la esquina de enfrente.",
+      "complicar": "Espacio más pequeño y, en U12, dos defensores contra cuatro atacantes."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_091",
+    "nombre": "Defensa en relevos: desliza, toca el cono y vuelve",
+    "categoria": "juego_equipo",
+    "subcategoria": "defensa",
+    "edades": [
+      "U8",
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 8,
+    "intensidad": 4,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [
+        "defensa: posición y desplazamiento",
+        "reaccionar a la señal"
+      ],
+      "tecnicos": [
+        "posición defensiva",
+        "deslizamiento lateral",
+        "carrera hacia atrás"
+      ],
+      "fisicos": [
+        "agilidad",
+        "fuerza de piernas",
+        "velocidad"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: cuatro filas en la línea de fondo, una por equipo; delante de cada fila, un recorrido de conos en zigzag hasta el medio campo, con los conos a tres metros unos de otros. SECUENCIA: el primero de cada fila hace el recorrido en posición defensiva, deslizándose de cono en cono sin cruzar los pies y tocando cada cono con la mano de abajo; en el medio campo vuelve corriendo y choca la mano con el siguiente. Gana el equipo que termina antes con todos sus jugadores en buena posición. ROTACIÓN: el que termina va al final de su fila; se repite tres veces cambiando el orden de salida. PROGRESIÓN: a la señal del entrenador (palmada) todos cambian de sentido; un compañero bota por delante del que defiende y este debe seguirle sin adelantarle; el recorrido se hace hacia atrás en diagonal.",
+    "puntos_clave": [
+      "Rodillas flexionadas durante todo el recorrido.",
+      "Deslizar sin juntar ni cruzar los pies.",
+      "La cabeza a la misma altura de principio a fin, sin subir y bajar.",
+      "Tocar el cono sin ponerse de pie."
+    ],
+    "material": "Conos para cuatro recorridos en zigzag.",
+    "consigna": "Bajito todo el camino y sin cruzar los pies.",
+    "errores_frecuentes": [
+      "Correr de frente en lugar de deslizar.",
+      "Ponerse de pie entre cono y cono.",
+      "Cruzar los pies al cambiar de dirección."
+    ],
+    "que_observar": [
+      "Mantiene la posición defensiva en todo el recorrido.",
+      "Cambia de dirección empujando con el pie de fuera."
+    ],
+    "progresion": {
+      "facilitar": "Menos conos y más separados, sin competir.",
+      "complicar": "Cambios de sentido a la palmada o seguir a un compañero que bota."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_092",
+    "nombre": "Rebote del tablero y salida botando",
+    "categoria": "juego_equipo",
+    "subcategoria": "rebote",
+    "edades": [
+      "U8",
+      "U10"
+    ],
+    "duracion_min": 10,
+    "intensidad": 3,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [
+        "rebote y salida rápida"
+      ],
+      "tecnicos": [
+        "rebote a dos manos",
+        "caída equilibrada",
+        "bote en velocidad"
+      ],
+      "fisicos": [
+        "salto",
+        "velocidad"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: en cada canasta, dos filas a los lados del aro, a tres metros, cada una con un balón; un cono en la banda de su lado, a la altura del tiro libre. SECUENCIA: el primero de la fila lanza el balón contra el tablero, salta a cogerlo con las dos manos en el punto más alto que pueda y cae con los pies separados; sin perder tiempo, sale botando hasta el cono de su banda, lo rodea y vuelve a entregar el balón al siguiente de su fila. ROTACIÓN: el que entrega pasa al final de la otra fila para cambiar de lado. PROGRESIÓN: un compañero lanza el balón al tablero en vez del propio rebotero; el rebotero debe coger el balón antes de que bote en el suelo; tras rodear el cono, pase de pecho al siguiente en lugar de entregar.",
+    "puntos_clave": [
+      "Mirar el balón desde que sale de las manos hasta que vuelve del tablero.",
+      "Saltar con las dos manos arriba y coger el balón fuerte.",
+      "Caer con los pies separados y el balón en la frente o el pecho.",
+      "Primer bote hacia fuera, a la banda, con la vista levantada."
+    ],
+    "material": "Dos balones y dos conos por canasta.",
+    "consigna": "Mira el balón, salta, cógelo fuerte y sal botando a la banda.",
+    "errores_frecuentes": [
+      "Esperar a que el balón baje en lugar de saltar a por él.",
+      "Coger el balón con una mano.",
+      "Salir botando con la cabeza baja hacia el centro."
+    ],
+    "que_observar": [
+      "Coge el balón con las dos manos en el punto más alto.",
+      "Sale botando hacia la banda con la vista arriba."
+    ],
+    "progresion": {
+      "facilitar": "Coger el balón después de un bote en el suelo.",
+      "complicar": "Lanza un compañero y hay que cogerlo antes de que toque el suelo."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_093",
+    "nombre": "Rebote 2c2: tira uno, van todos",
+    "categoria": "juego_equipo",
+    "subcategoria": "rebote",
+    "edades": [
+      "U8",
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 12,
+    "intensidad": 4,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [
+        "ir a por el rebote",
+        "rebote ofensivo y defensivo"
+      ],
+      "tecnicos": [
+        "rebote a dos manos",
+        "contacto con el cuerpo",
+        "tiro cercano tras rebote"
+      ],
+      "fisicos": [
+        "salto",
+        "fuerza"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: grupos de cuatro o cinco por canasta, usando todas las canastas para que nadie espere: dos parejas con petos de distinto color y, si hay quinto, un tirador (si no, tira el entrenador). Las parejas se colocan a los lados de la zona, cada atacante con su defensor por dentro, más cerca del aro. SECUENCIA: el tirador lanza desde cerca; los defensores se giran hacia el aro, notan al atacante con la espalda un instante y van a por el balón; los atacantes buscan el hueco para llegar antes. Si coge el rebote un atacante, tira enseguida desde donde lo coge; si lo coge un defensor, sale botando a la banda y es un punto para su pareja. ROTACIÓN: cada tres tiros, las parejas cambian de papel; cada dos minutos, el tirador entra en una pareja y sale otro a tirar. PROGRESIÓN: tiros desde más lejos para que el rebote salga más largo; el rebote ofensivo vale doble; en las canastas con más espacio, 3c3.",
+    "puntos_clave": [
+      "Al salir el tiro, todos miran el balón y se mueven.",
+      "El defensor se gira hacia el aro y nota al atacante con la espalda.",
+      "Ir a por el balón con las dos manos arriba.",
+      "Quien coge el rebote lo protege antes de botar o tirar."
+    ],
+    "material": "Un balón por canasta y petos de dos colores.",
+    "consigna": "Sale el tiro, todos al balón; quien lo coge, lo protege.",
+    "errores_frecuentes": [
+      "Quedarse quieto mirando si entra el tiro.",
+      "Empujar con los brazos en vez de usar el cuerpo.",
+      "Coger el rebote y botar enseguida entre rivales."
+    ],
+    "que_observar": [
+      "Reacciona al tiro antes de que el balón toque el aro.",
+      "Protege el balón con el cuerpo tras cogerlo."
+    ],
+    "progresion": {
+      "facilitar": "Tiros muy cercanos y solo una pareja va al rebote mientras la otra observa un turno.",
+      "complicar": "Tiros más lejanos, rebote ofensivo doble y 3c3 si hay espacio."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_094",
+    "nombre": "Contraataque 2c1 con vuelta en transición",
+    "categoria": "ventaja_numerica",
+    "subcategoria": "contraataque",
+    "edades": [
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 12,
+    "intensidad": 5,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 9,
+    "objetivos": {
+      "tacticos": [
+        "contraataque en superioridad 2c1",
+        "transición defensiva tras perder el balón",
+        "correr las calles exteriores"
+      ],
+      "tecnicos": [
+        "pase en carrera",
+        "bote en velocidad",
+        "bomba sobre un pie"
+      ],
+      "fisicos": [
+        "resistencia",
+        "velocidad"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: tres filas en la línea de fondo, una en el centro con balón y dos en las esquinas; un defensor espera en cada medio campo. SECUENCIA: los dos primeros de las esquinas corren por las calles exteriores, pegados a la banda; el de la fila central pasa a uno de ellos y se queda. Los dos atacantes juegan un 2c1 contra el defensor del medio campo contrario y terminan con una bomba sobre un pie o un tiro cercano. En cuanto acaba la jugada, el defensor coge el balón y ataca hacia la otra canasta, en transición, contra el último atacante que tocó el balón, que debe volver a defender (1c1 de vuelta). ROTACIÓN: el atacante que no defendió se queda como defensor del medio campo; el que defendía y el de la vuelta van a las filas de las esquinas. La siguiente salida arranca en cuanto la jugada anterior pasa el medio campo, para que siempre haya dos jugadas en marcha. PROGRESIÓN: el defensor de la vuelta sale a la vez que el atacante, sin ventaja; la vuelta se juega 2c1 con el pasador de la fila central incorporándose.",
+    "puntos_clave": [
+      "Correr por las calles exteriores, abiertos, con la vista al balón.",
+      "El que lleva el balón ataca el aro para obligar al defensor a decidir.",
+      "Pase al compañero libre cuando el defensor se acerca.",
+      "Al acabar, cambio de papel inmediato: el que pierde vuelve corriendo a defender."
+    ],
+    "material": "Un balón por cada trío de la fila central.",
+    "consigna": "Abre la calle, ataca el aro y, si se acaba, vuelve el primero.",
+    "errores_frecuentes": [
+      "Los dos atacantes corren juntos por el centro.",
+      "Pasar demasiado pronto, antes de que el defensor decida.",
+      "Celebrar la canasta y no volver a defender."
+    ],
+    "que_observar": [
+      "Mantiene la anchura de las calles durante el contraataque.",
+      "Reacciona al perder o acabar la jugada y vuelve a defender."
+    ],
+    "progresion": {
+      "facilitar": "Sin vuelta: el ejercicio termina con el 2c1.",
+      "complicar": "La vuelta se juega 2c1 con incorporación del pasador central."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_095",
+    "nombre": "Transición 3c2 tras rebote: abrir calles y llegar",
+    "categoria": "ventaja_numerica",
+    "subcategoria": "transicion_ofensiva",
+    "edades": [
+      "U10",
+      "U12",
+      "U14"
+    ],
+    "duracion_min": 15,
+    "intensidad": 5,
+    "carga_cognitiva": 4,
+    "jugadores_minimos": 10,
+    "objetivos": {
+      "tacticos": [
+        "transición ofensiva tras rebote",
+        "contraataque 3c2",
+        "ocupar las tres calles"
+      ],
+      "tecnicos": [
+        "rebote y pase de salida",
+        "pase en carrera",
+        "bomba sobre un pie"
+      ],
+      "fisicos": [
+        "resistencia",
+        "velocidad"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: tríos atacantes en la línea de fondo de una canasta; dos defensores esperan en cada una de las dos canastas, uno en la línea de tiros libres y otro bajo el aro. SECUENCIA: el entrenador tira a canasta; uno del trío coge el rebote y pasa de salida a un compañero abierto en la banda; el trío ocupa las tres calles (centro y dos bandas) y ataca 3c2 en la canasta contraria hasta terminar con un tiro cercano o una bomba sobre un pie (en U12 y U14, también finalización a dos pies). Al acabar, los dos defensores de esa canasta y el atacante que tiró salen en transición y atacan 3c2 hacia la otra canasta, contra los dos que esperan allí; los dos atacantes del trío que no tiraron se quedan como nuevos defensores. Así el juego sigue en oleadas sin parar. ROTACIÓN: cada oleada la forman los dos que defendían y el que tiró en la anterior, de modo que todos atacan y defienden en pocos minutos; con más de diez jugadores, un trío nuevo entra desde el fondo cada tres oleadas. PROGRESIÓN: el pase de salida debe ir antes del primer bote; máximo tres pases hasta tirar; la oleada siguiente sale nada más entrar la canasta.",
+    "puntos_clave": [
+      "Tras el rebote, el primer pase va abierto a la banda.",
+      "Ocupar las tres calles: uno por el centro y dos pegados a las bandas.",
+      "El balón llega por el centro y decide cuando un defensor se compromete.",
+      "Los que pierden la posesión vuelven los primeros a proteger el aro."
+    ],
+    "material": "Un balón por trío y petos de dos colores.",
+    "consigna": "Rebote, pase a la banda, tres calles y decide arriba.",
+    "errores_frecuentes": [
+      "Botar el rebote hacia el centro en vez de pasar a la banda.",
+      "Dos atacantes por la misma calle.",
+      "Quedarse mirando tras tirar y no defender la vuelta."
+    ],
+    "que_observar": [
+      "El trío ocupa las tres calles en los primeros segundos.",
+      "El cambio de ataque a defensa es inmediato."
+    ],
+    "progresion": {
+      "facilitar": "Sin oleadas y con un solo defensor esperando (3c1).",
+      "complicar": "Pase de salida antes del primer bote y la oleada siguiente sale sin esperar."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_096",
+    "nombre": "Transición continua 4c4: el que pierde vuelve primero",
+    "categoria": "juego_equipo",
+    "subcategoria": "transicion_defensiva",
+    "edades": [
+      "U10",
+      "U12",
+      "U14"
+    ],
+    "duracion_min": 12,
+    "intensidad": 5,
+    "carga_cognitiva": 4,
+    "jugadores_minimos": 12,
+    "objetivos": {
+      "tacticos": [
+        "transición defensiva",
+        "cambio de rol inmediato",
+        "contraataque tras recuperar"
+      ],
+      "tecnicos": [
+        "carrera hacia atrás",
+        "defensa del jugador con balón",
+        "pase de salida"
+      ],
+      "fisicos": [
+        "resistencia",
+        "velocidad"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: tres equipos de cuatro con petos de colores (con nueve a once jugadores, equipos de tres); uno espera fuera de la línea de fondo de cada canasta y el tercero empieza atacando desde el medio campo. SECUENCIA: el equipo atacante juega 4c4 contra el que defiende esa canasta. Cuando termina la posesión (canasta, rebote defensivo o robo), el equipo que defendía sale en transición hacia la otra canasta y ataca contra el equipo que esperaba allí, que entra a defender; el equipo que atacaba sale a esperar fuera de esa línea de fondo. El jugador que ha tirado o perdido el balón debe tocar la línea de fondo antes de volver a jugar: así el nuevo ataque tiene un instante de ventaja y el contraataque sale con superioridad. ROTACIÓN: el juego es continuo y los equipos se alternan solos, con solo unos segundos de espera; a los cuatro minutos se rehacen los equipos. PROGRESIÓN: solo vale la canasta anotada en menos de ocho segundos tras recuperar; la regla de tocar la línea de fondo afecta a todo el equipo que pierde el balón; la canasta tras robo vale doble.",
+    "puntos_clave": [
+      "Al recuperar, primer pase hacia delante o bote fuerte por la calle libre.",
+      "Al perder, el más cercano al balón lo frena y los demás corren a proteger el aro.",
+      "Hablar: quién frena el balón y quién se queda atrás.",
+      "En defensa, apretar al jugador con balón en cuanto se iguala el número."
+    ],
+    "material": "Un balón y petos de tres colores.",
+    "consigna": "Recuperas, corres; pierdes, vuelves el primero.",
+    "errores_frecuentes": [
+      "Lamentarse tras fallar y no volver a defender.",
+      "Botar despacio al recuperar y dejar que la defensa se coloque.",
+      "Todos van a por el balón y nadie protege el aro."
+    ],
+    "que_observar": [
+      "Reacciona al cambio de posesión en el primer segundo.",
+      "Hay siempre alguien protegiendo el aro en la vuelta defensiva."
+    ],
+    "progresion": {
+      "facilitar": "Sin la regla de tocar la línea de fondo y con ataques de 3c3.",
+      "complicar": "Ataque limitado a ocho segundos y canasta tras robo doble."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_097",
+    "nombre": "Transición 1c1: correr la banda y recibir en carrera",
+    "categoria": "1c1",
+    "subcategoria": "reaccion",
+    "edades": [
+      "U10",
+      "U12"
+    ],
+    "duracion_min": 12,
+    "intensidad": 5,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 9,
+    "objetivos": {
+      "tacticos": [
+        "contraataque: correr por la calle exterior",
+        "transición ofensiva tras rebote",
+        "1c1 en carrera"
+      ],
+      "tecnicos": [
+        "pase de salida",
+        "recepción en carrera",
+        "bomba sobre un pie"
+      ],
+      "fisicos": [
+        "velocidad",
+        "resistencia"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: se sale desde las dos canastas a la vez, cada grupo por la banda de su derecha para no cruzarse. En cada canasta, tríos en fila: un pasador bajo el aro con balón, un corredor en la esquina de la línea de fondo y un defensor dos metros por detrás del corredor, en la misma esquina. SECUENCIA: el pasador lanza el balón contra el tablero, coge su rebote y busca con un pase largo de pecho o de béisbol al corredor, que ha salido a la vez pegado a la banda; el corredor recibe en carrera, sin pararse, y ataca la canasta contraria con bote; el defensor corre para recuperar la posición delante y se juega 1c1 hasta canasta, robo o rebote del defensor. Finalización con bomba sobre un pie o tiro cercano. ROTACIÓN: pasador pasa a corredor, corredor a defensor y defensor a pasador; el trío siguiente sale en cuanto el anterior pasa el medio campo, y al terminar cada trío se queda en esa canasta para salir hacia la otra. PROGRESIÓN: el defensor sale a la altura del corredor; el corredor debe recibir antes del medio campo o el punto es para la defensa; en U12, el pasador se incorpora tras el pase y se juega 2c1.",
+    "puntos_clave": [
+      "El corredor sale pegado a la banda y mira al balón por encima del hombro.",
+      "El pase va por delante del corredor, para que reciba sin frenar.",
+      "Recibir en carrera y atacar el aro con el primer bote hacia delante.",
+      "El defensor corre hacia el aro antes de girarse a defender."
+    ],
+    "material": "Un balón por trío.",
+    "consigna": "Banda, mira el balón, recibe sin frenar y ataca el aro.",
+    "errores_frecuentes": [
+      "El corredor se va hacia el centro y se queda sin espacio.",
+      "Pase al cuerpo del corredor, que tiene que pararse para recibir.",
+      "El defensor persigue por detrás en lugar de correr hacia el aro."
+    ],
+    "que_observar": [
+      "El corredor recibe en carrera sin perder velocidad.",
+      "El defensor recupera la posición entre el atacante y el aro."
+    ],
+    "progresion": {
+      "facilitar": "Sin defensor: el corredor recibe y termina solo.",
+      "complicar": "Defensor a la misma altura y, en U12, 2c1 con el pasador incorporándose."
+    },
+    "sin_diagrama": true
   }
 ]
