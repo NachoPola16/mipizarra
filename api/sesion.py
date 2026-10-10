@@ -25,7 +25,10 @@ from ejercicios import (
     cargar_ejercicios, elegir_calentamiento as _elegir_calentamiento, elegir_fichas as _elegir_fichas,
     nivel_objetivo,
 )
-from lineas_rojas import CATEGORIAS_MINIBASKET, aviso_pedido, instruccion_prompt, terminos_pedidos, violaciones
+from lineas_rojas import (
+    CATEGORIAS_MINIBASKET, aviso_pedido, aviso_pedido_no_incluido, instruccion_prompt, pedidos_presentes,
+    terminos_pedidos, violaciones,
+)
 from plan_sesion import plan_de_tiempos
 
 logger = logging.getLogger(__name__)
@@ -546,7 +549,7 @@ RESPUESTA (rellena TODOS los apartados de la plantilla, en este orden, sin salta
             correccion = (f"CORRECCIÓN: tu respuesta anterior incumplió las reglas de la categoría "
                           f"({detalle}). Reescríbela sin esos contenidos.\n\n")
 
-        avisos = [aviso_pedido(list(permitidos), edad)] if permitidos else []
+        avisos = []
         for clave, encontradas in malas.items():
             bloques.pop(clave, None)
             avisos.append(f"{_nombre_de_pieza(clave)} omitido por incumplir las líneas rojas de {edad}: "
@@ -557,6 +560,11 @@ RESPUESTA (rellena TODOS los apartados de la plantilla, en este orden, sin salta
         if ficha_calent is not None:
             bloques["calentamiento"] = bloque_calentamiento(ficha_calent)
         texto, propuestos = _ensamblar(huecos, bloques, t_calent, t_vuelta, t_descanso)
+        if permitidos:
+            # el aviso solo promete «se ha hecho» si el término aparece en la sesión final
+            presentes = pedidos_presentes(list(permitidos), texto, edad)
+            avisos.insert(0, aviso_pedido(presentes, edad) if presentes
+                          else aviso_pedido_no_incluido(list(permitidos), edad))
         for h in huecos:
             ya_avisado = any(a.startswith(f"Ejercicio {h.numero}") for a in avisos)
             if h.ficha is None and h.numero not in propuestos and not ya_avisado:
