@@ -403,6 +403,7 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
         "objetivo":  req.objetivo,
         "diagramas": diagramas,
         "teoria_usada": resultado.get("teoria_usada", False),
+        "avisos":    resultado.get("avisos", []),
         "ejercicios_usados": [
             {
                 "id":            e.get("id", ""),

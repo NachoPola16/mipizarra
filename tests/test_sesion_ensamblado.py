@@ -626,3 +626,46 @@ def test_un_paso_de_hueco_acepta_que_el_modelo_repita_su_cabecera(sesion_falsa):
     )
     r = sesion.generar_sesion("U16", 90, "bote")
     assert "Ejercicio 4: Propuesta 4" in r["texto"] and r["propuestos"] == [4]
+
+
+# ── lo que el entrenador pide expresamente se hace, con aviso (también en la sesión completa) ────────
+
+def test_si_el_objetivo_pide_una_linea_roja_se_hace_y_se_avisa(sesion_falsa):
+    peticiones = sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [_con_calentamiento("Bloqueo directo con el pívot")])
+    r = sesion.generar_sesion("U12", 90, "bloqueo directo")
+    assert len(peticiones) == 1                                    # sin reintento por línea roja
+    assert "EXCEPCIÓN" in peticiones[0]["prompt"] and "bloqueo" in peticiones[0]["prompt"].split("EXCEPCIÓN")[1]
+    assert "Bloqueo directo con el pívot" in r["texto"]            # la pieza del modelo se conserva
+    assert len(r["avisos"]) == 1
+    assert "Has pedido" in r["avisos"][0] and "bloqueo" in r["avisos"][0] and "U12" in r["avisos"][0]
+
+
+def test_lo_pedido_no_deja_pasar_otras_lineas_rojas(sesion_falsa):
+    peticiones = sesion_falsa(
+        [FICHA_A, FICHA_B, FICHA_C],
+        [_con_calentamiento("Defensa zonal 2-3 con bloqueos"), _con_calentamiento("Defensa zonal 2-3 con bloqueos")],
+    )
+    r = sesion.generar_sesion("U12", 90, "bloqueo directo")
+    assert len(peticiones) == 2                                    # reintenta por la zonal, no por el bloqueo
+    assert "zonal" not in r["texto"].lower()
+    assert any("calentamiento" in a.lower() for a in r["avisos"])
+    assert any("Has pedido" in a for a in r["avisos"])
+
+
+def test_el_plural_de_lo_pedido_tambien_vale(sesion_falsa):
+    sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [_con_calentamiento("Juego con bloqueos y continuación")])
+    r = sesion.generar_sesion("U12", 90, "trabajar el bloqueo")
+    assert "bloqueos" in r["texto"]
+    assert len(r["avisos"]) == 1
+
+
+def test_sin_peticion_expresa_no_hay_aviso_de_peticion(sesion_falsa):
+    peticiones = sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [RESPUESTA_BASE])
+    r = sesion.generar_sesion("U12", 90, "bote")
+    assert r["avisos"] == []
+    assert "EXCEPCIÓN" not in peticiones[0]["prompt"]
+
+
+def test_en_edades_sin_linea_roja_el_objetivo_no_genera_aviso(sesion_falsa):
+    sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [RESPUESTA_BASE])
+    assert sesion.generar_sesion("U18", 90, "bloqueo directo")["avisos"] == []
