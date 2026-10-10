@@ -80,3 +80,22 @@ def test_generar_devuelve_los_avisos_de_la_sesion(monkeypatch):
                                                     "generar_diagramas": False})
     assert r.status_code == 200
     assert r.json()["avisos"] == ["Has pedido «bloqueo»."]
+
+
+def test_el_diagrama_curado_del_calentamiento_no_pasa_por_la_heuristica_de_pista_completa(monkeypatch):
+    # la ficha dice «con la presión del avance» (palabra de la heurística de pista completa) pero su
+    # diagrama es de media pista: no hay que redibujarlo en pista completa
+    main.limiter.reset()
+    ficha = {"id": "c_x", "nombre": "Bote con presión", "categoria": "calentamiento",
+             "diagrama": {"tipo": "media_pista", "jugadores_ataque": [{"id": "A1", "x": 50, "y": 60}],
+                          "jugadores_defensa": [], "balon_inicio": {"portador": "A1"}, "movimientos": []}}
+    texto = ("**CALENTAMIENTO (10 min)**\nJuego: Bote con presión\nReglas:\nSECUENCIA: botan con la presión del avance.\n\n"
+             "**PARTE PRINCIPAL**\n\nEjercicio 1: Bote y globo a la vez\nDuración: 10 min\n")
+    monkeypatch.setattr(main, "generar_sesion", lambda **k: {
+        "texto": texto, "ejercicios_usados": [], "calentamiento_ficha": ficha, "avisos": []})
+    tipos = []
+    monkeypatch.setattr(main, "render_diagram", lambda d, edad=None: tipos.append(d["tipo"]) or "<svg/>")
+    monkeypatch.setattr(main, "generar_coordenadas_ejercicio", lambda t, n: None)
+    r = TestClient(main.app).post("/generar", json={"objetivo": "bote", "edad": "U12", "duracion": 60})
+    assert r.status_code == 200
+    assert tipos[0] == "media_pista"

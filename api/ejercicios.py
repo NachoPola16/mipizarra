@@ -231,7 +231,18 @@ def elegir_fichas(ejercicios: list, edad: str, objetivo: str, n: int, solo_direc
     `azar` (un `random.Random`) da variedad entre sesiones con los mismos parámetros; sin él es determinista."""
     relevantes = [e for e in filtrar_ejercicios(ejercicios, edad, objetivo)
                   if es_relevante(e, objetivo, con_asociados=not solo_directas)]
-    return seleccionar_ejercicios(relevantes, n, azar=azar)
+    # Las fichas de calentamiento son para el calentamiento: en la parte principal solo entran si nombran el
+    # propio objetivo en el nombre o los tags (el bote de U8–U12 vive en fichas de calentamiento) o como último recurso, si sin ellas
+    # quedaría un hueco. Así una ficha de calentamiento asociada de lejos no desplaza a una ficha de la parte principal.
+    principales = [e for e in relevantes
+                   if e.get("categoria") != "calentamiento"
+                   or es_relevante({**e, "descripcion": ""}, objetivo, con_asociados=False)]   # nombre o tags
+    fichas = seleccionar_ejercicios(principales, n, azar=azar)
+    if len(principales) < len(relevantes) and any(f is None for f in fichas):
+        con_calentamientos = seleccionar_ejercicios(relevantes, n, azar=azar)
+        if sum(f is None for f in con_calentamientos) < sum(f is None for f in fichas):
+            return con_calentamientos
+    return fichas
 
 
 def elegir_calentamiento(ejercicios: list, edad: str, objetivo: str, excluir=(), azar=None) -> dict | None:
@@ -239,6 +250,7 @@ def elegir_calentamiento(ejercicios: list, edad: str, objetivo: str, excluir=(),
     modelo). Prefiere las que encajan con el objetivo; no repite las de `excluir` (las de la parte
     principal). Sin `azar` es determinista; con él elige entre todas las candidatas del grupo (entre
     calentamientos el orden de la biblioteca no es un orden de relevancia)."""
+    excluir = {i for i in excluir if i is not None}
     candidatas = [e for e in ejercicios
                   if e.get("categoria") == "calentamiento" and _es_de_la_edad(e, edad)
                   and e.get("id") not in excluir]
