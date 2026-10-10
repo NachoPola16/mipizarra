@@ -48,7 +48,8 @@ html, body {
 .brand-mark { width: 26px; height: 26px; border-radius: 22%; flex-shrink: 0; transition: transform .3s cubic-bezier(.16,1,.3,1); }
 .brand:hover .brand-mark { transform: rotate(-8deg) scale(1.08); }
 .mode-tabs { display: flex; gap: .4rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
-.mode-tab { padding: .4rem .9rem; font-size: .82rem; font-weight: 600; border: none; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; font-family: 'Inter', sans-serif; transition: color .15s; }
+.mode-tab { display: inline-flex; align-items: center; gap: .45rem; padding: .4rem .9rem; font-size: .82rem; font-weight: 600; border: none; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; font-family: 'Inter', sans-serif; transition: color .15s; }
+.tab-ico { width: 15px; height: 15px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .mode-tab:hover { color: var(--text); }
 .mode-tab.active { background: var(--accent); color: var(--bg); }
 .mode-tab.active:hover { color: var(--bg); }
@@ -161,6 +162,41 @@ html, body {
 /* ── Reglamento result ── */
 .reglamento-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; font-size: .95rem; line-height: 1.85; color: var(--text2); white-space: pre-wrap; }
 
+/* ── Ficha estructurada: etiqueta a la izquierda, texto a la derecha ── */
+.sesion-card.estructurada { white-space: normal; line-height: 1.6; padding: .35rem 1.5rem; }
+.ficha { margin: 0; }
+.campo { display: grid; grid-template-columns: 9rem minmax(0, 1fr); gap: .15rem 1.25rem; padding: .7rem 0; border-top: 1px solid var(--border); }
+.campo:first-child { border-top: 0; }
+.campo dt { font-size: .7rem; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); padding-top: .28rem; }
+.campo dd { margin: 0; color: var(--text2); max-width: 72ch; }
+.campo dd ul { margin: .2rem 0 0; padding-left: 1.15rem; }
+.campo dd li { margin: .15rem 0; }
+.campo.destacado dd { color: var(--text); font-weight: 600; }
+.campo.consigna dd { font-style: italic; color: var(--text); }
+.texto-libre { color: var(--text2); max-width: 72ch; padding: .7rem 0; }
+@media (max-width: 560px) { .campo { grid-template-columns: minmax(0, 1fr); } }
+
+/* ── Impresión: papel blanco, sin interfaz, un ejercicio no se parte entre páginas ── */
+@media print {
+    @page { size: A4; margin: 16mm 15mm 18mm; }
+    html, body { background: #fff !important; color: #1b1b1f !important; font-size: 10.5pt; }
+    .topbar, .btn-back, .ej-select, .reprompt-bar, .downloads, .feedback, .consultados, .legal-footer,
+    #form-error, .prompt-section, .badge, #loading, .center-title { display: none !important; }
+    .content, .results { max-width: none !important; width: auto !important; padding: 0 !important; margin: 0 !important; }
+    .section-title { color: #b44a0c !important; border-bottom: 1.5pt solid #e8752c !important; font-size: 13pt;
+        margin: 14pt 0 6pt; padding-bottom: 3pt; break-after: avoid; }
+    .ejercicio-block { break-inside: avoid; margin: 0 0 12pt; }
+    .ejercicio-title { color: #1b1b1f !important; font-size: 12.5pt; margin: 8pt 0 5pt; break-after: avoid; }
+    .ejercicio-title::before { background: #e8752c !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .sesion-card { background: #fff !important; border: 0.5pt solid #cfc9bf !important; border-radius: 4pt;
+        color: #1b1b1f !important; padding: 2pt 10pt !important; }
+    .campo { grid-template-columns: 26mm minmax(0, 1fr); padding: 4pt 0; border-top: 0.5pt solid #e1dbd0; break-inside: avoid; }
+    .campo dt { color: #6b6257 !important; font-size: 7.5pt; }
+    .campo dd, .campo.destacado dd, .campo.consigna dd { color: #1b1b1f !important; max-width: none; }
+    .diagrama-wrap { background: #fff !important; border: 0.5pt solid #cfc9bf !important; max-width: 118mm; margin: 0 0 6pt; break-inside: avoid; }
+    .diagrama-label { color: #6b6257 !important; }
+}
+
 /* ── Movimiento reducido ── */
 @media (prefers-reduced-motion: reduce) {
     .prompt-section, .results.visible { animation: none; }
@@ -207,8 +243,8 @@ html, body {
         <span>Mi<em>Pizarra</em></span>
     </a>
     <div class="mode-tabs">
-        <button class="mode-tab active" data-mode="sesion">⚡ Sesión</button>
-        <button class="mode-tab" data-mode="reglamento">📖 Reglamento</button>
+        <button class="mode-tab active" data-mode="sesion"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2.5" width="12" height="9" rx="1.5"/><path d="M5 14h6M8 11.5V14M5 5.5h6M5 8h3.5"/></svg>Sesión</button>
+        <button class="mode-tab" data-mode="reglamento"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3.5C6.7 2.7 5 2.5 2.5 2.5v9c2.5 0 4.2.2 5.5 1 1.3-.8 3-1 5.5-1v-9C11 2.5 9.3 2.7 8 3.5zM8 3.5v9"/></svg>Reglamento</button>
     </div>
 </header>
 
@@ -597,6 +633,80 @@ function mdToHtml(s) {
         .replace(/\*(.+?)\*/g, '<em>$1</em>');
 }
 
+// ── Estructura de las fichas ───────────────────────────────────────────────
+// Los diagramas «no disponible» y «juego libre» se marcan con data-placeholder en la API: no se muestran.
+function esPlaceholderDiagrama(d) {
+    return !d || !d.svg || d.svg.indexOf('data-placeholder') !== -1;
+}
+
+// Etiquetas conocidas de una ficha o del calentamiento, o cualquier etiqueta en mayúsculas (SECUENCIA:, ROTACIÓN:...).
+const ETIQUETA_CAMPO = /^(?:(Juego|Reglas|Organización|Duración|Espacio|Material|Consigna|Puntos clave|Errores frecuentes|Qué observar|Cómo facilitar|Cómo complicar|Qué cambia respecto a [\d.]+|Fundamentos)|([A-ZÁÉÍÓÚÑ]{4,}(?: [A-ZÁÉÍÓÚÑ]{2,})*))\s*:\s*(.*)$/;
+
+function etiquetaLegible(t) {
+    const s = t.toLowerCase();
+    return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// «Etiqueta: texto» y listas «- ítem» → lista de definición (etiqueta | contenido). Lo que no tiene etiqueta
+// va como texto libre; los saltos de línea del modelo no se pierden porque cada campo es su propia fila.
+function renderCampos(texto) {
+    const campos = [];
+    let actual = null;
+    for (const crudo of String(texto).split('\n')) {
+        const linea = crudo.trim();
+        if (!linea) continue;
+        const sinMd = linea.replace(/\*\*/g, '');
+        const m = sinMd.match(ETIQUETA_CAMPO);
+        if (m) {
+            actual = { etiqueta: etiquetaLegible(m[1] || m[2]), texto: m[3] || '', items: [] };
+            campos.push(actual);
+        } else if (/^[-•]\s+/.test(linea) && actual) {
+            actual.items.push(linea.replace(/^[-•]\s+/, ''));
+        } else if (actual && actual.items.length === 0) {
+            actual.texto += (actual.texto ? ' ' : '') + linea;
+        } else {
+            actual = { etiqueta: '', texto: linea, items: [] };
+            campos.push(actual);
+        }
+    }
+    const filas = campos.map(c => {
+        c.texto = c.texto.charAt(0).toUpperCase() + c.texto.slice(1);      // el texto puede llegar en la línea siguiente
+        if (!c.etiqueta) return `<div class='texto-libre'>${mdToHtml(c.texto)}</div>`;
+        const clase = c.etiqueta === 'Juego' ? ' destacado' : (c.etiqueta === 'Consigna' ? ' consigna' : '');
+        const lista = c.items.length ? `<ul>${c.items.map(i => `<li>${mdToHtml(i)}</li>`).join('')}</ul>` : '';
+        const cuerpo = c.texto ? mdToHtml(c.texto) : '';
+        return `<div class='campo${clase}'><dt>${escHtml(c.etiqueta)}</dt><dd>${cuerpo}${lista}</dd></div>`;
+    });
+    return `<dl class='ficha'>${filas.join('')}</dl>`;
+}
+
+// Bloque que no es un «Ejercicio N»: títulos **...** (calentamiento, parte principal, descanso) y su contenido.
+function renderBloqueSeccion(texto) {
+    const contenido = texto.trim();
+    if (!contenido) return '';
+    let out = '';
+    let cuerpo = [];
+    const volcar = () => {
+        if (cuerpo.join('').trim()) out += `<div class='sesion-card estructurada'>${renderCampos(cuerpo.join('\n'))}</div>`;
+        cuerpo = [];
+    };
+    for (const linea of contenido.split('\n')) {
+        const t = linea.trim();
+        let m = t.match(/^\*\*(.+?)\*\*\s*:\s*(.+)$/);        // «**Fundamentos**: texto»
+        if (m) {
+            volcar();
+            out += `<h2 class='section-title'>${escHtml(m[1])}</h2>`;
+            out += `<div class='sesion-card estructurada'><div class='texto-libre'>${mdToHtml(m[2])}</div></div>`;
+            continue;
+        }
+        m = t.match(/^\*\*(.+?)\*\*$/);                       // «**CALENTAMIENTO (10 min)**»
+        if (m) { volcar(); out += `<h2 class='section-title'>${escHtml(m[1])}</h2>`; continue; }
+        cuerpo.push(linea);
+    }
+    volcar();
+    return out;
+}
+
 // ── Render sesión ──────────────────────────────────────────────────────────
 function renderResults(data) {
     document.getElementById('results-heading').textContent = 'Sesión de entrenamiento generada';
@@ -655,25 +765,21 @@ function renderResults(data) {
             html += `<label class="ej-select"><input type="checkbox" class="ej-checkbox" data-ej-idx="${ejN}"> Editar este ejercicio</label>`;
             html += `<h3 class='ejercicio-title'>${escHtml(titulo)}</h3>`;
 
-            // Mostrar TODOS los diagramas del ejercicio (multifase)
+            // Mostrar los diagramas del ejercicio (multifase). Si no hay diagrama (placeholder de «no
+            // disponible» o «juego libre») no se pinta nada: el hueco se conserva en la lista, no en la pantalla.
             if (ejercicioNum < diagGroups.length) {
                 for (const d of diagGroups[ejercicioNum]) {
+                    if (esPlaceholderDiagrama(d)) continue;
                     if (d.titulo) html += `<div class='diagrama-label'>${escHtml(d.titulo)}</div>`;
                     html += `<div class='diagrama-wrap'>${d.svg}</div>`;
                 }
             }
 
-            if (resto) html += `<div class='sesion-card'>${mdToHtml(resto)}</div>`;
+            if (resto) html += `<div class='sesion-card estructurada'>${renderCampos(resto)}</div>`;
             html += `</div>`;
             ejercicioNum++;
         } else {
-            const contenido = b.texto.trim();
-            if (!contenido) return;
-            // Secciones (**TEXTO**) en línea propia → título de sección
-            const soloTitulo = contenido.replace(/\*\*(.+?)\*\*/g, (_, t) =>
-                `<h2 class='section-title'>${escHtml(t)}</h2>`
-            );
-            html += (soloTitulo !== contenido) ? soloTitulo : `<div class='sesion-card'>${mdToHtml(contenido)}</div>`;
+            html += renderBloqueSeccion(b.texto);
         }
     });
 

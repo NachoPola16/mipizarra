@@ -3,6 +3,7 @@ import re
 import os
 import tempfile
 import logging
+from pathlib import Path
 
 import requests
 from django.conf import settings
@@ -153,178 +154,362 @@ def descargar_pdf(request):
         logger.error('Error generando PDF: %s', e)
         return JsonResponse({'error': str(e)}, status=500)
 
+# ── PDF de la sesión ──────────────────────────────────────────────────────────
+# Tipografía: Inter (texto) y Sora (títulos), las mismas de la web, en TTF dentro de static/pizarra/fonts/pdf.
+# Estructura: portada compacta con los datos de la sesión, un título por sección, cada ejercicio como ficha
+# (etiqueta | contenido) y el diagrama a un lado del texto cuando existe. Si no hay diagrama no se dibuja nada.
+
+_ETIQUETA_CAMPO = re.compile(
+    r'^(?:(Juego|Reglas|Organización|Duración|Espacio|Material|Consigna|Puntos clave|Errores frecuentes|'
+    r'Qué observar|Cómo facilitar|Cómo complicar|Qué cambia respecto a [\d.]+|Fundamentos)'
+    r'|([A-ZÁÉÍÓÚÑ]{4,}(?: [A-ZÁÉÍÓÚÑ]{2,})*))\s*:\s*(.*)$'
+)
+_FUENTES_PDF = Path(__file__).resolve().parent / 'static' / 'pizarra' / 'fonts' / 'pdf'
+
+
+def _limpiar_texto_pdf(txt):
+    """Quita el markdown que el renderer no interpreta y sustituye lo que Inter no tiene."""
+    txt = txt.replace('**', '').replace('*', '')
+    for malo, bueno in (('→', '->'), ('≥', '>='), ('≤', '<='), (' ', ' '), ('​', '')):
+        txt = txt.replace(malo, bueno)
+    return txt.strip()
+
+
+def _etiqueta_legible(texto):
+    s = texto.lower()
+    return s[:1].upper() + s[1:]
+
+
+def _campos_de_bloque(lineas):
+    """Líneas de un ejercicio o del calentamiento → [{'etiqueta', 'texto', 'items'}]. Lo que no lleva etiqueta
+    se une al campo anterior o queda como texto libre; las listas «- ítem» cuelgan de su etiqueta."""
+    campos, actual = [], None
+    for crudo in lineas:
+        linea = _limpiar_texto_pdf(crudo)
+        if not linea:
+            continue
+        m = _ETIQUETA_CAMPO.match(linea)
+        if m:
+            actual = {'etiqueta': _etiqueta_legible(m.group(1) or m.group(2)), 'texto': m.group(3) or '', 'items': []}
+            campos.append(actual)
+        elif re.match(r'^[-•]\s+', linea) and actual is not None:
+            actual['items'].append(re.sub(r'^[-•]\s+', '', linea))
+        elif actual is not None and not actual['items']:
+            actual['texto'] = (actual['texto'] + ' ' + linea).strip()
+        else:
+            actual = {'etiqueta': '', 'texto': linea, 'items': []}
+            campos.append(actual)
+    for campo in campos:     # el texto puede llegar en la línea siguiente a la etiqueta: se capitaliza al final
+        campo['texto'] = campo['texto'][:1].upper() + campo['texto'][1:]
+    return campos
+
+
+def _parsear_sesion_para_pdf(texto):
+    """Texto de la sesión → lista de bloques: {'tipo': 'seccion'|'ejercicio'|'calentamiento'|'texto', ...}."""
+    bloques, actual = [], None
+
+    def cerrar():
+        nonlocal actual
+        if actual is not None:
+            bloques.append(actual)
+            actual = None
+
+    for crudo in texto.split('\n'):
+        linea = crudo.strip()
+        if not linea:
+            continue
+        m = re.match(r'^\*\*(.+?)\*\*\s*:\s*(.+)$', linea)             # «**Fundamentos**: texto»
+        if m:
+            cerrar()
+            bloques.append({'tipo': 'seccion', 'titulo': m.group(1).strip()})
+            bloques.append({'tipo': 'texto', 'texto': _limpiar_texto_pdf(m.group(2))})
+            continue
+        m = re.match(r'^\*\*(.+?)\*\*$', linea)                         # «**CALENTAMIENTO (10 min)**»
+        if m:
+            cerrar()
+            titulo = m.group(1).strip()
+            bloques.append({'tipo': 'seccion', 'titulo': titulo})
+            if 'CALENTAMIENTO' in titulo.upper():
+                actual = {'tipo': 'calentamiento', 'lineas': []}
+            continue
+        if re.match(r'^Ejercicio \d+', _limpiar_texto_pdf(linea)):
+            cerrar()
+            actual = {'tipo': 'ejercicio', 'titulo': _limpiar_texto_pdf(linea), 'lineas': []}
+            continue
+        if actual is not None:
+            actual['lineas'].append(linea)
+        else:
+            bloques.append({'tipo': 'texto', 'texto': _limpiar_texto_pdf(linea)})
+    cerrar()
+    return bloques
+
+
+def _svg_a_png(svg, ancho_px=900):
+    import cairosvg
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp:
+        ruta = tmp.name
+    cairosvg.svg2png(bytestring=svg.encode('utf-8'), write_to=ruta, output_width=ancho_px)
+    return ruta
+
 
 def _generar_pdf(sesion_texto, edad, objetivo, duracion, diagramas):
-    import cairosvg
     from fpdf import FPDF
 
-    ACCENT_R, ACCENT_G, ACCENT_B = 232, 117, 44   # #e8752c
-    DARK_R, DARK_G, DARK_B = 30, 30, 40
+    NARANJA = (232, 117, 44)
+    NARANJA_OSCURO = (180, 74, 12)
+    TINTA = (27, 27, 31)
+    GRIS = (107, 98, 87)
+    LINEA = (225, 219, 208)
+    FONDO_SUAVE = (252, 244, 235)
 
-    class PDF_MiPizarra(FPDF):
+    ANCHO_PAG, ML, MR = 210, 18, 18
+    ANCHO = ANCHO_PAG - ML - MR           # 174 mm
+    X_ETIQUETA, ANCHO_ETIQUETA = ML, 32
+    X_TEXTO = ML + 36
+    ANCHO_TEXTO = ANCHO_PAG - MR - X_TEXTO
+    ANCHO_DIAGRAMA = 104
+    ALTO_MAX_DIAGRAMA = 92
+    MARGEN_INFERIOR = 18
+
+    edad_txt = edad or 'General'
+    duracion_txt = f'{duracion} min' if duracion else 'Flexible'
+
+    class PDF(FPDF):
         def header(self):
-            self.set_fill_color(ACCENT_R, ACCENT_G, ACCENT_B)
-            self.rect(0, 0, 210, 7, 'F')
-            self.set_y(11)
-            self.set_font('Helvetica', 'B', 22)
-            self.set_text_color(DARK_R, DARK_G, DARK_B)
-            self.cell(0, 9, 'MiPizarra', align='C', new_x='LMARGIN', new_y='NEXT')
-            self.set_font('Helvetica', '', 8)
-            self.set_text_color(140, 130, 115)
-            self.cell(0, 4, 'Asistente de entrenamiento de baloncesto', align='C', new_x='LMARGIN', new_y='NEXT')
-            self.ln(2)
+            self.set_fill_color(*NARANJA)
+            self.rect(0, 0, ANCHO_PAG, 4, 'F')
+            if self.page_no() > 1:
+                self.set_xy(ML, 8)
+                self.set_font('Inter', '', 7.5)
+                self.set_text_color(*GRIS)
+                self.cell(ANCHO / 2, 4, 'MiPizarra', align='L')
+                self.cell(ANCHO / 2, 4, f'{edad_txt}  ·  {duracion_txt}', align='R')
+                self.set_draw_color(*LINEA)
+                self.set_line_width(0.2)
+                self.line(ML, 14, ANCHO_PAG - MR, 14)
+                self.set_y(19)
 
         def footer(self):
-            self.set_y(-13)
-            self.set_font('Helvetica', '', 7)
-            self.set_text_color(170, 158, 142)
-            self.cell(0, 8, f'Pág. {self.page_no()}', align='C')
+            self.set_y(-12)
+            self.set_font('Inter', '', 7.5)
+            self.set_text_color(*GRIS)
+            self.cell(0, 6, f'{self.page_no()} / {{nb}}', align='C')
 
-    pdf = PDF_MiPizarra()
-    pdf.set_auto_page_break(auto=True, margin=20)
-    pdf.set_margins(left=20, top=30, right=20)
+    pdf = PDF(format='A4')
+    pdf.alias_nb_pages()
+    for estilo, fichero in (('', 'Inter-Regular.ttf'), ('B', 'Inter-Bold.ttf')):
+        pdf.add_font('Inter', estilo, str(_FUENTES_PDF / fichero))
+    pdf.add_font('InterSB', '', str(_FUENTES_PDF / 'Inter-SemiBold.ttf'))
+    pdf.add_font('Sora', 'B', str(_FUENTES_PDF / 'Sora-Bold.ttf'))
+    pdf.set_margins(left=ML, top=19, right=MR)
+    pdf.set_auto_page_break(auto=True, margin=MARGEN_INFERIOR)
     pdf.add_page()
 
-    duracion_text = f'{duracion} min' if duracion else 'Flexible'
-    edad_text = edad if edad else 'General'
-    objetivo_corto = objetivo[:40] + '...' if len(objetivo) > 40 else objetivo
+    # ── Portada compacta ──────────────────────────────────────────────────────
+    pdf.set_y(12)
+    pdf.set_font('Sora', 'B', 22)
+    pdf.set_text_color(*TINTA)
+    ancho_mi = pdf.get_string_width('Mi')
+    pdf.set_x(ML)
+    pdf.cell(ancho_mi, 10, 'Mi')
+    pdf.set_text_color(*NARANJA)
+    pdf.cell(pdf.get_string_width('Pizarra') + 1, 10, 'Pizarra', new_x='LMARGIN', new_y='NEXT')
+    pdf.set_font('Inter', '', 8.5)
+    pdf.set_text_color(*GRIS)
+    pdf.cell(0, 5, 'Sesión de entrenamiento de baloncesto', new_x='LMARGIN', new_y='NEXT')
+    pdf.ln(4)
 
-    y_meta = pdf.get_y()
-    pdf.set_fill_color(255, 241, 227)
-    pdf.set_draw_color(240, 196, 150)
-    pdf.rect(20, y_meta, 170, 11, 'FD')
-    pdf.set_font('Helvetica', 'B', 9)
-    pdf.set_text_color(150, 75, 20)
-    pdf.set_xy(20, y_meta + 1)
-    meta_str = f'Categoría: {edad_text}   ·   Duración: {duracion_text}   ·   Objetivo: {objetivo_corto}'
-    pdf.cell(170, 9, meta_str, align='C', new_x='LMARGIN', new_y='NEXT')
-    pdf.ln(7)
+    y0 = pdf.get_y()
+    obj_txt = _limpiar_texto_pdf(objetivo or '') or '—'
+    pdf.set_font('Inter', '', 10)
+    alto_obj = pdf.multi_cell(ANCHO - 8, 5, obj_txt, align='L', dry_run=True, output='HEIGHT')
+    alto_caja = 6 + 9 + alto_obj + 5
+    pdf.set_fill_color(*FONDO_SUAVE)
+    pdf.set_draw_color(*LINEA)
+    pdf.rect(ML, y0, ANCHO, alto_caja, 'FD')
+    for i, (rotulo, valor) in enumerate((('Categoría', edad_txt), ('Duración', duracion_txt))):
+        x = ML + 4 + i * 42
+        pdf.set_xy(x, y0 + 3.5)
+        pdf.set_font('InterSB', '', 7)
+        pdf.set_text_color(*GRIS)
+        pdf.cell(38, 4, rotulo.upper())
+        pdf.set_xy(x, y0 + 7.5)
+        pdf.set_font('Inter', 'B', 11)
+        pdf.set_text_color(*TINTA)
+        pdf.cell(38, 6, valor)
+    pdf.set_xy(ML + 4, y0 + 15.5)
+    pdf.set_font('InterSB', '', 7)
+    pdf.set_text_color(*GRIS)
+    pdf.cell(40, 4, 'OBJETIVO')
+    pdf.set_xy(ML + 4, y0 + 19.5)
+    pdf.set_font('Inter', '', 10)
+    pdf.set_text_color(*TINTA)
+    pdf.multi_cell(ANCHO - 8, 5, obj_txt, align='L')
+    pdf.set_y(y0 + alto_caja + 7)
 
-    def clean(txt):
-        return (
-            txt.replace('–', '-').replace('—', '-')
-               .replace('‘', "'").replace('’', "'")
-               .replace('“', '"').replace('”', '"')
-               .replace('•', '*')
-               .encode('latin-1', errors='ignore').decode('latin-1')
-        )
+    # ── Diagramas: por grupo de ejercicio (multifase) y el del calentamiento por id ───────────
+    def es_placeholder(d):
+        svg = (d or {}).get('svg', '')
+        return not svg or 'data-placeholder' in svg
 
-    def add_diagram(idx):
-        if idx < len(diagramas):
-            svg_content = diagramas[idx].get('svg', '')
-            if svg_content:
-                try:
-                    if pdf.get_y() > 170:
-                        pdf.add_page()
-                    with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp:
-                        cairosvg.svg2png(
-                            bytestring=svg_content.encode('utf-8'),
-                            write_to=tmp.name,
-                            output_width=900,
-                        )
-                        pdf.image(tmp.name, x=20, w=170)
-                        os.unlink(tmp.name)
-                    pdf.set_x(pdf.l_margin)
-                    pdf.ln(4)
-                except Exception:
-                    pass
+    grupos, i = [], 0
+    ejercicios_d = [d for d in diagramas if not str(d.get('id', '')).startswith(('calentamiento', 'vuelta_a_la_calma'))]
+    while i < len(ejercicios_d):
+        nombre = ejercicios_d[i].get('nombre')
+        grupo = []
+        while i < len(ejercicios_d) and ejercicios_d[i].get('nombre') == nombre:
+            grupo.append(ejercicios_d[i])
+            i += 1
+        grupos.append(grupo)
 
-    def add_diagram_by_id_prefix(prefix):
-        """Calentamiento y vuelta a la calma no son 'Ejercicio N', así que no les toca
-        índice por add_diagram() — se buscan por el id que les puso la API."""
-        diagrama = next((d for d in diagramas if d.get('id', '').startswith(prefix)), None)
-        svg_content = diagrama.get('svg', '') if diagrama else ''
-        if not svg_content:
-            return
-        try:
-            if pdf.get_y() > 170:
-                pdf.add_page()
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp:
-                cairosvg.svg2png(
-                    bytestring=svg_content.encode('utf-8'),
-                    write_to=tmp.name,
-                    output_width=900,
-                )
-                pdf.image(tmp.name, x=20, w=170)
-                os.unlink(tmp.name)
-            pdf.set_x(pdf.l_margin)
-            pdf.ln(4)
-        except Exception:
-            pass
+    def diagramas_de(bloque_idx_ejercicio, tipo):
+        if tipo == 'calentamiento':
+            d = next((d for d in diagramas if str(d.get('id', '')).startswith('calentamiento')), None)
+            return [] if es_placeholder(d) else [d]
+        if bloque_idx_ejercicio < len(grupos):
+            return [d for d in grupos[bloque_idx_ejercicio] if not es_placeholder(d)]
+        return []
 
-    ejercicio_actual = -1
-    pagina_recien_nueva = False
-    subsec_keys = ['Juego:', 'Reglas:', 'Organización:', 'Puntos clave:',
-                   'Espacio:', 'Duración:', 'Fundamentos:', 'Puntos Clave:',
-                   'Material:', 'Consigna:', 'Errores frecuentes:', 'Qué observar:',
-                   'Cómo facilitar:', 'Cómo complicar:']
+    # ── Dibujo ────────────────────────────────────────────────────────────────
+    def espacio_libre():
+        return pdf.h - MARGEN_INFERIOR - pdf.get_y()
 
-    for linea in sesion_texto.split('\n'):
-        linea = linea.strip()
-        if not linea:
-            pdf.ln(2)
-            continue
-        linea = clean(linea)
+    def asegurar(alto):
+        if espacio_libre() < alto:
+            pdf.add_page()
 
-        if linea.startswith('**') and linea.endswith('**'):
-            titulo = linea.replace('**', '').strip()
-            titulo_up = titulo.upper()
-            if 'PARTE PRINCIPAL' in titulo_up or 'VUELTA A LA CALMA' in titulo_up:
-                pdf.add_page()
-                pagina_recien_nueva = True
+    def titulo_seccion(titulo):
+        asegurar(28)
+        pdf.ln(3)
+        pdf.set_font('Sora', 'B', 12.5)
+        pdf.set_text_color(*NARANJA_OSCURO)
+        pdf.set_x(ML)
+        pdf.multi_cell(ANCHO, 7, titulo, align='L')
+        pdf.set_draw_color(*NARANJA)
+        pdf.set_line_width(0.5)
+        pdf.line(ML, pdf.get_y() + 0.5, ANCHO_PAG - MR, pdf.get_y() + 0.5)
+        pdf.ln(4)
+
+    def alto_fila(campo):
+        alto = 0
+        pdf.set_font('Inter', '', 9.5)
+        if campo['texto']:
+            alto += pdf.multi_cell(ANCHO_TEXTO, 4.9, campo['texto'], align='L', dry_run=True, output='HEIGHT')
+        for item in campo['items']:
+            alto += pdf.multi_cell(ANCHO_TEXTO - 4, 4.9, item, align='L', dry_run=True, output='HEIGHT')
+        return max(alto, 5) + 3.2
+
+    def fila(campo):
+        asegurar(alto_fila(campo) + 1)
+        y = pdf.get_y()
+        if campo['etiqueta']:
+            pdf.set_xy(X_ETIQUETA, y + 0.9)
+            pdf.set_font('InterSB', '', 7)
+            pdf.set_text_color(*GRIS)
+            pdf.multi_cell(ANCHO_ETIQUETA, 3.6, campo['etiqueta'].upper(), align='L')
+            x_texto, ancho_texto = X_TEXTO, ANCHO_TEXTO
+        else:
+            x_texto, ancho_texto = ML, ANCHO
+        pdf.set_xy(x_texto, y)
+        negrita = campo['etiqueta'] in ('Juego',)
+        pdf.set_font('Inter', 'B' if negrita else '', 9.5)
+        pdf.set_text_color(*TINTA)
+        if campo['texto']:
+            pdf.multi_cell(ancho_texto, 4.9, campo['texto'], align='L')
+        for item in campo['items']:
+            pdf.set_x(x_texto)
+            pdf.set_font('Inter', '', 9.5)
+            pdf.cell(4, 4.9, '•')
+            pdf.multi_cell(ancho_texto - 4, 4.9, item, align='L')
+        y_fin = max(pdf.get_y(), y + 5)
+        pdf.set_draw_color(*LINEA)
+        pdf.set_line_width(0.15)
+        pdf.line(X_ETIQUETA, y_fin + 1.4, ANCHO_PAG - MR, y_fin + 1.4)
+        pdf.set_y(y_fin + 2.8)
+
+    def preparar_diagramas(lista):
+        """Convierte cada SVG a PNG y calcula su tamaño en la página (sin pasar de ALTO_MAX_DIAGRAMA)."""
+        from PIL import Image
+        listos = []
+        for d in lista:
+            try:
+                ruta = _svg_a_png(d['svg'])
+                with Image.open(ruta) as im:
+                    proporcion = im.height / im.width
+                ancho = min(ANCHO_DIAGRAMA, ALTO_MAX_DIAGRAMA / proporcion)
+                listos.append({'ruta': ruta, 'ancho': ancho, 'alto': ancho * proporcion, 'titulo': d.get('titulo')})
+            except Exception:
+                logger.exception('No se pudo convertir un diagrama del PDF')
+        return listos
+
+    def pintar_diagramas(listos):
+        for d in listos:
+            try:
+                asegurar(d['alto'] + 8)
+                if d.get('titulo'):
+                    pdf.set_font('InterSB', '', 7)
+                    pdf.set_text_color(*GRIS)
+                    pdf.set_x(ML)
+                    pdf.cell(ANCHO, 4, str(d['titulo']).upper(), new_x='LMARGIN', new_y='NEXT')
+                pdf.image(d['ruta'], x=ML, w=d['ancho'])
+                pdf.set_y(pdf.get_y() + 4)
+            finally:
+                os.unlink(d['ruta'])
+
+    bloques = _parsear_sesion_para_pdf(sesion_texto)
+    n_ejercicio = -1
+    for bloque in bloques:
+        tipo = bloque['tipo']
+        if tipo == 'seccion':
+            titulo = bloque['titulo']
+            if 'DESCANSO' in titulo.upper():
+                asegurar(14)
+                pdf.ln(2)
+                pdf.set_font('Inter', '', 8.5)
+                pdf.set_text_color(*GRIS)
+                pdf.set_x(ML)
+                pdf.cell(ANCHO, 6, titulo.replace('**', '').capitalize(), align='C', new_x='LMARGIN', new_y='NEXT')
+                pdf.ln(2)
             else:
-                pdf.ln(4)
-                pagina_recien_nueva = False
-            pdf.set_font('Helvetica', 'B', 12)
-            pdf.set_text_color(ACCENT_R, ACCENT_G, ACCENT_B)
-            pdf.set_x(pdf.l_margin)
-            pdf.multi_cell(170, 7, titulo)
-            pdf.set_draw_color(ACCENT_R, ACCENT_G, ACCENT_B)
-            pdf.set_line_width(0.5)
-            pdf.line(20, pdf.get_y(), 190, pdf.get_y())
-            pdf.ln(4)
-            pdf.set_font('Helvetica', size=10)
-            pdf.set_text_color(40, 40, 50)
-            if 'CALENTAMIENTO' in titulo_up:
-                add_diagram_by_id_prefix('calentamiento')
-            elif 'VUELTA A LA CALMA' in titulo_up:
-                add_diagram_by_id_prefix('vuelta_a_la_calma')
-            continue
-
-        # Markdown inline (*cursiva*, **negrita**) que el modelo añade dentro de la
-        # línea: este renderer no lo interpreta, así que se elimina para no mostrar
-        # asteriscos literales y para que coincida con subsec_keys ("*Juego*:" → "Juego:").
-        linea = linea.replace('**', '').replace('*', '')
-
-        if re.match(r'Ejercicio \d+', linea):
-            if not pagina_recien_nueva:
-                pdf.add_page()
-            pagina_recien_nueva = False
-            ejercicio_actual += 1
-            pdf.set_font('Helvetica', 'B', 13)
-            pdf.set_text_color(DARK_R, DARK_G, DARK_B)
-            pdf.set_x(pdf.l_margin)
-            pdf.multi_cell(170, 8, linea)
+                titulo_seccion(titulo)
+        elif tipo == 'texto':
+            pdf.set_font('Inter', '', 9.5)
+            pdf.set_text_color(*TINTA)
+            pdf.set_x(ML)
+            pdf.multi_cell(ANCHO, 5, bloque['texto'], align='L')
             pdf.ln(2)
-            add_diagram(ejercicio_actual)
-            pdf.set_x(pdf.l_margin)
-            pdf.set_font('Helvetica', size=10)
-            pdf.set_text_color(40, 40, 50)
-            continue
-
-        if any(linea.startswith(k) for k in subsec_keys):
-            pdf.set_x(pdf.l_margin)
-            pdf.set_font('Helvetica', 'B', 10)
-            pdf.set_text_color(60, 60, 70)
-            pdf.multi_cell(170, 5, linea)
-            pdf.set_x(pdf.l_margin)
-            pdf.set_font('Helvetica', size=10)
-            pdf.set_text_color(40, 40, 50)
-            continue
-
-        pdf.set_x(pdf.l_margin)
-        pdf.set_font('Helvetica', size=10)
-        pdf.set_text_color(50, 50, 60)
-        pdf.multi_cell(170, 5, linea)
+        elif tipo == 'calentamiento':
+            campos = _campos_de_bloque(bloque['lineas'])
+            listos = preparar_diagramas(diagramas_de(None, 'calentamiento'))
+            if listos:
+                asegurar(min(listos[0]['alto'] + 40, pdf.h - MARGEN_INFERIOR - 25))
+            pintar_diagramas(listos)
+            for campo in campos:
+                fila(campo)
+        elif tipo == 'ejercicio':
+            n_ejercicio += 1
+            campos = _campos_de_bloque(bloque['lineas'])
+            m = re.match(r'^(Ejercicio \d+(?:\.\d+)?)\s*(?:\([^)]*\))?\s*:?\s*(.*)$', bloque['titulo'])
+            rotulo, nombre = (m.group(1), m.group(2)) if m else ('Ejercicio', bloque['titulo'])
+            pdf.set_font('Sora', 'B', 12.5)
+            alto_titulo = pdf.multi_cell(ANCHO, 6.4, nombre or rotulo, align='L', dry_run=True, output='HEIGHT')
+            listos = preparar_diagramas(diagramas_de(n_ejercicio, 'ejercicio'))
+            # título + diagrama + al menos una fila de texto en la misma página: nunca un título suelto abajo
+            necesario = alto_titulo + 14 + (listos[0]['alto'] + 8 if listos else 0) + 18
+            asegurar(min(necesario, pdf.h - MARGEN_INFERIOR - 25))
+            pdf.ln(2.5)
+            pdf.set_font('InterSB', '', 7.5)
+            pdf.set_text_color(*NARANJA_OSCURO)
+            pdf.set_x(ML)
+            pdf.cell(ANCHO, 4.2, rotulo.upper(), new_x='LMARGIN', new_y='NEXT')
+            pdf.set_font('Sora', 'B', 12.5)
+            pdf.set_text_color(*TINTA)
+            pdf.set_x(ML)
+            pdf.multi_cell(ANCHO, 6.4, nombre or rotulo, align='L')
+            pdf.ln(2.5)
+            pintar_diagramas(listos)
+            for campo in campos:
+                fila(campo)
+            pdf.ln(3)
 
     return bytes(pdf.output())
