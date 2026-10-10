@@ -78,6 +78,19 @@ def aviso_pedido(terminos: list[str], edad: str) -> str:
             f"lo pides; revisa que sea adecuado para tu grupo.")
 
 
+def pedidos_presentes(terminos: list[str], texto: str, edad: str) -> list[str]:
+    """Los términos pedidos por el entrenador que de verdad aparecen en el texto final (sin negar)."""
+    en_texto = {_singular(t) for t in _coincidencias(texto, edad)}
+    return [t for t in terminos if _singular(t) in en_texto]
+
+
+def aviso_pedido_no_incluido(terminos: list[str], edad: str) -> str:
+    lista = ", ".join(f"«{t}»" for t in terminos)
+    return (f"Has pedido {lista}, que no es habitual en {edad} (línea roja de la categoría), pero no hay fichas ni "
+            f"propuesta adecuada: la sesión no lo incluye. Si lo quieres igualmente, genera un ejercicio suelto "
+            f"con ese objetivo.")
+
+
 def instruccion_prompt(edad: str, permitidos=()) -> str:
     """Aviso para el prompt de sesión con lo que no se puede incluir en esa edad ('' si nada)."""
     if edad in CATEGORIAS_MINIBASKET:
