@@ -8748,10 +8748,10 @@
         "resistencia"
       ]
     },
-    "descripcion": "ORGANIZACIÓN: tríos en fila en las dos canastas, un balón por trío. En cada trío, un reboteador bajo el aro y dos corredores en las esquinas de la línea de fondo. Las dos canastas salen a la vez, cada una por su mitad derecha de la pista hasta el medio campo para no cruzarse. SECUENCIA: el reboteador lanza al tablero y coge el rebote; uno de los corredores se abre a la banda y recibe el pase de salida; el reboteador corre por el centro y el otro corredor por la otra calle exterior. El que recibe bota hacia el centro y entrega en mano al reboteador antes del medio campo; desde ahí el del centro bota hasta el tiro libre y termina con bomba sobre un pie, o pasa corto al que llega por su calle. ROTACIÓN: el trío se queda en la canasta de llegada y cambia los papeles; el siguiente trío sale cuando el anterior pasa el medio campo. PROGRESIÓN: el corredor que no recibe tiene que llegar al aro antes que el balón; se cuentan canastas seguidas del grupo sin fallo; en U12, el entrenador dice el nombre del que debe terminar cuando el balón pasa el medio campo.",
+    "descripcion": "ORGANIZACIÓN: tríos en fila en las dos canastas, un balón por trío. En cada trío, un reboteador bajo el aro y dos corredores en las esquinas de la línea de fondo. Las dos canastas salen a la vez, cada una por su mitad derecha de la pista hasta el medio campo para no cruzarse. SECUENCIA: el reboteador lanza al tablero y coge el rebote; uno de los corredores se abre a la banda y recibe el pase de salida; el reboteador corre por el centro y el otro corredor por la otra calle exterior. El que recibe bota hacia el centro hasta la línea de tiro libre y termina con bomba sobre un pie, o pasa corto a uno de los dos que llegan por las calles. ROTACIÓN: el trío se queda en la canasta de llegada y cambia los papeles; el siguiente trío sale cuando el anterior pasa el medio campo. PROGRESIÓN: el corredor que no recibe tiene que llegar al aro antes que el balón; se cuentan canastas seguidas del grupo sin fallo; en U12, el entrenador dice el nombre del que debe terminar cuando el balón pasa el medio campo.",
     "puntos_clave": [
       "Un solo pase de salida, corto y hacia la banda.",
-      "El reboteador corre por el centro y pide el balón en el medio campo.",
+      "El reboteador corre por el centro y llega para ofrecer un pase corto.",
       "Las dos calles exteriores van pegadas a la banda hasta la línea de tiro libre.",
       "Terminar con bomba sobre un pie, sin frenar."
     ],
@@ -8767,8 +8767,8 @@
       "El balón avanza rápido con pocos botes."
     ],
     "progresion": {
-      "facilitar": "Sin entrega en mano: el que recibe el pase de salida bota hasta el final.",
-      "complicar": "El corredor sin balón debe llegar antes que el balón y, en U12, el entrenador elige quién termina."
+      "facilitar": "Solo dos corredores: el reboteador pasa y se queda bajo el aro.",
+      "complicar": "El que recibe entrega en mano al reboteador antes del medio campo y, en U12, el entrenador elige quién termina."
     },
     "sin_diagrama": true
   },
@@ -8828,7 +8828,7 @@
   },
   {
     "id": "ej_104",
-    "nombre": "El espejo defensivo: 1c1 sin balón en el carril",
+    "nombre": "Espejo en el carril: 1c1 sin balón",
     "categoria": "1c1",
     "subcategoria": "defensa",
     "edades": [
