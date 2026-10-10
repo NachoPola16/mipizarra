@@ -123,3 +123,18 @@ def test_el_bote_de_minibasket_sigue_pudiendo_usar_fichas_de_bote_aunque_sean_ca
 def test_un_calentamiento_sin_id_no_rompe_la_exclusion():
     sin_id = {k: v for k, v in CAL_1.items() if k != "id"}
     assert elegir_calentamiento([sin_id], "U10", "bote", excluir={None}) is sin_id
+
+
+def test_en_la_biblioteca_real_el_calentamiento_varia_cuando_el_objetivo_no_lo_nombra_ninguna_ficha(ejercicios):
+    # antes, los fundamentos asociados hacían que una sola ficha saliera en casi todas las sesiones
+    import random
+    for edad, objetivo in (("U14", "tiro"), ("U14", "transición"), ("U16", "transición"),
+                           ("U18", "transición"), ("Senior", "transición")):
+        vistas = {elegir_calentamiento(ejercicios, edad, objetivo, azar=random.Random(s))["id"] for s in range(80)}
+        assert len(vistas) >= 6, (edad, objetivo, vistas)
+
+
+def test_si_alguna_ficha_nombra_el_objetivo_el_calentamiento_sale_de_esas(ejercicios):
+    import random
+    vistas = {elegir_calentamiento(ejercicios, "U18", "pase", azar=random.Random(s))["id"] for s in range(80)}
+    assert vistas <= {"ej_112", "ej_114", "ej_115", "ej_119"} and len(vistas) >= 2
