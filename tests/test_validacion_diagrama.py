@@ -122,7 +122,7 @@ def test_tipo_de_movimiento_desconocido():
     assert "desconocido" in _validar_diagrama(d, "")
 
 
-@pytest.mark.parametrize("nombre", ["1c1 en el ala", "3c2 con ayuda", "2 contra 2 sin bote", "2c0"])
+@pytest.mark.parametrize("nombre", ["3c2 con ayuda", "2 contra 2 sin bote"])
 def test_conteo_no_coincide_con_nombre(nombre):
     error = _validar_diagrama(_diagrama(), nombre)
     assert error and "atacante" in error and "defensor" in error
@@ -131,8 +131,67 @@ def test_conteo_no_coincide_con_nombre(nombre):
 def test_defensores_de_mas_para_el_nombre():
     d = _diagrama()
     d["jugadores_defensa"].append({"id": "D2", "x": 25, "y": 35})
-    assert _validar_diagrama(d, "2c1 en media pista") is not None
+    assert _validar_diagrama(copy.deepcopy(d), "2c1 en media pista") is None     # el sobrante se recorta
     assert _validar_diagrama(d, "2c2 en media pista") is None
+    assert len(d["jugadores_defensa"]) == 2                                      # con 2c2 no se toca nada
+
+
+# ── Jugadores de más: se recortan en vez de rechazar el diagrama ────────────────────────────
+
+def test_1c1_con_dos_atacantes_se_recorta_al_portador_y_sus_movimientos():
+    d = _diagrama()                                    # A1 con balón + A2, D1
+    assert _validar_diagrama(d, "1c1 en el ala") is None
+    assert [j["id"] for j in d["jugadores_ataque"]] == ["A1"]
+    assert [j["id"] for j in d["jugadores_defensa"]] == ["D1"]
+    # fuera el pase a A2 y todo lo de A2; se queda lo de A1
+    assert [(m["de"], m["tipo"]) for m in d["movimientos"]] == [("A1", "bote")]
+
+
+def test_el_recorte_conserva_al_portador_aunque_no_sea_el_primero():
+    d = _diagrama()
+    d["balon_inicio"]["portador"] = "A2"
+    assert _validar_diagrama(d, "1c1") is None
+    assert [j["id"] for j in d["jugadores_ataque"]] == ["A2"]
+
+
+def test_el_recorte_conserva_al_que_mas_se_mueve_si_no_hay_portador_entre_los_sobrantes():
+    d = {
+        "tipo": "media_pista",
+        "jugadores_ataque": [{"id": "A1", "x": 20, "y": 60}, {"id": "A2", "x": 50, "y": 60},
+                             {"id": "A3", "x": 80, "y": 60}],
+        "jugadores_defensa": [{"id": "D1", "x": 50, "y": 45}],
+        "balon_inicio": {"portador": "D1"},
+        "movimientos": [
+            {"de": "A3", "tipo": "desplazamiento", "a_pos": {"x": 70, "y": 40}, "orden": 1},
+            {"de": "A3", "tipo": "tiro", "orden": 2},
+            {"de": "A1", "tipo": "desplazamiento", "a_pos": {"x": 30, "y": 40}, "orden": 3},
+        ],
+        "conos": [],
+    }
+    assert _validar_diagrama(d, "1c1") is None
+    assert [j["id"] for j in d["jugadores_ataque"]] == ["A3"]
+
+
+def test_el_recorte_no_deja_movimientos_de_jugadores_quitados():
+    d = _diagrama()
+    d["jugadores_defensa"].append({"id": "D2", "x": 25, "y": 35})
+    d["movimientos"].append({"de": "D2", "tipo": "desplazamiento", "a_pos": {"x": 30, "y": 30}, "orden": 5})
+    assert _validar_diagrama(d, "2c1") is None
+    ids = {j["id"] for j in d["jugadores_ataque"] + d["jugadores_defensa"]}
+    assert all(m["de"] in ids for m in d["movimientos"])
+
+
+def test_2c0_recorta_el_defensor():
+    d = _diagrama()
+    assert _validar_diagrama(d, "2c0") is None
+    assert d["jugadores_defensa"] == []
+
+
+def test_si_faltan_jugadores_no_se_inventan():
+    d = _diagrama()
+    error = _validar_diagrama(d, "3c1")
+    assert error and "atacante" in error
+    assert len(d["jugadores_ataque"]) == 2
 
 
 def _dist(p, q):
