@@ -456,7 +456,7 @@ def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
     t_calent, t_vuelta, t_descanso = plan.t_calentamiento, plan.t_vuelta, plan.t_descanso
     # Calentamiento: una ficha curada de la biblioteca si hay una para la edad (el 4B inventaba juegos
     # poco adecuados y repetía material); si no, lo redacta el modelo como siempre.
-    ficha_calent = (_elegir_calentamiento(biblioteca, edad, objetivo, {f["id"] for f in fichas if f}, azar)
+    ficha_calent = (_elegir_calentamiento(biblioteca, edad, objetivo, {f.get("id") for f in fichas if f}, azar)
                     if t_calent else None)
     categoria_nombre = EDAD_A_CATEGORIA.get(edad, edad)
 

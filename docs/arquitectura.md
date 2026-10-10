@@ -17,7 +17,7 @@ Navegador ──▶ frontend (Django) ──▶ api (FastAPI) ──▶ ollama (
 | `api/config.py` | Variables de entorno, modelos, rutas, mapeo de categorías y nombres de ámbito de reglamento. Sin dependencias pesadas. |
 | `api/ejercicios.py` | Biblioteca de ejercicios: carga, filtrado por edad y objetivo, selección de los n ejercicios de la parte principal (con el arco sin oposición → igualada), umbral de relevancia y contexto de ejercicios para el prompt. |
 | `api/contexto.py` | Recuperación (RAG): consulta a las colecciones de ChromaDB, presupuesto de contexto por colección y ámbitos de reglamento. |
-| `api/sesion.py` | Modo 1: generación de la sesión completa. Pide al plan cuántos ejercicios lleva, elige las fichas, pide al LLM solo lo que no está curado (calentamiento, vuelta a la calma, fundamentos y huecos sin ficha), valida sus líneas rojas y ensambla el texto final. |
+| `api/sesion.py` | Modo 1: generación de la sesión completa. Pide al plan cuántos ejercicios lleva, elige las fichas, pide al LLM solo lo que no está curado (calentamiento si no hay ficha para la edad, vuelta a la calma, fundamentos y huecos sin ficha), valida sus líneas rojas y ensambla el texto final. |
 | `api/plan_sesion.py` | Reparto de tiempo: cuántos ejercicios (entre 5 y 8 en total, contando calentamiento y vuelta a la calma) y cuánto dura cada uno según duración y edad. Minibasket: más ejercicios y más cortos. |
 | `api/bloques.py` | Bloques de la sesión que compone el código: ficha curada íntegra (descripción y puntos clave de `exercises.json`), variante desde la progresión de la ficha (si la trae) y troceado de la respuesta del modelo. |
 | `api/lineas_rojas.py` | Guardia léxica de líneas rojas por edad para todo texto generado por el modelo, e instrucción equivalente para el prompt. |
@@ -63,8 +63,8 @@ Al parchear una función en un test hay que hacerlo en el módulo donde vive (po
 
 1. El frontend envía categoría, duración y objetivo a la API.
 2. `ejercicios` filtra ejercicios por edad y objetivos, y `contexto` recupera teoría relevante de ChromaDB (presupuesto de contexto por colección).
-3. `plan_sesion` decide cuántos ejercicios lleva la parte principal y cuánto dura cada uno (la sesión completa tiene entre 5 y 8 contando calentamiento y vuelta a la calma). Cada hueco usa una ficha de la biblioteca si encaja con el objetivo (`es_relevante`); si no, lo propone la IA y se marca «Propuesto por la IA (sin revisar)».
-4. El código compone los ejercicios con la ficha curada íntegra (descripción y puntos clave tal cual) y, si la ficha trae progresión y el ejercicio es largo para esa edad, su variante N.2. El LLM redacta solo calentamiento, vuelta a la calma, fundamentos y los huecos propuestos, paso a paso (si se detiene, se le piden los apartados que faltan); si algo incumple las líneas rojas de la edad se reintenta una vez y, si persiste, se omite esa pieza (queda en `avisos`).
+3. `plan_sesion` decide cuántos ejercicios lleva la parte principal y cuánto dura cada uno (la sesión completa tiene entre 5 y 8 contando calentamiento y vuelta a la calma). Cada hueco usa una ficha de la biblioteca si encaja con el objetivo (`es_relevante`); si no, lo propone la IA y se marca «Propuesto por la IA (sin revisar)». Entre fichas igual de adecuadas se elige al azar (`azar=` en `elegir_fichas`), sin empeorar huecos ni el arco de oposición, para que los mismos parámetros no den siempre la misma sesión.
+4. El código compone los ejercicios con la ficha curada íntegra (descripción y puntos clave tal cual) y, si la ficha trae progresión y el ejercicio es largo para esa edad, su variante N.2. El calentamiento sale de una ficha de la biblioteca (`categoria: calentamiento`, distinta de las de la parte principal) cuando hay una para la edad; si no, lo redacta el LLM. El LLM redacta además vuelta a la calma, fundamentos y los huecos propuestos, paso a paso (si se detiene, se le piden los apartados que faltan); si algo incumple las líneas rojas de la edad se reintenta una vez y, si persiste, se omite esa pieza (queda en `avisos`). Lo que el entrenador pide expresamente en el objetivo se hace con aviso: `/generar` devuelve `avisos` y la interfaz los muestra; el aviso solo dice «se ha hecho» si el término aparece en la sesión final.
 5. Para cada ejercicio se usa el diagrama de la biblioteca si existe; si no, se genera uno desde la descripción.
 6. La sesión y los SVG se devuelven al frontend.
 
@@ -86,10 +86,11 @@ El LLM nunca dibuja: solo produce JSON de coordenadas (ver [coordenadas.md](coor
 
 - La salida se restringe con un **JSON Schema** (decodificación guiada por gramática en Ollama).
 - Un **validador semántico** comprueba lo que el schema no puede expresar: referencias a jugadores declarados, posiciones con nombre conocidas, número de atacantes/defensores coherente con el nombre (`2c1`, `3c2`...), distancia mínima entre jugadores.
-- Antes de rechazar, el validador **repara** lo que tiene arreglo determinista: el `a_pos` que falta cuando el propio diagrama lo indica y los jugadores demasiado cerca si caben separándolos un poco (detalle en [coordenadas.md](coordenadas.md#reparación-en-el-validador)).
+- Antes de rechazar, el validador **repara** lo que tiene arreglo determinista: los jugadores de más respecto al AcB del nombre (se quitan, nunca se añaden), el `a_pos` que falta cuando el propio diagrama lo indica y los jugadores demasiado cerca si caben separándolos un poco (detalle en [coordenadas.md](coordenadas.md#reparación-en-el-validador)).
 - Si la validación falla, se reintenta una vez indicando el error; si vuelve a fallar, se devuelve "diagrama no disponible" en lugar de un dibujo incorrecto.
 - Al dibujar, el renderer separa los marcadores que siguen solapados (por ejemplo, en la biblioteca curada) sin modificar el JSON.
-- Para calentamiento y vuelta a la calma hay plantillas que producen un diagrama válido sin modelo (`api/plantillas.py`); todavía no están conectadas a la generación de sesiones.
+- El esquema de decodificación exige `a_pos` en desplazamiento, bote y bloqueo y `a` en el pase (`anyOf` por tipo de movimiento): el modelo ya no puede omitirlos.
+- Para calentamiento y vuelta a la calma hay plantillas que producen un diagrama válido sin modelo (`api/plantillas.py`), que se usan cuando el juego es estándar.
 
 ## Colecciones RAG
 

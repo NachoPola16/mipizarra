@@ -46,14 +46,13 @@ def generar_diagrama_desde_texto(descripcion_ejercicio: str) -> dict | None:
         return None
 
 
-# Función para generar coordenadas a partir de descripción y nombre
 # JSON Schema del diagrama para "format" en /api/generate: Ollama compila esto a
 # una gramática (XGrammar) que restringe la decodificación token a token, así que
 # garantiza forma válida (tipos, enums de "tipo") — a diferencia de "format": "json",
-# que solo garantiza JSON parseable de cualquier forma. Deliberadamente permisivo en
-# "required" por movimiento (solo de/tipo/orden): qué campos hacen falta según el
-# tipo de movimiento (a_pos vs a) es una regla cruzada que JSON Schema no expresa
-# bien, así que se comprueba en _validar_diagrama.
+# que solo garantiza JSON parseable de cualquier forma. Cada movimiento es una de tres
+# variantes según su tipo (anyOf): el destino (a_pos) es obligatorio en desplazamiento,
+# bote y bloqueo, y el receptor (a) en el pase. Lo que el esquema no puede expresar
+# (referencias a jugadores declarados, recuento AcB del nombre) lo comprueba _validar_diagrama.
 _TIPOS_CON_DESTINO = ("desplazamiento", "bote", "bloqueo")
 
 _PUNTO_SCHEMA = {
@@ -266,8 +265,10 @@ def _validar_diagrama(diagrama: dict, nombre_ejercicio: str = "") -> str | None:
     (para reintentar con el modelo señalándoselo) si no lo es.
 
     Antes de rechazar, repara en el propio diagrama lo que tiene arreglo determinista:
-    a_pos que se deduce del diagrama (_reparar_a_pos) y jugadores demasiado cerca que
-    caben separándolos un poco (_separar_jugadores)."""
+    jugadores de más respecto al AcB del nombre (_recortar_al_conteo), a_pos que se deduce
+    del diagrama (_reparar_a_pos) y jugadores demasiado cerca que caben separándolos un
+    poco (_separar_jugadores). OJO: MUTA el diagrama que recibe, también si al final lo
+    rechaza; quien quiera conservar el original debe pasar una copia profunda."""
     ataque  = diagrama.get("jugadores_ataque") or []
     defensa = diagrama.get("jugadores_defensa") or []
     if not ataque:
