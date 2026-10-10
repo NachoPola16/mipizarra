@@ -53,7 +53,7 @@ def test_sin_azar_es_determinista_y_con_azar_hay_variedad_entre_las_primeras():
     assert elegir_calentamiento(BIBLIOTECA, "U8", "tiro")["id"] == "c_1"
     vistas = {elegir_calentamiento(BIBLIOTECA, "U8", "tiro", azar=random.Random(s))["id"] for s in range(40)}
     assert len(vistas) > 1
-    assert "c_4" not in vistas      # solo compiten las 3 primeras
+    assert "c_4" in vistas       # compiten todas las candidatas
 
 
 # ── bloque_calentamiento ─────────────────────────────────────────────────────

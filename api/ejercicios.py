@@ -39,13 +39,14 @@ def _palabras_objetivo(objetivo: str) -> tuple[list[str], list[str]]:
     return palabras, list(set(componentes))
 
 
-def filtrar_ejercicios(ejercicios: list, edad: str, objetivo: str) -> list:
-    categoria = EDAD_A_CATEGORIA.get(edad, edad)
-    palabras_obj, palabras_comp = _palabras_objetivo(objetivo)
+def _es_de_la_edad(ej: dict, edad: str) -> bool:
+    """¿La ficha admite esa edad, por la edad misma o por su categoría?"""
+    edades_ej = ej.get("edades", [])
+    return edad in edades_ej or EDAD_A_CATEGORIA.get(edad, edad) in edades_ej
 
-    def en_categoria(ej):
-        edades_ej = ej.get("edades", [])
-        return edad in edades_ej or categoria in edades_ej
+
+def filtrar_ejercicios(ejercicios: list, edad: str, objetivo: str) -> list:
+    palabras_obj, palabras_comp = _palabras_objetivo(objetivo)
 
     def texto_ej(ej):
         tags = " ".join(ej.get("objetivos", {}).get("tacticos", []))
@@ -53,7 +54,7 @@ def filtrar_ejercicios(ejercicios: list, edad: str, objetivo: str) -> list:
 
     directos, analiticos, resto = [], [], []
     for ej in ejercicios:
-        if not en_categoria(ej):
+        if not _es_de_la_edad(ej, edad):
             continue
         txt = texto_ej(ej)
         if any(p in txt for p in palabras_obj):
@@ -168,6 +169,7 @@ def _entre_empates(candidatos: list, clave, azar):
 
 
 def _elegir_por_arco(analiticos: list, directos: list, n: int, azar) -> list:
+    """Una pasada del arco por posiciones; con `azar`, los empates de mismo nivel se sortean."""
     elegidos: list = []
     for posicion in range(n):
         objetivo = nivel_objetivo(posicion, n)
@@ -235,16 +237,15 @@ def elegir_fichas(ejercicios: list, edad: str, objetivo: str, n: int, solo_direc
 def elegir_calentamiento(ejercicios: list, edad: str, objetivo: str, excluir=(), azar=None) -> dict | None:
     """Ficha de calentamiento de la biblioteca para la edad, o None si no hay (entonces lo redacta el
     modelo). Prefiere las que encajan con el objetivo; no repite las de `excluir` (las de la parte
-    principal). Sin `azar` es determinista; con él, elige entre las primeras candidatas."""
-    categoria = EDAD_A_CATEGORIA.get(edad, edad)
+    principal). Sin `azar` es determinista; con él elige entre todas las candidatas del grupo (entre
+    calentamientos el orden de la biblioteca no es un orden de relevancia)."""
     candidatas = [e for e in ejercicios
-                  if e.get("categoria") == "calentamiento"
-                  and (edad in e.get("edades", []) or categoria in e.get("edades", []))
+                  if e.get("categoria") == "calentamiento" and _es_de_la_edad(e, edad)
                   and e.get("id") not in excluir]
     if not candidatas:
         return None
     grupo = [e for e in candidatas if es_relevante(e, objetivo)] or candidatas
-    return grupo[0] if azar is None else azar.choice(grupo[:EMPATES_CON_VARIEDAD])
+    return grupo[0] if azar is None else azar.choice(grupo)
 
 
 def construir_contexto_ejercicios(ejercicios: list, max_ejs: int = 10) -> str:
