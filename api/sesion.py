@@ -9,6 +9,7 @@ redacta calentamiento, vuelta a la calma, fundamentos y los huecos para los que 
 relevante (marcados como «propuestos por la IA»). La variante N.2 solo existe si la ficha trae
 progresión curada. Todo lo que escribe el modelo pasa por la guardia de líneas rojas."""
 import logging
+import random
 import re
 from dataclasses import dataclass
 
@@ -436,7 +437,8 @@ def _ensamblar(huecos: list[_Hueco], bloques: dict[str, str],
 def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
     plan = plan_de_tiempos(duracion, edad)
     n = len(plan.duraciones)
-    fichas = _elegir_fichas(cargar_ejercicios(), edad, objetivo, n)
+    # azar: mismos parámetros, distinta elección de fichas entre los empates (misma calidad y arco)
+    fichas = _elegir_fichas(cargar_ejercicios(), edad, objetivo, n, azar=random.Random())
     ctx_teoria = construir_contexto_teoria(objetivo, edad)
 
     # Sin truncado global aquí: construir_contexto_teoria ya aplica presupuesto por
