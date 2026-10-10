@@ -69,3 +69,14 @@ def test_el_calentamiento_estandar_se_dibuja_con_su_plantilla(monkeypatch, clien
     d = next(x for x in r.json()["diagramas"] if x["id"] == "calentamiento")
     assert "<svg" in d["svg"] and "no disponible" not in d["svg"]
     assert not any("Zigzag" in n for n in cliente.llamadas)
+
+
+def test_generar_devuelve_los_avisos_de_la_sesion(monkeypatch):
+    main.limiter.reset()      # /generar admite 3 por minuto y este fichero ya las ha gastado
+    # sin esto el entrenador nunca se entera de que se hizo algo en línea roja o de que se omitió una pieza
+    monkeypatch.setattr(main, "generar_sesion",
+                        lambda **k: {"texto": TEXTO, "ejercicios_usados": [], "avisos": ["Has pedido «bloqueo»."]})
+    r = TestClient(main.app).post("/generar", json={"objetivo": "bloqueo", "edad": "U12", "duracion": 60,
+                                                    "generar_diagramas": False})
+    assert r.status_code == 200
+    assert r.json()["avisos"] == ["Has pedido «bloqueo»."]
