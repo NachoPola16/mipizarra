@@ -9035,5 +9035,906 @@
       "complicar": "Conos más lejanos, límite de cinco segundos y robo limpio que vale doble."
     },
     "sin_diagrama": true
+  },
+  {
+    "id": "ej_108",
+    "nombre": "Espejo con bote: el guía cambia de mano y el otro copia",
+    "categoria": "calentamiento",
+    "subcategoria": "manejo_balon",
+    "edades": [
+      "U14",
+      "U16"
+    ],
+    "duracion_min": 10,
+    "intensidad": 2,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [
+        "lectura del compañero"
+      ],
+      "tecnicos": [
+        "cambios de mano",
+        "bote con la cabeza alta",
+        "bote de protección"
+      ],
+      "fisicos": [
+        "coordinación",
+        "activación progresiva"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: parejas enfrentadas a unos tres metros, cada jugador con su balón, repartidas por toda la pista sin estorbarse. SECUENCIA: uno hace de guía y encadena botes en el sitio y desplazamientos cortos (adelante, atrás, lateral) con cambios de mano: por delante, entre las piernas y por la espalda; el compañero lo copia en espejo sin mirar su propio balón. Cada 45 segundos se cambian los papeles. ROTACIÓN: a la señal del entrenador, todos cambian de pareja girando un puesto. PROGRESIÓN: empezar con bote alto y suave y pasar a bote bajo y más rápido; al final, el guía añade un cambio de ritmo de dos pasos y el compañero debe reaccionar a la vez.",
+    "puntos_clave": [
+      "Mirar al compañero, no al balón: el bote se siente con la yema de los dedos.",
+      "Cuerpo entre el balón y el compañero en cada cambio de mano.",
+      "Primero limpio y despacio; la velocidad sube solo cuando sale sin perder el balón.",
+      "Rodillas flexionadas y bote a la altura de la cadera o más bajo."
+    ],
+    "material": "Un balón por jugador; toda la pista o media pista si el grupo es pequeño.",
+    "consigna": "Cabeza arriba: copia lo que ves, no lo que botas.",
+    "errores_frecuentes": [
+      "Bajar la mirada al balón al hacer el cambio por la espalda o entre las piernas.",
+      "Quedarse de pie, con las piernas rectas, al botar en el sitio.",
+      "El guía va tan rápido que la pareja no puede seguirle."
+    ],
+    "que_observar": [
+      "El que copia reproduce el gesto en menos de un segundo.",
+      "Ningún balón se escapa en los cambios por detrás del cuerpo."
+    ],
+    "progresion": {
+      "facilitar": "Solo cambios por delante y en el sitio, sin desplazamientos.",
+      "complicar": "El guía mezcla dos cambios seguidos y una salida de dos pasos; el compañero tiene que llegar a la vez."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_109",
+    "nombre": "Cuatro esquinas con dos balones: pasa, sigue y recibe en carrera",
+    "categoria": "calentamiento",
+    "subcategoria": "tecnica_individual",
+    "edades": [
+      "U14",
+      "U16"
+    ],
+    "duracion_min": 10,
+    "intensidad": 3,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [
+        "pase y desmarque",
+        "timing de la recepción"
+      ],
+      "tecnicos": [
+        "pase de pecho en movimiento",
+        "recepción en carrera",
+        "parada en un tiempo"
+      ],
+      "fisicos": [
+        "activación progresiva"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: cuatro conos en cuadrado en media pista y una fila corta detrás de cada cono (dos o tres jugadores por fila). Empiezan con balón las dos filas de esquinas opuestas. SECUENCIA: el primero de la fila con balón sale hacia el siguiente cono; el de esa fila arranca a su encuentro, pide el balón con la mano y lo recibe en carrera; el pasador sigue su pase y se coloca al final de esa fila. Se pasa siempre en el mismo sentido. ROTACIÓN: continua, con los dos balones a la vez, así nadie espera más de unos segundos. A los dos minutos se cambia el sentido. PROGRESIÓN: primero pase de pecho al trote; después pase picado o con una mano tras un bote; al final se añade un tercer balón.",
+    "puntos_clave": [
+      "El receptor sale de la fila al encuentro del balón y enseña la mano donde lo quiere.",
+      "Pasar al hueco por delante del compañero, no a donde está parado.",
+      "Recibir en carrera y parar en un tiempo antes de volver a pasar.",
+      "Pasar y seguir el pase sin mirar si ha llegado."
+    ],
+    "material": "Dos o tres balones y cuatro conos; media pista.",
+    "consigna": "Sal a por él, pide con la mano y pasa al hueco.",
+    "errores_frecuentes": [
+      "Esperar el balón quieto en el cono.",
+      "Pase flojo o a la espalda del que corre.",
+      "Los dos balones se juntan en la misma fila por no mantener el ritmo."
+    ],
+    "que_observar": [
+      "Ninguna fila tiene a más de tres jugadores esperando.",
+      "El balón no toca el suelo salvo en el pase picado."
+    ],
+    "progresion": {
+      "facilitar": "Un solo balón y pase de pecho al trote.",
+      "complicar": "Tres balones y cambio de sentido a la señal sin parar la circulación."
+    },
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {
+          "id": "A1",
+          "x": 18.6,
+          "y": 23.6
+        },
+        {
+          "id": "A2",
+          "x": 12.6,
+          "y": 17.6
+        },
+        {
+          "id": "A3",
+          "x": 81.4,
+          "y": 23.6
+        },
+        {
+          "id": "A4",
+          "x": 87.4,
+          "y": 17.6
+        },
+        {
+          "id": "A5",
+          "x": 81.4,
+          "y": 86.4
+        },
+        {
+          "id": "A6",
+          "x": 87.4,
+          "y": 92.4
+        },
+        {
+          "id": "A7",
+          "x": 18.6,
+          "y": 86.4
+        },
+        {
+          "id": "A8",
+          "x": 12.6,
+          "y": 92.4
+        }
+      ],
+      "jugadores_defensa": [],
+      "movimientos": [
+        {
+          "de": "A1",
+          "tipo": "pase",
+          "a": "A3",
+          "orden": 1
+        },
+        {
+          "de": "A1",
+          "tipo": "desplazamiento",
+          "a_pos": {
+            "x": 75.0,
+            "y": 30.0
+          },
+          "orden": 2
+        },
+        {
+          "de": "A3",
+          "tipo": "pase",
+          "a": "A5",
+          "orden": 3
+        }
+      ],
+      "conos": [
+        {
+          "x": 25.0,
+          "y": 30.0
+        },
+        {
+          "x": 75.0,
+          "y": 30.0
+        },
+        {
+          "x": 75.0,
+          "y": 80.0
+        },
+        {
+          "x": 25.0,
+          "y": 80.0
+        }
+      ],
+      "balon_inicio": {
+        "portador": "A1"
+      }
+    }
+  },
+  {
+    "id": "ej_110",
+    "nombre": "Pilla con bote: el pillado roba el peto y cambia de rol",
+    "categoria": "calentamiento",
+    "subcategoria": "reaccion",
+    "edades": [
+      "U14",
+      "U16"
+    ],
+    "duracion_min": 8,
+    "intensidad": 3,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [
+        "lectura del espacio",
+        "protección del balón"
+      ],
+      "tecnicos": [
+        "bote de protección",
+        "cambios de dirección y ritmo"
+      ],
+      "fisicos": [
+        "reacción",
+        "desplazamientos multidireccionales"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: todos con balón dentro de media pista; dos o tres pilladores llevan un peto colgado en la cintura del pantalón. SECUENCIA: los pilladores botan y tratan de tocar con la mano libre a cualquier compañero; quien es tocado le quita el peto al pillador, se lo pone y pasa a pillar. Si alguien pierde el balón o pisa fuera de la zona, también recibe un peto. ROTACIÓN: rondas de 90 segundos con 20 segundos de pausa botando en el sitio; en cada ronda se cambian los pilladores iniciales. PROGRESIÓN: se reduce el espacio a la zona entre la línea de tres y el medio campo; después solo se puede botar con la mano no dominante.",
+    "puntos_clave": [
+      "Cabeza alta para ver a todos los pilladores, no solo al más cercano.",
+      "Escapar con cambio de ritmo y de dirección, no solo corriendo más.",
+      "El brazo libre protege, pero sin empujar.",
+      "Empezar al 60 % y subir la intensidad ronda a ronda."
+    ],
+    "material": "Un balón por jugador, tres petos y cuatro conos para marcar la zona.",
+    "consigna": "Ojos arriba, bote lejos del que pilla.",
+    "errores_frecuentes": [
+      "Mirar el balón y chocar con un compañero.",
+      "Quedarse en una esquina esperando sin moverse.",
+      "Frenar el bote o hacer dobles al esquivar."
+    ],
+    "que_observar": [
+      "Los jugadores cambian de mano al acercarse un pillador.",
+      "Nadie se queda parado más de unos segundos."
+    ],
+    "progresion": {
+      "facilitar": "Un solo pillador y toda la media pista.",
+      "complicar": "Menos espacio, bote solo con la mano no dominante y un pillador más."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_111",
+    "nombre": "Bandejas suaves desde las esquinas con balón para cada uno",
+    "categoria": "calentamiento",
+    "subcategoria": "tecnica_individual",
+    "edades": [
+      "U14",
+      "U16"
+    ],
+    "duracion_min": 10,
+    "intensidad": 2,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [],
+      "tecnicos": [
+        "bandeja con verticalidad",
+        "bandeja con ambas manos",
+        "ritmo de pies en la finalización"
+      ],
+      "fisicos": [
+        "activación progresiva",
+        "coordinación"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: en cada canasta, dos filas en las esquinas de la línea de fondo, todos con su balón; se usan las dos canastas para que las filas sean cortas. SECUENCIA: el primero de cada fila sale botando hacia el aro y finaliza con bandeja suave por su lado (mano derecha por la derecha, izquierda por la izquierda); recoge su rebote y se va a la otra fila. Las dos filas salen alternadas para no chocar. ROTACIÓN: continua; mientras esperan, botan en el sitio con cambios de mano. PROGRESIÓN: primero al trote, bandeja estándar; después bandeja tras un cambio de mano por delante; al final, inicio de bandeja a aro pasado o con paso en dos tiempos lateral, siempre a baja intensidad.",
+    "puntos_clave": [
+      "Último paso hacia arriba, no hacia delante: subir vertical.",
+      "Rodilla de la mano que finaliza arriba y balón protegido con las dos manos hasta soltarlo.",
+      "Dejar el balón en el tablero con suavidad, sin correr ni saltar al máximo.",
+      "Los que esperan siguen botando: nadie parado."
+    ],
+    "material": "Un balón por jugador y dos canastas.",
+    "consigna": "Suave y arriba: pies primero, luego la mano.",
+    "errores_frecuentes": [
+      "Saltar hacia delante y chocar con el soporte o pasar el aro.",
+      "Finalizar siempre con la mano buena, también por el lado contrario.",
+      "Subir la intensidad demasiado pronto."
+    ],
+    "que_observar": [
+      "Usa la mano del lado por el que finaliza.",
+      "El último apoyo es de impulso vertical."
+    ],
+    "progresion": {
+      "facilitar": "Salida desde más cerca, con dos botes y sin cambio de mano.",
+      "complicar": "Cambio de mano por delante antes de entrar y alternar bandeja estándar y a aro pasado."
+    },
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {
+          "id": "A1",
+          "x": 6.0,
+          "y": 22.0
+        },
+        {
+          "id": "A2",
+          "x": 6.0,
+          "y": 30.5
+        },
+        {
+          "id": "A3",
+          "x": 6.0,
+          "y": 39.0
+        },
+        {
+          "id": "A4",
+          "x": 6.0,
+          "y": 47.5
+        },
+        {
+          "id": "A5",
+          "x": 94.0,
+          "y": 22.0
+        },
+        {
+          "id": "A6",
+          "x": 94.0,
+          "y": 30.5
+        },
+        {
+          "id": "A7",
+          "x": 94.0,
+          "y": 39.0
+        },
+        {
+          "id": "A8",
+          "x": 94.0,
+          "y": 47.5
+        }
+      ],
+      "jugadores_defensa": [],
+      "movimientos": [
+        {
+          "de": "A1",
+          "tipo": "bote",
+          "a_pos": {
+            "x": 38.0,
+            "y": 18.0
+          },
+          "orden": 1
+        },
+        {
+          "de": "A1",
+          "tipo": "tiro",
+          "orden": 2
+        },
+        {
+          "de": "A5",
+          "tipo": "bote",
+          "a_pos": {
+            "x": 62.0,
+            "y": 18.0
+          },
+          "orden": 3
+        },
+        {
+          "de": "A5",
+          "tipo": "tiro",
+          "orden": 4
+        }
+      ],
+      "conos": [],
+      "balon_inicio": {
+        "portador": "A1"
+      }
+    }
+  },
+  {
+    "id": "ej_112",
+    "nombre": "Tres sin defensa: leer la señal y pasar al lado libre",
+    "categoria": "calentamiento",
+    "subcategoria": "juego_dinamico",
+    "edades": [
+      "U16",
+      "U18",
+      "Senior"
+    ],
+    "duracion_min": 10,
+    "intensidad": 3,
+    "carga_cognitiva": 4,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [
+        "lectura de juego",
+        "espaciado",
+        "pase al lado débil"
+      ],
+      "tecnicos": [
+        "pase en movimiento",
+        "recepción y finalización suave"
+      ],
+      "fisicos": [
+        "activación progresiva"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: grupos de tres en cada canasta (base en la cabecera y dos aleros en los 45°), sin defensa; el entrenador o un compañero se coloca en la zona con un brazo libre. SECUENCIA: el base bota hacia un lado; el que está bajo el aro levanta el brazo derecho o el izquierdo para indicar qué lado está «cerrado». El base pasa al alero del lado abierto, que recibe, ataca con uno o dos botes y finaliza con bandeja o tiro corto a ritmo suave. El tercero corta hacia el aro o se abre a la esquina para dar otra línea de pase. ROTACIÓN: el que finaliza coge el rebote y pasa a ser el señalador; cada uno pasa por los cuatro papeles. Con dieciséis jugadores, dos grupos por canasta que salen uno tras otro. PROGRESIÓN: primero la señal llega antes del primer bote; después en el último momento, cuando el base ya ha botado; al final la señal puede ser cerrar el aro y obliga a un pase extra.",
+    "puntos_clave": [
+      "Mirar la señal con la cabeza alta antes y durante el bote.",
+      "El alero mantiene la distancia (unos cinco metros) para que el pase sea posible.",
+      "Pase al hueco por delante del receptor, sin detener la carrera.",
+      "Finalización a baja intensidad: el objetivo es leer bien, no correr."
+    ],
+    "material": "Un balón por grupo; dos canastas.",
+    "consigna": "Mira, decide y pasa al lado que queda libre.",
+    "errores_frecuentes": [
+      "Decidir el pase antes de ver la señal.",
+      "Los aleros se acercan al balón y se cierran el espacio.",
+      "El tercer jugador se queda quieto mirando la jugada."
+    ],
+    "que_observar": [
+      "El primer pase va al lado correcto.",
+      "El tercer jugador ofrece una línea de pase en cada repetición."
+    ],
+    "progresion": {
+      "facilitar": "Señal antes de empezar a botar y sin el corte del tercer jugador.",
+      "complicar": "Señal tardía y, si se cierra el aro, pase extra al tercer jugador antes de finalizar."
+    },
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {
+          "id": "A1",
+          "x": 50,
+          "y": 68
+        },
+        {
+          "id": "A2",
+          "x": 22,
+          "y": 52
+        },
+        {
+          "id": "A3",
+          "x": 78,
+          "y": 52
+        }
+      ],
+      "jugadores_defensa": [],
+      "conos": [],
+      "balon_inicio": {
+        "portador": "A1"
+      },
+      "movimientos": [
+        {
+          "de": "A1",
+          "tipo": "bote",
+          "a_pos": {
+            "x": 42,
+            "y": 64
+          },
+          "orden": 1
+        },
+        {
+          "de": "A1",
+          "tipo": "pase",
+          "a": "A2",
+          "orden": 2
+        },
+        {
+          "de": "A3",
+          "tipo": "desplazamiento",
+          "a_pos": {
+            "x": 60,
+            "y": 24
+          },
+          "orden": 3
+        },
+        {
+          "de": "A2",
+          "tipo": "bote",
+          "a_pos": {
+            "x": 36,
+            "y": 24
+          },
+          "orden": 3
+        },
+        {
+          "de": "A2",
+          "tipo": "tiro",
+          "orden": 4
+        }
+      ]
+    }
+  },
+  {
+    "id": "ej_113",
+    "nombre": "Dos balones en oleadas: bote simultáneo, alterno y con cambio de ritmo",
+    "categoria": "calentamiento",
+    "subcategoria": "manejo_balon",
+    "edades": [
+      "U16",
+      "U18",
+      "Senior"
+    ],
+    "duracion_min": 10,
+    "intensidad": 3,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [],
+      "tecnicos": [
+        "bote con las dos manos",
+        "disociación",
+        "cambio de ritmo con balón"
+      ],
+      "fisicos": [
+        "coordinación",
+        "activación progresiva"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: todos en la línea de fondo, cada uno con dos balones, repartidos a lo ancho en cuatro o cinco calles. SECUENCIA: salen en oleadas de cuatro o cinco hasta el medio campo y vuelven por la misma calle cambiando el tipo de bote en cada viaje: los dos a la vez a la altura de la cadera, alternos, uno alto y otro bajo, y dos botes lentos seguidos de tres rápidos (cambio de ritmo). ROTACIÓN: en cuanto una oleada llega a la línea de tres puntos sale la siguiente, así nadie espera parado. PROGRESIÓN: al trote, después avanzando de lado y hacia atrás, y al final con parada en un tiempo a la señal sin perder el control de los dos balones.",
+    "puntos_clave": [
+      "Mirar al frente: las dos manos trabajan sin que la vista baje.",
+      "Bote firme y con la yema de los dedos en ambas manos; la débil marca el ritmo.",
+      "La velocidad sube solo si los dos balones siguen controlados.",
+      "Mantener la postura baja en los cambios de ritmo."
+    ],
+    "material": "Dos balones por jugador (si no hay, uno de baloncesto y otro de cualquier tamaño que bote); toda la pista.",
+    "consigna": "Dos balones, una mirada: siempre al frente.",
+    "errores_frecuentes": [
+      "La mano débil bota más flojo y el balón se escapa.",
+      "Correr más rápido de lo que se controla.",
+      "Encorvar la espalda para mirar los balones."
+    ],
+    "que_observar": [
+      "Completa el viaje sin que se escape ningún balón.",
+      "El cambio de ritmo se ve claro: lento y luego rápido."
+    ],
+    "progresion": {
+      "facilitar": "Un solo balón con la mano débil y luego dos balones al paso.",
+      "complicar": "Cambios de dirección a la señal y, en la vuelta, un cambio de mano por delante con un balón mientras el otro sigue botando."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_114",
+    "nombre": "Rondo de pase rápido con dos defensores dentro",
+    "categoria": "calentamiento",
+    "subcategoria": "juego_dinamico",
+    "edades": [
+      "U16",
+      "U18",
+      "Senior"
+    ],
+    "duracion_min": 8,
+    "intensidad": 3,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [
+        "línea de pase",
+        "lectura del defensor",
+        "circulación rápida del balón"
+      ],
+      "tecnicos": [
+        "pase con una mano",
+        "fintas de pase",
+        "pies de pivote"
+      ],
+      "fisicos": [
+        "reacción"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: seis jugadores en círculo de unos cinco metros de radio, marcado con cuatro conos, y dos defensores dentro; con doce o más jugadores se montan dos rondos a la vez. SECUENCIA: los de fuera se pasan el balón sin botar y sin pasar al compañero de al lado; los dos de dentro intentan tocarlo. Si lo tocan, el que ha dado el pase entra a defender y sale el defensor que lleva más tiempo dentro. ROTACIÓN: continua; ningún defensor está más de un minuto dentro aunque no toque el balón. PROGRESIÓN: primero se puede pasar a cualquiera; después solo con pase picado o con una mano; al final dos balones en el rondo a la vez.",
+    "puntos_clave": [
+      "Ver al defensor antes de recibir: decidir el pase antes de que llegue el balón.",
+      "Usar el pie de pivote y la finta para abrir la línea de pase.",
+      "Pase tenso y a la mano de fuera del receptor, lejos del defensor.",
+      "Los defensores trabajan juntos: uno presiona el balón y el otro corta la línea."
+    ],
+    "material": "Uno o dos balones y cuatro conos por rondo; petos para los defensores.",
+    "consigna": "Recibe ya sabiendo a quién pasas.",
+    "errores_frecuentes": [
+      "Mirar solo al balón y no al defensor.",
+      "Pase lento o bombeado que da tiempo a llegar.",
+      "Los defensores persiguen el balón a la vez y dejan el centro libre."
+    ],
+    "que_observar": [
+      "Encadena cinco pases o más seguidos.",
+      "El receptor hace finta antes de pasar cuando el defensor está encima."
+    ],
+    "progresion": {
+      "facilitar": "Un solo defensor dentro y círculo más grande.",
+      "complicar": "Dos balones a la vez y máximo un segundo con el balón en las manos."
+    },
+    "diagrama": {
+      "tipo": "media_pista",
+      "jugadores_ataque": [
+        {
+          "id": "A1",
+          "x": 50.0,
+          "y": 73.0
+        },
+        {
+          "id": "A2",
+          "x": 34.4,
+          "y": 64.0
+        },
+        {
+          "id": "A3",
+          "x": 34.4,
+          "y": 46.0
+        },
+        {
+          "id": "A4",
+          "x": 50.0,
+          "y": 37.0
+        },
+        {
+          "id": "A5",
+          "x": 65.6,
+          "y": 46.0
+        },
+        {
+          "id": "A6",
+          "x": 65.6,
+          "y": 64.0
+        }
+      ],
+      "jugadores_defensa": [
+        {
+          "id": "D1",
+          "x": 45.5,
+          "y": 55.0
+        },
+        {
+          "id": "D2",
+          "x": 54.5,
+          "y": 55.0
+        }
+      ],
+      "movimientos": [
+        {
+          "de": "A1",
+          "tipo": "pase",
+          "a": "A4",
+          "orden": 1
+        },
+        {
+          "de": "D1",
+          "tipo": "desplazamiento",
+          "a_pos": {
+            "x": 47.8,
+            "y": 46.0
+          },
+          "orden": 2
+        },
+        {
+          "de": "A4",
+          "tipo": "pase",
+          "a": "A5",
+          "orden": 3
+        }
+      ],
+      "conos": [
+        {
+          "x": 23.0,
+          "y": 28.0
+        },
+        {
+          "x": 77.0,
+          "y": 28.0
+        },
+        {
+          "x": 77.0,
+          "y": 82.0
+        },
+        {
+          "x": 23.0,
+          "y": 82.0
+        }
+      ],
+      "balon_inicio": {
+        "portador": "A1"
+      }
+    }
+  },
+  {
+    "id": "ej_115",
+    "nombre": "Parejas por toda la pista: pase en carrera sin bote y finalización suave",
+    "categoria": "calentamiento",
+    "subcategoria": "tecnica_individual",
+    "edades": [
+      "U16",
+      "U18",
+      "Senior"
+    ],
+    "duracion_min": 10,
+    "intensidad": 3,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [
+        "ocupar calles en carrera",
+        "pase adelantado"
+      ],
+      "tecnicos": [
+        "pase en carrera",
+        "recepción sin perder el paso",
+        "finalización a una mano"
+      ],
+      "fisicos": [
+        "activación progresiva",
+        "carrera continua"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: parejas con un balón en la línea de fondo, cada una por una calle (centro y banda). SECUENCIA: la pareja avanza hasta la canasta contraria pasándose el balón sin botar, separados unos cuatro metros; el que recibe cerca del aro finaliza con bandeja, aro pasado o tiro corto a ritmo suave. El compañero coge el rebote y vuelven por la banda contraria con la misma tarea. ROTACIÓN: sale una pareja nueva cuando la anterior pasa el medio campo; con dieciséis jugadores, dos parejas a la vez por las dos bandas. PROGRESIÓN: primero al trote y con cinco pases como mínimo; después con tres pases; al final, el finalizador alterna mano derecha e izquierda y el compañero tira a media distancia tras recibir la devolución.",
+    "puntos_clave": [
+      "Pasar por delante del compañero, al espacio por donde va a correr.",
+      "Recibir con las manos preparadas y sin frenar la carrera.",
+      "Mantener la separación: ni pegados ni a toda la anchura de la pista.",
+      "Ritmo de calentamiento: rápido de manos, no de piernas."
+    ],
+    "material": "Un balón por pareja; toda la pista y dos canastas.",
+    "consigna": "Pase al espacio, no al jugador.",
+    "errores_frecuentes": [
+      "Pasar hacia atrás o a la altura del compañero y frenarle.",
+      "Dar pasos de más al recibir en carrera.",
+      "Juntarse en la misma calle."
+    ],
+    "que_observar": [
+      "La pareja llega al aro sin que el balón caiga al suelo.",
+      "El receptor no cambia de ritmo al recibir."
+    ],
+    "progresion": {
+      "facilitar": "Más pases cortos y al trote, finalizando con tiro corto.",
+      "complicar": "Solo tres pases hasta el aro y finalización con la mano no dominante."
+    },
+    "diagrama": {
+      "tipo": "pista_completa",
+      "jugadores_ataque": [
+        {
+          "id": "A1",
+          "x": 35,
+          "y": 92
+        },
+        {
+          "id": "A2",
+          "x": 65,
+          "y": 92
+        }
+      ],
+      "jugadores_defensa": [],
+      "conos": [],
+      "balon_inicio": {
+        "portador": "A1"
+      },
+      "movimientos": [
+        {
+          "de": "A1",
+          "tipo": "pase",
+          "a": "A2",
+          "orden": 1
+        },
+        {
+          "de": "A1",
+          "tipo": "desplazamiento",
+          "a_pos": {
+            "x": 38,
+            "y": 55
+          },
+          "orden": 2
+        },
+        {
+          "de": "A2",
+          "tipo": "desplazamiento",
+          "a_pos": {
+            "x": 64,
+            "y": 60
+          },
+          "orden": 2
+        },
+        {
+          "de": "A2",
+          "tipo": "pase",
+          "a": "A1",
+          "orden": 3
+        },
+        {
+          "de": "A1",
+          "tipo": "desplazamiento",
+          "a_pos": {
+            "x": 42,
+            "y": 14
+          },
+          "orden": 4
+        },
+        {
+          "de": "A1",
+          "tipo": "tiro",
+          "orden": 5
+        }
+      ]
+    }
+  },
+  {
+    "id": "ej_116",
+    "nombre": "Movilidad dinámica con balón a lo ancho de la pista",
+    "categoria": "calentamiento",
+    "subcategoria": "movilidad",
+    "edades": [
+      "U14",
+      "U16",
+      "U18",
+      "Senior"
+    ],
+    "duracion_min": 8,
+    "intensidad": 2,
+    "carga_cognitiva": 1,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [],
+      "tecnicos": [
+        "manejo del balón",
+        "control del cuerpo"
+      ],
+      "fisicos": [
+        "movilidad articular",
+        "activación progresiva",
+        "coordinación"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: todos con balón en una banda, en dos o tres hileras separadas; se cruza la pista a lo ancho. SECUENCIA: cada cruce es un ejercicio y la vuelta es al trote botando. Zancada adelante girando el tronco con el balón hacia la pierna de delante; zancada lateral pasando el balón por debajo de la pierna; caminar en puntillas con el balón arriba, brazos estirados; rodillas al pecho pasando el balón por debajo de cada pierna; sentadilla profunda dejando el balón en el suelo y cogiéndolo arriba; giros de cadera con el balón alrededor de la cintura. ROTACIÓN: sale la segunda hilera cuando la primera va por la mitad. PROGRESIÓN: del paso al trote suave y, en los últimos cruces, saltos cortos a dos pies con el balón por encima de la cabeza.",
+    "puntos_clave": [
+      "Recorrido amplio pero sin rebotes ni tirones: movimiento controlado.",
+      "Espalda recta en zancadas y sentadillas.",
+      "El balón siempre en las manos, sin que caiga.",
+      "De menos a más: los primeros cruces, despacio."
+    ],
+    "material": "Un balón por jugador; anchura de la pista.",
+    "consigna": "Despacio y amplio: el balón te acompaña.",
+    "errores_frecuentes": [
+      "Hacer los ejercicios deprisa y con poco recorrido.",
+      "Rodilla de delante por delante de la punta del pie en la zancada.",
+      "Quedarse quieto esperando a la otra hilera."
+    ],
+    "que_observar": [
+      "Completa el recorrido articular de cada ejercicio.",
+      "No se le cae el balón al pasarlo bajo las piernas."
+    ],
+    "progresion": {
+      "facilitar": "Sin balón en los ejercicios de zancada y con balón en el resto.",
+      "complicar": "Añadir un bote entre cada zancada sin perder el ritmo del paso."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_117",
+    "nombre": "Bote a la señal: parar, cambiar o salir a canasta",
+    "categoria": "calentamiento",
+    "subcategoria": "reaccion",
+    "edades": [
+      "U14",
+      "U16",
+      "U18",
+      "Senior"
+    ],
+    "duracion_min": 10,
+    "intensidad": 3,
+    "carga_cognitiva": 3,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [
+        "atención a estímulos visuales"
+      ],
+      "tecnicos": [
+        "parada en un tiempo",
+        "cambio de dirección con cambio de mano",
+        "salida con bote"
+      ],
+      "fisicos": [
+        "reacción",
+        "activación progresiva"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: todos con balón repartidos por toda la pista, botando al trote; el entrenador en el centro, a la vista de todos. SECUENCIA: el entrenador da señales con las manos, sin hablar: mano arriba, parada en un tiempo y triple amenaza; brazo hacia un lado, cambio de dirección con cambio de mano hacia ese lado; dos manos al frente, cambio de ritmo de tres botes rápidos; puño cerrado, salida con bote hacia la canasta más cercana y finalización suave. ROTACIÓN: todos a la vez durante bloques de dos minutos con pausa activa de veinte segundos (bote en el sitio). PROGRESIÓN: primero una señal cada cinco segundos; después más seguidas y combinadas; al final la consigna es hacer lo contrario de la señal (mano arriba significa salir).",
+    "puntos_clave": [
+      "Bote con la cabeza alta: sin ver al entrenador no hay señal.",
+      "Reaccionar al momento, sin esperar a ver qué hacen los demás.",
+      "Parada equilibrada y balón protegido en la triple amenaza.",
+      "Las salidas a canasta, rápidas de reacción pero suaves al finalizar."
+    ],
+    "material": "Un balón por jugador; toda la pista.",
+    "consigna": "Ojos en las manos del entrenador, no en el balón.",
+    "errores_frecuentes": [
+      "Copiar al compañero en vez de mirar la señal.",
+      "Parada en dos tiempos o desequilibrada.",
+      "Cambiar de dirección sin cambiar de mano."
+    ],
+    "que_observar": [
+      "Responde a la señal en menos de un segundo.",
+      "Mantiene el bote controlado en los cambios de dirección."
+    ],
+    "progresion": {
+      "facilitar": "Solo dos señales (parada y salida) y al paso.",
+      "complicar": "Señales combinadas e inversas y bote solo con la mano no dominante."
+    },
+    "sin_diagrama": true
   }
 ]
