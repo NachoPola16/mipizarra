@@ -6,7 +6,9 @@ services:
     mem_limit: ${OLLAMA_MEM_LIMIT:-4g}
     restart: unless-stopped
     ports:
-      - "${BIND_IP:-0.0.0.0}:11434:11434"
+      # Solo en el propio equipo: la API llega a Ollama por la red de Docker (http://ollama:11434) y Ollama
+      # no tiene autenticación, así que no se publica en la LAN. Para depurar desde otra máquina, túnel SSH.
+      - "127.0.0.1:11434:11434"
     volumes:
       - ./ollama:/root/.ollama
     environment:
