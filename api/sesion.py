@@ -445,7 +445,9 @@ def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
     n = len(plan.duraciones)
     # azar: mismos parámetros, distinta elección de fichas entre los empates (misma calidad y arco)
     biblioteca = cargar_ejercicios()
-    azar = random.Random()
+    semilla = random.randrange(2 ** 32)
+    azar = random.Random(semilla)
+    logger.info(f"Selección de fichas con semilla {semilla}")      # para reproducir una sesión que salga mal
     fichas = _elegir_fichas(biblioteca, edad, objetivo, n, azar=azar)
     ctx_teoria = construir_contexto_teoria(objetivo, edad)
 
@@ -562,9 +564,12 @@ RESPUESTA (rellena TODOS los apartados de la plantilla, en este orden, sin salta
         texto, propuestos = _ensamblar(huecos, bloques, t_calent, t_vuelta, t_descanso)
         if permitidos:
             # el aviso solo promete «se ha hecho» si el término aparece en la sesión final
-            presentes = pedidos_presentes(list(permitidos), texto, edad)
-            avisos.insert(0, aviso_pedido(presentes, edad) if presentes
-                          else aviso_pedido_no_incluido(list(permitidos), edad))
+            presentes = pedidos_presentes(permitidos, texto, edad)
+            ausentes = [t for t in permitidos if t not in presentes]
+            if ausentes:
+                avisos.insert(0, aviso_pedido_no_incluido(ausentes, edad))
+            if presentes:
+                avisos.insert(0, aviso_pedido(presentes, edad))
         for h in huecos:
             ya_avisado = any(a.startswith(f"Ejercicio {h.numero}") for a in avisos)
             if h.ficha is None and h.numero not in propuestos and not ya_avisado:

@@ -102,3 +102,24 @@ def test_con_ficha_y_todo_curado_solo_se_pide_al_modelo_lo_que_falta(sesion_fals
     assert "Fundamentos**: " in r["texto"]
     assert r["texto"].index("Juego: Lluvia de papeles") < r["texto"].index("**PARTE PRINCIPAL**")
     assert len(peticiones) == 1
+
+
+# ── los calentamientos no desplazan a las fichas de la parte principal ───────────────────────────────
+
+@pytest.mark.parametrize("edad,objetivo", [("U14", "tiro"), ("U16", "tiro"), ("U16", "rebote"),
+                                           ("U18", "contraataque"), ("Senior", "pase")])
+def test_en_la_biblioteca_real_la_parte_principal_no_se_llena_de_calentamientos(ejercicios, edad, objetivo):
+    from ejercicios import elegir_fichas
+    fichas = elegir_fichas([dict(e) for e in ejercicios], edad, objetivo, 5)
+    assert not [f["id"] for f in fichas if f and f["categoria"] == "calentamiento"]
+
+
+def test_el_bote_de_minibasket_sigue_pudiendo_usar_fichas_de_bote_aunque_sean_calentamiento(ejercicios):
+    from ejercicios import elegir_fichas
+    fichas = elegir_fichas([dict(e) for e in ejercicios], "U8", "bote", 5)
+    assert any(f and f["categoria"] == "calentamiento" for f in fichas)
+
+
+def test_un_calentamiento_sin_id_no_rompe_la_exclusion():
+    sin_id = {k: v for k, v in CAL_1.items() if k != "id"}
+    assert elegir_calentamiento([sin_id], "U10", "bote", excluir={None}) is sin_id

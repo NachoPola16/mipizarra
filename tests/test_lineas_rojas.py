@@ -123,3 +123,11 @@ def test_el_aviso_dice_que_se_hace_porque_lo_pide_y_que_no_es_habitual():
 def test_el_prompt_con_excepcion_sigue_prohibiendo_el_resto():
     texto = instruccion_prompt("U12", permitidos=["bloqueo"])
     assert "PROHIBIDO" in texto and "EXCEPCIÓN" in texto and "bloqueo" in texto
+
+
+def test_lo_pedido_vale_aunque_el_texto_use_otra_forma_del_mismo_termino():
+    assert violaciones("Trabajamos las trampas defensivas en bandas.", "U10", permitidos=["trampa defensiva"]) == []
+    assert violaciones("Un pick & roll sencillo.", "U10", permitidos=["pick and roll"]) == []
+    assert violaciones("Defensa zonal 2-3.", "U10", permitidos=["zonal"]) == []
+    # y pedir un término no abre otro distinto
+    assert violaciones("Defensa zonal 2-3.", "U10", permitidos=["bloqueo"]) != []
