@@ -8458,13 +8458,12 @@
     "categoria": "1c1",
     "subcategoria": "reaccion",
     "edades": [
-      "U10",
       "U12"
     ],
     "duracion_min": 12,
-    "intensidad": 5,
+    "intensidad": 4,
     "carga_cognitiva": 3,
-    "jugadores_minimos": 9,
+    "jugadores_minimos": 6,
     "objetivos": {
       "tacticos": [
         "contraataque: correr por la calle exterior",
@@ -8481,7 +8480,7 @@
         "resistencia"
       ]
     },
-    "descripcion": "ORGANIZACIÓN: se sale desde las dos canastas a la vez, cada grupo por la banda de su derecha para no cruzarse. En cada canasta, tríos en fila: un pasador bajo el aro con balón, un corredor en la esquina de la línea de fondo y un defensor dos metros por detrás del corredor, en la misma esquina. SECUENCIA: el pasador lanza el balón contra el tablero, coge su rebote y busca con un pase largo de pecho o de béisbol al corredor, que ha salido a la vez pegado a la banda; el corredor recibe en carrera, sin pararse, y ataca la canasta contraria con bote; el defensor corre para recuperar la posición delante y se juega 1c1 hasta canasta, robo o rebote del defensor. Finalización con bomba sobre un pie o tiro cercano. ROTACIÓN: pasador pasa a corredor, corredor a defensor y defensor a pasador; el trío siguiente sale en cuanto el anterior pasa el medio campo, y al terminar cada trío se queda en esa canasta para salir hacia la otra. PROGRESIÓN: el defensor sale a la altura del corredor; el corredor debe recibir antes del medio campo o el punto es para la defensa; en U12, el pasador se incorpora tras el pase y se juega 2c1.",
+    "descripcion": "ORGANIZACIÓN: se sale desde las dos canastas a la vez, cada grupo por la banda de su derecha para no cruzarse. En cada canasta, tríos en fila: un pasador bajo el aro con balón, un corredor en la esquina de la línea de fondo y un defensor dos metros por detrás del corredor, en la misma esquina. SECUENCIA: el pasador lanza el balón contra el tablero, coge su rebote y busca con un pase largo de pecho al corredor, que ha salido a la vez pegado a la banda; el corredor recibe en carrera, sin pararse, y ataca la canasta contraria con bote; el defensor corre para recuperar la posición delante y se juega 1c1 hasta canasta, robo o rebote del defensor. Finalización con bomba sobre un pie o tiro cercano. ROTACIÓN: pasador pasa a corredor, corredor a defensor y defensor a pasador; el trío siguiente sale en cuanto el anterior pasa el medio campo, y al terminar cada trío se queda en esa canasta para salir hacia la otra. PROGRESIÓN: el defensor sale a la altura del corredor; el corredor debe recibir antes del medio campo o el punto es para la defensa; en U12, el pasador se incorpora tras el pase y se juega 2c1.",
     "puntos_clave": [
       "El corredor sale pegado a la banda y mira al balón por encima del hombro.",
       "El pase va por delante del corredor, para que reciba sin frenar.",
