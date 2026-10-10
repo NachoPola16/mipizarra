@@ -230,30 +230,38 @@ def _separar_jugadores(jugadores: list, tipo_pista: str) -> list[str]:
 
 def _recortar_al_conteo(diagrama: dict, conteo: tuple[int, int]) -> list[str]:
     """Si el nombre dice AcB y el diagrama trae jugadores de MÁS (el modelo dibuja la fila de espera o un
-    segundo atacante en un 1c1), quita los sobrantes y los movimientos que los nombran. Se quedan el portador
-    del balón y los que más se mueven (empate: el declarado antes). Nunca añade jugadores: si faltan, el
-    validador rechaza. Modifica el diagrama y devuelve la descripción de cada recorte."""
-    movimientos = diagrama.get("movimientos") or []
+    segundo atacante en un 1c1), quita los sobrantes y los movimientos que los nombran. Se quedan los que
+    más se mueven (empate: el portador del balón, luego el declarado antes). Nunca añade jugadores: si
+    faltan, el validador rechaza. Si el portador se quita, el balón pasa al primer atacante que queda. Si
+    quitar a los sobrantes dejaría sin ningún movimiento a los atacantes que quedan, no toca nada (el
+    validador rechaza y se reintenta). Modifica el diagrama y devuelve la descripción de cada recorte."""
+    movimientos = [m for m in (diagrama.get("movimientos") or []) if isinstance(m, dict)]
     portador = (diagrama.get("balon_inicio") or {}).get("portador")
 
     def actividad(jugador_id) -> int:
-        return sum(1 for m in movimientos
-                   if isinstance(m, dict) and (m.get("de") == jugador_id or m.get("a") == jugador_id))
+        return sum(1 for m in movimientos if m.get("de") == jugador_id)
 
-    quitados = []
+    nuevos, quitados = {}, []
     for clave, cuantos in (("jugadores_ataque", conteo[0]), ("jugadores_defensa", conteo[1])):
         jugadores = diagrama.get(clave) or []
         if len(jugadores) <= cuantos:
             continue
         orden = sorted(range(len(jugadores)),
-                       key=lambda i: (jugadores[i].get("id") != portador, -actividad(jugadores[i].get("id")), i))
+                       key=lambda i: (-actividad(jugadores[i].get("id")), jugadores[i].get("id") != portador, i))
         se_quedan = set(orden[:cuantos])
         quitados += [j.get("id") for i, j in enumerate(jugadores) if i not in se_quedan]
-        diagrama[clave] = [j for i, j in enumerate(jugadores) if i in se_quedan]
+        nuevos[clave] = [j for i, j in enumerate(jugadores) if i in se_quedan]
     if not quitados:
         return []
-    diagrama["movimientos"] = [m for m in movimientos
-                               if not (isinstance(m, dict) and (m.get("de") in quitados or m.get("a") in quitados))]
+    restantes = [m for m in movimientos if m.get("de") not in quitados and m.get("a") not in quitados]
+    atacantes = {j.get("id") for j in nuevos.get("jugadores_ataque", diagrama.get("jugadores_ataque") or [])}
+    if movimientos and not any(m.get("de") in atacantes for m in restantes):
+        return []          # el recorte dejaría el diagrama sin acción: mejor reintentar que dibujar eso
+    diagrama.update(nuevos)
+    diagrama["movimientos"] = restantes
+    if portador in quitados and atacantes:
+        primero = next(j.get("id") for j in diagrama["jugadores_ataque"])
+        diagrama["balon_inicio"] = {**(diagrama.get("balon_inicio") or {}), "portador": primero}
     return [f"sobran jugadores para {conteo[0]}c{conteo[1]}: quitados {', '.join(map(str, quitados))}"]
 
 
@@ -306,6 +314,7 @@ def _validar_diagrama(diagrama: dict, nombre_ejercicio: str = "") -> str | None:
         defensa = diagrama.get("jugadores_defensa") or []
         if not ataque:
             return "jugadores_ataque no puede estar vacío"
+        ids = {j.get("id") for j in ataque + defensa}      # tras recortar, los ids válidos son los que quedan
 
     reparaciones = recortes + _reparar_a_pos(diagrama, {j.get("id") for j in defensa}, tipo_pista)
 

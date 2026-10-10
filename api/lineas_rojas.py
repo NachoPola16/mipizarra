@@ -53,17 +53,21 @@ def _coincidencias(texto: str, edad: str) -> list[str]:
     return encontrados
 
 
-def _singular(termino: str) -> str:
-    """«bloqueos» y «bloqueo» son lo mismo para saber si el entrenador lo pidió."""
-    return termino.removesuffix("s")
+def _indice_patron(termino: str) -> int:
+    """Índice del patrón vetado al que pertenece un término ya encontrado: «bloqueo» y «bloqueos», o «trampa
+    defensiva» y «trampas defensivas», son lo mismo para saber si el entrenador lo pidió."""
+    for i, patron in enumerate(_VETADOS_MINIBASKET):
+        if re.search(patron, termino):
+            return i
+    return -1
 
 
 def violaciones(texto: str, edad: str, permitidos=()) -> list[str]:
     """Términos del texto que son línea roja para esa edad (lista vacía si no hay ninguno). `permitidos`
     son términos que el entrenador pidió expresamente (ver terminos_pedidos): no cuentan."""
-    pedidos = {_singular(t) for t in permitidos}
+    pedidos = {_indice_patron(t) for t in permitidos}
     return [f"«{t}» no se trabaja en {edad} (línea roja)"
-            for t in _coincidencias(texto, edad) if _singular(t) not in pedidos]
+            for t in _coincidencias(texto, edad) if _indice_patron(t) not in pedidos]
 
 
 def terminos_pedidos(pedido: str, edad: str) -> list[str]:
@@ -80,8 +84,8 @@ def aviso_pedido(terminos: list[str], edad: str) -> str:
 
 def pedidos_presentes(terminos: list[str], texto: str, edad: str) -> list[str]:
     """Los términos pedidos por el entrenador que de verdad aparecen en el texto final (sin negar)."""
-    en_texto = {_singular(t) for t in _coincidencias(texto, edad)}
-    return [t for t in terminos if _singular(t) in en_texto]
+    en_texto = {_indice_patron(t) for t in _coincidencias(texto, edad)}
+    return [t for t in terminos if _indice_patron(t) in en_texto]
 
 
 def aviso_pedido_no_incluido(terminos: list[str], edad: str) -> str:

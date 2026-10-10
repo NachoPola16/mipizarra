@@ -309,6 +309,7 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
                     "diagrama":     ficha_cal.get("diagrama"),
                     "diagramas":    ficha_cal.get("diagramas"),
                     "sin_diagrama": bool(ficha_cal.get("sin_diagrama")),
+                    "de_plantilla": True,       # diagrama ya curado: no se le aplica la heurística de pista completa
                     "id":           momento,
                 })
                 continue

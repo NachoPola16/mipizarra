@@ -684,3 +684,13 @@ def test_si_la_sesion_final_si_incluye_lo_pedido_el_aviso_dice_que_se_hizo(sesio
     sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [_con_calentamiento("Bloqueo directo con el pívot")])
     r = sesion.generar_sesion("U12", 90, "bloqueo directo")
     assert "Se ha hecho porque lo pides" in r["avisos"][0]
+
+
+def test_con_varios_terminos_pedidos_se_avisa_de_cada_uno(sesion_falsa):
+    # pide bloqueo y pantalla; el modelo solo escribe el bloqueo: dos avisos, uno por cada situación
+    sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [_con_calentamiento("Bloqueo directo con el pívot")])
+    r = sesion.generar_sesion("U12", 90, "bloqueo y pantalla")
+    assert len(r["avisos"]) == 2
+    hecho = next(a for a in r["avisos"] if "Se ha hecho" in a)
+    ausente = next(a for a in r["avisos"] if "no lo incluye" in a)
+    assert "bloqueo" in hecho and "pantalla" in ausente

@@ -357,3 +357,59 @@ def test_a_con_nombre_desconocido_mantiene_el_error():
     d = _diagrama()
     d["movimientos"].append({"de": "A2", "tipo": "bote", "a": "nube", "orden": 5})
     assert _validar_diagrama(d, "") == "movimiento 'bote' sin 'a_pos'"
+
+
+def test_el_recorte_conserva_al_receptor_si_el_portador_solo_pasa():
+    # el portador A pasa a B y B es quien bota y tira: el protagonista del 1c1 es B, no A
+    d = {
+        "tipo": "media_pista",
+        "jugadores_ataque": [{"id": "A", "x": 50, "y": 70}, {"id": "B", "x": 25, "y": 50}],
+        "jugadores_defensa": [{"id": "D1", "x": 25, "y": 40}],
+        "balon_inicio": {"portador": "A"},
+        "movimientos": [
+            {"de": "A", "tipo": "pase", "a": "B", "orden": 1},
+            {"de": "B", "tipo": "bote", "a_pos": {"x": 40, "y": 25}, "orden": 2},
+            {"de": "B", "tipo": "tiro", "orden": 3},
+        ],
+        "conos": [],
+    }
+    assert _validar_diagrama(d, "1c1 tras pase") is None
+    assert [j["id"] for j in d["jugadores_ataque"]] == ["B"]
+    assert d["balon_inicio"]["portador"] == "B"                 # el balón pasa al que queda
+    assert [m["tipo"] for m in d["movimientos"]] == ["bote", "tiro"]
+
+
+def test_el_recorte_no_deja_un_diagrama_sin_accion():
+    # el único movimiento es de un defensor: quitar a un atacante dejaría a los que quedan quietos
+    d = {
+        "tipo": "media_pista",
+        "jugadores_ataque": [{"id": "A1", "x": 50, "y": 70}, {"id": "A2", "x": 25, "y": 50}],
+        "jugadores_defensa": [{"id": "D1", "x": 25, "y": 40}],
+        "balon_inicio": {"portador": "A1"},
+        "movimientos": [{"de": "D1", "tipo": "desplazamiento", "a_pos": {"x": 40, "y": 30}, "orden": 1}],
+        "conos": [],
+    }
+    assert "atacante" in _validar_diagrama(d, "1c1")
+    assert len(d["jugadores_ataque"]) == 2                     # no se tocó
+
+
+def test_si_se_recorta_al_portador_defensor_el_balon_no_queda_colgando():
+    d = _diagrama()
+    d["balon_inicio"]["portador"] = "D1"
+    assert _validar_diagrama(d, "2c0") is None
+    ids = {j["id"] for j in d["jugadores_ataque"]}
+    assert d["balon_inicio"]["portador"] in ids
+
+
+def test_el_esquema_de_decodificacion_exige_a_pos_o_a_segun_el_tipo():
+    from diagramas import _DIAGRAMA_JSON_SCHEMA
+    variantes = _DIAGRAMA_JSON_SCHEMA["properties"]["movimientos"]["items"]["anyOf"]
+    por_tipo = {}
+    for v in variantes:
+        for tipo in v["properties"]["tipo"]["enum"]:
+            por_tipo[tipo] = set(v["required"])
+    assert set(por_tipo) == {"desplazamiento", "bote", "bloqueo", "pase", "tiro"}
+    for tipo in ("desplazamiento", "bote", "bloqueo"):
+        assert "a_pos" in por_tipo[tipo]
+    assert "a" in por_tipo["pase"]
+    assert "a_pos" not in por_tipo["tiro"] and "a" not in por_tipo["tiro"]
