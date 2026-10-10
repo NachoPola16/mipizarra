@@ -669,3 +669,18 @@ def test_sin_peticion_expresa_no_hay_aviso_de_peticion(sesion_falsa):
 def test_en_edades_sin_linea_roja_el_objetivo_no_genera_aviso(sesion_falsa):
     sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [RESPUESTA_BASE])
     assert sesion.generar_sesion("U18", 90, "bloqueo directo")["avisos"] == []
+
+
+def test_si_la_sesion_final_no_incluye_lo_pedido_el_aviso_lo_dice(sesion_falsa):
+    # el objetivo pide bloqueo, pero ni las fichas ni el modelo lo traen: no se promete que «se ha hecho»
+    sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [RESPUESTA_BASE])
+    r = sesion.generar_sesion("U12", 90, "bloqueo directo")
+    assert len(r["avisos"]) == 1
+    assert "no lo incluye" in r["avisos"][0] and "bloqueo" in r["avisos"][0]
+    assert "Se ha hecho" not in r["avisos"][0]
+
+
+def test_si_la_sesion_final_si_incluye_lo_pedido_el_aviso_dice_que_se_hizo(sesion_falsa):
+    sesion_falsa([FICHA_A, FICHA_B, FICHA_C], [_con_calentamiento("Bloqueo directo con el pívot")])
+    r = sesion.generar_sesion("U12", 90, "bloqueo directo")
+    assert "Se ha hecho porque lo pides" in r["avisos"][0]
