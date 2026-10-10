@@ -148,15 +148,26 @@ def nivel_objetivo(posicion: int, n: int) -> int:
     return min(2, (3 * posicion) // n)
 
 
-def seleccionar_ejercicios(relevantes: list, n: int) -> list:
-    """Elige n ejercicios de la biblioteca siguiendo el arco sin oposición → reducida → igualada
-    (con n = 3 coincide con seleccionar_tres_ejercicios). Si faltan candidatos, esos huecos quedan a
-    None: los propone la IA."""
-    analiticos = [e for e in relevantes if e.get('_fase') == 'ANALÍTICO']
-    directos   = [e for e in relevantes if e.get('_fase') == 'OBJETIVO']
-    if not analiticos:
-        analiticos = [e for e in directos if _nivel_oposicion(e) == 0] or directos[:1]
+# Con `azar`, cuántas fichas empatadas en nivel compiten por un hueco. Llegan ordenadas por relevancia:
+# limitarlo a las primeras evita que el azar elija una ficha floja habiendo mejores.
+EMPATES_CON_VARIEDAD = 3
 
+
+def _entre_empates(candidatos: list, clave, azar):
+    """El mejor candidato según `clave` (el primero entre empates) o, con `azar`, uno cualquiera de los
+    primeros empatados con él y del mismo nivel de oposición (la clave puede empatar niveles distintos,
+    p. ej. 0 y 2 para «reducida»: eso rompería el arco). None si no hay candidatos."""
+    if not candidatos:
+        return None
+    mejor = min(candidatos, key=clave)
+    if azar is None:
+        return mejor
+    empatados = [e for e in candidatos
+                 if clave(e) == clave(mejor) and _nivel_oposicion(e) == _nivel_oposicion(mejor)]
+    return azar.choice(empatados[:EMPATES_CON_VARIEDAD])
+
+
+def _elegir_por_arco(analiticos: list, directos: list, n: int, azar) -> list:
     elegidos: list = []
     for posicion in range(n):
         objetivo = nivel_objetivo(posicion, n)
@@ -164,26 +175,61 @@ def seleccionar_ejercicios(relevantes: list, n: int) -> list:
         libres = [e for e in directos if id(e) not in usados]
         elegido = None
         if objetivo == 0:
-            elegido = next((e for e in analiticos if id(e) not in usados), None)
-            if elegido is None and libres:
-                elegido = min(libres, key=lambda e: abs(_nivel_oposicion(e)))   # estable: el primero entre empates
+            sin_usar = [e for e in analiticos if id(e) not in usados]
+            elegido = _entre_empates(sin_usar, lambda e: 0, azar)
+            if elegido is None:
+                elegido = _entre_empates(libres, lambda e: abs(_nivel_oposicion(e)), azar)
         elif objetivo == 1:
-            elegido = min(libres, key=lambda e: abs(_nivel_oposicion(e) - 1), default=None)
+            elegido = _entre_empates(libres, lambda e: abs(_nivel_oposicion(e) - 1), azar)
         else:
-            elegido = min(libres, key=lambda e: -_nivel_oposicion(e), default=None)
+            elegido = _entre_empates(libres, lambda e: -_nivel_oposicion(e), azar)
         elegidos.append(elegido)
     return elegidos
 
 
-def elegir_fichas(ejercicios: list, edad: str, objetivo: str, n: int, solo_directas: bool = False) -> list:
+def _desvio_del_arco(elegidos: list) -> tuple[int, int]:
+    """(huecos sin ficha, suma de lo que cada ficha se aleja del nivel que toca en su posición)."""
+    n = len(elegidos)
+    return (sum(e is None for e in elegidos),
+            sum(abs(_nivel_oposicion(e) - nivel_objetivo(i, n)) for i, e in enumerate(elegidos) if e))
+
+
+# Sorteos que se prueban antes de volver a la elección determinista (que siempre es válida).
+INTENTOS_CON_VARIEDAD = 8
+
+
+def seleccionar_ejercicios(relevantes: list, n: int, azar=None) -> list:
+    """Elige n ejercicios de la biblioteca siguiendo el arco sin oposición → reducida → igualada
+    (con n = 3 coincide con seleccionar_tres_ejercicios). Si faltan candidatos, esos huecos quedan a
+    None: los propone la IA. Sin `azar` la elección es determinista; con él (un `random.Random`) los
+    empates entre fichas del mismo nivel se resuelven al azar, y solo se admite un sorteo que no deje
+    más huecos ni encaje peor en el arco que la elección determinista."""
+    analiticos = [e for e in relevantes if e.get('_fase') == 'ANALÍTICO']
+    directos   = [e for e in relevantes if e.get('_fase') == 'OBJETIVO']
+    if not analiticos:
+        analiticos = [e for e in directos if _nivel_oposicion(e) == 0] or directos[:1]
+
+    base = _elegir_por_arco(analiticos, directos, n, None)
+    if azar is None:
+        return base
+    for _ in range(INTENTOS_CON_VARIEDAD):
+        candidata = _elegir_por_arco(analiticos, directos, n, azar)
+        if _desvio_del_arco(candidata) <= _desvio_del_arco(base):
+            return candidata
+    return base
+
+
+def elegir_fichas(ejercicios: list, edad: str, objetivo: str, n: int, solo_directas: bool = False,
+                  azar=None) -> list:
     """n fichas de la biblioteca para la parte principal, siguiendo el arco de oposición. Solo entran
     las que encajan con el objetivo (umbral de relevancia): se filtran antes de elegir para que una
     ficha irrelevante no ocupe un hueco cuando hay otras relevantes sin usar. Los huecos que no se
     pueden cubrir quedan a None: los propone la IA, marcados como tales. `solo_directas` (para medir, no
-    para generar) exige que la palabra del propio objetivo aparezca en la ficha: no vale un fundamento asociado."""
+    para generar) exige que la palabra del propio objetivo aparezca en la ficha: no vale un fundamento asociado.
+    `azar` (un `random.Random`) da variedad entre sesiones con los mismos parámetros; sin él es determinista."""
     relevantes = [e for e in filtrar_ejercicios(ejercicios, edad, objetivo)
                   if es_relevante(e, objetivo, con_asociados=not solo_directas)]
-    return seleccionar_ejercicios(relevantes, n)
+    return seleccionar_ejercicios(relevantes, n, azar=azar)
 
 
 def construir_contexto_ejercicios(ejercicios: list, max_ejs: int = 10) -> str:

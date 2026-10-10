@@ -72,7 +72,7 @@ def sesion_falsa(monkeypatch):
         fichas = list(fichas)
         monkeypatch.setattr(sesion, "cargar_ejercicios", lambda: [])
         monkeypatch.setattr(sesion, "_elegir_fichas",
-                            lambda ejercicios, edad, objetivo, n: (fichas + [None] * n)[:n])
+                            lambda ejercicios, edad, objetivo, n, **kw: (fichas + [None] * n)[:n])
         monkeypatch.setattr(sesion, "construir_contexto_teoria", lambda obj, edad: "")
         if not plan_real:
             tiempos = tuple(duraciones or (20,) * len(fichas))
@@ -157,7 +157,7 @@ def test_se_piden_a_la_seleccion_tantas_fichas_como_ejercicios_tiene_el_plan(mon
     monkeypatch.setattr(sesion, "cargar_ejercicios", lambda: [])
     monkeypatch.setattr(sesion, "construir_contexto_teoria", lambda obj, edad: "")
     monkeypatch.setattr(sesion, "_elegir_fichas",
-                        lambda ejercicios, edad, objetivo, n: (pedidas.append(n), [None] * n)[1])
+                        lambda ejercicios, edad, objetivo, n, **kw: (pedidas.append(n), [None] * n)[1])
     monkeypatch.setattr(sesion.requests, "post", lambda url, json, timeout: _Resp(RESPUESTA_BASE))
     for edad, duracion, esperado in (("U10", 60, 4), ("U10", 90, 7), ("U16", 60, 4), ("U16", 90, 5)):
         sesion.generar_sesion(edad, duracion, "bote")
