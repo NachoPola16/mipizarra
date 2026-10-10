@@ -16,12 +16,15 @@ from dataclasses import dataclass
 import requests
 
 from bloques import (
-    MARCA_PROPUESTO, bloque_curado, bloque_variante_curada, extraer_bloques,
+    MARCA_PROPUESTO, bloque_calentamiento, bloque_curado, bloque_variante_curada, extraer_bloques,
     formatear_descripcion, nombre_de_cabecera, reescribir_bloque,
 )
 from config import EDAD_A_CATEGORIA, MODEL_SESION, OLLAMA_URL
 from contexto import construir_contexto_teoria
-from ejercicios import cargar_ejercicios, elegir_fichas as _elegir_fichas, nivel_objetivo
+from ejercicios import (
+    cargar_ejercicios, elegir_calentamiento as _elegir_calentamiento, elegir_fichas as _elegir_fichas,
+    nivel_objetivo,
+)
 from lineas_rojas import CATEGORIAS_MINIBASKET, instruccion_prompt, violaciones
 from plan_sesion import plan_de_tiempos
 
@@ -164,17 +167,15 @@ def _linea_prompt(hueco: _Hueco) -> str:
             f"   {descripcion}\n   Puntos clave: {puntos}")
 
 
-def _plantilla_modelo(huecos: list[_Hueco], t_calent: int, t_vuelta: int) -> str:
-    """Solo los apartados que redacta el modelo, en el orden de la sesión."""
+def _plantilla_modelo(huecos: list[_Hueco], t_calent: int, t_vuelta: int, con_calentamiento: bool = True) -> str:
+    """Solo los apartados que redacta el modelo, en el orden de la sesión. Con ficha de calentamiento
+    (con_calentamiento=False) el modelo no lo escribe: lo compone el código."""
     bloques = [_bloque_ejercicio(h.numero, "(nombre propio del ejercicio)", h.t1) for h in huecos if h.ficha is None]
     principal = chr(10).join(bloques)
     vuelta = f"**VUELTA A LA CALMA ({t_vuelta} min)**{chr(10)}Juego:{chr(10)}Reglas:{chr(10)}{chr(10)}" if t_vuelta else ""
-    return f"""**CALENTAMIENTO ({t_calent} min)**
-Juego:
-Reglas:
-Espacio:
-
-**PARTE PRINCIPAL**
+    calentamiento = f"**CALENTAMIENTO ({t_calent} min)**{chr(10)}Juego:{chr(10)}Reglas:{chr(10)}Espacio:{chr(10)}{chr(10)}" \
+        if con_calentamiento else ""
+    return f"""{calentamiento}**PARTE PRINCIPAL**
 
 {principal}
 {vuelta}**Fundamentos**: """
@@ -438,7 +439,9 @@ def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
     plan = plan_de_tiempos(duracion, edad)
     n = len(plan.duraciones)
     # azar: mismos parámetros, distinta elección de fichas entre los empates (misma calidad y arco)
-    fichas = _elegir_fichas(cargar_ejercicios(), edad, objetivo, n, azar=random.Random())
+    biblioteca = cargar_ejercicios()
+    azar = random.Random()
+    fichas = _elegir_fichas(biblioteca, edad, objetivo, n, azar=azar)
     ctx_teoria = construir_contexto_teoria(objetivo, edad)
 
     # Sin truncado global aquí: construir_contexto_teoria ya aplica presupuesto por
@@ -446,6 +449,10 @@ def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
     teoria_intro = f"CONTEXTO METODOLÓGICO:\n{ctx_teoria}\n\n" if ctx_teoria else ""
 
     t_calent, t_vuelta, t_descanso = plan.t_calentamiento, plan.t_vuelta, plan.t_descanso
+    # Calentamiento: una ficha curada de la biblioteca si hay una para la edad (el 4B inventaba juegos
+    # poco adecuados y repetía material); si no, lo redacta el modelo como siempre.
+    ficha_calent = (_elegir_calentamiento(biblioteca, edad, objetivo, {f["id"] for f in fichas if f}, azar)
+                    if t_calent else None)
     categoria_nombre = EDAD_A_CATEGORIA.get(edad, edad)
 
     # Una ficha con progresión curada se parte en N.1 + N.2 si el ejercicio dura más de lo que esa
@@ -469,7 +476,7 @@ def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
     num_ctx_sesion     = 9000 + 800 * max(0, n - 3)
 
     lineas_ejercicios = "\n".join(_linea_prompt(h) for h in huecos)
-    plantilla = _plantilla_modelo(huecos, t_calent, t_vuelta)
+    plantilla = _plantilla_modelo(huecos, t_calent, t_vuelta, con_calentamiento=ficha_calent is None)
     prohibido = instruccion_prompt(edad)
     prohibido = f"{prohibido}\n\n" if prohibido else ""
 
@@ -500,18 +507,22 @@ secundario o terciario si eso da más variedad a la sesión.
 RESPUESTA (rellena TODOS los apartados de la plantilla, en este orden, sin saltarte ninguno):
 """
 
-    inicios = {
-        "calentamiento": inicio_respuesta,
-        "fundamentos": "**Fundamentos**: En esta sesión se trabajan",
-    }
+    inicios = {"fundamentos": "**Fundamentos**: En esta sesión se trabajan"}
+    if ficha_calent is None:
+        inicios["calentamiento"] = inicio_respuesta
     if t_vuelta:
         inicios["vuelta"] = f"**VUELTA A LA CALMA ({t_vuelta} min)**\nJuego:"
     for h in huecos:
         for clave in h.claves_del_modelo():
             inicios[clave] = f"Ejercicio {clave[3:]}:"
 
-    claves_modelo = (["calentamiento"] + (["vuelta"] if t_vuelta else []) + ["fundamentos"]
-                     + [c for h in huecos for c in h.claves_del_modelo()])
+    claves_modelo = ((["calentamiento"] if ficha_calent is None else []) + (["vuelta"] if t_vuelta else [])
+                     + ["fundamentos"] + [c for h in huecos for c in h.claves_del_modelo()])
+    if ficha_calent is not None:
+        # el modelo arranca en el primer apartado que le toca, en el orden de la sesión
+        primera = next((c for h in huecos for c in h.claves_del_modelo()),
+                       "vuelta" if t_vuelta else "fundamentos")
+        inicio_respuesta = inicios[primera]
 
     try:
         correccion = ""
@@ -539,6 +550,8 @@ RESPUESTA (rellena TODOS los apartados de la plantilla, en este orden, sin salta
         if avisos:
             logger.warning("Piezas omitidas tras el reintento: " + " | ".join(avisos))
 
+        if ficha_calent is not None:
+            bloques["calentamiento"] = bloque_calentamiento(ficha_calent)
         texto, propuestos = _ensamblar(huecos, bloques, t_calent, t_vuelta, t_descanso)
         for h in huecos:
             ya_avisado = any(a.startswith(f"Ejercicio {h.numero}") for a in avisos)
@@ -549,6 +562,7 @@ RESPUESTA (rellena TODOS los apartados de la plantilla, en este orden, sin salta
         return {
             "texto": f"**Error generando sesión**: {str(e)}",
             "ejercicios_usados": [f for f in fichas if f],
+            "calentamiento_ficha": ficha_calent,
             "teoria_usada": bool(ctx_teoria),
             "propuestos": [],
             "avisos": [],
@@ -557,6 +571,7 @@ RESPUESTA (rellena TODOS los apartados de la plantilla, en este orden, sin salta
     return {
         "texto":             texto,
         "ejercicios_usados": [f for f in fichas if f],
+        "calentamiento_ficha": ficha_calent,
         "teoria_usada":      bool(ctx_teoria),
         "propuestos":        propuestos,
         "avisos":            avisos,
