@@ -175,12 +175,14 @@ def seleccionar_ejercicios(relevantes: list, n: int) -> list:
     return elegidos
 
 
-def elegir_fichas(ejercicios: list, edad: str, objetivo: str, n: int) -> list:
+def elegir_fichas(ejercicios: list, edad: str, objetivo: str, n: int, solo_directas: bool = False) -> list:
     """n fichas de la biblioteca para la parte principal, siguiendo el arco de oposición. Solo entran
     las que encajan con el objetivo (umbral de relevancia): se filtran antes de elegir para que una
     ficha irrelevante no ocupe un hueco cuando hay otras relevantes sin usar. Los huecos que no se
-    pueden cubrir quedan a None: los propone la IA, marcados como tales."""
-    relevantes = [e for e in filtrar_ejercicios(ejercicios, edad, objetivo) if es_relevante(e, objetivo)]
+    pueden cubrir quedan a None: los propone la IA, marcados como tales. `solo_directas` (para medir, no
+    para generar) exige que la palabra del propio objetivo aparezca en la ficha: no vale un fundamento asociado."""
+    relevantes = [e for e in filtrar_ejercicios(ejercicios, edad, objetivo)
+                  if es_relevante(e, objetivo, con_asociados=not solo_directas)]
     return seleccionar_ejercicios(relevantes, n)
 
 
@@ -240,13 +242,13 @@ def _palabras_significativas(objetivo: str) -> list[str]:
             if p not in _PALABRAS_VACIAS and (len(p) >= 4 or any(c.isdigit() for c in p))]
 
 
-def es_relevante(ej: dict, objetivo: str) -> bool:
+def es_relevante(ej: dict, objetivo: str, con_asociados: bool = True) -> bool:
     """¿Encaja el ejercicio con el objetivo? Sí si alguna palabra significativa del objetivo
     (o un fundamento analítico asociado a él) aparece al inicio de una palabra del nombre, la
     descripción o los tags tácticos. Si no encaja, ese hueco de la sesión lo propone la IA."""
     palabras = _palabras_significativas(objetivo)
     raices = {_raiz(p) for p in palabras}
-    for clave, fundamentos in COMPONENTES_ANALITICOS.items():
+    for clave, fundamentos in (COMPONENTES_ANALITICOS.items() if con_asociados else ()):
         clave_norm = _sin_acentos(clave)
         if any(clave_norm.startswith(r) or r.startswith(_raiz(clave_norm)) for r in raices):
             raices.update(_raiz(_sin_acentos(f)) for f in fundamentos)
