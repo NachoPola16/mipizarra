@@ -300,6 +300,18 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
             momento = extra["nombre"].split(":")[0].strip().lower().replace(" ", "_")
             # Si el juego es uno estándar (zigzag, rondo, estiramientos...) se usa la plantilla
             # validada; si no encaja ninguna, se genera el diagrama como antes.
+            ficha_cal = resultado.get("calentamiento_ficha") if momento == "calentamiento" else None
+            if ficha_cal:
+                # Calentamiento de la biblioteca: lleva su propio diagrama (o es juego libre, sin diagrama).
+                ejercicios_con_descripcion.append({
+                    "nombre":       extra["nombre"],
+                    "descripcion":  extra["descripcion"],
+                    "diagrama":     ficha_cal.get("diagrama"),
+                    "diagramas":    ficha_cal.get("diagramas"),
+                    "sin_diagrama": bool(ficha_cal.get("sin_diagrama")),
+                    "id":           momento,
+                })
+                continue
             de_plantilla = plantilla_para_texto(momento, f"{extra['nombre']} {extra['descripcion']}")
             ejercicios_con_descripcion.append({
                 "nombre":      extra["nombre"],

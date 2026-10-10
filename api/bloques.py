@@ -59,6 +59,18 @@ def bloque_curado(numero, ej: dict, duracion: int, partido: bool) -> str:
     return "\n".join(lineas)
 
 
+def bloque_calentamiento(ej: dict) -> str:
+    """Bloque del calentamiento con la ficha íntegra, en el formato «Juego:/Reglas:» que ya leen el
+    frontend y el generador de diagramas (el modelo escribía el calentamiento con ese mismo esquema)."""
+    lineas = [f"Juego: {ej['nombre']}", "Reglas:", formatear_descripcion(ej.get("descripcion", ""))]
+    puntos = ej.get("puntos_clave", [])
+    if puntos:
+        lineas.append("Puntos clave:")
+        lineas.extend(f"- {punto}" for punto in puntos)
+    lineas.extend(_lineas_campos_nuevos(ej))
+    return "\n".join(lineas)
+
+
 def _lineas_campos_nuevos(ej: dict) -> list[str]:
     """Campos opcionales de la ficha (Fase 1.2), tal cual y solo si traen contenido. Van tras los
     puntos clave para que el texto de 'Organización' (que lee el generador de diagramas) no cambie."""

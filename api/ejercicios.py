@@ -232,6 +232,21 @@ def elegir_fichas(ejercicios: list, edad: str, objetivo: str, n: int, solo_direc
     return seleccionar_ejercicios(relevantes, n, azar=azar)
 
 
+def elegir_calentamiento(ejercicios: list, edad: str, objetivo: str, excluir=(), azar=None) -> dict | None:
+    """Ficha de calentamiento de la biblioteca para la edad, o None si no hay (entonces lo redacta el
+    modelo). Prefiere las que encajan con el objetivo; no repite las de `excluir` (las de la parte
+    principal). Sin `azar` es determinista; con él, elige entre las primeras candidatas."""
+    categoria = EDAD_A_CATEGORIA.get(edad, edad)
+    candidatas = [e for e in ejercicios
+                  if e.get("categoria") == "calentamiento"
+                  and (edad in e.get("edades", []) or categoria in e.get("edades", []))
+                  and e.get("id") not in excluir]
+    if not candidatas:
+        return None
+    grupo = [e for e in candidatas if es_relevante(e, objetivo)] or candidatas
+    return grupo[0] if azar is None else azar.choice(grupo[:EMPATES_CON_VARIEDAD])
+
+
 def construir_contexto_ejercicios(ejercicios: list, max_ejs: int = 10) -> str:
     analiticos = [e for e in ejercicios if e.get("_fase") == "ANALÍTICO"]
     directos   = [e for e in ejercicios if e.get("_fase") != "ANALÍTICO"]
