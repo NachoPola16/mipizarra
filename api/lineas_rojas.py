@@ -53,11 +53,17 @@ def _coincidencias(texto: str, edad: str) -> list[str]:
     return encontrados
 
 
+def _singular(termino: str) -> str:
+    """«bloqueos» y «bloqueo» son lo mismo para saber si el entrenador lo pidió."""
+    return termino.rstrip("s")
+
+
 def violaciones(texto: str, edad: str, permitidos=()) -> list[str]:
     """Términos del texto que son línea roja para esa edad (lista vacía si no hay ninguno). `permitidos`
     son términos que el entrenador pidió expresamente (ver terminos_pedidos): no cuentan."""
+    pedidos = {_singular(t) for t in permitidos}
     return [f"«{t}» no se trabaja en {edad} (línea roja)"
-            for t in _coincidencias(texto, edad) if t not in set(permitidos)]
+            for t in _coincidencias(texto, edad) if _singular(t) not in pedidos]
 
 
 def terminos_pedidos(pedido: str, edad: str) -> list[str]:

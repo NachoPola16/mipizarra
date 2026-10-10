@@ -25,7 +25,7 @@ from ejercicios import (
     cargar_ejercicios, elegir_calentamiento as _elegir_calentamiento, elegir_fichas as _elegir_fichas,
     nivel_objetivo,
 )
-from lineas_rojas import CATEGORIAS_MINIBASKET, instruccion_prompt, violaciones
+from lineas_rojas import CATEGORIAS_MINIBASKET, aviso_pedido, instruccion_prompt, terminos_pedidos, violaciones
 from plan_sesion import plan_de_tiempos
 
 logger = logging.getLogger(__name__)
@@ -385,12 +385,14 @@ def _normalizar_claves(huecos: list[_Hueco], bloques: dict[str, str]) -> None:
             bloques[f"ej:{n}"] = bloques.pop(f"ej:{n}.1")
 
 
-def _piezas_con_linea_roja(bloques: dict[str, str], claves: list[str], edad: str) -> dict[str, list[str]]:
-    """Piezas redactadas por el modelo que incumplen las líneas rojas de la edad."""
+def _piezas_con_linea_roja(bloques: dict[str, str], claves: list[str], edad: str,
+                           permitidos=()) -> dict[str, list[str]]:
+    """Piezas redactadas por el modelo que incumplen las líneas rojas de la edad. `permitidos` son los
+    términos que el entrenador pidió expresamente en el objetivo: no cuentan."""
     malas = {}
     for clave in claves:
         if clave in bloques:
-            encontradas = violaciones(bloques[clave], edad)
+            encontradas = violaciones(bloques[clave], edad, permitidos)
             if encontradas:
                 malas[clave] = encontradas
     return malas
@@ -477,7 +479,9 @@ def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
 
     lineas_ejercicios = "\n".join(_linea_prompt(h) for h in huecos)
     plantilla = _plantilla_modelo(huecos, t_calent, t_vuelta, con_calentamiento=ficha_calent is None)
-    prohibido = instruccion_prompt(edad)
+    # Lo que el entrenador pide expresamente en el objetivo se hace, con aviso (igual que en el ejercicio suelto).
+    permitidos = terminos_pedidos(objetivo, edad)
+    prohibido = instruccion_prompt(edad, permitidos)
     prohibido = f"{prohibido}\n\n" if prohibido else ""
 
     inicio_respuesta = f"**CALENTAMIENTO ({t_calent} min)**\nJuego:"
@@ -534,7 +538,7 @@ RESPUESTA (rellena TODOS los apartados de la plantilla, en este orden, sin salta
                 cuerpo, texto, huecos, inicios, num_ctx_sesion, _fundamentos_de_las_fichas(huecos)))
             bloques = extraer_bloques(texto)
             _normalizar_claves(huecos, bloques)
-            malas = _piezas_con_linea_roja(bloques, claves_modelo, edad)
+            malas = _piezas_con_linea_roja(bloques, claves_modelo, edad, permitidos)
             if not malas or intento == 2:
                 break
             detalle = "; ".join(f"{_nombre_de_pieza(c)}: {', '.join(v)}" for c, v in malas.items())
@@ -542,7 +546,7 @@ RESPUESTA (rellena TODOS los apartados de la plantilla, en este orden, sin salta
             correccion = (f"CORRECCIÓN: tu respuesta anterior incumplió las reglas de la categoría "
                           f"({detalle}). Reescríbela sin esos contenidos.\n\n")
 
-        avisos = []
+        avisos = [aviso_pedido(list(permitidos), edad)] if permitidos else []
         for clave, encontradas in malas.items():
             bloques.pop(clave, None)
             avisos.append(f"{_nombre_de_pieza(clave)} omitido por incumplir las líneas rojas de {edad}: "

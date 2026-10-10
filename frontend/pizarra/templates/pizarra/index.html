@@ -581,6 +581,8 @@ async function generar() {
         if (data.duracion) currentDuracion = data.duracion;
         currentResult = data;
         renderResults(data);
+        const avisoSesion = textoAvisos(data.avisos);
+        if (avisoSesion) showFormError(avisoSesion);
     } catch (e) {
         hideLoading();
         showEmpty();
