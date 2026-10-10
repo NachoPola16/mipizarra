@@ -9936,5 +9936,107 @@
       "complicar": "Señales combinadas e inversas y bote solo con la mano no dominante."
     },
     "sin_diagrama": true
+  },
+  {
+    "id": "ej_118",
+    "nombre": "Paradas y aterrizajes con balón: apoyo firme y rodillas sobre los pies",
+    "categoria": "calentamiento",
+    "subcategoria": "movilidad",
+    "edades": [
+      "U14",
+      "U16",
+      "U18",
+      "Senior"
+    ],
+    "duracion_min": 8,
+    "intensidad": 2,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [],
+      "tecnicos": [
+        "parada en un tiempo",
+        "aterrizaje controlado",
+        "equilibrio sobre una pierna con balón"
+      ],
+      "fisicos": [
+        "control de rodilla y tobillo",
+        "estabilidad del tronco"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: todos con balón, en filas de cuatro a lo ancho de la pista con tres o cuatro metros entre jugadores; cada fila avanza por su calle y vuelve al trote. SECUENCIA: bote al trote y, a la señal del entrenador, parada en un tiempo sin perder el balón, con las rodillas flexionadas y alineadas con los pies, y se mantiene el equilibrio dos segundos. Después, un pequeño salto vertical con aterrizaje silencioso sobre los dos pies y el balón a la altura del pecho; a continuación, parada y aterrizaje sobre una sola pierna, alternando derecha e izquierda, y por último un salto lateral corto con parada en la pierna contraria. ROTACIÓN: todos a la vez, series de 30 segundos con 20 de pausa botando en el sitio. PROGRESIÓN: primero al trote y con señal clara; después más rápido y con la señal con el brazo hacia la pierna de apoyo; al final, salto lateral encadenado sin pausa entre apoyos.",
+    "puntos_clave": [
+      "Aterrizar «sin hacer ruido»: se absorbe el impacto con cadera, rodilla y tobillo a la vez.",
+      "Las rodillas siguen la línea de los pies: no se cierran hacia dentro.",
+      "Tronco ligeramente adelantado y cadera atrás, con la cabeza alta.",
+      "Quedarse quieto dos segundos antes de moverse: el equilibrio se comprueba, no se supone."
+    ],
+    "material": "Un balón por jugador; media pista o la pista entera.",
+    "consigna": "Aterriza en silencio y con las rodillas sobre los pies.",
+    "errores_frecuentes": [
+      "Rodillas hacia dentro al aterrizar.",
+      "Piernas rígidas, con un aterrizaje ruidoso.",
+      "Mirar el balón y perder el equilibrio al frenar."
+    ],
+    "que_observar": [
+      "Mantiene dos segundos de equilibrio sin tocar el suelo con la otra pierna.",
+      "Aterriza igual de bien con la pierna no dominante."
+    ],
+    "progresion": {
+      "facilitar": "Solo parada en dos pies, al paso y sin salto.",
+      "complicar": "Saltos laterales encadenados con parada a una pierna y señal de cambio de pierna."
+    },
+    "sin_diagrama": true
+  },
+  {
+    "id": "ej_119",
+    "nombre": "Frenar, apoyar y salir: cambios de dirección controlados en calles",
+    "categoria": "calentamiento",
+    "subcategoria": "tecnica_individual",
+    "edades": [
+      "U14",
+      "U16",
+      "U18",
+      "Senior"
+    ],
+    "duracion_min": 10,
+    "intensidad": 3,
+    "carga_cognitiva": 2,
+    "jugadores_minimos": 8,
+    "objetivos": {
+      "tacticos": [],
+      "tecnicos": [
+        "frenada en tres pasos",
+        "apoyo exterior y salida",
+        "cambio de dirección con balón"
+      ],
+      "fisicos": [
+        "control de la deceleración",
+        "agilidad"
+      ]
+    },
+    "descripcion": "ORGANIZACIÓN: cuatro calles a lo largo de la pista, cada una con tres conos en zigzag separados unos cinco metros; los jugadores salen de uno en uno cada pocos segundos, de modo que nadie espera más de un instante. SECUENCIA: en la primera vuelta, sin balón, se acelera hasta cada cono, se frena con tres pasos cortos bajando la cadera, se apoya con firmeza la pierna exterior y se sale en diagonal hacia el siguiente cono. En la segunda vuelta se repite con balón, botando con la mano contraria al cambio. ROTACIÓN: continua; al llegar al final se vuelve al trote por fuera de las calles y se entra de nuevo. PROGRESIÓN: primero al 60 % de velocidad; después a ritmo de partido con señal del entrenador para elegir el lado del cambio; al final, recibir un pase del entrenador justo después del último apoyo y finalizar con bandeja suave.",
+    "puntos_clave": [
+      "Frenar en tres pasos cortos y bajando la cadera: no se frena con una pierna estirada.",
+      "El apoyo exterior es firme y la rodilla queda sobre el pie antes de empujar.",
+      "Cambiar la mano de bote al cambiar de dirección, protegiendo el balón con el cuerpo.",
+      "Cabeza alta para ver el siguiente cono (o al compañero) y no mirar el balón."
+    ],
+    "material": "Doce conos y un balón por jugador; la pista entera.",
+    "consigna": "Frena abajo, apoya firme y sal rápido.",
+    "errores_frecuentes": [
+      "Frenar con la pierna estirada y el cuerpo inclinado hacia atrás.",
+      "Apoyar con el pie hacia dentro y la rodilla colapsada.",
+      "Cambiar de dirección sin cambiar la mano de bote."
+    ],
+    "que_observar": [
+      "Frena en tres pasos y mantiene el tronco estable en el apoyo.",
+      "Sale del apoyo sin perder el control del balón."
+    ],
+    "progresion": {
+      "facilitar": "Sin balón, al 60 % de velocidad y con conos más separados.",
+      "complicar": "A ritmo de partido, con señal para el lado del cambio y pase del entrenador tras el último apoyo."
+    },
+    "sin_diagrama": true
   }
 ]
