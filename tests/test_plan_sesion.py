@@ -58,9 +58,9 @@ def test_ejemplos_de_referencia():
     esperado = {
         ("U10", 60): (5, [15, 10, 10, 10]),
         ("U16", 60): (5, [15, 10, 10, 10]),
-        ("U10", 90): (8, [10, 10, 10, 10, 10, 10, 10]),
-        ("U16", 90): (6, [15, 15, 15, 15, 10]),
-        ("U14", 90): (7, [15, 15, 10, 10, 10, 10]),
+        ("U10", 90): (8, [15, 10, 10, 10, 10, 10, 10]),
+        ("U16", 90): (6, [15, 15, 15, 15, 15]),
+        ("U14", 90): (7, [15, 15, 15, 10, 10, 10]),
         ("U14", 60): (5, [15, 10, 10, 10]),
     }
     for (edad, duracion), (total, duraciones) in esperado.items():
@@ -88,3 +88,12 @@ def test_u14_hace_menos_ejercicios_que_minibasket_y_no_menos_que_cadete(duracion
     u10, u14, u16 = (len(plan_de_tiempos(duracion, e).duraciones) for e in ("U10", "U14", "U16"))
     assert u10 >= u14 >= u16
     assert u10 > u16
+
+
+def test_el_calentamiento_no_pasa_de_diez_minutos_y_lo_que_sobra_va_a_la_parte_principal():
+    for edad in ("U8", "U12", "U14", "U16", "U18"):
+        for duracion in (45, 60, 75, 90, 120):
+            plan = plan_de_tiempos(duracion, edad)
+            assert plan.t_calentamiento <= 10, (edad, duracion, plan)
+    # con 90 min el calentamiento deja de comerse 15 y esos 5 min se reparten en la parte principal
+    assert sum(plan_de_tiempos(90, "U16").duraciones) == 75

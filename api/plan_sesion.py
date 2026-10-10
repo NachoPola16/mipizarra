@@ -18,6 +18,10 @@ CATEGORIAS_U14 = {"U14", "Infantil"}
 # inventaba el modelo era el que más fallaba (texto movido para una vuelta a la calma y diagrama inválido).
 CON_VUELTA_A_LA_CALMA = False
 
+# El calentamiento no pasa de 10 minutos: en formación lo habitual es 10–15 y las fichas de calentamiento duran 8–10;
+# un bloque de 15 con una ficha de 10 obligaba a improvisar. Lo que sobra va a la parte principal.
+CALENTAMIENTO_MAX_MIN = 10
+
 _BLOQUES_FIJOS = 2 if CON_VUELTA_A_LA_CALMA else 1                 # calentamiento (+ vuelta a la calma)
 MIN_EJERCICIOS_PRINCIPAL = 5 - _BLOQUES_FIJOS                     # total mínimo: 5
 MAX_EJERCICIOS_PRINCIPAL = 8 - _BLOQUES_FIJOS                     # total máximo: 8
@@ -45,7 +49,7 @@ def _bloque_objetivo(edad: str) -> int:
 
 def plan_de_tiempos(duracion: int, edad: str) -> PlanDeTiempos:
     t_descanso = 3 if duracion >= 60 else 2
-    t_calentamiento = _redondear_5(duracion / 6, minimo=10)
+    t_calentamiento = min(_redondear_5(duracion / 6, minimo=10), CALENTAMIENTO_MAX_MIN)
     t_vuelta = _redondear_5(duracion / 15, minimo=5) if CON_VUELTA_A_LA_CALMA else 0
     t_parte = duracion - t_calentamiento - t_vuelta - t_descanso
     unidades = max(1, t_parte // 5)                  # bloques de 5 min: la suma nunca pasa de la duración
