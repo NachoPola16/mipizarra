@@ -1,10 +1,12 @@
 # tests/test_seleccion_n_ejercicios.py
 """seleccionar_ejercicios: elige n ejercicios de la biblioteca (n entre 3 y 6 en la parte principal)
 con el mismo arco que antes: empieza sin oposición y termina con oposición igualada."""
+import random
+
 import pytest
 
 from ejercicios import (
-    _nivel_oposicion, filtrar_ejercicios, nivel_objetivo, seleccionar_ejercicios,
+    _desvio_del_arco, _nivel_oposicion, elegir_fichas, filtrar_ejercicios, nivel_objetivo, seleccionar_ejercicios,
     seleccionar_tres_ejercicios,
 )
 
@@ -82,3 +84,55 @@ def test_elegir_fichas_vive_en_ejercicios_y_sesion_la_reutiliza():
     import ejercicios
     import sesion
     assert callable(ejercicios.elegir_fichas) and sesion._elegir_fichas is ejercicios.elegir_fichas
+
+
+# ─── Variedad: con `azar` los empates se resuelven al azar, sin perder el arco ni la relevancia ────────
+
+def _niveles(elegidos):
+    return [_nivel_oposicion(e) if e else None for e in elegidos]
+
+
+def test_sin_azar_la_eleccion_es_siempre_la_misma():
+    assert [e["nombre"] for e in seleccionar_ejercicios(_pool(), 3)] == \
+           [e["nombre"] for e in seleccionar_ejercicios(_pool(), 3)]
+
+
+def test_con_azar_salen_sesiones_distintas_y_todas_siguen_el_arco():
+    base = _niveles(seleccionar_ejercicios(_pool(), 5))
+    vistas = set()
+    for semilla in range(40):
+        elegidos = seleccionar_ejercicios(_pool(), 5, azar=random.Random(semilla))
+        vistas.add(tuple(e["nombre"] for e in elegidos))
+        assert _niveles(elegidos) == base
+        nombres = [e["nombre"] for e in elegidos]
+        assert len(nombres) == len(set(nombres))
+    assert len(vistas) > 1
+
+
+def test_con_azar_solo_compiten_las_primeras_fichas_empatadas():
+    # compiten las 3 primeras libres por hueco: con dos huecos del mismo nivel puede entrar la 4.ª
+    # (la primera ya se usó), pero la 5.ª, la menos relevante (llegan ordenadas), nunca
+    pool = [_ej("Pases 3c0 en triángulo", "ANALÍTICO")] + [_ej(f"3c3 variante {i}") for i in range(5)]
+    salidas = {e["nombre"] for semilla in range(60)
+               for e in seleccionar_ejercicios(pool, 3, azar=random.Random(semilla))[1:]}
+    assert salidas
+    assert "3c3 variante 4" not in salidas
+
+
+def test_con_azar_los_huecos_son_los_mismos_que_sin_azar():
+    pool = _pool()[:3]
+    for semilla in range(10):
+        elegidos = seleccionar_ejercicios(pool, 5, azar=random.Random(semilla))
+        assert sum(e is None for e in elegidos) == sum(e is None for e in seleccionar_ejercicios(pool, 5))
+
+
+@pytest.mark.parametrize("edad", EDADES)
+@pytest.mark.parametrize("objetivo", OBJETIVOS)
+def test_en_la_biblioteca_real_el_azar_no_empeora_huecos_ni_arco(ejercicios, edad, objetivo):
+    n = 5
+    base = elegir_fichas([dict(e) for e in ejercicios], edad, objetivo, n)
+    for semilla in range(6):
+        elegidas = elegir_fichas([dict(e) for e in ejercicios], edad, objetivo, n, azar=random.Random(semilla))
+        assert _desvio_del_arco(elegidas) <= _desvio_del_arco(base)
+        ids = [f["id"] for f in elegidas if f]
+        assert len(ids) == len(set(ids))
