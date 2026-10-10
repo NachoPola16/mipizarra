@@ -29,9 +29,11 @@ logger = logging.getLogger(__name__)
 def _svg_diagrama_no_disponible() -> str:
     """Placeholder visible cuando la generación automática de coordenadas falla
     (tras reintento) o el renderer lanza una excepción — antes se dejaba un
-    hueco en blanco sin ninguna indicación de que algo había fallado."""
+    hueco en blanco sin ninguna indicación de que algo había fallado. Lleva data-placeholder: la
+    interfaz y el PDF no lo pintan (el ejercicio sale sin diagrama, sin avisos), pero conserva su
+    posición en la lista."""
     return (
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 200">'
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 200" data-placeholder="1">'
         '<rect width="500" height="200" fill="#faf8f0" stroke="#2d3748" stroke-width="2"/>'
         '<text x="250" y="95" text-anchor="middle" font-family="sans-serif" font-size="15" '
         'font-weight="bold" fill="#2d3748">Diagrama no disponible</text>'
@@ -46,7 +48,7 @@ def _svg_sin_diagrama() -> str:
     Ocupa su sitio: el PDF asigna los diagramas por posición de ejercicio y un hueco
     desalinearía los siguientes."""
     return (
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 200">'
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 200" data-placeholder="1">'
         '<rect width="500" height="200" fill="#faf8f0" stroke="#cbd5e0" stroke-width="2"/>'
         '<text x="250" y="100" text-anchor="middle" font-family="sans-serif" font-size="14" '
         'fill="#6b7280">Juego libre: no necesita diagrama.</text>'
