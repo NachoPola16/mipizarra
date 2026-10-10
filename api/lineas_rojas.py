@@ -55,7 +55,7 @@ def _coincidencias(texto: str, edad: str) -> list[str]:
 
 def _singular(termino: str) -> str:
     """«bloqueos» y «bloqueo» son lo mismo para saber si el entrenador lo pidió."""
-    return termino.rstrip("s")
+    return termino.removesuffix("s")
 
 
 def violaciones(texto: str, edad: str, permitidos=()) -> list[str]:
@@ -85,9 +85,11 @@ def pedidos_presentes(terminos: list[str], texto: str, edad: str) -> list[str]:
 
 
 def aviso_pedido_no_incluido(terminos: list[str], edad: str) -> str:
+    """Aviso cuando el entrenador pidió una línea roja y la sesión final no la contiene (no hay fichas
+    adecuadas o la pieza del modelo se descartó): no se promete que se haya hecho."""
     lista = ", ".join(f"«{t}»" for t in terminos)
-    return (f"Has pedido {lista}, que no es habitual en {edad} (línea roja de la categoría), pero no hay fichas ni "
-            f"propuesta adecuada: la sesión no lo incluye. Si lo quieres igualmente, genera un ejercicio suelto "
+    return (f"Has pedido {lista}, que no es habitual en {edad} (línea roja de la categoría), pero la sesión no lo "
+            f"incluye (no hay fichas adecuadas o se descartó la pieza por incumplir la categoría). Si lo quieres igualmente, genera un ejercicio suelto "
             f"con ese objetivo.")
 
 
