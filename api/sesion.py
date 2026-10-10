@@ -297,7 +297,9 @@ def _pedir_texto_sesion(prompt: str, num_predict: int, num_ctx: int,
 def _con_inicio(texto: str, inicio: str) -> str:
     """El prompt termina con el inicio de la respuesta (cabecera de calentamiento): el modelo
     continúa desde ahí, así que se le antepone. Si repite la cabecera por su cuenta, no se duplica."""
-    if re.match(r"\s*\*{0,2}\s*CALENTAMIENTO", texto, re.IGNORECASE):
+    # si el modelo repite por su cuenta la cabecera de cualquier apartado (calentamiento, vuelta, fundamentos,
+    # ejercicio), su versión sustituye al arranque; si no, se anteponen
+    if any(patron.match(texto) for patron in _CABECERA_PROPIA.values()):
         return texto
     return _unir(inicio, texto)
 

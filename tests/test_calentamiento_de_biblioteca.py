@@ -138,3 +138,15 @@ def test_si_alguna_ficha_nombra_el_objetivo_el_calentamiento_sale_de_esas(ejerci
     import random
     vistas = {elegir_calentamiento(ejercicios, "U18", "pase", azar=random.Random(s))["id"] for s in range(80)}
     assert vistas <= {"ej_112", "ej_114", "ej_115", "ej_119"} and len(vistas) >= 2
+
+
+def test_si_el_modelo_repite_la_cabecera_de_fundamentos_no_se_duplica(sesion_falsa, monkeypatch):
+    # con el calentamiento de ficha el arranque del modelo es «Fundamentos»; si él mismo repite la cabecera
+    # no puede salir «se trabajanFundamentos: En esta sesión se trabajan»
+    sesion_falsa([FICHA_A, FICHA_B, FICHA_C], ["Fundamentos: En esta sesión se trabajan el bote protegido."])
+    monkeypatch.setattr(sesion, "cargar_ejercicios", lambda: [CAL_1])
+    monkeypatch.setattr(sesion, "plan_de_tiempos", lambda d, e: PlanDeTiempos(10, 0, 3, (20, 20, 20)))
+    r = sesion.generar_sesion("U10", 90, "bote")
+    assert r["texto"].count("Fundamentos") == 1
+    assert "trabajanFundamentos" not in r["texto"]
+    assert "En esta sesión se trabajan el bote protegido" in r["texto"]
