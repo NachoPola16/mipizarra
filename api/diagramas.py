@@ -54,6 +54,17 @@ def generar_diagrama_desde_texto(descripcion_ejercicio: str) -> dict | None:
 # "required" por movimiento (solo de/tipo/orden): qué campos hacen falta según el
 # tipo de movimiento (a_pos vs a) es una regla cruzada que JSON Schema no expresa
 # bien, así que se comprueba en _validar_diagrama.
+_TIPOS_CON_DESTINO = ("desplazamiento", "bote", "bloqueo")
+
+_PUNTO_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "x": {"type": "number", "minimum": 0, "maximum": 100},
+        "y": {"type": "number", "minimum": 0, "maximum": 100},
+    },
+    "required": ["x", "y"],
+}
+
 _DIAGRAMA_JSON_SCHEMA = {
     "type": "object",
     "properties": {
@@ -89,25 +100,42 @@ _DIAGRAMA_JSON_SCHEMA = {
         },
         "movimientos": {
             "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "de":    {"type": "string"},
-                    "a":     {"type": "string"},
-                    "a_pos": {
-                        "type": "object",
-                        "properties": {
-                            "x": {"type": "number", "minimum": 0, "maximum": 100},
-                            "y": {"type": "number", "minimum": 0, "maximum": 100},
-                        },
-                        "required": ["x", "y"],
+            # Una variante por familia de movimiento: el destino (a_pos) es obligatorio en
+            # desplazamiento/bote/bloqueo y el receptor (a) en el pase. Sin esto el modelo omitía
+            # a_pos con frecuencia y el diagrama entero se rechazaba.
+            "items": {"anyOf": [
+                {
+                    "type": "object",
+                    "properties": {
+                        "de":    {"type": "string"},
+                        "tipo":  {"type": "string", "enum": list(_TIPOS_CON_DESTINO)},
+                        "a_pos": _PUNTO_SCHEMA,
+                        "orden": {"type": "integer", "minimum": 1},
+                        "curva": {"type": "boolean"},
                     },
-                    "tipo":  {"type": "string", "enum": ["desplazamiento", "pase", "bote", "tiro", "bloqueo"]},
-                    "orden": {"type": "integer", "minimum": 1},
-                    "curva": {"type": "boolean"},
+                    "required": ["de", "tipo", "a_pos", "orden"],
                 },
-                "required": ["de", "tipo", "orden"],
-            },
+                {
+                    "type": "object",
+                    "properties": {
+                        "de":    {"type": "string"},
+                        "tipo":  {"type": "string", "enum": ["pase"]},
+                        "a":     {"type": "string"},
+                        "orden": {"type": "integer", "minimum": 1},
+                        "curva": {"type": "boolean"},
+                    },
+                    "required": ["de", "tipo", "a", "orden"],
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "de":    {"type": "string"},
+                        "tipo":  {"type": "string", "enum": ["tiro"]},
+                        "orden": {"type": "integer", "minimum": 1},
+                    },
+                    "required": ["de", "tipo", "orden"],
+                },
+            ]},
         },
         "conos": {
             "type": "array",
@@ -123,9 +151,6 @@ _DIAGRAMA_JSON_SCHEMA = {
     },
     "required": ["jugadores_ataque", "jugadores_defensa", "balon_inicio", "movimientos"],
 }
-
-
-_TIPOS_CON_DESTINO = ("desplazamiento", "bote", "bloqueo")
 
 
 def _orden_movimiento(mov: dict) -> float:
@@ -204,6 +229,35 @@ def _separar_jugadores(jugadores: list, tipo_pista: str) -> list[str]:
     return reparaciones
 
 
+def _recortar_al_conteo(diagrama: dict, conteo: tuple[int, int]) -> list[str]:
+    """Si el nombre dice AcB y el diagrama trae jugadores de MÁS (el modelo dibuja la fila de espera o un
+    segundo atacante en un 1c1), quita los sobrantes y los movimientos que los nombran. Se quedan el portador
+    del balón y los que más se mueven (empate: el declarado antes). Nunca añade jugadores: si faltan, el
+    validador rechaza. Modifica el diagrama y devuelve la descripción de cada recorte."""
+    movimientos = diagrama.get("movimientos") or []
+    portador = (diagrama.get("balon_inicio") or {}).get("portador")
+
+    def actividad(jugador_id) -> int:
+        return sum(1 for m in movimientos
+                   if isinstance(m, dict) and (m.get("de") == jugador_id or m.get("a") == jugador_id))
+
+    quitados = []
+    for clave, cuantos in (("jugadores_ataque", conteo[0]), ("jugadores_defensa", conteo[1])):
+        jugadores = diagrama.get(clave) or []
+        if len(jugadores) <= cuantos:
+            continue
+        orden = sorted(range(len(jugadores)),
+                       key=lambda i: (jugadores[i].get("id") != portador, -actividad(jugadores[i].get("id")), i))
+        se_quedan = set(orden[:cuantos])
+        quitados += [j.get("id") for i, j in enumerate(jugadores) if i not in se_quedan]
+        diagrama[clave] = [j for i, j in enumerate(jugadores) if i in se_quedan]
+    if not quitados:
+        return []
+    diagrama["movimientos"] = [m for m in movimientos
+                               if not (isinstance(m, dict) and (m.get("de") in quitados or m.get("a") in quitados))]
+    return [f"sobran jugadores para {conteo[0]}c{conteo[1]}: quitados {', '.join(map(str, quitados))}"]
+
+
 def _validar_diagrama(diagrama: dict, nombre_ejercicio: str = "") -> str | None:
     """Valida coherencia semántica del diagrama que el JSON Schema no puede expresar:
     referencias de movimientos a jugadores realmente declarados, posiciones con nombre
@@ -243,7 +297,16 @@ def _validar_diagrama(diagrama: dict, nombre_ejercicio: str = "") -> str | None:
             except ValueError as e:
                 return f"movimiento '{mov.get('tipo')}' de '{mov.get('de')}': {e}"
 
-    reparaciones = _reparar_a_pos(diagrama, {j.get("id") for j in defensa}, tipo_pista)
+    # Jugadores de más respecto al nombre (AcB): se recortan antes de reparar el resto, que ya no los ve.
+    conteo = _extraer_conteo_nc_m(nombre_ejercicio)
+    recortes = _recortar_al_conteo(diagrama, conteo) if conteo else []
+    if recortes:
+        ataque  = diagrama.get("jugadores_ataque") or []
+        defensa = diagrama.get("jugadores_defensa") or []
+        if not ataque:
+            return "jugadores_ataque no puede estar vacío"
+
+    reparaciones = recortes + _reparar_a_pos(diagrama, {j.get("id") for j in defensa}, tipo_pista)
 
     # Distancia mínima entre jugadores: en ejercicios "cara a cara muy cerca"
     # (p.ej. 1c1 de protección) el modelo a veces coloca atacante y defensor casi
@@ -268,7 +331,6 @@ def _validar_diagrama(diagrama: dict, nombre_ejercicio: str = "") -> str | None:
     if reparaciones:
         logger.info(f"  ↺ Diagrama reparado: {'; '.join(reparaciones)}")
 
-    conteo = _extraer_conteo_nc_m(nombre_ejercicio)
     if conteo:
         n_ataque, n_defensa = conteo
         if len(ataque) != n_ataque or len(defensa) != n_defensa:
