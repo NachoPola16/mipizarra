@@ -256,7 +256,9 @@ def elegir_calentamiento(ejercicios: list, edad: str, objetivo: str, excluir=(),
                   and e.get("id") not in excluir]
     if not candidatas:
         return None
-    grupo = [e for e in candidatas if es_relevante(e, objetivo)] or candidatas
+    # relevancia directa (el objetivo en la propia ficha): con los fundamentos asociados casi todas encajaban y
+    # una ficha con muchas palabras (movilidad con balón, pases...) salía en la mayoría de las sesiones
+    grupo = [e for e in candidatas if es_relevante(e, objetivo, con_asociados=False)] or candidatas
     return grupo[0] if azar is None else azar.choice(grupo)
 
 
