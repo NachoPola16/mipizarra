@@ -500,13 +500,14 @@
       ]
     },
     "puntos_clave": [
+      "Correr siempre de cara al frente: pies y cabeza hacia delante y solo gira el torso para pasar y recibir.",
       "Los pases van siempre adelantados y en diagonal: el receptor no frena para recibir. Si alguien para, el ritmo del drill se rompe.",
       "La secuencia de pases es fija — centro→derecha→centro→izquierda — para memorizarla y ejecutarla a máxima velocidad sin pensar.",
       "Quien planta el balón fuera NO entra a la pista hasta que uno de los dos saca de banda. El saque simula una situación real de partido.",
       "En el 2c1: el que saca de banda ataca con bote directo al aro; el otro sale al carril libre. El defensor elige a quién presionar — la decisión la lee el que tiene el balón.",
       "El defensor arranca en desventaja de posición — los dos atacantes deben aprovechar esa ventaja sin ralentizar la acción."
     ],
-    "descripcion": "ORGANIZACIÓN: tres jugadores en la línea de fondo — A1 en el centro con balón, A2 en la banda derecha, A3 en la banda izquierda. SECUENCIA FASE 1 — carrera con pases: (1) Los tres arrancan corriendo hacia la canasta contraria. (2) A1 pasa a A2 (centro a derecha); A2 pasa a A1 (derecha a centro); A1 pasa a A3 (centro a izquierda). Pases adelantados en diagonal — nadie para para recibir. (3) Cuando A3 llega a la línea de medio campo con el balón, lo planta en el suelo fuera de la pista (en la línea lateral) y se queda fuera. SECUENCIA FASE 2 — 2c1: (4) A3 pasa a defender: entra a la pista cuando uno de los dos comience el saque de banda. (5) A1 o A2 recoge el balón plantado y saca de banda desde la línea lateral; el otro se coloca en el carril opuesto. (6) A1 y A2 atacan 2c1 contra A3 hasta anotar o que la defensa recupere el balón. ROTACIÓN: en la siguiente repetición, quien defendió pasa a salir de centro (A1).",
+    "descripcion": "ORGANIZACIÓN: tres jugadores en la línea de fondo — A1 en el centro con balón, A2 en la banda derecha, A3 en la banda izquierda. SECUENCIA FASE 1 — carrera con pases: (1) Los tres arrancan corriendo hacia la canasta contraria, con los pies y la cabeza mirando hacia delante: solo se gira el torso para dar y recibir los pases, sin desplazarse de lado. (2) A1 pasa a A2 (centro a derecha); A2 pasa a A1 (derecha a centro); A1 pasa a A3 (centro a izquierda). Pases adelantados en diagonal — nadie para para recibir. (3) Cuando A3 llega a la línea de medio campo con el balón, lo planta en el suelo fuera de la pista (en la línea lateral) y se queda fuera. SECUENCIA FASE 2 — 2c1: (4) A3 pasa a defender: entra a la pista cuando uno de los dos comience el saque de banda. (5) A1 o A2 recoge el balón plantado y saca de banda desde la línea lateral; el otro se coloca en el carril opuesto. (6) A1 y A2 atacan 2c1 contra A3 hasta anotar o que la defensa recupere el balón. ROTACIÓN: en la siguiente repetición, quien defendió pasa a salir de centro (A1).",
     "diagramas": [
       {
         "titulo": "Fase 1 — Carrera con pases: centro → derecha → centro → izquierda",
@@ -8480,9 +8481,9 @@
         "resistencia"
       ]
     },
-    "descripcion": "ORGANIZACIÓN: se sale desde las dos canastas a la vez, cada grupo por la banda de su derecha para no cruzarse. En cada canasta, tríos en fila: un pasador bajo el aro con balón, un corredor en la esquina de la línea de fondo y un defensor dos metros por detrás del corredor, en la misma esquina. SECUENCIA: el pasador lanza el balón contra el tablero, coge su rebote y busca con un pase largo de pecho al corredor, que ha salido a la vez pegado a la banda; el corredor recibe en carrera, sin pararse, y ataca la canasta contraria con bote; el defensor corre para recuperar la posición delante y se juega 1c1 hasta canasta, robo o rebote del defensor. Finalización con bomba sobre un pie o tiro cercano. ROTACIÓN: pasador pasa a corredor, corredor a defensor y defensor a pasador; el trío siguiente sale en cuanto el anterior pasa el medio campo, y al terminar cada trío se queda en esa canasta para salir hacia la otra. PROGRESIÓN: el defensor sale a la altura del corredor; el corredor debe recibir antes del medio campo o el punto es para la defensa; en U12, el pasador se incorpora tras el pase y se juega 2c1.",
+    "descripcion": "ORGANIZACIÓN: se sale desde las dos canastas a la vez, cada grupo por la banda de su derecha para no cruzarse. En cada canasta, tríos en fila: un pasador bajo el aro con balón, un corredor en la esquina de la línea de fondo y un defensor dos metros por detrás del corredor, en la misma esquina. SECUENCIA: el pasador lanza el balón contra el tablero, coge su rebote y busca con un pase largo de pecho al corredor, que ha salido a la vez pegado a la banda; el corredor recibe en carrera, sin pararse y con los pies y la cabeza mirando hacia delante (solo gira el torso para recibir), y ataca la canasta contraria con bote; el defensor corre para recuperar la posición delante y se juega 1c1 hasta canasta, robo o rebote del defensor. Finalización con bomba sobre un pie o tiro cercano. ROTACIÓN: pasador pasa a corredor, corredor a defensor y defensor a pasador; el trío siguiente sale en cuanto el anterior pasa el medio campo, y al terminar cada trío se queda en esa canasta para salir hacia la otra. PROGRESIÓN: el defensor sale a la altura del corredor; el corredor debe recibir antes del medio campo o el punto es para la defensa; en U12, el pasador se incorpora tras el pase y se juega 2c1.",
     "puntos_clave": [
-      "El corredor sale pegado a la banda y mira al balón por encima del hombro.",
+      "El corredor sale pegado a la banda con pies y cabeza hacia delante, y gira solo el torso para ver y recibir el balón.",
       "El pase va por delante del corredor, para que reciba sin frenar.",
       "Recibir en carrera y atacar el aro con el primer bote hacia delante.",
       "El defensor corre hacia el aro antes de girarse a defender."
@@ -9744,8 +9745,9 @@
         "carrera continua"
       ]
     },
-    "descripcion": "ORGANIZACIÓN: parejas con un balón en la línea de fondo, cada una por una calle (centro y banda). SECUENCIA: la pareja avanza hasta la canasta contraria pasándose el balón sin botar, separados unos cuatro metros; el que recibe cerca del aro finaliza con bandeja, aro pasado o tiro corto a ritmo suave. El compañero coge el rebote y vuelven por la banda contraria con la misma tarea. ROTACIÓN: sale una pareja nueva cuando la anterior pasa el medio campo; con dieciséis jugadores, dos parejas a la vez por las dos bandas. PROGRESIÓN: primero al trote y con cinco pases como mínimo; después con tres pases; al final, el finalizador alterna mano derecha e izquierda y el compañero tira a media distancia tras recibir la devolución.",
+    "descripcion": "ORGANIZACIÓN: parejas con un balón en la línea de fondo, cada una por una calle (centro y banda). SECUENCIA: la pareja avanza hasta la canasta contraria pasándose el balón sin botar, separados unos cuatro metros y siempre corriendo de cara al frente: pies y cabeza mirando hacia delante, sin desplazarse de lado, y solo se gira el torso para dar y recibir el pase; el que recibe cerca del aro finaliza con bandeja, aro pasado o tiro corto a ritmo suave. El compañero coge el rebote y vuelven por la banda contraria con la misma tarea. ROTACIÓN: sale una pareja nueva cuando la anterior pasa el medio campo; con dieciséis jugadores, dos parejas a la vez por las dos bandas. PROGRESIÓN: primero al trote y con cinco pases como mínimo; después con tres pases; al final, el finalizador alterna mano derecha e izquierda y el compañero tira a media distancia tras recibir la devolución.",
     "puntos_clave": [
+      "Pies y cabeza siempre hacia delante: solo gira el torso para pasar y recibir, sin correr de lado.",
       "Pasar por delante del compañero, al espacio por donde va a correr.",
       "Recibir con las manos preparadas y sin frenar la carrera.",
       "Mantener la separación: ni pegados ni a toda la anchura de la pista.",
@@ -9754,6 +9756,7 @@
     "material": "Un balón por pareja; toda la pista y dos canastas.",
     "consigna": "Pase al espacio, no al jugador.",
     "errores_frecuentes": [
+      "Correr de lado o girar todo el cuerpo hacia el compañero: se pierde la línea de carrera.",
       "Pasar hacia atrás o a la altura del compañero y frenarle.",
       "Dar pasos de más al recibir en carrera.",
       "Juntarse en la misma calle."
