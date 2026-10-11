@@ -311,3 +311,36 @@ def test_con_el_mismo_modelo_para_todo_no_hay_respaldo_distinto(monkeypatch):
     r = reglamento.responder_duda_reglamento("¿faltas personales?")
     assert "No se pudo responder" in r
     assert llamadas == ["grande", "grande"]
+
+
+# ── La búsqueda se amplía con el vocabulario del reglamento (cuartos → periodos, niños → jugadores…) ───────────
+
+def test_la_consulta_ampliada_traduce_el_vocabulario_de_la_calle():
+    from reglamento import consulta_ampliada
+    q = consulta_ampliada("que reglas hay sobre los cuartos jugados por niños en categoria benjamin")
+    assert q.startswith("que reglas hay sobre los cuartos jugados por niños en categoria benjamin")
+    for termino in ("periodos", "jugadores", "minibasket", "participación mínima"):
+        assert termino in q
+
+
+def test_la_consulta_ampliada_no_toca_lo_que_ya_usa_el_vocabulario_del_reglamento():
+    from reglamento import consulta_ampliada
+    assert consulta_ampliada("segundos para sacar de banda") == "segundos para sacar de banda"
+
+
+def test_la_consulta_ampliada_no_repite_terminos():
+    from reglamento import consulta_ampliada
+    q = consulta_ampliada("niños y niñas, cuartos o cuarto")
+    assert q.count("jugadores") == 1 and q.count("periodos") == 1
+
+
+def test_el_modelo_recibe_la_pregunta_original_y_la_busqueda_la_ampliada(monkeypatch):
+    import reglamento
+    buscadas, enviadas = [], []
+    monkeypatch.setattr(reglamento, "consultar_coleccion",
+                        lambda col, q, **k: buscadas.append(q) or "")
+    monkeypatch.setattr(reglamento.requests, "post",
+                        lambda url, json, timeout: enviadas.append(json["messages"][-1]["content"]) or _RespChat(200, "ok"))
+    reglamento.responder_duda_reglamento("cuartos de los niños", "general")
+    assert buscadas and all("periodos" in q and "jugadores" in q for q in buscadas)
+    assert "PREGUNTA: cuartos de los niños" in enviadas[0]

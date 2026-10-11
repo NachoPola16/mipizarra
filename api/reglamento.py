@@ -1,6 +1,7 @@
 # api/reglamento.py
 """Modo 3: dudas de reglamento y fundamentos técnicos, por ámbito (general o comunidad autónoma)."""
 import logging
+import re
 
 import requests
 
@@ -13,6 +14,31 @@ logger = logging.getLogger(__name__)
 # ── Modo 3: Reglamento y dudas técnicas ─────────────────────────────────────
 
 # SYSTEM_REGLAMENTO importado de api/prompts.py
+
+
+# Vocabulario de la calle → vocabulario del reglamento. La búsqueda por significado se desorienta con «cuartos» o
+# «niños» cuando el texto dice «periodos» y «jugadores»: se añaden los términos del reglamento a la consulta
+# (solo a la que se busca; el modelo recibe la pregunta tal como se escribió).
+_SINONIMOS_REGLAMENTO = (
+    (r"\bcuartos?\b|\bparte[s]? del partido\b", "periodos"),
+    (r"\bni[ñn]os?\b|\bni[ñn]as?\b|\bcr[ií]os?\b|\bchavales?\b|\bchic[oa]s?\b|\bpeques?\b|\bcrios?\b", "jugadores"),
+    (r"\bbenjam[ií]n(?:es)?\b|\balev[ií]n(?:es)?\b|\bmini\b|\bminibasqu?et\b|\bminibasket\b|\bu-?(?:10|12)\b",
+     "minibasket benjamín alevín"),
+    (r"\bminutos? (?:jugados?|de juego)\b|\btiempo de juego\b|\bjuegan?\b|\bjugar\b|\bjugad[oa]s?\b|\bparticip\w+\b",
+     "participación mínima periodos"),
+    (r"\bcambios?\b|\bsustituci\w+\b", "sustituciones cambios"),
+    (r"\bfaltas?\b", "faltas personales"),
+)
+
+
+def consulta_ampliada(pregunta: str) -> str:
+    """La pregunta más los términos del reglamento que equivalen a lo que se ha escrito, sin repetir."""
+    texto = pregunta.lower()
+    extra: list[str] = []
+    for patron, termino in _SINONIMOS_REGLAMENTO:
+        if re.search(patron, texto) and termino not in extra:
+            extra.append(termino)
+    return f"{pregunta} {' '.join(extra)}".strip() if extra else pregunta
 
 
 def responder_duda_reglamento(pregunta: str, ambito: str = AMBITO_GENERAL) -> str:
@@ -30,6 +56,7 @@ def responder_duda_reglamento(pregunta: str, ambito: str = AMBITO_GENERAL) -> st
     nombre = nombre_ambito(ambito)
     filtro_general = {"ambito": AMBITO_GENERAL}
     filtro_ccaa = {"ambito": ambito}
+    consulta = consulta_ampliada(pregunta)      # solo para buscar; al modelo le llega la pregunta original
 
     # Presupuesto de caracteres POR COLECCIÓN, no un recorte sobre la suma: los fragmentos del .md
     # curado van primero y, si se recortaba el conjunto, los PDF (donde a veces está el dato)
@@ -40,14 +67,14 @@ def responder_duda_reglamento(pregunta: str, ambito: str = AMBITO_GENERAL) -> st
     contexto_ccaa = ""
     if especifico:
         contexto_ccaa = "\n".join(filter(None, [
-            consultar_coleccion("reglamento_md", pregunta, n_resultados=6, where=filtro_ccaa)[:1600],
-            consultar_coleccion("reglamento", pregunta, n_resultados=3, where=filtro_ccaa)[:800],
+            consultar_coleccion("reglamento_md", consulta, n_resultados=6, where=filtro_ccaa)[:2800],
+            consultar_coleccion("reglamento", consulta, n_resultados=3, where=filtro_ccaa)[:800],
         ]))
     contexto_general = "\n".join(filter(None, [
-        consultar_coleccion("reglamento_md", pregunta, n_resultados=6, where=filtro_general)[:3600],
-        consultar_coleccion("reglamento", pregunta, n_resultados=2, where=filtro_general)[:700],
+        consultar_coleccion("reglamento_md", consulta, n_resultados=6, where=filtro_general)[:3600],
+        consultar_coleccion("reglamento", consulta, n_resultados=2, where=filtro_general)[:700],
     ]))
-    contexto_curado = consultar_coleccion("teoria_md", pregunta, n_resultados=2)
+    contexto_curado = consultar_coleccion("teoria_md", consulta, n_resultados=2)
 
     partes = []
     if contexto_ccaa:
@@ -61,7 +88,10 @@ def responder_duda_reglamento(pregunta: str, ambito: str = AMBITO_GENERAL) -> st
         instruccion_ambito = (
             f"ÁMBITO DE LA CONSULTA: {nombre}. Responde con la normativa de {nombre} cuando exista y "
             f"complétala con el reglamento general; si ambas difieren, indica cuál se aplica en {nombre}. "
-            f"Si no hay norma específica de {nombre} sobre el asunto, dilo y aplica la general.\n"
+            f"Si no hay norma específica de {nombre} sobre el asunto, dilo brevemente y aplica la general. "
+            f"Las reglas de juego que no dependen de la comunidad (violaciones, faltas, tiempos, material, "
+            f"señales) se responden con el reglamento general de FIBA y de la federación española como en "
+            f"cualquier otra consulta: no hace falta que {nombre} las regule para contestarlas.\n"
         )
     else:
         instruccion_ambito = (
