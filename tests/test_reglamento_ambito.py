@@ -250,3 +250,64 @@ def test_la_peticion_de_reglamento_aguanta_la_carga_del_modelo_y_lo_mantiene_car
     responder_duda_reglamento("¿Qué es el paso cero?")
     carga, tiempo = enviados[0]
     assert tiempo >= 180 and carga.get("keep_alive") == "30m"
+
+
+# ── Ollama falla a veces al cargar gemma4 (500 tras ~35 s): se reintenta y, si sigue, se usa el modelo reducido ──
+
+class _RespChat:
+    def __init__(self, status=200, texto="Respuesta."):
+        self.status_code, self._texto = status, texto
+
+    def raise_for_status(self):
+        if self.status_code >= 400:
+            import requests
+            raise requests.HTTPError(f"{self.status_code} Server Error")
+
+    def json(self):
+        return {"message": {"content": self._texto}}
+
+
+def _preparar_chat(monkeypatch, respuestas):
+    import reglamento
+    monkeypatch.setattr(reglamento, "consultar_coleccion", lambda *a, **k: "")
+    monkeypatch.setattr(reglamento, "MODEL_REGLAMENTO", "grande")
+    monkeypatch.setattr(reglamento, "MODEL_SESION", "pequeno")
+    llamadas = []
+
+    def post(url, json, timeout):
+        llamadas.append(json["model"])
+        return respuestas.pop(0)
+
+    monkeypatch.setattr(reglamento.requests, "post", post)
+    return reglamento, llamadas
+
+
+def test_si_ollama_falla_una_vez_se_reintenta_con_el_mismo_modelo(monkeypatch):
+    reglamento, llamadas = _preparar_chat(monkeypatch, [_RespChat(500), _RespChat(200, "La norma es esta.")])
+    r = reglamento.responder_duda_reglamento("¿cuántos periodos debe jugar un benjamín?")
+    assert r == "La norma es esta."
+    assert llamadas == ["grande", "grande"]
+
+
+def test_si_el_modelo_grande_sigue_fallando_responde_el_reducido_y_lo_dice(monkeypatch):
+    reglamento, llamadas = _preparar_chat(monkeypatch, [_RespChat(500), _RespChat(500), _RespChat(200, "Dos periodos.")])
+    r = reglamento.responder_duda_reglamento("¿cuántos periodos debe jugar un benjamín?")
+    assert r.startswith("Dos periodos.")
+    assert "modelo reducido" in r
+    assert llamadas == ["grande", "grande", "pequeno"]
+
+
+def test_si_fallan_todos_el_mensaje_es_claro(monkeypatch):
+    reglamento, llamadas = _preparar_chat(monkeypatch, [_RespChat(500)] * 3)
+    r = reglamento.responder_duda_reglamento("¿cuántos periodos debe jugar un benjamín?")
+    assert "No se pudo responder" in r
+    assert len(llamadas) == 3
+
+
+def test_con_el_mismo_modelo_para_todo_no_hay_respaldo_distinto(monkeypatch):
+    import reglamento
+    reglamento_, llamadas = _preparar_chat(monkeypatch, [_RespChat(500), _RespChat(500)])
+    monkeypatch.setattr(reglamento, "MODEL_SESION", "grande")
+    r = reglamento.responder_duda_reglamento("¿faltas personales?")
+    assert "No se pudo responder" in r
+    assert llamadas == ["grande", "grande"]
