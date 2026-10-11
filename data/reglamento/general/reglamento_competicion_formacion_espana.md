@@ -26,6 +26,21 @@ La FEB no publica un reglamento técnico único obligatorio para todas las ligas
 | **Cadete** (U16) | 4 × 10 min | Reloj parado | 6,75 m (cat. A) / 6,25 m (cat. B-C en algunas CCAA) | Mín. 5, Máx. 12 | Sin obligatoria en cat. A; sí en B-C en muchas CCAA | 2 + 3 | No (cat. A); varía |
 | **Junior** (U18) | 4 × 10 min | Reloj parado | 6,75 m (FIBA) | Mín. 5, Máx. 12 | No — reglamento FIBA | Reglamento FIBA | No |
 
+### Participación mínima: cuántos periodos o cuartos tiene que jugar cada niño
+
+La participación mínima es la obligación de que todos los jugadores inscritos en el acta jueguen un tiempo mínimo del
+partido; es lo que más se pregunta en categorías de formación. Con las cifras de la tabla anterior:
+
+- **Prebenjamín (U8):** no hay un mínimo fijo; el tiempo de juego se reparte de forma equitativa entre todos los niños.
+- **Benjamín y alevín (minibasket, U10 y U12):** el partido tiene 6 periodos de 8 minutos y cada jugador debe jugar,
+  como mínimo, 2 periodos de los 5 primeros. Es la norma de participación mínima en minibasket.
+- **Infantil (U14):** cada jugador debe jugar al menos 1 cuarto completo de los 4 de 10 minutos.
+- **Cadete (U16):** en categoría A no hay participación obligatoria; en categorías B y C muchas comunidades sí la exigen.
+- **Junior (U18):** no hay participación mínima obligatoria; se aplica el reglamento FIBA.
+
+Es una norma de referencia de la federación española que cada comunidad autónoma concreta a su manera (por ejemplo,
+cuántos periodos debe descansar el jugador): si compites en una comunidad, consulta también su normativa.
+
 ### Notas importantes
 
 1. **El árbitro NO toca el balón** en minibasket e infantil tras saque de banda o fondo en muchas CCAA — el saque es directo. Varía según la federación.
