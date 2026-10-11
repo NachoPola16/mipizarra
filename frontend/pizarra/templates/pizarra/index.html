@@ -108,6 +108,28 @@ html, body {
 .spinner { width: 48px; height: 48px; border: 4px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-text { color: var(--muted); font-size: .9rem; }
+.loading-tip { min-height: 3.2em; max-width: 34rem; text-align: center; color: var(--text2); font-size: .95rem; line-height: 1.6;
+    text-wrap: balance; transition: opacity .35s ease-out; }
+.loading-tip.oculto { opacity: 0; }
+
+/* ── Aviso compacto al terminar: elegir entre ver en la web o descargar el PDF ── */
+.listo { display: none; justify-content: center; padding-top: 12vh; }
+.listo.visible { display: flex; }
+.listo-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem 1.75rem;
+    width: min(26rem, 100%); }
+.listo-titulo { display: flex; align-items: center; gap: .6rem; font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.15rem; }
+.listo-check { width: 22px; height: 22px; flex-shrink: 0; fill: none; stroke: var(--accent); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.listo-meta { color: var(--muted); font-size: .85rem; margin: .5rem 0 0; }
+.listo-aviso { color: var(--text2); font-size: .85rem; line-height: 1.5; margin: .75rem 0 0; }
+.listo-aviso:empty { display: none; }
+.listo-acciones { display: flex; gap: .6rem; margin-top: 1.25rem; flex-wrap: wrap; }
+@media (prefers-reduced-motion: reduce) { .loading-tip { transition: none; } }
+
+/* ── Pie pegado abajo: la página ocupa al menos la ventana y el pie queda al final ── */
+html, body { height: auto; }
+body { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+body > .content { flex: 1 0 auto; width: 100%; }
+body > .legal-footer { margin-top: auto; flex-shrink: 0; }
 
 /* ── Results ── */
 .results { display: none; padding-top: 2rem; }
@@ -375,7 +397,24 @@ html, body {
 
     <div class="loading" id="loading" role="status" aria-live="polite">
         <div class="spinner"></div>
-        <div class="loading-text">Generando sesión… (puede tardar hasta 2 minutos)</div>
+        <div class="loading-text" id="loading-text">Generando sesión… (puede tardar hasta 2 minutos)</div>
+        <!-- aria-hidden: los mensajes rotan solos y un lector de pantalla los leería cada pocos segundos -->
+        <div class="loading-tip" id="loading-tip" aria-hidden="true"></div>
+    </div>
+
+    <div class="listo" id="listo" role="status" aria-live="polite">
+        <div class="listo-card">
+            <div class="listo-titulo">
+                <svg class="listo-check" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8"/></svg>
+                <span id="listo-titulo-texto">Sesión lista</span>
+            </div>
+            <p class="listo-meta" id="listo-meta"></p>
+            <p class="listo-aviso" id="listo-aviso"></p>
+            <div class="listo-acciones">
+                <button type="button" class="btn-send" id="listo-ver">Ver en la web</button>
+                <button type="button" class="btn-dl" id="listo-pdf">Descargar PDF</button>
+            </div>
+        </div>
     </div>
 
     <div class="results" id="results" aria-live="polite">
@@ -553,7 +592,7 @@ async function consultarReglamento() {
     currentEdad = '';
     currentEdadSlug = 'general';
     currentDuracion = 0;
-    showLoading();
+    showLoading('reglamento');
 
     try {
         const resp = await fetch('/reglamento/', {
@@ -616,9 +655,8 @@ async function generar() {
         if (!resp.ok) throw new Error(data.error || `Error del servidor (${resp.status})`);
         if (data.duracion) currentDuracion = data.duracion;
         currentResult = data;
-        renderResults(data);
-        const avisoSesion = textoAvisos(data.avisos);
-        if (avisoSesion) showFormError(avisoSesion);
+        renderResults(data, false);       // se pinta sin mostrarlo: primero el aviso compacto con las dos opciones
+        mostrarListo(data);
     } catch (e) {
         hideLoading();
         showEmpty();
@@ -708,7 +746,7 @@ function renderBloqueSeccion(texto) {
 }
 
 // ── Render sesión ──────────────────────────────────────────────────────────
-function renderResults(data) {
+function renderResults(data, mostrar = true) {
     document.getElementById('results-heading').textContent = 'Sesión de entrenamiento generada';
     const texto = (data.sesion || data.texto || '').replace(/\[ej_\d+\]\s*/g, '');
     const diagramas = data.diagramas || [];
@@ -815,7 +853,7 @@ function renderResults(data) {
     }
 
     document.getElementById('fb-msg').textContent = '';
-    showResults();
+    if (mostrar) showResults();
 }
 
 // ── Reprompt: corregir uno o varios ejercicios ya generados ─────────────────
@@ -965,9 +1003,10 @@ document.getElementById('btn-txt').addEventListener('click', () => {
     URL.revokeObjectURL(a.href);
 });
 
-document.getElementById('btn-pdf').addEventListener('click', async () => {
-    if (!currentResult) return;
-    const btn = document.getElementById('btn-pdf');
+// Pide el PDF y lo descarga; sirve para el botón de los resultados y para el aviso compacto.
+async function descargarPdf(btn) {
+    if (!currentResult) return { ok: false, error: 'No hay sesión' };
+    const textoOriginal = btn.textContent;
     btn.textContent = '⏳ Generando PDF…';
     btn.disabled = true;
     try {
@@ -989,14 +1028,33 @@ document.getElementById('btn-pdf').addEventListener('click', async () => {
         a.download = `sesion_${currentEdadSlug}.pdf`;
         a.click();
         URL.revokeObjectURL(a.href);
+        return { ok: true };
     } catch (e) {
-        const msgEl = document.getElementById('fb-msg');
-        msgEl.textContent = 'Error generando PDF: ' + e.message;
-        msgEl.className = 'feedback-msg err';
+        return { ok: false, error: e.message };
     } finally {
-        btn.textContent = '📄 Descargar PDF';
+        btn.textContent = textoOriginal;
         btn.disabled = false;
     }
+}
+
+document.getElementById('btn-pdf').addEventListener('click', async () => {
+    const r = await descargarPdf(document.getElementById('btn-pdf'));
+    if (!r.ok) {
+        const msgEl = document.getElementById('fb-msg');
+        msgEl.textContent = 'Error generando PDF: ' + r.error;
+        msgEl.className = 'feedback-msg err';
+    }
+});
+
+// Aviso compacto: ver la sesión en la web (con sus avisos) o descargar el PDF sin abrirla.
+document.getElementById('listo-ver').addEventListener('click', () => {
+    showResults();
+    if (_avisoSesion) showFormError(_avisoSesion);
+});
+document.getElementById('listo-pdf').addEventListener('click', async () => {
+    const r = await descargarPdf(document.getElementById('listo-pdf'));
+    const el = document.getElementById('listo-aviso');
+    el.textContent = r.ok ? 'PDF descargado. También puedes ver la sesión en la web.' : 'Error generando PDF: ' + r.error;
 });
 
 // ── Feedback ───────────────────────────────────────────────────────────────
@@ -1041,23 +1099,95 @@ document.getElementById('btn-feedback').addEventListener('click', async () => {
 function showEmpty() {
     document.getElementById('form-sesion').style.display = currentMode === 'sesion' ? '' : 'none';
     document.getElementById('form-reglamento').style.display = currentMode === 'reglamento' ? '' : 'none';
+    detenerMensajes();
     document.getElementById('loading').classList.remove('visible');
+    document.getElementById('listo').classList.remove('visible');
     document.getElementById('results').classList.remove('visible');
 }
-function showLoading() {
+// Mensajes mientras se espera: curiosidades reales del baloncesto, alguna broma y mensajes de «pensando».
+// Solo datos que se pueden comprobar; la espera puede llegar a 2 minutos y así se nota que sigue trabajando.
+const MENSAJES_ESPERA = {
+    sesion: [
+        'Colocando los conos… que luego nadie recogerá.',
+        'Dato: el baloncesto lo inventó James Naismith en 1891, con una cesta de melocotones como canasta.',
+        'Revisando que ningún ejercicio deje a nadie en una fila esperando.',
+        'Dato: al principio había que sacar el balón de la cesta a mano, porque no tenía el fondo abierto.',
+        'Contando los pasos del pívot… y esta vez no hay pasos.',
+        'Dato: el tablero se creó para que el público de las gradas no desviara los tiros.',
+        'Ajustando la intensidad a la edad de cada grupo.',
+        'Dato: el aro mide 45 cm de diámetro y está a 3,05 m del suelo, en todas las categorías de FIBA.',
+        'Buscando el balón que siempre falta en la bolsa.',
+        'Dato: el minibasket se juega con balón de talla 5, de unos 70 cm de perímetro.',
+        'Pensando en las progresiones: de más fácil a más difícil.',
+        'Dato: la línea de tres puntos llegó a las competiciones FIBA en 1984.',
+    ],
+    reglamento: [
+        'Hojeando el reglamento…',
+        'Buscando el artículo exacto, no uno parecido.',
+        'Comprobando si la norma cambia en tu categoría.',
+        'Dato: el aro mide 45 cm de diámetro y está a 3,05 m del suelo.',
+        'Contrastando la respuesta con el texto del reglamento.',
+    ],
+};
+let _tipTimer = null;
+let _tipIdx = 0;
+
+function detenerMensajes() {
+    if (_tipTimer) { clearInterval(_tipTimer); _tipTimer = null; }
+}
+function iniciarMensajes(modo) {
+    detenerMensajes();
+    const lista = MENSAJES_ESPERA[modo] || [];
+    const el = document.getElementById('loading-tip');
+    if (!el || !lista.length) return;
+    _tipIdx = Math.floor(Math.random() * lista.length);
+    el.classList.remove('oculto');
+    el.textContent = lista[_tipIdx];
+    _tipTimer = setInterval(() => {
+        el.classList.add('oculto');
+        setTimeout(() => {
+            _tipIdx = (_tipIdx + 1) % lista.length;
+            el.textContent = lista[_tipIdx];
+            el.classList.remove('oculto');
+        }, 350);
+    }, 6500);
+}
+
+function showLoading(modo) {
+    modo = modo || currentMode;
     document.getElementById('form-sesion').style.display = 'none';
     document.getElementById('form-reglamento').style.display = 'none';
     document.getElementById('results').classList.remove('visible');
+    document.getElementById('listo').classList.remove('visible');
+    document.getElementById('loading-text').textContent = modo === 'reglamento'
+        ? 'Consultando el reglamento… (la primera consulta puede tardar hasta 2 minutos)'
+        : 'Generando sesión… (puede tardar hasta 2 minutos)';
     document.getElementById('loading').classList.add('visible');
     document.getElementById('btn-generar').disabled = true;
     document.getElementById('btn-reglamento').disabled = true;
+    iniciarMensajes(modo);
 }
 function hideLoading() {
+    detenerMensajes();
     document.getElementById('loading').classList.remove('visible');
     document.getElementById('btn-generar').disabled = false;
     document.getElementById('btn-reglamento').disabled = false;
 }
+// Aviso compacto al terminar la sesión: elegir entre verla en la web o bajar el PDF.
+let _avisoSesion = '';
+function mostrarListo(data) {
+    hideLoading();
+    const n = (typeof currentEjercicios !== 'undefined') ? currentEjercicios.length : 0;
+    const partes = [currentEdadSlug !== 'general' ? currentEdad : '', currentDuracion ? currentDuracion + ' min' : '',
+                    n ? n + ' ejercicios' : ''].filter(Boolean);
+    document.getElementById('listo-meta').textContent = partes.join(' · ');
+    _avisoSesion = textoAvisos(data.avisos);
+    document.getElementById('listo-aviso').textContent = _avisoSesion;
+    document.getElementById('listo').classList.add('visible');
+    document.getElementById('listo-ver').focus();
+}
 function showResults() {
+    document.getElementById('listo').classList.remove('visible');
     hideLoading();
     document.getElementById('form-sesion').style.display = 'none';
     document.getElementById('form-reglamento').style.display = 'none';

@@ -127,7 +127,8 @@ def _half_court_elements(svg: list, cx: float, base_y: float, pad_x: float,
 
     # Canasta
     canasta_y = base_y - s * 1.575 * ESCALA
-    svg.append(f'<rect x="{cx-40:.1f}" y="{base_y - s*6:.1f}" width="80" height="{s*6:.1f}" fill="#1a202c"/>')
+    # s es la orientación (+1/-1): con -1 el tablero va por debajo de la línea de fondo, y una altura negativa no es válida en SVG
+    svg.append(f'<rect x="{cx-40:.1f}" y="{min(base_y, base_y - s*6):.1f}" width="80" height="{abs(s*6):.1f}" fill="#1a202c"/>')
     svg.append(f'<circle cx="{cx:.1f}" cy="{canasta_y:.1f}" r="13" fill="none" stroke="#e53e3e" stroke-width="3.5"/>')
 
     # Tacos rebote — simétricos: ambos pegados al exterior de la línea del área
