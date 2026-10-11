@@ -477,10 +477,13 @@ def _generar_pdf(sesion_texto, edad, objetivo, duracion, diagramas):
 
     bloques = _parsear_sesion_para_pdf(sesion_texto)
     n_ejercicio = -1
-    for bloque in bloques:
+    for pos, bloque in enumerate(bloques):
         tipo = bloque['tipo']
         if tipo == 'seccion':
             titulo = bloque['titulo']
+            # un título de sección nunca se queda solo al pie: si lo siguiente es un ejercicio, pide sitio para empezarlo
+            if pos + 1 < len(bloques) and bloques[pos + 1]['tipo'] in ('ejercicio', 'calentamiento'):
+                asegurar(min(150, pdf.h - MARGEN_INFERIOR - 25))
             if 'DESCANSO' in titulo.upper():
                 asegurar(14)
                 pdf.ln(2)
