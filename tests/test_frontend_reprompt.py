@@ -118,4 +118,4 @@ def test_sin_avisos_no_se_muestra_nada():
 
 def test_los_avisos_se_juntan_sin_repetir():
     texto = _avisos(["Has pedido «bloqueo».", "Has pedido «bloqueo».", "Has pedido «mano a mano»."])
-    assert texto.startswith("⚠ Aviso:") and texto.count("«bloqueo»") == 1 and "«mano a mano»" in texto
+    assert texto.startswith("Aviso:") and texto.count("«bloqueo»") == 1 and "«mano a mano»" in texto
