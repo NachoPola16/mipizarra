@@ -41,6 +41,18 @@ partido; es lo que más se pregunta en categorías de formación. Con las cifras
 Es una norma de referencia de la federación española que cada comunidad autónoma concreta a su manera (por ejemplo,
 cuántos periodos debe descansar el jugador): si compites en una comunidad, consulta también su normativa.
 
+### Jugadores inscritos en el acta: cuántos hacen falta y cuántos caben
+
+Número de jugadores que se apuntan en el acta, según la tabla anterior:
+
+- **Prebenjamín (U8):** como máximo 15 jugadores.
+- **Benjamín y alevín (minibasket, U10 y U12):** como mínimo 9 jugadores y como máximo 15.
+- **Infantil (U14):** como mínimo 8 jugadores y como máximo 12.
+- **Cadete (U16) y junior (U18):** como mínimo 5 jugadores y como máximo 12.
+
+Algunas comunidades autónomas fijan otro mínimo (por ejemplo, 8 jugadores en minibasket en Aragón): si compites en
+una comunidad, consulta también su normativa.
+
 ### Notas importantes
 
 1. **El árbitro NO toca el balón** en minibasket e infantil tras saque de banda o fondo en muchas CCAA — el saque es directo. Varía según la federación.
