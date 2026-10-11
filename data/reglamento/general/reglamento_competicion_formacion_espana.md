@@ -53,6 +53,42 @@ Número de jugadores que se apuntan en el acta, según la tabla anterior:
 Algunas comunidades autónomas fijan otro mínimo (por ejemplo, 8 jugadores en minibasket en Aragón): si compites en
 una comunidad, consulta también su normativa.
 
+### Mínimo de jugadores por comunidad
+
+Cada comunidad autónoma fija su mínimo de jugadores en el acta; el marco de la federación española es una
+referencia. En el marco general son 9 jugadores en minibasket, 8 en infantil y 5 en cadete y junior. En Aragón el
+mínimo en minibasket es de 8 jugadores (y 8 en infantil), y si no se llega a ese mínimo pero hay cinco jugadores el
+partido se juega y el resultado lo decide el comité de competición. En otra comunidad, el mínimo puede ser distinto:
+hay que mirar sus bases de competición.
+
+### Sustituciones por categoría
+
+Las sustituciones dependen de la categoría y de la comunidad. En el marco general de formación, en minibasket solo se
+permiten en el último periodo y en infantil B-C y preinfantil solo en el último cuarto, de modo que la alineación de
+los primeros periodos es casi fija. En junior se aplica FIBA y las sustituciones son libres. En Aragón, en
+cadete se puede sustituir en todos los cuartos, en el Campeonato de Aragón infantil también, y en infantil B-C, mixto
+y preinfantil solo en el último cuarto. En minibasket aragonés (alevín, benjamín y mixto) solo en el último periodo.
+
+### Tiempos muertos por categoría
+
+Se cuentan por mitades del partido, primera parte más segunda parte. En minibasket (alevín y benjamín) hay 2 tiempos
+muertos en la primera parte y 2 en la segunda. En infantil, cadete y junior hay 2 en la primera parte y 3 en la
+segunda (2 + 3), como en FIBA. En una prórroga cada equipo tiene 1 tiempo muerto. En prebenjamín hay 2 por parte.
+
+### Prórroga en categorías de formación
+
+Si hay empate al final del partido se juegan periodos extra (prórrogas) hasta deshacerlo. En FIBA cada prórroga
+dura 5 minutos; la duración en cada competición de formación la fija su normativa. En minibasket aragonés, en los
+periodos extra los dos últimos minutos son a reloj parado. Cada equipo tiene 1 tiempo muerto por prórroga, como en FIBA.
+
+### Descanso del jugador y descanso del partido
+
+Hay que distinguirlos. El **descanso del jugador** es el tiempo que cada jugador pasa en el banquillo: en minibasket
+cada niño debe descansar dos periodos (y jugar al menos dos de los cinco primeros), y en infantil B-C, mixto y
+preinfantil cada jugador descansa uno de los tres primeros cuartos. El **descanso del partido** es la pausa entre
+periodos: en minibasket aragonés hay un descanso de cinco minutos entre el tercer y el cuarto periodo (la media
+parte) y de un minuto entre los demás; en FIBA senior son 2 minutos entre cuartos y 15 en la media parte.
+
 ### Notas importantes
 
 1. **El árbitro NO toca el balón** en minibasket e infantil tras saque de banda o fondo en muchas CCAA — el saque es directo. Varía según la federación.
@@ -102,6 +138,9 @@ Se denomina **"saque rápido de balón"** al saque lateral o de fondo en el que 
 
 ### Cuándo aplica
 
+El saque rápido permite sacar sin esperar al árbitro: el equipo pone el balón en juego sin que el árbitro lo
+entregue, y solo vale tras una violación y desde el campo propio.
+
 El saque rápido **solo** está permitido cuando se dan **las dos condiciones a la vez**:
 
 1. **Se saca desde la pista trasera** (campo defensivo propio del equipo que saca).
@@ -111,19 +150,17 @@ Ejemplo típico: el rival comete pasos o doble en su campo de ataque (el campo d
 
 ### Cuándo NO aplica — excepciones obligatorias
 
-| Situación | ¿Saque rápido? |
-|---|---|
-| Últimos **2 minutos** del 4.º cuarto | ❌ No — árbitro siempre toca el balón |
-| Últimos **2 minutos** de cualquier prórroga | ❌ No |
-| Saque desde la **pista de ataque** (campo rival) | ❌ No — solo funciona desde campo propio |
-| Consecuencia de una **falta** (no de una violación) | ❌ No |
-| Consecuencia de una **canasta** encajada | ❌ No (eso es la norma pro, no aplica aquí) |
-| El equipo solicita **tiempo muerto** | ❌ No — pierde el derecho al saque rápido |
+El saque rápido no se aplica en ninguno de estos casos: en los últimos 2 minutos del cuarto cuarto y de cualquier
+prórroga, donde el árbitro siempre toca el balón; cuando se saca desde la pista de ataque (el campo rival), porque
+solo funciona desde el campo propio; cuando el saque es consecuencia de una falta y no de una violación; cuando es
+consecuencia de una canasta encajada (eso es la norma profesional y aquí no aplica); y cuando el equipo solicita tiempo
+muerto, porque pierde el derecho al saque rápido.
 
 ### Categorías donde aplica (España, temporada 2025/2026)
 
 - ✅ **Cadete (U16) → Senior**: aplica en competiciones autonómicas y provinciales + Campeonatos de España FEB.
-- ❌ **Infantil (U14) y Minibasket (U8-U12)**: excluidas — mantienen su normativa propia con saque estándar.
+- ❌ **Infantil (U14) y Minibasket (U8-U12)**: excluidas — mantienen su normativa propia con saque estándar. El saque
+  rápido no se aplica en infantil ni en minibasket.
 
 Implementación generalizada en 2025/2026 en la FEB y en las federaciones autonómicas.
 
@@ -152,10 +189,10 @@ Las principales adaptaciones del reglamento FIBA para minibasket (U8-U12):
 
 ## Violaciones más frecuentes en categorías de formación
 
-| Violación | ¿Por qué es frecuente en formación? | Cómo trabajarla |
-|-----------|-------------------------------------|-----------------|
-| Pasos | Los jugadores no dominan el paso 0 al recibir en movimiento | Trabajar recepciones en carrera con parada de dos tiempos |
-| Doble (doble regate) | Levantan el bote sin haber decidido qué hacer | Triple amenaza, decisión antes del bote |
-| 3 segundos | Permanecen demasiado tiempo en la zona | Trabajo de movimiento sin balón, salir de la zona al pasar |
-| 5 segundos | Presión sobre el jugador con bote agotado | Trabajo de líneas de pase, pase sobre bote |
-| Fuera del terreno | Botes cerca de la línea de banda sin conciencia | Ejercicios de bote en zona de banda con presión |
+Los **pasos** son frecuentes porque los jugadores no dominan el paso 0 al recibir en movimiento; se trabaja con
+recepciones en carrera y parada en dos tiempos. El **doble regate** aparece cuando levantan el bote sin haber decidido
+qué hacer; se trabaja con triple amenaza y decidiendo antes del bote. Los **3 segundos** se producen porque
+permanecen demasiado tiempo en la zona; se trabaja con movimiento sin balón y saliendo de la zona al pasar. Los
+**5 segundos** llegan con la presión sobre el jugador con el bote agotado; se trabajan las líneas de pase y el pase
+sobre bote. Salir del **terreno** pasa por botar cerca de la línea de banda sin conciencia; se trabaja con ejercicios de
+bote en la zona de banda con presión.

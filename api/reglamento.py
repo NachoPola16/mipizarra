@@ -34,6 +34,14 @@ _SINONIMOS_REGLAMENTO = (
      "mínimo de jugadores en el acta"),
     (r"\bcambios?\b|\bsustituci\w+\b", "sustituciones cambios"),
     (r"\bfaltas?\b", "faltas personales"),
+    (r"\bpelota\b|\bbola\b", "balón"),
+    (r"\bcruzar el campo\b|\bmedio campo\b|\bsubir (?:la bola|el bal[oó]n)\b|\bpista delantera\b",
+     "8 segundos para avanzar a pista delantera"),
+    (r"\bbonus\b|\bbono\b|\bpenalizaci[oó]n\b", "faltas de equipo tiros libres"),
+    (r"\bespacio vertical\b|\bcilindro\b", "cilindro"),
+    (r"\bdos manos\b|\bdoble bote\b|\bbotar dos veces\b|\bbotado dos veces\b", "doble regate ambas manos"),
+    (r"\bsin esperar al [aá]rbitro\b|\bsin que el [aá]rbitro\b|\bsaque r[aá]pido\b", "saque rápido"),
+    (r"\bgestos?\b|\bse[ñn]al(?:es)?\b|\bse[ñn]ala\w*\b|\bbrazos? del [aá]rbitro\b", "señales arbitrales"),
 )
 
 

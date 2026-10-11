@@ -85,12 +85,8 @@ TEMAS = [
      ["que pasa si defiendo en zona en benjamin", "sancion por defensa en zona", "castigo por zona en minibasket"]),
     ("descanso_mini", ARAGON, ["descanso de cinco minutos"],
      ["cuanto dura el descanso en minibasket", "descanso entre periodos", "descanso de la media parte en benjamin"]),
-]
+    # ciegas de la ronda anterior: ya se usaron para ajustar, así que pasan a ser temas normales
 
-
-# Prueba ciega: formulaciones y temas escritos DESPUÉS de ajustar los sinónimos, sin tocar nada para ellas. Mide si
-# lo ajustado generaliza. Si se corrige algo por culpa de estas, hay que escribir otras nuevas (dejan de ser ciegas).
-PRUEBA_CIEGA = [
     ("pista_trasera", AMBOS, ["devolver el balon a su pista trasera"],
      ["puedo devolver el balon atras una vez pasado el medio campo", "se puede pasar hacia atras pasando la linea central"]),
     ("cinco_segundos", AMBOS, ["5 segundos"],
@@ -118,12 +114,104 @@ PRUEBA_CIEGA = [
      ["que pasa si no tengo ocho ninos para el partido", "equipo con menos jugadores de los necesarios"]),
     ("bonus_mini", AMBOS, ["4 faltas de equipo", "5 faltas de equipo"],
      ["cuantas faltas de equipo hasta los tiros libres", "cuando entra el equipo en bonus"]),
+
+    # ciegas de la ronda de señales/prórroga/descansos (2026-10-11): ya se usaron para ajustar
+    ("senal_pasos", AMBOS, ["girando los punos"],
+     ["que gesto hace el arbitro cuando pita pasos", "como indica el arbitro que me he pasado de pasos",
+      "movimiento de brazos del arbitro por andar con el balon"]),
+    ("senal_doble", AMBOS, ["palmear"],
+     ["que senal es el doble regate", "como se marca que he botado dos veces", "gesto del arbitro por doble bote"]),
+    ("senal_reloj_falta", AMBOS, ["levanta un puno cerrado"],
+     ["como para el reloj el arbitro cuando hay falta", "que significa el puno en alto del arbitro",
+      "diferencia entre parar el reloj por falta o por violacion"]),
+    ("senal_cambio", AMBOS, ["antebrazos cruzados"],
+     ["como piden los arbitros un cambio de jugador", "gesto de sustitucion del arbitro",
+      "que significan los brazos cruzados del arbitro"]),
+    ("senal_disruptiva", AMBOS, ["dos dedos a la altura de la cara"],
+     ["como senala el arbitro la falta disruptiva", "gesto de la falta que sustituye a la antideportiva",
+      "que hace el arbitro cuando pita una disruptiva"]),
+    ("balon_fuera", AMBOS, ["ultimo jugador que toco el balon"],
+     ["de quien es el balon cuando sale por la banda", "quien saca cuando el balon se va fuera",
+      "pisar la linea de fondo con el balon en la mano"]),
+    ("prorroga", AMBOS, ["prorrogas de 5 minutos", "1 tiempo muerto en cada prorroga"],
+     ["cuanto dura el tiempo extra si hay empate", "que pasa si acabamos empatados el partido",
+      "cuantos tiempos muertos hay en la prorroga"]),
+    ("tiempo_muerto", AMBOS, ["cada tiempo muerto dura 1 minuto", "entrenador principal o el primer ayudante"],
+     ["cuanto dura un tiempo muerto", "cuanto se para el partido en un tiempo muerto",
+      "quien puede pedir tiempo muerto"]),
+    ("minimo_comunidad", AMBOS, ["cada comunidad autonoma fija su minimo"],
+     ["cuantos jugadores hay que tener en el acta en mi comunidad", "se puede jugar con seis jugadores en infantil",
+      "minimo de jugadores para presentar el equipo en cadete"]),
+    ("sustituir_cadete", AMBOS, ["en cadete se puede sustituir"],
+     ["cuando puedo hacer cambios en cadete", "limitaciones para sustituir en cadete",
+      "en cadete solo se cambia en el ultimo cuarto"]),
+    ("descanso_partido", ARAGON, ["descanso del partido"],
+     ["cuanto se para el partido entre el tercer y cuarto periodo de mini", "pausa entre periodos en alevin",
+      "cuanto dura el intermedio en benjamin"]),
+    ("descanso_jugador", ARAGON, ["descanso del jugador"],
+     ["cuantos periodos descansa cada nino en alevin", "cada cuanto tiene que sentarse un jugador de minibasket",
+      "tiene que salir del campo algun periodo un nino de benjamin"]),
+    ("saque_rapido", AMBOS, ["saque rapido no se aplica en infantil"],
+     ["cuando puede sacar el equipo sin esperar al arbitro", "saque sin que el arbitro entregue el balon tras violacion",
+      "en que categorias no vale el saque rapido"]),
+]
+
+
+# Prueba ciega: formulaciones y temas escritos DESPUÉS de ajustar los sinónimos y los .md, sin tocar nada para ellas.
+# Mide si lo ajustado generaliza. Si se corrige algo por culpa de estas, hay que escribir otras nuevas (dejan de ser
+# ciegas) y pasar estas a TEMAS. Ronda 2 de 2026-10-11 (señales, balón fuera, prórroga, tiempos muertos, descansos...).
+PRUEBA_CIEGA = [
+    ("senal_pasos", AMBOS, ["girando los punos"],
+     ["como avisa el colegiado de que hay pasos", "el arbitro gira los punos que significa",
+      "gesto cuando un jugador camina con el balon en las manos"]),
+    ("senal_doble", AMBOS, ["palmear"],
+     ["que significa que el arbitro haga como que bota con la mano abierta",
+      "senal de que he vuelto a botar tras agarrar la pelota", "como pita el doble el arbitro con las manos"]),
+    ("senal_reloj_falta", AMBOS, ["levanta un puno cerrado"],
+     ["cuando el arbitro levanta el puno que ocurre", "que gesto para el cronometro por una falta",
+      "diferencia entre mano abierta y puno en alto"]),
+    ("senal_cambio", AMBOS, ["antebrazos cruzados"],
+     ["gesto que hace el arbitro para dejar entrar a un suplente", "que significa cruzar los antebrazos el colegiado",
+      "como se indica que va a haber un cambio"]),
+    ("senal_disruptiva", AMBOS, ["dos dedos a la altura de la cara"],
+     ["que gesto indica la nueva falta de 2026 que no descalifica", "como la pita el arbitro con dos dedos en la cara",
+      "senal de falta disruptiva"]),
+    ("senal_24", AMBOS, ["tocandose el hombro"],
+     ["como se senala el reloj de 24 segundos", "gesto de los 24 segundos del arbitro",
+      "que hace el arbitro con la mano en el hombro"]),
+    ("senal_tecnica", AMBOS, ["formando una t"],
+     ["como senala el arbitro la tecnica", "gesto de falta tecnica", "senal de tiempo muerto con las manos en t"]),
+    ("balon_fuera", AMBOS, ["ultimo jugador que toco el balon"],
+     ["a quien le toca sacar si la pelota sale tras tocar a un defensor",
+      "cuando se considera que un jugador esta fuera de la pista", "toca la pelota la raya y sale de quien es"]),
+    ("prorroga", AMBOS, ["prorrogas de 5 minutos"],
+     ["cuantos minutos dura la prorroga", "si hay empate al final del cuarto cuarto que se hace",
+      "se acumulan los tiempos muertos que no use a la prorroga"]),
+    ("tiempo_muerto", AMBOS, ["cada tiempo muerto dura 1 minuto", "entrenador principal o el primer ayudante",
+                              "oportunidad de tiempo muerto"],
+     ["duracion del tiempo muerto", "puede el ayudante pedir tiempo muerto", "cuando se puede pedir tiempo muerto"]),
+    ("minimo_comunidad", AMBOS, ["cada comunidad autonoma fija su minimo"],
+     ["cuantos ninos minimo tiene que haber en el acta en aragon", "puedo inscribir menos jugadores en otra comunidad",
+      "minimo de jugadores en el acta segun la federacion territorial"]),
+    ("sustituir_cadete", AMBOS, ["en cadete se puede sustituir"],
+     ["se pueden hacer cambios libremente en cadete", "restricciones de cambios en cadete en aragon",
+      "en que cuartos puedo cambiar a un cadete"]),
+    ("descanso_partido", ARAGON, ["descanso del partido"],
+     ["cuanto tiempo se para el juego entre periodos en minibasket", "pausa de la media parte en alevin",
+      "intermedio entre el tercer y el cuarto periodo de benjamin"]),
+    ("descanso_jugador", ARAGON, ["descanso del jugador"],
+     ["cuantos periodos se queda sentado un nino de alevin", "cuanto tiene que estar en el banquillo un jugador de minibasket",
+      "en infantil cuando descansa cada jugador"]),
+    ("saque_rapido", AMBOS, ["saque rapido no se aplica en infantil"],
+     ["en que casos se saca sin que el arbitro toque el balon", "puede un equipo de infantil sacar rapido",
+      "saque rapido en los ultimos dos minutos"]),
 ]
 
 
 def normalizar(texto: str) -> str:
     sin = unicodedata.normalize("NFD", texto.lower())
-    return "".join(c for c in sin if unicodedata.category(c) != "Mn")
+    # sin tildes y con los saltos de línea del .md colapsados: una frase partida en dos líneas sigue siendo la frase
+    return " ".join("".join(c for c in sin if unicodedata.category(c) != "Mn").split())
 
 
 def _corpus_por_ambito() -> dict[str, str]:
@@ -141,6 +229,8 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--detalle", action="store_true", help="muestra también las formulaciones que aciertan")
     ap.add_argument("--ciega", action="store_true", help="solo la prueba ciega (formulaciones no usadas para ajustar)")
+    ap.add_argument("--ausentes-fallan", action="store_true",
+                    help="los temas cuya respuesta no está en los .md cuentan como fallos (línea base antes de ampliar el corpus)")
     ap.add_argument("--sin-ampliacion", action="store_true",
                     help="línea base: busca con la pregunta tal cual, sin añadir los términos del reglamento")
     args = ap.parse_args(argv)
@@ -159,6 +249,9 @@ def main(argv=None) -> int:
             # la respuesta tiene que estar en los .md de ese ámbito (y en el general, que lo completa)
             if not any(c in corpus[ambito] for c in claves):
                 sin_respuesta.append(f"{id_} [{ambito}]")
+                if args.ausentes_fallan:
+                    total += len(formulaciones)
+                    fallos.extend((id_, ambito, f"(sin respuesta en los .md) {p}") for p in formulaciones)
                 continue
             for pregunta in formulaciones:
                 contexto = normalizar("\n".join(recuperar_contexto_reglamento(pregunta, ambito)))
