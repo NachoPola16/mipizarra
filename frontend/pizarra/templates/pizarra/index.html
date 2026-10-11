@@ -49,6 +49,8 @@ html, body {
 .brand:hover .brand-mark { transform: rotate(-8deg) scale(1.08); }
 .mode-tabs { display: flex; gap: .4rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }
 .mode-tab { display: inline-flex; align-items: center; gap: .45rem; padding: .4rem .9rem; font-size: .82rem; font-weight: 600; border: none; border-radius: 6px; background: transparent; color: var(--muted); cursor: pointer; font-family: 'Inter', sans-serif; transition: color .15s; }
+.ambito-hint { font-size: .8rem; color: var(--muted); line-height: 1.5; max-width: 60ch; margin: -.2rem 0 1rem; }
+.ambito-hint:empty { display: none; }
 .tab-ico { width: 15px; height: 15px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .mode-tab:hover { color: var(--text); }
 .mode-tab.active { background: var(--accent); color: var(--bg); }
@@ -378,6 +380,7 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
                 </select>
             </div>
         </div>
+        <p class="ambito-hint" id="ambito-hint" aria-live="polite"></p>
 
         <div class="prompt-box">
             <textarea id="pregunta" aria-label="Tu pregunta sobre el reglamento" placeholder="Ej: ¿Es falta técnica si el entrenador entra a la pista?" style="min-height:120px" rows="3"></textarea>
@@ -516,6 +519,7 @@ document.querySelectorAll('.dd').forEach(dd => {
         opt.classList.add('selected');
         opt.setAttribute('aria-selected', 'true');
         native.value = opt.dataset.value;
+        native.dispatchEvent(new Event('change'));
         label.textContent = `${prefix}: ${opt.textContent}`;
         closeDd();
     }
@@ -612,7 +616,7 @@ async function consultarReglamento() {
 
 function renderReglamento(data) {
     const ambitoSel = document.querySelector('#dd-ambito .dd-opt.selected');
-    const ambitoTxt = (data.ambito && data.ambito !== 'general' && ambitoSel) ? ' · ' + ambitoSel.textContent : '';
+    const ambitoTxt = (data.ambito && data.ambito !== 'general' && ambitoSel) ? ' · ' + ambitoSel.textContent + ' y reglamento general' : '';
     document.getElementById('results-heading').textContent = 'Respuesta sobre el reglamento' + ambitoTxt;
     const respuesta = data.respuesta || data.texto || '';
     const html = `<div class='reglamento-card'>${mdToHtml(respuesta)}</div>`;
@@ -670,6 +674,19 @@ function mdToHtml(s) {
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
         .replace(/\*(.+?)\*/g, '<em>$1</em>');
 }
+
+// ── Ámbito del reglamento: qué se consulta según lo elegido ────────────────
+function actualizarHintAmbito() {
+    const sel = document.getElementById('ambito');
+    const hint = document.getElementById('ambito-hint');
+    if (!sel || !hint) return;
+    const nombre = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : '';
+    hint.textContent = (sel.value && sel.value !== 'general')
+        ? `Se responde con la normativa de ${nombre} y, en todo lo que no regule, con el reglamento general de FIBA y de la federación española.`
+        : 'Reglamento de FIBA y de la federación española, válido en todas las comunidades.';
+}
+document.getElementById('ambito').addEventListener('change', actualizarHintAmbito);
+actualizarHintAmbito();
 
 // ── Estructura de las fichas ───────────────────────────────────────────────
 // Los diagramas «no disponible» y «juego libre» se marcan con data-placeholder en la API: no se muestran.
