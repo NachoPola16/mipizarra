@@ -377,6 +377,25 @@ def _fundamentos_de_las_fichas(huecos: list[_Hueco]) -> str:
     return (", ".join(vistos[:6]) + ".") if vistos else ""
 
 
+_ARRANQUE_FUNDAMENTOS = re.compile(r"^\s*en esta sesi[oó]n se trabaja[n]?[:,]?", re.IGNORECASE)
+
+
+def _arreglar_fundamentos_incompletos(bloques: dict[str, str], reserva: str) -> bool:
+    """Si el modelo dejó «Fundamentos» en el arranque que se le dio («En esta sesión se trabajan» y nada más), lo
+    sustituye por los objetivos técnicos de las fichas, o lo quita si no hay. Devuelve True si cambió algo."""
+    texto = bloques.get("fundamentos")
+    if texto is None:
+        return False
+    resto = _ARRANQUE_FUNDAMENTOS.sub("", texto).strip()
+    if len(re.findall(r"\w+", resto)) >= 2:
+        return False
+    if reserva:
+        bloques["fundamentos"] = f"En esta sesión se trabajan {reserva}"
+    else:
+        bloques.pop("fundamentos")
+    return True
+
+
 def _nombre_de_pieza(clave: str) -> str:
     return {"calentamiento": "Calentamiento", "vuelta": "Vuelta a la calma",
             "fundamentos": "Fundamentos"}.get(clave, clave.replace("ej:", "Ejercicio "))
@@ -545,6 +564,7 @@ RESPUESTA (rellena TODOS los apartados de la plantilla, en este orden, sin salta
                 cuerpo, texto, huecos, inicios, num_ctx_sesion, _fundamentos_de_las_fichas(huecos)))
             bloques = extraer_bloques(texto)
             _normalizar_claves(huecos, bloques)
+            _arreglar_fundamentos_incompletos(bloques, _fundamentos_de_las_fichas(huecos))
             malas = _piezas_con_linea_roja(bloques, claves_modelo, edad, permitidos)
             if not malas or intento == 2:
                 break

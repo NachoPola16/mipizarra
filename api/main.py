@@ -21,6 +21,7 @@ from rag_engine import (
 )
 from diagram_renderer import render_diagram, render_all_diagrams
 from plantillas import plantilla_para_texto
+from resumen_objetivo import resumir_objetivo
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -404,6 +405,7 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
         "duracion":  req.duracion,
         "edad":      edad,
         "objetivo":  req.objetivo,
+        "objetivo_resumen": resumir_objetivo(req.objetivo),
         "diagramas": diagramas,
         "teoria_usada": resultado.get("teoria_usada", False),
         "avisos":    resultado.get("avisos", []),
