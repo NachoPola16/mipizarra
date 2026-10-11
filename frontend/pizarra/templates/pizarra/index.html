@@ -167,8 +167,9 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
 .consultados-body { padding: .5rem 1.25rem 1rem; font-size: .88rem; line-height: 2; color: var(--text2); }
 
 /* ── Downloads ── */
+.ico { width: 16px; height: 16px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.btn-dl .ico, .btn-send .ico { margin-top: -1px; }
 .results-bar { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
-.results-bar .btn-back { margin-bottom: 0; }
 .results-bar-dl { display: flex; gap: .5rem; flex-wrap: wrap; }
 .downloads { display: flex; gap: .75rem; margin: 1.5rem 0; flex-wrap: wrap; }
 .btn-dl { display: inline-flex; align-items: center; gap: .4rem; padding: .55rem 1.25rem; border-radius: 8px; font-size: .88rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--bg2); color: var(--text); transition: border-color .15s, background .15s; text-decoration: none; }
@@ -372,7 +373,7 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
             <textarea id="objetivo" aria-label="Descripción del entrenamiento" placeholder="Ej: Tiro en suspensión y defensa de bloqueo directo…" rows="3"></textarea>
             <div class="prompt-actions">
                 <label class="diag-toggle"><input type="checkbox" id="gen-diagramas" checked> Generar diagramas</label>
-                <button class="btn-send" id="btn-generar">⚡ Generar sesión</button>
+                <button class="btn-send" id="btn-generar"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8l1.5 4 4 1.5-4 1.5L8 12.8 6.5 8.8 2.5 7.3l4-1.5z"/></svg>Generar sesión</button>
             </div>
         </div>
 
@@ -415,7 +416,7 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
         <div class="prompt-box">
             <textarea id="pregunta" aria-label="Tu pregunta sobre el reglamento" placeholder="Ej: ¿Es falta técnica si el entrenador entra a la pista?" style="min-height:120px" rows="3"></textarea>
             <div class="prompt-actions" style="justify-content:flex-end;">
-                <button class="btn-send" id="btn-reglamento">🔍 Consultar</button>
+                <button class="btn-send" id="btn-reglamento"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>Consultar</button>
             </div>
         </div>
 
@@ -462,23 +463,23 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
     <div class="results" id="results" aria-live="polite">
         <h1 id="results-heading" class="sr-only">Resultado</h1>
         <div class="results-bar">
-            <button type="button" class="btn-back" id="btn-nueva">← Nueva consulta</button>
+            <button type="button" class="btn-dl" id="btn-nueva"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg><span id="btn-nueva-txt">Nueva sesión</span></button>
             <div class="results-bar-dl">
-                <button type="button" class="btn-dl" id="btn-txt-top">⬇ .txt</button>
-                <button type="button" class="btn-dl" id="btn-pdf-top">📄 Descargar PDF</button>
+                <button type="button" class="btn-dl" id="btn-txt-top"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v8M4.8 7.5L8 10.7l3.2-3.2M3 13.5h10"/></svg>.txt</button>
+                <button type="button" class="btn-dl" id="btn-pdf-top"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.8h5l3 3v9.4H4z"/><path d="M9 1.8v3h3M6 8h4M6 10.5h4"/></svg><span class="btn-txt-pdf">Descargar PDF</span></button>
             </div>
         </div>
 
         <div id="resultado-contenido"></div>
 
         <details class="consultados" id="consultados-wrap" style="display:none">
-            <summary id="consultados-title">📋 Ejercicios consultados</summary>
+            <summary id="consultados-title">Ejercicios consultados</summary>
             <div class="consultados-body" id="consultados-body"></div>
         </details>
 
         <div class="downloads">
-            <button class="btn-dl" id="btn-txt">⬇ Descargar .txt</button>
-            <button class="btn-dl" id="btn-pdf">📄 Descargar PDF</button>
+            <button class="btn-dl" id="btn-txt"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v8M4.8 7.5L8 10.7l3.2-3.2M3 13.5h10"/></svg>Descargar .txt</button>
+            <button class="btn-dl" id="btn-pdf"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.8h5l3 3v9.4H4z"/><path d="M9 1.8v3h3M6 8h4M6 10.5h4"/></svg><span class="btn-txt-pdf">Descargar PDF</span></button>
         </div>
 
         <div class="feedback">
@@ -486,14 +487,14 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
             <div class="feedback-row">
                 <textarea id="fb-cambios" placeholder="Ej: Quité el 3c2 porque solo había 8 jugadores." rows="3" aria-label="Cambios realizados sobre la sesión"></textarea>
                 <select id="fb-rating" aria-label="Valoración de la sesión">
-                    <option value="1">⭐ 1</option>
-                    <option value="2">⭐⭐ 2</option>
-                    <option value="3" selected>⭐⭐⭐ 3</option>
-                    <option value="4">⭐⭐⭐⭐ 4</option>
-                    <option value="5">⭐⭐⭐⭐⭐ 5</option>
+                    <option value="1">1 de 5</option>
+                    <option value="2">2 de 5</option>
+                    <option value="3" selected>3 de 5</option>
+                    <option value="4">4 de 5</option>
+                    <option value="5">5 de 5</option>
                 </select>
             </div>
-            <button class="btn-fb" id="btn-feedback">💾 Guardar sesión usada</button>
+            <button class="btn-fb" id="btn-feedback">Guardar sesión usada</button>
             <div class="feedback-msg" id="fb-msg"></div>
         </div>
 
@@ -966,11 +967,10 @@ function renderResults(data, mostrar = true) {
     // Ejercicios consultados
     const ejs = data.ejercicios_usados || [];
     if (ejs.length) {
-        document.getElementById('consultados-title').textContent = `📋 Ejercicios consultados (${ejs.length})`;
+        document.getElementById('consultados-title').textContent = `Ejercicios consultados (${ejs.length})`;
         document.getElementById('consultados-body').innerHTML = ejs.map(ej => {
             if (typeof ej === 'object') {
-                const icono = ej.tiene_diagrama ? '📐 ' : '';
-                return `<div>${icono}<strong>${escHtml(ej.nombre || ej.id || '?')}</strong>${ej.duracion_min ? ` (${ej.duracion_min} min)` : ''}</div>`;
+                return `<div><strong>${escHtml(ej.nombre || ej.id || '?')}</strong>${ej.duracion_min ? ` (${ej.duracion_min} min)` : ''}</div>`;
             }
             return `<div>${escHtml(String(ej))}</div>`;
         }).join('');
@@ -1031,7 +1031,7 @@ function formatEjercicioTexto(headerLine, ej, ejOriginal) {
 // se hace igualmente y se avisa. Sin avisos no se muestra nada; los repetidos se juntan.
 function textoAvisos(avisos) {
     const lista = [...new Set((avisos || []).filter(Boolean))];
-    return lista.length ? '⚠ Aviso: ' + lista.join(' ') : '';
+    return lista.length ? 'Aviso: ' + lista.join(' ') : '';
 }
 
 // Diagramas de la sesión tras corregir un ejercicio: los nuevos ocupan EN SU MISMA POSICIÓN el sitio de los viejos
@@ -1069,7 +1069,7 @@ async function aplicarReprompt() {
 
     for (const idx of idxs) {
         const ej = currentEjercicios[idx];
-        btn.textContent = `⏳ Corrigiendo ${idxs.indexOf(idx) + 1}/${idxs.length}…`;
+        btn.textContent = `Corrigiendo ${idxs.indexOf(idx) + 1}/${idxs.length}…`;
         try {
             const resp = await fetch('{% url "reprompt" %}', {
                 method: 'POST',
@@ -1133,8 +1133,8 @@ document.getElementById('btn-txt').addEventListener('click', () => {
 // Pide el PDF y lo descarga; sirve para el botón de los resultados y para el aviso compacto.
 async function descargarPdf(btn) {
     if (!currentResult) return { ok: false, error: 'No hay sesión' };
-    const textoOriginal = btn.textContent;
-    btn.textContent = '⏳ Generando PDF…';
+    const htmlOriginal = btn.innerHTML;       // conserva el icono
+    btn.textContent = 'Generando PDF…';
     btn.disabled = true;
     try {
         const resp = await fetch('/pdf/', {
@@ -1159,7 +1159,7 @@ async function descargarPdf(btn) {
     } catch (e) {
         return { ok: false, error: e.message };
     } finally {
-        btn.textContent = textoOriginal;
+        btn.innerHTML = htmlOriginal;
         btn.disabled = false;
     }
 }
@@ -1325,6 +1325,7 @@ function showResults() {
     document.getElementById('form-sesion').style.display = 'none';
     document.getElementById('form-reglamento').style.display = 'none';
     document.getElementById('reglamento-hilo').style.display = 'none';
+    document.getElementById('btn-nueva-txt').textContent = currentMode === 'reglamento' ? 'Nueva consulta' : 'Nueva sesión';
     document.getElementById('results').classList.add('visible');
 }
 </script>
