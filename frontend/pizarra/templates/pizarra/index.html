@@ -525,6 +525,34 @@ let currentBloques = [];
 let currentEjercicios = [];
 let selectedEjercicios = new Set();
 
+// ── Cuenta atrás cuando se alcanza el límite de peticiones ───────────────────────────────────────
+// El servidor limita las consultas por minuto/hora para no saturar el modelo; en vez de dejar el botón a ciegas, se
+// bloquea y se cuenta cuánto falta (como máximo: la ventana del límite).
+let _cuentaAtras = null;
+function iniciarCuentaAtras(segundos) {
+    detenerCuentaAtras();
+    const botones = ['btn-generar', 'btn-reglamento'].map(id => document.getElementById(id));
+    const hasta = Date.now() + segundos * 1000;
+    const pintar = () => {
+        const falta = Math.ceil((hasta - Date.now()) / 1000);
+        if (falta <= 0) { detenerCuentaAtras(); clearFormError(); return; }
+        const t = falta >= 90 ? `${Math.ceil(falta / 60)} min` : `${falta} s`;
+        showFormError(`Has hecho muchas peticiones seguidas. Podrás volver a probar en ${t}.`);
+        botones.forEach(b => { b.disabled = true; });
+    };
+    pintar();
+    _cuentaAtras = setInterval(pintar, 1000);
+}
+function detenerCuentaAtras() {
+    if (_cuentaAtras) { clearInterval(_cuentaAtras); _cuentaAtras = null; }
+    ['btn-generar', 'btn-reglamento'].forEach(id => { document.getElementById(id).disabled = false; });
+}
+// Error de una petición: si es el límite (429) con tiempo conocido, cuenta atrás; si no, el mensaje de siempre.
+function errorDePeticion(data, status) {
+    if (status === 429 && data && data.retry_after) { iniciarCuentaAtras(data.retry_after); return null; }
+    return data && data.error ? data.error : `Error del servidor (${status})`;
+}
+
 // ── Errores en línea (sin alert() bloqueante) ────────────────────────────────
 function showFormError(msg) {
     const el = document.getElementById('form-error');
@@ -709,7 +737,11 @@ async function consultarReglamento() {
             signal: control.signal,
         });
         const data = await resp.json().catch(() => ({}));
-        if (!resp.ok) throw new Error(data.error || `Error del servidor (${resp.status})`);
+        if (!resp.ok) {
+            const msg = errorDePeticion(data, resp.status);
+            if (msg === null) throw new Error('Demasiadas consultas seguidas: espera a que termine la cuenta atrás.');
+            throw new Error(msg);
+        }
         const respuesta = data.respuesta || data.texto || '';
         if (!respuesta.trim()) throw new Error('El reglamento no devolvió una respuesta. Prueba a reformular la pregunta.');
         cuerpo.innerHTML = `<div class='reglamento-card'>${reglamentoHtml(respuesta)}</div>`;
@@ -726,7 +758,7 @@ async function consultarReglamento() {
         clearInterval(reloj);
         clearTimeout(corte);
         _rgEnCurso = false;
-        document.getElementById('btn-reglamento').disabled = false;
+        document.getElementById('btn-reglamento').disabled = _cuentaAtras !== null;
     }
 }
 
@@ -763,7 +795,11 @@ async function generar() {
             body: JSON.stringify(payload),
         });
         const data = await resp.json().catch(() => ({}));
-        if (!resp.ok) throw new Error(data.error || `Error del servidor (${resp.status})`);
+        if (!resp.ok) {
+            const msg = errorDePeticion(data, resp.status);
+            if (msg === null) { hideLoading(); showEmpty(); return; }       // límite: ya hay cuenta atrás
+            throw new Error(msg);
+        }
         if (data.duracion) currentDuracion = data.duracion;
         currentResult = data;
         renderResults(data, false);       // se pinta sin mostrarlo: primero el aviso compacto con las dos opciones
@@ -1143,7 +1179,7 @@ async function descargarPdf(btn) {
             body: JSON.stringify({
                 sesion: currentResult.sesion || currentResult.texto || '',
                 edad: currentEdad,
-                objetivo: currentObjetivo,
+                objetivo: currentResult.objetivo_resumen || currentObjetivo,   // resumen: un objetivo largo llenaría la portada
                 duracion: currentDuracion,
                 diagramas: currentResult.diagramas || [],
             }),
@@ -1303,8 +1339,8 @@ function showLoading(modo) {
 function hideLoading() {
     detenerMensajes();
     document.getElementById('loading').classList.remove('visible');
-    document.getElementById('btn-generar').disabled = false;
-    document.getElementById('btn-reglamento').disabled = false;
+    document.getElementById('btn-generar').disabled = _cuentaAtras !== null;
+    document.getElementById('btn-reglamento').disabled = _cuentaAtras !== null;
 }
 // Aviso compacto al terminar la sesión: elegir entre verla en la web o bajar el PDF.
 let _avisoSesion = '';

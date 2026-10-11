@@ -26,13 +26,36 @@ def _api_headers():
     return h
 
 
+_VENTANAS_LIMITE = {'second': 1, 'minute': 60, 'hour': 3600}
+
+
+def _segundos_de_espera(resp, tope=3600):
+    """Segundos hasta poder repetir tras un 429 de la API: cabecera Retry-After si viene; si no, la ventana del límite
+    que dice el texto («3 per 1 minute») como cota superior. 60 s si no se sabe."""
+    try:
+        return max(1, min(int(float(resp.headers['Retry-After'])), tope))
+    except (KeyError, TypeError, ValueError, AttributeError):
+        pass
+    try:
+        texto = str(resp.json().get('error', ''))
+        m = re.search(r'per (\d+) (second|minute|hour)', texto)
+        if m:
+            return min(int(m.group(1)) * _VENTANAS_LIMITE[m.group(2)], tope)
+    except Exception:
+        pass
+    return 60
+
+
 def _error_respuesta(e, generico):
     """Respuesta de error para el navegador sin filtrar rutas internas ni trazas: 429 y los mensajes propios de la API
     (cadena en `detail`, 4xx) se muestran; todo lo demás, el texto genérico."""
     resp = getattr(e, 'response', None)
     status = getattr(resp, 'status_code', None)
     if status == 429:
-        return JsonResponse({'error': 'Demasiadas peticiones seguidas. Espera un momento e inténtalo de nuevo.'}, status=429)
+        return JsonResponse({
+            'error': 'Demasiadas peticiones seguidas. Espera un momento e inténtalo de nuevo.',
+            'retry_after': _segundos_de_espera(resp),
+        }, status=429)
     if status and 400 <= status < 500:
         try:
             detalle = resp.json().get('detail')
