@@ -1,4 +1,5 @@
 # api/diagram_renderer.py
+import html
 import math
 import logging
 
@@ -194,7 +195,7 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
         posiciones[jid] = p
         x, y = to_px(*p)
         svg.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{RADIO_JUGADOR}" fill="#ffffff" stroke="#1a202c" stroke-width="3"/>')
-        svg.append(f'<text x="{x:.1f}" y="{y+7:.1f}" text-anchor="middle" font-size="15" font-weight="bold" fill="#1a202c">{jid}</text>')
+        svg.append(f'<text x="{x:.1f}" y="{y+7:.1f}" text-anchor="middle" font-size="15" font-weight="bold" fill="#1a202c">{html.escape(str(jid))}</text>')
 
     for j, p in zip(data.get("jugadores_defensa", []), pos_defensa):
         jid = j["id"]
@@ -203,7 +204,7 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
         t = RADIO_JUGADOR * 1.7
         svg.append(f'<rect x="{x-t/2:.1f}" y="{y-t/2:.1f}" width="{t:.1f}" height="{t:.1f}" '
                    f'fill="#1a202c" stroke="#ffffff" stroke-width="3" rx="5"/>')
-        svg.append(f'<text x="{x:.1f}" y="{y+7:.1f}" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">{jid}</text>')
+        svg.append(f'<text x="{x:.1f}" y="{y+7:.1f}" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">{html.escape(str(jid))}</text>')
 
     if "balon_inicio" in data:
         portador = data["balon_inicio"].get("portador")

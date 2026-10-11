@@ -27,7 +27,9 @@ services:
     mem_limit: ${API_MEM_LIMIT:-768m}
     restart: unless-stopped
     ports:
-      - "${BIND_IP:-0.0.0.0}:8090:8090"
+      # Por defecto solo en el propio equipo (la API no tiene usuarios: el secreto es la única barrera).
+      # En un servidor, pon BIND_IP=<ip de la LAN> en .env y MIPIZARRA_INTERNAL_SECRET (ver SEGURIDAD.md).
+      - "${BIND_IP:-127.0.0.1}:8090:8090"
     volumes:
       # Solo lo que la API necesita: los PDF de terceros (data/pdfs) NO se montan, el sistema no puede verlos.
       - ./data/exercises.json:/app/data/exercises.json:ro
@@ -58,11 +60,12 @@ services:
     mem_limit: ${FRONTEND_MEM_LIMIT:-128m}
     restart: unless-stopped
     ports:
-      - "${BIND_IP:-0.0.0.0}:8501:8000"
+      - "${BIND_IP:-127.0.0.1}:8501:8000"
     environment:
       - API_URL=http://mipizarra-api:8090
-      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-change-me-in-production}
-      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS:-localhost 127.0.0.1} ${BIND_IP:-0.0.0.0}
+      # Vacío = el frontend genera una clave aleatoria en cada arranque (basta: no usa sesiones ni cookies firmadas).
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-}
+      - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS:-localhost 127.0.0.1} ${BIND_IP:-127.0.0.1}
       # El frontend llama a la API dentro de la misma red Docker; debe enviar el secret.
       - INTERNAL_SECRET=${MIPIZARRA_INTERNAL_SECRET:-}
     depends_on:
