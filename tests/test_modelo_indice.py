@@ -32,9 +32,9 @@ def test_una_base_sin_marca_tambien_avisa(tmp_path):
     assert "marca" in desajuste(tmp_path, "bge-m3").lower()
 
 
-def test_el_modelo_de_embeddings_se_elige_por_entorno_y_por_defecto_es_qwen3(monkeypatch):
+def test_el_modelo_de_embeddings_se_elige_por_entorno_y_por_defecto_es_embeddinggemma(monkeypatch):
     monkeypatch.delenv("EMBED_MODEL", raising=False)
-    assert importlib.reload(config).EMBED_MODEL == "qwen3-embedding:0.6b"
+    assert importlib.reload(config).EMBED_MODEL == "embeddinggemma:latest"
     monkeypatch.setenv("EMBED_MODEL", "bge-m3")
     assert importlib.reload(config).EMBED_MODEL == "bge-m3"
     monkeypatch.delenv("EMBED_MODEL", raising=False)
