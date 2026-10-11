@@ -167,6 +167,9 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
 .consultados-body { padding: .5rem 1.25rem 1rem; font-size: .88rem; line-height: 2; color: var(--text2); }
 
 /* ── Downloads ── */
+.results-bar { display: flex; align-items: center; justify-content: space-between; gap: .75rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.results-bar .btn-back { margin-bottom: 0; }
+.results-bar-dl { display: flex; gap: .5rem; flex-wrap: wrap; }
 .downloads { display: flex; gap: .75rem; margin: 1.5rem 0; flex-wrap: wrap; }
 .btn-dl { display: inline-flex; align-items: center; gap: .4rem; padding: .55rem 1.25rem; border-radius: 8px; font-size: .88rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--bg2); color: var(--text); transition: border-color .15s, background .15s; text-decoration: none; }
 .btn-dl:hover { border-color: var(--accent); background: var(--bg3); }
@@ -218,7 +221,7 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
 @media print {
     @page { size: A4; margin: 16mm 15mm 18mm; }
     html, body { background: #fff !important; color: #1b1b1f !important; font-size: 10.5pt; }
-    .topbar, .btn-back, .ej-select, .reprompt-bar, .downloads, .feedback, .consultados, .legal-footer,
+    .topbar, .results-bar, .btn-back, .ej-select, .reprompt-bar, .downloads, .feedback, .consultados, .legal-footer,
     #form-error, .prompt-section, .badge, #loading, .center-title { display: none !important; }
     .content, .results { max-width: none !important; width: auto !important; padding: 0 !important; margin: 0 !important; }
     .section-title { color: #b44a0c !important; border-bottom: 1.5pt solid #e8752c !important; font-size: 13pt;
@@ -458,7 +461,13 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
 
     <div class="results" id="results" aria-live="polite">
         <h1 id="results-heading" class="sr-only">Resultado</h1>
-        <button type="button" class="btn-back" id="btn-nueva">← Nueva consulta</button>
+        <div class="results-bar">
+            <button type="button" class="btn-back" id="btn-nueva">← Nueva consulta</button>
+            <div class="results-bar-dl">
+                <button type="button" class="btn-dl" id="btn-txt-top">⬇ .txt</button>
+                <button type="button" class="btn-dl" id="btn-pdf-top">📄 Descargar PDF</button>
+            </div>
+        </div>
 
         <div id="resultado-contenido"></div>
 
@@ -882,10 +891,7 @@ function renderResults(data, mostrar = true) {
         diagGroups.push(grp);
     }
 
-    // Badge
-    let html = data.teoria_usada
-        ? "<span class='badge'>✓ Enriquecido con teoría</span>"
-        : "<span class='badge'>Sin teoría adicional</span>";
+    let html = '';
 
     // Parsear texto en bloques (secciones y ejercicios). Se guarda en
     // currentBloques (no solo local) para poder sustituir un único bloque tras
@@ -1165,6 +1171,12 @@ document.getElementById('btn-pdf').addEventListener('click', async () => {
         msgEl.textContent = 'Error generando PDF: ' + r.error;
         msgEl.className = 'feedback-msg err';
     }
+});
+
+document.getElementById('btn-txt-top').addEventListener('click', () => document.getElementById('btn-txt').click());
+document.getElementById('btn-pdf-top').addEventListener('click', async () => {
+    const r = await descargarPdf(document.getElementById('btn-pdf-top'));
+    if (!r.ok) showFormError('Error generando PDF: ' + r.error);
 });
 
 // Aviso compacto: ver la sesión en la web (con sus avisos) o descargar el PDF sin abrirla.
