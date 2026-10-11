@@ -154,7 +154,8 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
 .reprompt-bar textarea:focus { border-color: var(--accent); }
 .diagrama-label { font-size: .68rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
 .diagrama-wrap { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 1.5rem; }
-.diagrama-wrap svg { width: 100%; height: auto; display: block; }
+/* Pista completa en vertical: sin tope ocupaba 1300 px de alto (más que la pantalla). Se limita a ~70 % de la ventana. */
+.diagrama-wrap svg { width: auto; max-width: 100%; height: auto; max-height: min(70vh, 520px); display: block; margin: 0 auto; }
 .sesion-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; font-size: .92rem; line-height: 1.8; white-space: pre-wrap; color: var(--text2); margin-bottom: .75rem; }
 .section-title { font-weight: 700; font-size: 1rem; color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: .5rem; margin: 1.5rem 0 .75rem; }
 
