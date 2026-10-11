@@ -99,3 +99,14 @@ def test_el_diagrama_curado_del_calentamiento_no_pasa_por_la_heuristica_de_pista
     r = TestClient(main.app).post("/generar", json={"objetivo": "bote", "edad": "U12", "duracion": 60})
     assert r.status_code == 200
     assert tipos[0] == "media_pista"
+
+
+def test_el_renderer_no_genera_alturas_negativas_en_pista_completa():
+    # con la canasta invertida el tablero llevaba height="-6.0", inválido en SVG (error en la consola del navegador)
+    import re
+    from diagram_renderer import render_diagram
+    d = {"tipo": "pista_completa",
+         "jugadores_ataque": [{"id": "A1", "x": 50, "y": 20}], "jugadores_defensa": [],
+         "balon_inicio": {"portador": "A1"}, "movimientos": [], "conos": []}
+    svg = render_diagram(d, edad="U12")
+    assert not re.findall(r'height="-', svg)
