@@ -26,6 +26,12 @@ _SINONIMOS_REGLAMENTO = (
      "minibasket benjamín alevín"),
     (r"\bminutos? (?:jugados?|de juego)\b|\btiempo de juego\b|\bjuegan?\b|\bjugar\b|\bjugad[oa]s?\b|\bparticip\w+\b",
      "participación mínima periodos"),
+    (r"\breloj de (?:posesi[oó]n|ataque)\b|\bposesi[oó]n de(?:l)? bal[oó]n\b|\bcu[aá]nto dura la posesi[oó]n\b",
+     "24 segundos efectuar un tiro a canasta"),
+    (r"\binterferencia\b|\bt[aá]pon(?:es|ar)?\b|\btapar\b|\btocar el bal[oó]n (?:cuando |al )?(?:baja|bajar|cae)\b",
+     "goaltending interferencia trayectoria descendente"),
+    (r"\bacta\b|\bapunt\w+\b|\binscrib\w+\b|\binscrit\w+\b|\bm[ií]nimo de jugadores\b|\bcon cu[aá]ntos\b",
+     "mínimo de jugadores en el acta"),
     (r"\bcambios?\b|\bsustituci\w+\b", "sustituciones cambios"),
     (r"\bfaltas?\b", "faltas personales"),
 )
@@ -41,16 +47,10 @@ def consulta_ampliada(pregunta: str) -> str:
     return f"{pregunta} {' '.join(extra)}".strip() if extra else pregunta
 
 
-def responder_duda_reglamento(pregunta: str, ambito: str = AMBITO_GENERAL) -> str:
-    """Modo 3: responde una duda de reglamento o fundamento técnico.
-
-    `ambito` es "general" (FIBA / federación española) o una comunidad autónoma
-    (carpeta de data/reglamento/). Con una comunidad se recupera primero su normativa
-    y se completa con la general: la específica prevalece cuando ambas difieren.
-
-    Capas de recuperación: "reglamento_md" (los .md curados, por ámbito, siempre
-    disponibles), "reglamento" (PDF oficiales locales, opcionales; mismo filtro por
-    ámbito) y "teoria_md" (fundamentos técnicos). Todo sin etiqueta de origen."""
+def recuperar_contexto_reglamento(pregunta: str, ambito: str = AMBITO_GENERAL) -> list[str]:
+    """Fragmentos de reglamento que recibe el modelo para esa pregunta y ámbito, ya con su presupuesto de
+    caracteres por colección. Es lo que de verdad llega al prompt: tools/evaluar_reglamento_coloquial.py mide
+    sobre esto, no sobre la búsqueda suelta."""
     ambito = normalizar_ambito(ambito)
     especifico = ambito != AMBITO_GENERAL
     nombre = nombre_ambito(ambito)
@@ -83,6 +83,23 @@ def responder_duda_reglamento(pregunta: str, ambito: str = AMBITO_GENERAL) -> st
         partes.append(f"--- REGLAMENTO GENERAL (FIBA / federación española) ---\n{contexto_general}")
     if contexto_curado:
         partes.append(f"--- MATERIAL PROPIO ---\n{contexto_curado[:1000]}")
+    return partes
+
+
+def responder_duda_reglamento(pregunta: str, ambito: str = AMBITO_GENERAL) -> str:
+    """Modo 3: responde una duda de reglamento o fundamento técnico.
+
+    `ambito` es "general" (FIBA / federación española) o una comunidad autónoma
+    (carpeta de data/reglamento/). Con una comunidad se recupera primero su normativa
+    y se completa con la general: la específica prevalece cuando ambas difieren.
+
+    Capas de recuperación: "reglamento_md" (los .md curados, por ámbito, siempre
+    disponibles), "reglamento" (PDF oficiales locales, opcionales; mismo filtro por
+    ámbito) y "teoria_md" (fundamentos técnicos). Todo sin etiqueta de origen."""
+    ambito = normalizar_ambito(ambito)
+    especifico = ambito != AMBITO_GENERAL
+    nombre = nombre_ambito(ambito)
+    partes = recuperar_contexto_reglamento(pregunta, ambito)
 
     if especifico:
         instruccion_ambito = (
