@@ -288,6 +288,10 @@ def _generar_pdf(sesion_texto, edad, objetivo, duracion, diagramas):
     ANCHO_TEXTO = ANCHO_PAG - MR - X_TEXTO
     ANCHO_DIAGRAMA = 104
     ALTO_MAX_DIAGRAMA = 92
+    # El primer diagrama de cada ejercicio va a la izquierda y el texto a su derecha (caben dos ejercicios por página).
+    ANCHO_LATERAL, ALTO_LATERAL, SEPARACION_LATERAL = 58, 90, 5
+    ANCHO_ETIQUETA_LAT = 24
+    lateral = {}       # {'pagina', 'y_fin', 'x'} mientras una fila pueda ir junto al diagrama
     MARGEN_INFERIOR = 18
 
     edad_txt = edad or 'General'
@@ -409,26 +413,38 @@ def _generar_pdf(sesion_texto, edad, objetivo, duracion, diagramas):
         pdf.line(ML, pdf.get_y() + 0.5, ANCHO_PAG - MR, pdf.get_y() + 0.5)
         pdf.ln(4)
 
-    def alto_fila(campo):
+    def geometria():
+        """(x etiqueta, ancho etiqueta, x texto, ancho texto, x sin etiqueta, ancho sin etiqueta) según haya o no un
+        diagrama a la izquierda en la posición actual."""
+        if lateral and lateral['pagina'] == pdf.page_no() and pdf.get_y() < lateral['y_fin']:
+            x = lateral['x']
+            x_t = x + ANCHO_ETIQUETA_LAT + 3
+            return x, ANCHO_ETIQUETA_LAT, x_t, ANCHO_PAG - MR - x_t, x, ANCHO_PAG - MR - x
+        return X_ETIQUETA, ANCHO_ETIQUETA, X_TEXTO, ANCHO_TEXTO, ML, ANCHO
+
+    def alto_fila(campo, ancho_texto=None):
+        ancho_texto = ancho_texto or ANCHO_TEXTO
         alto = 0
         pdf.set_font('Inter', '', 9.5)
         if campo['texto']:
-            alto += pdf.multi_cell(ANCHO_TEXTO, 4.9, campo['texto'], align='L', dry_run=True, output='HEIGHT')
+            alto += pdf.multi_cell(ancho_texto, 4.9, campo['texto'], align='L', dry_run=True, output='HEIGHT')
         for item in campo['items']:
-            alto += pdf.multi_cell(ANCHO_TEXTO - 4, 4.9, item, align='L', dry_run=True, output='HEIGHT')
+            alto += pdf.multi_cell(ancho_texto - 4, 4.9, item, align='L', dry_run=True, output='HEIGHT')
         return max(alto, 5) + 3.2
 
     def fila(campo):
-        asegurar(alto_fila(campo) + 1)
+        _, _, _, ancho_t, _, ancho_sin = geometria()
+        asegurar(alto_fila(campo, ancho_t if campo['etiqueta'] else ancho_sin) + 1)
+        x_et, ancho_et, x_t, ancho_t, x_sin, ancho_sin = geometria()     # tras un posible salto de página
         y = pdf.get_y()
         if campo['etiqueta']:
-            pdf.set_xy(X_ETIQUETA, y + 0.9)
+            pdf.set_xy(x_et, y + 0.9)
             pdf.set_font('InterSB', '', 7)
             pdf.set_text_color(*GRIS)
-            pdf.multi_cell(ANCHO_ETIQUETA, 3.6, campo['etiqueta'].upper(), align='L')
-            x_texto, ancho_texto = X_TEXTO, ANCHO_TEXTO
+            pdf.multi_cell(ancho_et, 3.6, campo['etiqueta'].upper(), align='L')
+            x_texto, ancho_texto = x_t, ancho_t
         else:
-            x_texto, ancho_texto = ML, ANCHO
+            x_texto, ancho_texto = x_sin, ancho_sin
         pdf.set_xy(x_texto, y)
         negrita = campo['etiqueta'] in ('Juego',)
         pdf.set_font('Inter', 'B' if negrita else '', 9.5)
@@ -443,19 +459,21 @@ def _generar_pdf(sesion_texto, edad, objetivo, duracion, diagramas):
         y_fin = max(pdf.get_y(), y + 5)
         pdf.set_draw_color(*LINEA)
         pdf.set_line_width(0.15)
-        pdf.line(X_ETIQUETA, y_fin + 1.4, ANCHO_PAG - MR, y_fin + 1.4)
+        pdf.line(x_et, y_fin + 1.4, ANCHO_PAG - MR, y_fin + 1.4)
         pdf.set_y(y_fin + 2.8)
 
-    def preparar_diagramas(lista):
+    def preparar_diagramas(lista, ancho_max=None, alto_max=None):
         """Convierte cada SVG a PNG y calcula su tamaño en la página (sin pasar de ALTO_MAX_DIAGRAMA)."""
         from PIL import Image
+        ancho_max = ancho_max or ANCHO_DIAGRAMA
+        alto_max = alto_max or ALTO_MAX_DIAGRAMA
         listos = []
         for d in lista:
             try:
                 ruta = _svg_a_png(d['svg'])
                 with Image.open(ruta) as im:
                     proporcion = im.height / im.width
-                ancho = min(ANCHO_DIAGRAMA, ALTO_MAX_DIAGRAMA / proporcion)
+                ancho = min(ancho_max, alto_max / proporcion)
                 listos.append({'ruta': ruta, 'ancho': ancho, 'alto': ancho * proporcion, 'titulo': d.get('titulo')})
             except Exception:
                 logger.exception('No se pudo convertir un diagrama del PDF')
@@ -474,6 +492,28 @@ def _generar_pdf(sesion_texto, edad, objetivo, duracion, diagramas):
                 pdf.set_y(pdf.get_y() + 4)
             finally:
                 os.unlink(d['ruta'])
+
+    def pintar_lateral(d):
+        """Primer diagrama de un bloque: a la izquierda; las filas siguientes se colocan a su derecha."""
+        try:
+            y0 = pdf.get_y()
+            if d.get('titulo'):
+                pdf.set_xy(ML, y0)
+                pdf.set_font('InterSB', '', 7)
+                pdf.set_text_color(*GRIS)
+                pdf.cell(d['ancho'], 4, str(d['titulo']).upper())
+                y0 += 4.5
+            pdf.image(d['ruta'], x=ML, y=y0, w=d['ancho'])
+            lateral.update(pagina=pdf.page_no(), y_fin=y0 + d['alto'] + 1, x=ML + d['ancho'] + SEPARACION_LATERAL)
+            pdf.set_xy(ML, y0)
+        finally:
+            os.unlink(d['ruta'])
+
+    def cerrar_lateral():
+        """Al acabar las filas, si el diagrama baja más que el texto, sigue por debajo de él."""
+        if lateral and lateral['pagina'] == pdf.page_no() and pdf.get_y() < lateral['y_fin']:
+            pdf.set_y(lateral['y_fin'] + 1)
+        lateral.clear()
 
     bloques = _parsear_sesion_para_pdf(sesion_texto)
     n_ejercicio = -1
@@ -502,12 +542,14 @@ def _generar_pdf(sesion_texto, edad, objetivo, duracion, diagramas):
             pdf.ln(2)
         elif tipo == 'calentamiento':
             campos = _campos_de_bloque(bloque['lineas'])
-            listos = preparar_diagramas(diagramas_de(None, 'calentamiento'))
+            listos = preparar_diagramas(diagramas_de(None, 'calentamiento'), ANCHO_LATERAL, ALTO_LATERAL)
             if listos:
-                asegurar(min(listos[0]['alto'] + 40, pdf.h - MARGEN_INFERIOR - 25))
-            pintar_diagramas(listos)
+                asegurar(min(listos[0]['alto'] + 25, pdf.h - MARGEN_INFERIOR - 25))
+                pintar_lateral(listos[0])
             for campo in campos:
                 fila(campo)
+            cerrar_lateral()
+            pintar_diagramas(listos[1:])
         elif tipo == 'ejercicio':
             n_ejercicio += 1
             campos = _campos_de_bloque(bloque['lineas'])
@@ -515,9 +557,9 @@ def _generar_pdf(sesion_texto, edad, objetivo, duracion, diagramas):
             rotulo, nombre = (m.group(1), m.group(2)) if m else ('Ejercicio', bloque['titulo'])
             pdf.set_font('Sora', 'B', 12.5)
             alto_titulo = pdf.multi_cell(ANCHO, 6.4, nombre or rotulo, align='L', dry_run=True, output='HEIGHT')
-            listos = preparar_diagramas(diagramas_de(n_ejercicio, 'ejercicio'))
+            listos = preparar_diagramas(diagramas_de(n_ejercicio, 'ejercicio'), ANCHO_LATERAL, ALTO_LATERAL)
             # título + diagrama + al menos una fila de texto en la misma página: nunca un título suelto abajo
-            necesario = alto_titulo + 14 + (listos[0]['alto'] + 8 if listos else 0) + 18
+            necesario = alto_titulo + 12 + (listos[0]['alto'] if listos else 0) + 10
             asegurar(min(necesario, pdf.h - MARGEN_INFERIOR - 25))
             pdf.ln(2.5)
             pdf.set_font('InterSB', '', 7.5)
@@ -529,9 +571,12 @@ def _generar_pdf(sesion_texto, edad, objetivo, duracion, diagramas):
             pdf.set_x(ML)
             pdf.multi_cell(ANCHO, 6.4, nombre or rotulo, align='L')
             pdf.ln(2.5)
-            pintar_diagramas(listos)
+            if listos:
+                pintar_lateral(listos[0])
             for campo in campos:
                 fila(campo)
+            cerrar_lateral()
+            pintar_diagramas(listos[1:])
             pdf.ln(3)
 
     return bytes(pdf.output())
