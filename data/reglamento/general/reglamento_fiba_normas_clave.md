@@ -17,18 +17,61 @@
 ## Estructura del partido (FIBA senior)
 
 - 4 cuartos de 10 minutos (reloj parado en todas las interrupciones).
-- 2 tiempos muertos en la primera parte + 3 en la segunda parte (1 por prórroga).
 - 5 jugadores en pista por equipo.
-- Sustituciones: ilimitadas, solo en momentos permitidos.
 - **5 faltas de jugador = exclusión inmediata.** Debe sustituirse en 30 segundos.
-- **5 faltas de equipo por cuarto = tiros libres** en toda falta posterior (dos tiros libres).
+- **Tras 4 faltas de equipo en un cuarto**, la 5.ª falta de equipo y las siguientes dan dos tiros libres.
+
+### Descansos del partido
+
+El descanso del partido es la pausa entre periodos, distinta del descanso del jugador (que es el tiempo que un jugador
+está en el banquillo). En FIBA senior hay 2 minutos entre el primer y el segundo cuarto, 2 minutos entre el tercero y el
+cuarto, 15 minutos de descanso en la media parte (entre el segundo y el tercer cuarto) y 2 minutos antes de cada prórroga.
+
+### Prórroga
+
+Si el marcador está empatado al final del cuarto cuarto, el partido continúa con tantas prórrogas de 5 minutos como
+hagan falta hasta deshacer el empate. Hay 2 minutos de descanso antes de cada prórroga y cada equipo tiene 1 tiempo
+muerto en cada prórroga. Los tiempos muertos que no se han usado no pasan a la prórroga. Las faltas personales de cada
+jugador siguen acumulándose, y las faltas de equipo cometidas en una prórroga cuentan como si fueran del cuarto cuarto.
+
+### Tiempos muertos
+
+Cada tiempo muerto dura 1 minuto. Solo el entrenador principal o el primer ayudante pueden pedirlo: se dirige a la
+mesa de anotadores y lo pide con claridad haciendo la señal con las manos. Cada equipo tiene 2 tiempos muertos en la
+primera parte y 3 en la segunda parte, con un máximo de 2 de esos 3 cuando el reloj marca 2:00 minutos o menos del
+cuarto cuarto, y 1 tiempo muerto en cada prórroga. Los tiempos muertos no usados no se acumulan para la parte siguiente.
+Se concede en una oportunidad de tiempo muerto: con el balón muerto y el reloj parado, tras el último tiro libre
+convertido, o cuando el equipo rival acaba de anotar una canasta. En los últimos 2 minutos del cuarto cuarto y de la
+prórroga, el equipo que acaba de anotar no puede pedirlo salvo que un árbitro haya interrumpido el juego.
+
+### Sustituciones
+
+Un equipo puede hacer sustituciones ilimitadas, pero solo en una oportunidad de sustitución: cuando el balón está
+muerto y el reloj parado, o después del último tiro libre convertido. Solo el sustituto (no el entrenador) pide el
+cambio: va a la mesa de anotadores, o se sienta en la silla de sustitución, y espera fuera de la línea hasta que el
+árbitro le indique que entre. Tras una canasta, el equipo que la ha encajado solo puede sustituir en los últimos
+2 minutos del cuarto cuarto y de la prórroga (el equipo que ha anotado no puede). Un jugador que ha salido y un
+sustituto que ha entrado no pueden volver a entrar ni a salir hasta que el balón vuelva a estar muerto tras un
+periodo de reloj en marcha. Un jugador con 5 faltas o descalificado debe ser sustituido de inmediato (30 segundos
+como máximo); si se retrasa, se carga un tiempo muerto o, si no quedan, una técnica al entrenador por retrasar el juego.
 
 ---
 
 ## Violaciones principales
 
-### Salidas del terreno (Art. 23)
-Un jugador o el balón están fuera cuando tocan la línea limítrofe o el suelo exterior. Penalización: saque desde el punto más cercano.
+### Salida del terreno y balón fuera (Art. 23)
+
+Un jugador está fuera cuando cualquier parte de su cuerpo toca el suelo, o cualquier objeto que no sea un jugador,
+sobre la línea limítrofe o fuera de ella. Pisar la raya cuenta como salir.
+
+El balón está fuera cuando toca la línea limítrofe o el suelo o cualquier objeto sobre o fuera de ella, cuando toca a un
+jugador u otra persona que está fuera, y cuando toca los soportes del tablero, la parte de atrás del tablero o
+cualquier objeto situado por encima de la pista.
+
+El balón lo provoca fuera el último jugador que lo tocó o fue tocado por él antes de salir, aunque el balón salga al
+tocar algo que no es un jugador. El saque de banda o de fondo corresponde al equipo rival del último jugador que tocó
+el balón, y se saca desde el punto más cercano a donde salió. Si el balón sale al tocar a un jugador que está sobre la
+línea o fuera de ella, ese jugador es quien lo ha sacado.
 
 ### Regate (drible) ilegal (Art. 24)
 - No se puede botar con ambas manos a la vez.
@@ -72,6 +115,10 @@ Contacto físico ilegal con un adversario. Tipos frecuentes:
 - **Rodear con el brazo:** abrazo ilegal.
 - **Cilindro ilegal:** invadir el cilindro (espacio vertical) del adversario.
 
+El cilindro es el espacio vertical e imaginario que ocupa cada jugador sobre el suelo, desde su posición hacia arriba.
+Un jugador tiene derecho a ocupar el sitio de la pista que no esté ocupado por un rival y a saltar en vertical dentro
+de su cilindro; el que invade el cilindro de un adversario y provoca un contacto comete falta.
+
 ### Pantalla (bloqueo) legal e ilegal (Art. 33.7)
 Una pantalla es **legal** cuando el bloqueador:
 - Está completamente **inmóvil** (dentro de su cilindro) al producirse el contacto.
@@ -102,18 +149,61 @@ Un jugador queda descalificado con dos técnicas de categoría 1, dos flagrantes
 una flagrante.
 
 ### 5 faltas = exclusión (Art. 40)
-El jugador que acumule 5 faltas personales (o una combinación que llegue a 5) es excluido y debe abandonar el partido. Se sustituye en 30 segundos.
+Un jugador puede cometer hasta 4 faltas y seguir jugando: a la 5.ª falta personal (o una combinación que llegue a 5)
+queda excluido y debe abandonar el partido. Se sustituye en 30 segundos.
 
 ---
 
 ## Señales arbitrales más frecuentes (para el entrenador)
 
-| Señal | Significado |
-|-------|-------------|
-| Manos hacia arriba, palmas abiertas | Detener el reloj (falta o tiempo muerto) |
-| Puño cerrado señalando hacia un equipo | Posesión de ese equipo |
-| Batir palmas y señalar hacia arriba | Inicio del reloj |
-| Señalar un número con dedos | Número del jugador que comete la falta |
-| Mano abierta horizontal moviéndose | Violación de pasos |
-| Golpear la muñeca propia | Uso ilegal de manos |
-| Brazos cruzados | Doble (doble regate) |
+Las señales oficiales son los gestos con las manos que hacen los árbitros. En cada frase, lo que el árbitro señala va
+primero y el gesto después.
+
+### Señales del reloj, el marcador y el juego
+
+- Para detener el reloj sin falta (violación, balón fuera, tiempo muerto) el árbitro levanta la mano abierta, con la
+  palma hacia delante.
+- Para detener el reloj por falta el árbitro levanta un puño cerrado.
+- Para reanudar el reloj el árbitro hace un corte con la mano, como un hachazo hacia abajo.
+- Para anotar puntos el árbitro muestra un dedo para 1 punto y dos dedos para 2 puntos, con un giro de muñeca; con tres
+  dedos extendidos señala 3 puntos (con un brazo es un intento y con los dos brazos es un triple convertido).
+- La sustitución (cambio de jugador) se señala con los antebrazos cruzados delante del pecho.
+- El tiempo muerto se señala formando una T con las manos y mostrando el dedo índice.
+- La dirección de juego y el balón fuera se señalan con el brazo paralelo a las líneas laterales apuntando hacia
+  donde ataca el equipo que tiene la posesión.
+- El salto entre dos o balón retenido se señala con los pulgares arriba y luego apuntando, con la flecha de posesión
+  alterna, hacia donde ataca el equipo con la posesión.
+
+### Señales de las violaciones
+
+- Los pasos (violación de pasos, desplazamiento ilegal) los señala el árbitro girando los puños uno alrededor del otro.
+- El doble regate (doble bote, botar con las dos manos o volver a botar) lo señala el árbitro con un movimiento de
+  palmear con la palma abierta, como si botara el balón.
+- Llevar el balón (acarreo) se señala con media rotación de la palma de la mano.
+- Los 3 segundos se señalan agitando el brazo y mostrando tres dedos; los 5 segundos, mostrando cinco dedos; los
+  8 segundos, mostrando ocho dedos; y los 24 segundos, tocándose el hombro con los dedos.
+- La pista trasera (balón devuelto a pista trasera) se señala agitando el brazo delante del cuerpo.
+- La patada o bloqueo deliberado del balón se señala apuntando al pie.
+
+### Señales de las faltas
+
+- El número del jugador que comete la falta se muestra con los dedos: con la mano derecha del 1 al 5; con la derecha
+  en 5 y la izquierda de 1 a 5, del 6 al 10; con el puño derecho cerrado y la izquierda de 1 a 5, del 11 al 15; en
+  los números mayores primero la decena con la mano invertida y después las unidades.
+- El uso ilegal de las manos se señala golpeando la propia muñeca, y sujetar (agarrar) agarrando la muñeca hacia abajo.
+- El bloqueo del defensor o la pantalla ilegal del atacante se señalan con las dos manos en las caderas.
+- Empujar o cargar sin balón se señala imitando un empujón hacia delante, y la carga con balón con el puño cerrado
+  golpeando la palma abierta.
+- El cilindro ilegal se señala moviendo ambos brazos con las palmas abiertas, de abajo arriba, y el codo excesivo
+  balanceando el codo hacia atrás.
+- La falta en el acto de tiro se señala con un brazo con el puño cerrado y a continuación indicando el número de tiros
+  libres; la falta fuera del acto de tiro, con un puño y a continuación señalando hacia la pista.
+- La falta del equipo que controla el balón se señala con el puño cerrado hacia la canasta del equipo que la comete.
+- La falta técnica se señala formando una T con las manos y las palmas abiertas.
+- La falta disruptiva (la que ha sustituido a la antideportiva desde el 1/10/2026) la señala el árbitro con un puño y
+  a continuación dos dedos a la altura de la cara.
+- La falta flagrante se señala agarrando la muñeca hacia arriba.
+- La falta descalificante se señala con los dos puños cerrados levantados, y la doble falta agitando los puños
+  cerrados de ambas manos.
+- Simular una falta se señala bajando el antebrazo dos veces, y el retraso de juego moviendo el antebrazo en
+  horizontal dos veces.

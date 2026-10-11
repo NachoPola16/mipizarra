@@ -38,6 +38,34 @@ En el cuadro, «2 + 3» y «2 + 2» son los tiempos muertos por mitades del part
 5. **Categorías mixtas:** en cada partido tiene que haber al menos una niña si se inscriben 8 jugadores, dos si
    se inscriben entre 9 y 12, y tres si se inscriben más de 12.
 
+## Descanso del jugador y descanso del partido
+
+Son dos cosas distintas. El **descanso del jugador** es el tiempo que cada jugador pasa en el banquillo: en
+minibasket (alevín, benjamín y mixto) cada jugador debe descansar dos periodos y jugar al menos dos periodos completos;
+en infantil B-C, mixto y preinfantil, cada jugador descansa en el banquillo durante uno de los tres primeros cuartos.
+El **descanso del partido** es la pausa entre periodos: en minibasket hay un descanso de cinco minutos entre el
+tercer y el cuarto periodo (la media parte) y de un minuto entre los demás periodos.
+
+## Reloj corrido en minibasket
+
+En minibasket (alevín, benjamín y mixto) el reloj es corrido: corre sin parar durante los siete primeros minutos de
+cada periodo, y el último minuto se juega a reloj parado. El reloj corrido en minibasket también se detiene en las
+faltas que conllevan tiros libres y en los tiempos muertos.
+
+## Tiempos muertos y sustituciones por categoría
+
+Los tiempos muertos se cuentan por mitades. En minibasket hay 2 tiempos muertos en la primera parte y 2 en la segunda;
+en infantil y cadete hay 2 en la primera parte y 3 en la segunda (2 + 3). Las sustituciones son libres, en todos los cuartos,
+en cadete y en el Campeonato de Aragón infantil; en infantil B-C, mixto y preinfantil solo en el último cuarto; y en
+minibasket solo en el último periodo.
+
+## Jugadores mínimos en el acta
+
+En Aragón es obligatorio inscribir en el acta un mínimo de ocho jugadores en infantil y en minibasket (máximo 12 en
+infantil y 14 en minibasket), y de cinco en cadete (máximo 12). Si no se alcanza el mínimo pero hay cinco jugadores,
+el encuentro se juega y decide el resultado el comité de competición. En otras comunidades el mínimo puede ser
+distinto.
+
 ## Defensas en minibasket
 
 - Están **prohibidas las defensas en zona**, tanto en medio campo como en todo el campo, y cualquier tipo de
