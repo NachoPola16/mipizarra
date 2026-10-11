@@ -344,3 +344,14 @@ def test_el_modelo_recibe_la_pregunta_original_y_la_busqueda_la_ampliada(monkeyp
     reglamento.responder_duda_reglamento("cuartos de los niños", "general")
     assert buscadas and all("periodos" in q and "jugadores" in q for q in buscadas)
     assert "PREGUNTA: cuartos de los niños" in enviadas[0]
+
+
+def test_el_reglamento_general_explica_la_participacion_minima_en_frases():
+    # la norma solo estaba en una celda de una tabla ancha y la búsqueda no la encontraba con «participación mínima en
+    # minibasket»; la sección en frases es lo que la hace recuperable (se mide con tools/ y el contenedor de la API)
+    from pathlib import Path
+    md = (Path(__file__).resolve().parent.parent / "data" / "reglamento" / "general"
+          / "reglamento_competicion_formacion_espana.md").read_text(encoding="utf-8")
+    seccion = md.split("### Participación mínima: cuántos periodos o cuartos tiene que jugar cada niño")[1].split("###")[0]
+    for texto in ("Benjamín y alevín", "2 periodos de los 5 primeros", "participación mínima en minibasket", "Infantil"):
+        assert texto in seccion
