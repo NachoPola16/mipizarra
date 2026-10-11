@@ -38,7 +38,10 @@ NOMBRES_AMBITO = {
     "aragon": "Aragón",
 }
 _AMBITO_RE = re.compile(r"^[a-z][a-z0-9_]{1,29}$")
-# Modelo de embeddings de la búsqueda (RAG). Medido con tools/evaluar_recuperacion.py sobre 20 preguntas fijas:
-# qwen3-embedding:0.6b acierta en la primera posición el 80 % (nomic-embed-text, el 45 %) y es multilingüe.
+# Modelo de embeddings de la búsqueda (RAG), multilingüe y de 0,6 GB. Medido con dos conjuntos:
+#  - tools/evaluar_recuperacion.py (20 preguntas formales): embeddinggemma y qwen3-embedding:0.6b empatan (MRR 0,82);
+#    nomic-embed-text, el 45 % en primera posición.
+#  - tools/evaluar_reglamento_coloquial.py --ciega (preguntas con palabras de la calle, 40 formulaciones sin ajustar):
+#    embeddinggemma 88 %, qwen3-embedding:4b y bge-m3 85 %, qwen3-embedding:0.6b 70 %.
 # Cambiarlo obliga a reindexar (tools/indexar_colecciones.py): la base recuerda con cuál se indexó.
-EMBED_MODEL    = os.environ.get("EMBED_MODEL", "qwen3-embedding:0.6b")
+EMBED_MODEL    = os.environ.get("EMBED_MODEL", "embeddinggemma:latest")
