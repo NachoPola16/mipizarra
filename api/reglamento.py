@@ -4,7 +4,7 @@ import logging
 
 import requests
 
-from config import AMBITO_GENERAL, MODEL_REGLAMENTO, OLLAMA_URL
+from config import AMBITO_GENERAL, MODEL_REGLAMENTO, MODEL_SESION, OLLAMA_URL
 from contexto import consultar_coleccion, nombre_ambito, normalizar_ambito
 from prompts import SYSTEM_REGLAMENTO
 
@@ -77,24 +77,40 @@ def responder_duda_reglamento(pregunta: str, ambito: str = AMBITO_GENERAL) -> st
             f"encuentras la respuesta aquí, usa tu conocimiento pero dilo):\n"
             f"{chr(10).join(partes)}\n\nPREGUNTA: {pregunta}"
         )
-    try:
-        r = requests.post(
-            f"{OLLAMA_URL}/api/chat",
-            json={
-                "model": MODEL_REGLAMENTO,
-                "messages": [
-                    {"role": "system", "content": SYSTEM_REGLAMENTO},
-                    {"role": "user", "content": mensaje_usuario},
-                ],
-                "stream": False,
-                "think": False,    # modelos con razonamiento por defecto no deben gastar el presupuesto pensando
-                "keep_alive": "30m",   # tras un rato inactivo, cargar el modelo en la GPU tarda 35-100 s: se mantiene cargado
-                "options": {"temperature": 0.3, "num_predict": 500, "num_ctx": 6144},
-            },
-            timeout=180,
-        )
-        r.raise_for_status()
-        return r.json()["message"]["content"].strip()
-    except Exception as e:
-        logger.warning(f"Error en reglamento: {e}")
-        return "No se pudo responder la consulta. Inténtalo de nuevo."
+    # Ollama falla a veces al cargar gemma4 (el proceso muere y devuelve 500 a los ~35 s) y a la segunda carga
+    # funciona: se reintenta una vez con el mismo modelo y, si sigue fallando, responde el modelo de sesión
+    # (más pequeño, menos preciso en reglamento) avisándolo, antes que dar un error.
+    modelos = [MODEL_REGLAMENTO, MODEL_REGLAMENTO]
+    if MODEL_SESION != MODEL_REGLAMENTO:
+        modelos.append(MODEL_SESION)
+    for intento, modelo in enumerate(modelos, start=1):
+        try:
+            texto = _chat_reglamento(modelo, mensaje_usuario)
+        except Exception as e:
+            logger.warning(f"Error en reglamento (intento {intento}, {modelo}): {e}")
+            continue
+        if modelo != MODEL_REGLAMENTO:
+            texto += ("\n\n*(Respuesta generada con el modelo reducido porque el principal no respondió: "
+                      "contrástala con el reglamento.)*")
+        return texto
+    return "No se pudo responder la consulta. Inténtalo de nuevo."
+
+
+def _chat_reglamento(modelo: str, mensaje_usuario: str) -> str:
+    r = requests.post(
+        f"{OLLAMA_URL}/api/chat",
+        json={
+            "model": modelo,
+            "messages": [
+                {"role": "system", "content": SYSTEM_REGLAMENTO},
+                {"role": "user", "content": mensaje_usuario},
+            ],
+            "stream": False,
+            "think": False,    # modelos con razonamiento por defecto no deben gastar el presupuesto pensando
+            "keep_alive": "30m",   # tras un rato inactivo, cargar el modelo en la GPU tarda 35-100 s: se mantiene cargado
+            "options": {"temperature": 0.3, "num_predict": 500, "num_ctx": 6144},
+        },
+        timeout=180,
+    )
+    r.raise_for_status()
+    return r.json()["message"]["content"].strip()

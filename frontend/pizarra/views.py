@@ -84,7 +84,7 @@ def reglamento(request):
             f"{settings.API_URL}/reglamento",
             json=data,
             headers=_api_headers(),
-            timeout=90,
+            timeout=210,      # la primera consulta carga el modelo (35-100 s) y puede haber un reintento
         )
         resp.raise_for_status()
         return JsonResponse(resp.json())
