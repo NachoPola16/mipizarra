@@ -184,7 +184,20 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
 .feedback-msg.err[id="form-error"] { max-width: 800px; margin: 1.5rem auto 0; padding: .7rem 1rem; background: #241a10; border: 1px solid #b3452f; border-radius: 8px; }
 
 /* ── Reglamento result ── */
-.reglamento-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; font-size: .95rem; line-height: 1.85; color: var(--text2); white-space: pre-wrap; }
+.rg-hilo { max-width: 800px; margin: 0 auto; padding: 1.5rem 0 0; }
+.rg-hilo-cab { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: .9rem; }
+.rg-hilo-titulo { font-size: .8rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0; }
+.rg-item { margin-bottom: 1.25rem; }
+.rg-item-cab { display: flex; flex-wrap: wrap; align-items: baseline; gap: .35rem .75rem; margin-bottom: .5rem; }
+.rg-pregunta { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 1.02rem; line-height: 1.4; color: var(--text); margin: 0; }
+.rg-ambito { font-size: .74rem; color: var(--muted); }
+.rg-espera, .rg-error { border-radius: 10px; padding: 1rem 1.25rem; font-size: .9rem; line-height: 1.6; }
+.rg-espera { background: var(--bg2); border: 1px dashed var(--border); color: var(--muted); display: flex; align-items: center; gap: .75rem; }
+.rg-espera .spinner { width: 18px; height: 18px; border-width: 2px; flex-shrink: 0; }
+.rg-error { background: var(--bg2); border: 1px solid var(--accent); color: var(--text2); }
+.reglamento-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem 1.5rem; font-size: .95rem; line-height: 1.7; color: var(--text2); }
+.reglamento-card p { margin: 0 0 .85rem; max-width: 72ch; }
+.reglamento-card p:last-child { margin-bottom: 0; }
 
 /* ── Ficha estructurada: etiqueta a la izquierda, texto a la derecha ── */
 .sesion-card.estructurada { white-space: normal; line-height: 1.6; padding: .35rem 1.5rem; }
@@ -219,6 +232,10 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
     .campo dd, .campo.destacado dd, .campo.consigna dd { color: #1b1b1f !important; max-width: none; }
     .diagrama-wrap { background: #fff !important; border: 0.5pt solid #cfc9bf !important; max-width: 118mm; margin: 0 0 6pt; break-inside: avoid; }
     .diagrama-label { color: #6b6257 !important; }
+    #btn-rg-limpiar, .rg-espera { display: none !important; }
+    .rg-hilo { max-width: none; padding: 0; }
+    .rg-pregunta { color: #1b1b1f !important; font-size: 11.5pt; }
+    .reglamento-card { background: #fff !important; border: 0.5pt solid #cfc9bf !important; color: #1b1b1f !important; break-inside: avoid; }
 }
 
 /* ── Movimiento reducido ── */
@@ -249,6 +266,15 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
     margin: 0 .5rem;
 }
 .legal-footer a:hover { color: var(--text2); }
+
+/* ── Objetivos táctiles: 44 px en pantallas táctiles y estrechas (en escritorio se queda compacto) ── */
+@media (pointer: coarse), (max-width: 560px) {
+    .mode-tab, .dd-btn, .chip, .btn-send, .btn-dl, .btn-fb, .btn-back, .brand { min-height: 44px; }
+    .mode-tab { padding-inline: 1rem; }
+    .dd-opt { min-height: 44px; }
+    .legal-footer a { display: inline-block; padding: 1.05rem .6rem; margin: 0; }
+    .ej-select { min-height: 44px; }
+}
 </style>
 </head>
 <body>
@@ -397,6 +423,15 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
 
         <div class="btn-hint">Enter para consultar · Shift+Enter para nueva línea</div>
     </div><!-- /form-reglamento -->
+
+    <!-- Respuestas del reglamento: apiladas, la última arriba; cada consulta es independiente -->
+    <section id="reglamento-hilo" class="rg-hilo" style="display:none" aria-label="Respuestas sobre el reglamento">
+        <div class="rg-hilo-cab">
+            <h2 class="rg-hilo-titulo" id="rg-hilo-titulo">Respuestas</h2>
+            <button type="button" class="btn-dl" id="btn-rg-limpiar">Limpiar</button>
+        </div>
+        <div id="rg-lista" aria-live="polite"></div>
+    </section>
 
     <div class="loading" id="loading" role="status" aria-live="polite">
         <div class="spinner"></div>
@@ -587,47 +622,108 @@ document.getElementById('btn-generar').addEventListener('click', generar);
 // ── Consultar reglamento ───────────────────────────────────────────────────
 document.getElementById('btn-reglamento').addEventListener('click', consultarReglamento);
 
+// ── Reglamento: respuestas apiladas (la última arriba), cada consulta independiente ─────────────
+// El formulario se queda siempre a la vista; no se envía contexto previo (cada pregunta se responde sola) y el
+// servidor limita a 10 consultas por minuto. Solo una consulta en curso a la vez, porque el modelo atiende de una en una.
+const RG_MAX_RESPUESTAS = 8;
+const RG_ESPERA_MAX_MS = 215000;        // un poco más que el tiempo de espera del servidor (210 s)
+let _rgEnCurso = false;
+
+function rgActualizarCabecera() {
+    const n = document.getElementById('rg-lista').children.length;
+    document.getElementById('reglamento-hilo').style.display = (currentMode === 'reglamento' && n) ? '' : 'none';
+    document.getElementById('rg-hilo-titulo').textContent = n === 1 ? 'Respuesta' : `Respuestas (${n})`;
+}
+
+function rgNuevoItem(pregunta, ambitoTxt) {
+    const item = document.createElement('article');
+    item.className = 'rg-item';
+    const cab = document.createElement('div');
+    cab.className = 'rg-item-cab';
+    const h = document.createElement('h3');
+    h.className = 'rg-pregunta';
+    h.textContent = pregunta;
+    const amb = document.createElement('span');
+    amb.className = 'rg-ambito';
+    amb.textContent = ambitoTxt;
+    cab.append(h, amb);
+    const cuerpo = document.createElement('div');
+    cuerpo.className = 'rg-cuerpo';
+    item.append(cab, cuerpo);
+    const lista = document.getElementById('rg-lista');
+    lista.prepend(item);
+    while (lista.children.length > RG_MAX_RESPUESTAS) lista.lastElementChild.remove();
+    rgActualizarCabecera();
+    return item;
+}
+
+function rgAmbitoTexto(ambito) {
+    const opt = Array.from(document.querySelectorAll('#dd-ambito .dd-opt')).find(o => o.dataset.value === ambito);
+    const nombre = opt ? opt.textContent.trim() : '';
+    return ambito === 'general' || !nombre ? 'Reglamento general' : `${nombre} y reglamento general`;
+}
+
 async function consultarReglamento() {
-    const pregunta = document.getElementById('pregunta').value.trim();
+    if (_rgEnCurso) return;
+    const caja = document.getElementById('pregunta');
+    const pregunta = caja.value.trim();
     if (!pregunta) { showFormError('Escribe una pregunta.'); return; }
     clearFormError();
 
-    currentObjetivo = pregunta;
-    currentEdad = '';
-    currentEdadSlug = 'general';
-    currentDuracion = 0;
-    showLoading('reglamento');
+    const ambito = document.getElementById('ambito').value || 'general';
+    const item = rgNuevoItem(pregunta, rgAmbitoTexto(ambito));
+    const cuerpo = item.querySelector('.rg-cuerpo');
+    const t0 = Date.now();
+    cuerpo.innerHTML = `<div class='rg-espera' role='status'><div class='spinner'></div><span class='rg-espera-txt'></span></div>`;
+    const txt = cuerpo.querySelector('.rg-espera-txt');
+    const pintarEspera = () => {
+        const seg = Math.round((Date.now() - t0) / 1000);
+        txt.textContent = seg < 8 ? 'Consultando el reglamento…'
+            : `Consultando el reglamento… ${seg} s (la primera consulta puede tardar hasta 2 minutos)`;
+    };
+    pintarEspera();
+    const reloj = setInterval(pintarEspera, 1000);
+    _rgEnCurso = true;
+    document.getElementById('btn-reglamento').disabled = true;
+    const reducido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    item.scrollIntoView({ behavior: reducido ? 'auto' : 'smooth', block: 'nearest' });
 
+    const control = new AbortController();
+    const corte = setTimeout(() => control.abort(), RG_ESPERA_MAX_MS);
     try {
         const resp = await fetch('/reglamento/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrf },
-            body: JSON.stringify({ pregunta, ambito: document.getElementById('ambito').value || 'general' }),
+            body: JSON.stringify({ pregunta, ambito }),
+            signal: control.signal,
         });
         const data = await resp.json().catch(() => ({}));
         if (!resp.ok) throw new Error(data.error || `Error del servidor (${resp.status})`);
-        renderReglamento(data);
+        const respuesta = data.respuesta || data.texto || '';
+        if (!respuesta.trim()) throw new Error('El reglamento no devolvió una respuesta. Prueba a reformular la pregunta.');
+        cuerpo.innerHTML = `<div class='reglamento-card'>${reglamentoHtml(respuesta)}</div>`;
+        caja.value = '';
     } catch (e) {
-        hideLoading();
-        showEmpty();
-        showFormError('Error: ' + e.message);
+        const msg = e.name === 'AbortError' ? 'La consulta tardó demasiado. Inténtalo de nuevo.' : e.message;
+        cuerpo.replaceChildren();
+        const err = document.createElement('div');
+        err.className = 'rg-error';
+        err.setAttribute('role', 'alert');
+        err.textContent = msg;
+        cuerpo.append(err);
+    } finally {
+        clearInterval(reloj);
+        clearTimeout(corte);
+        _rgEnCurso = false;
+        document.getElementById('btn-reglamento').disabled = false;
     }
 }
 
-function renderReglamento(data) {
-    const ambitoSel = document.querySelector('#dd-ambito .dd-opt.selected');
-    const ambitoTxt = (data.ambito && data.ambito !== 'general' && ambitoSel) ? ' · ' + ambitoSel.textContent + ' y reglamento general' : '';
-    document.getElementById('results-heading').textContent = 'Respuesta sobre el reglamento' + ambitoTxt;
-    const respuesta = data.respuesta || data.texto || '';
-    const html = `<div class='reglamento-card'>${mdToHtml(respuesta)}</div>`;
-    document.getElementById('resultado-contenido').innerHTML = html;
-    document.getElementById('consultados-wrap').style.display = 'none';
-    document.querySelector('.downloads').style.display = 'none';
-    document.querySelector('.feedback').style.display = 'none';
-    selectedEjercicios = new Set();
-    document.getElementById('reprompt-bar').style.display = 'none';
-    showResults();
-}
+document.getElementById('btn-rg-limpiar').addEventListener('click', () => {
+    document.getElementById('rg-lista').replaceChildren();
+    rgActualizarCabecera();
+    document.getElementById('pregunta').focus();
+});
 
 async function generar() {
     const objetivo = document.getElementById('objetivo').value.trim();
@@ -669,6 +765,13 @@ async function generar() {
 }
 
 // ── Markdown helper ────────────────────────────────────────────────────────
+// Respuesta del reglamento en párrafos: línea en blanco = párrafo nuevo, «* » o «- » al inicio = viñeta.
+function reglamentoHtml(texto) {
+    return String(texto).trim().split(/\n{2,}/).map(par =>
+        '<p>' + par.split('\n').map(l => mdToHtml(l.replace(/^\s*[*-]\s+/, '• '))).join('<br>') + '</p>'
+    ).join('');
+}
+
 function mdToHtml(s) {
     return escHtml(s)
         .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
@@ -1116,6 +1219,7 @@ document.getElementById('btn-feedback').addEventListener('click', async () => {
 function showEmpty() {
     document.getElementById('form-sesion').style.display = currentMode === 'sesion' ? '' : 'none';
     document.getElementById('form-reglamento').style.display = currentMode === 'reglamento' ? '' : 'none';
+    rgActualizarCabecera();
     detenerMensajes();
     document.getElementById('loading').classList.remove('visible');
     document.getElementById('listo').classList.remove('visible');
@@ -1174,11 +1278,10 @@ function showLoading(modo) {
     modo = modo || currentMode;
     document.getElementById('form-sesion').style.display = 'none';
     document.getElementById('form-reglamento').style.display = 'none';
+    document.getElementById('reglamento-hilo').style.display = 'none';
     document.getElementById('results').classList.remove('visible');
     document.getElementById('listo').classList.remove('visible');
-    document.getElementById('loading-text').textContent = modo === 'reglamento'
-        ? 'Consultando el reglamento… (la primera consulta puede tardar hasta 2 minutos)'
-        : 'Generando sesión… (puede tardar hasta 2 minutos)';
+    document.getElementById('loading-text').textContent = 'Generando sesión… (puede tardar hasta 2 minutos)';
     document.getElementById('loading').classList.add('visible');
     document.getElementById('btn-generar').disabled = true;
     document.getElementById('btn-reglamento').disabled = true;
@@ -1208,6 +1311,7 @@ function showResults() {
     hideLoading();
     document.getElementById('form-sesion').style.display = 'none';
     document.getElementById('form-reglamento').style.display = 'none';
+    document.getElementById('reglamento-hilo').style.display = 'none';
     document.getElementById('results').classList.add('visible');
 }
 </script>

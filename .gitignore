@@ -42,3 +42,6 @@ api/data/
 
 # Fichas candidatas en revisión (se promueven a exercises.json solo cuando se aprueban)
 data/candidatos/
+
+# Capturas y registros del navegador de pruebas (Playwright MCP)
+.playwright-mcp/

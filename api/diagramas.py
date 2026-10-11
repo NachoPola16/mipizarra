@@ -2,6 +2,7 @@
 """Diagramas: coordenadas JSON generadas por el LLM (con schema) y su validación semántica."""
 import json
 import logging
+import re
 
 import requests
 
@@ -286,6 +287,10 @@ def _validar_diagrama(diagrama: dict, nombre_ejercicio: str = "") -> str | None:
     if len(set(ids)) != len(ids):
         return "hay ids de jugador repetidos entre jugadores_ataque y jugadores_defensa"
     ids = set(ids)
+    # El id se escribe tal cual en el SVG que la web inserta en la página: solo etiquetas cortas (A1, D3, E2…).
+    malo = next((i for i in ids if not isinstance(i, str) or not re.fullmatch(r"[A-Za-z0-9_]{1,6}", i)), None)
+    if malo is not None:
+        return f"id de jugador no válido {malo!r}: usa etiquetas cortas como A1 o D1"
 
     # Toda posición (x/y o nombre de la tabla de posiciones canónicas) tiene que resolverse.
     tipo_pista = diagrama.get("tipo", "media_pista")

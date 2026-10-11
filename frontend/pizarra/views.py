@@ -12,6 +12,8 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
+from .entrada_pdf import limpiar_entrada_pdf
+
 logger = logging.getLogger(__name__)
 
 
@@ -22,6 +24,24 @@ def _api_headers():
     if secret:
         h['X-Internal-Secret'] = secret
     return h
+
+
+def _error_respuesta(e, generico):
+    """Respuesta de error para el navegador sin filtrar rutas internas ni trazas: 429 y los mensajes propios de la API
+    (cadena en `detail`, 4xx) se muestran; todo lo demás, el texto genérico."""
+    resp = getattr(e, 'response', None)
+    status = getattr(resp, 'status_code', None)
+    if status == 429:
+        return JsonResponse({'error': 'Demasiadas peticiones seguidas. Espera un momento e inténtalo de nuevo.'}, status=429)
+    if status and 400 <= status < 500:
+        try:
+            detalle = resp.json().get('detail')
+        except Exception:
+            detalle = None
+        if isinstance(detalle, str) and len(detalle) <= 300:
+            return JsonResponse({'error': detalle}, status=status)
+        return JsonResponse({'error': 'Los datos enviados no son válidos.'}, status=400)
+    return JsonResponse({'error': generico}, status=502 if status else 500)
 
 
 AMBITO_GENERAL = {'id': 'general', 'nombre': 'General (FIBA y normativa común)'}
@@ -73,7 +93,7 @@ def generar(request):
         return JsonResponse({'error': 'La generación tardó demasiado. Inténtalo de nuevo.'}, status=504)
     except Exception as e:
         logger.error('Error llamando API: %s', e)
-        return JsonResponse({'error': str(e)}, status=500)
+        return _error_respuesta(e, 'El servicio no está disponible ahora mismo. Inténtalo de nuevo en un momento.')
 
 
 @require_POST
@@ -92,7 +112,7 @@ def reglamento(request):
         return JsonResponse({'error': 'Tiempo de espera agotado. Inténtalo de nuevo.'}, status=504)
     except Exception as e:
         logger.error('Error llamando API reglamento: %s', e)
-        return JsonResponse({'error': str(e)}, status=500)
+        return _error_respuesta(e, 'El servicio no está disponible ahora mismo. Inténtalo de nuevo en un momento.')
 
 
 @require_POST
@@ -111,7 +131,7 @@ def reprompt_ejercicio(request):
         return JsonResponse({'error': 'La corrección tardó demasiado. Inténtalo de nuevo.'}, status=504)
     except Exception as e:
         logger.error('Error llamando API reprompt: %s', e)
-        return JsonResponse({'error': str(e)}, status=500)
+        return _error_respuesta(e, 'El servicio no está disponible ahora mismo. Inténtalo de nuevo en un momento.')
 
 
 @require_POST
@@ -128,31 +148,30 @@ def guardar_feedback(request):
         return JsonResponse({'ok': True})
     except Exception as e:
         logger.error('Error guardando feedback: %s', e)
-        return JsonResponse({'error': str(e)}, status=500)
+        return _error_respuesta(e, 'No se pudo guardar. Inténtalo de nuevo.')
 
 
 @require_POST
 def descargar_pdf(request):
     try:
         data = json.loads(request.body)
-        sesion_texto = data.get('sesion', '')
-        edad = data.get('edad', 'General')
-        objetivo = data.get('objetivo', '')
-        duracion = data.get('duracion', 0)
-        diagramas = data.get('diagramas', [])
-
+        sesion_texto, edad, objetivo, duracion, diagramas = limpiar_entrada_pdf(data)
+    except (ValueError, UnicodeDecodeError) as e:      # JSON inválido o campos fuera de lo permitido
+        logger.warning('Entrada de PDF rechazada: %s', e)
+        return JsonResponse({'error': 'Los datos de la sesión no son válidos.'}, status=400)
+    try:
         pdf_bytes = _generar_pdf(sesion_texto, edad, objetivo, duracion, diagramas)
 
-        edad_fn = (edad or 'general').lower().replace(' ', '_')
+        edad_fn = re.sub(r'[^\w]', '_', edad.lower())[:20]
         obj_fn = re.sub(r'[^\w]', '_', objetivo)[:30]
         filename = f"sesion_{edad_fn}_{obj_fn}.pdf"
 
         response = HttpResponse(pdf_bytes, content_type='application/pdf')
         response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
-    except Exception as e:
-        logger.error('Error generando PDF: %s', e)
-        return JsonResponse({'error': str(e)}, status=500)
+    except Exception:
+        logger.exception('Error generando PDF')
+        return JsonResponse({'error': 'No se pudo generar el PDF.'}, status=500)
 
 # ── PDF de la sesión ──────────────────────────────────────────────────────────
 # Tipografía: Inter (texto) y Sora (títulos), las mismas de la web, en TTF dentro de static/pizarra/fonts/pdf.
