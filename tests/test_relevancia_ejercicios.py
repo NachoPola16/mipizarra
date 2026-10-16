@@ -39,3 +39,30 @@ def test_las_palabras_vacias_del_objetivo_no_cuentan():
 def test_el_conteo_nc_m_del_objetivo_cuenta():
     assert es_relevante(_ej("1c1 desde el codo"), "1c1")
     assert not es_relevante(_ej("2c1 en transición"), "1c1")
+
+
+# ── Regresión: sesión U10 de defensa «a media pista» (16-10-2026) ─────────────────────────────────
+# Salió con transiciones en pista completa y pases porque palabras sueltas («pista», «jugador», «media») hacían
+# relevante casi cualquier ficha y el diagrama pesaba más que el tema.
+OBJETIVO_DEFENSA_MEDIA_PISTA = ("Crea un entrenamiento para trabajar defensa pero a media pista. Que estén atentos "
+                                "al jugador que defienden. Ejercicios de ventaja de ataque frente a defensa")
+
+
+def test_las_palabras_de_relleno_no_hacen_relevante_una_ficha():
+    pase = _ej("Pase de pecho en parejas", "Pasan el balón por media pista, cada jugador atento al compañero.")
+    assert not es_relevante(pase, OBJETIVO_DEFENSA_MEDIA_PISTA, con_asociados=False)
+
+
+def test_defensa_en_u10_no_llena_la_sesion_de_transiciones_ni_pases(ejercicios):
+    import random
+    from ejercicios import elegir_fichas
+    ajenas = ("pase de pecho", "rebote", "3c0", "2c0")   # una 3c2 sí encaja con «ventaja de ataque frente a defensa»
+    for semilla in range(20):
+        fichas = elegir_fichas([dict(e) for e in ejercicios], "U10", OBJETIVO_DEFENSA_MEDIA_PISTA, 6,
+                               azar=random.Random(semilla))
+        nombres = [f["nombre"].lower() for f in fichas if f]
+        defensivas = [n for n in nombres if any(k in n for k in ("defens", "defiend", "espejo", "tela", "cierre",
+                                                                    "1c1", "1 contra 1", "tocar el bal"))]
+        assert len(defensivas) >= 4, (semilla, nombres)
+        assert not [n for n in nombres if any(k in n for k in ajenas)], (semilla, nombres)
+        assert sum("transici" in n or "contraataque" in n for n in nombres) <= 2, (semilla, nombres)
