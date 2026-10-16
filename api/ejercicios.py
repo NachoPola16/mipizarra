@@ -15,7 +15,7 @@ COMPONENTES_ANALITICOS = {
     "contraataque":      ["pase", "rebote", "transición", "salida", "carrera"],
     "transición":        ["pase", "rebote", "salida", "carrera"],
     "tiro":              ["tiro", "recepción", "desmarque", "corte", "movimiento"],
-    "defensa":           ["posición", "ayuda", "rebote", "deslizamiento", "cierre"],
+    "defensa":           ["posición", "ayuda", "deslizamiento", "cierre"],
     "bloqueo":           ["bloqueo", "lectura", "pase"],
     "ataque posicional": ["pase", "corte", "espaciado", "movimiento"],
     "1c1":               ["bote", "tiro", "finalizacion", "entrada", "penetración"],
@@ -65,10 +65,9 @@ def filtrar_ejercicios(ejercicios: list, edad: str, objetivo: str) -> list:
             resto.append(ej)
 
     def score(ej, palabras):
-        txt = texto_ej(ej)
-        coincidencias = sum(1 for p in palabras if p in txt)
-        tiene_diagrama = 10 if "diagrama" in ej else 0
-        return tiene_diagrama + coincidencias
+        # el tema pesa más que el diagrama: antes +10 por diagrama hacía ganar a fichas sin relación con el objetivo
+        return puntuacion_tema(ej, objetivo) if palabras is palabras_obj else (
+            sum(1 for p in palabras if p in texto_ej(ej)) + (1 if "diagrama" in ej else 0))
 
     # Fallback: si no hay directos, usar toda la categoría
     if not directos:
@@ -234,6 +233,11 @@ def elegir_fichas(ejercicios: list, edad: str, objetivo: str, n: int, solo_direc
     # Las fichas de calentamiento son para el calentamiento: en la parte principal solo entran si nombran el
     # propio objetivo en el nombre o los tags (el bote de U8–U12 vive en fichas de calentamiento) o como último recurso, si sin ellas
     # quedaría un hueco. Así una ficha de calentamiento asociada de lejos no desplaza a una ficha de la parte principal.
+    # Si hay fichas de sobra que nombran el tema (nombre o tags), las que solo lo mencionan de pasada en la descripción
+    # no compiten: una ficha de pase con una frase sobre defensa no debe abrir una sesión de defensa.
+    centradas = [e for e in relevantes if puntuacion_tema(e, objetivo) >= 3]
+    if sum(e.get("categoria") != "calentamiento" for e in centradas) >= n:
+        relevantes = centradas
     principales = [e for e in relevantes
                    if e.get("categoria") != "calentamiento"
                    or es_relevante({**e, "descripcion": ""}, objetivo, con_asociados=False)]   # nombre o tags
@@ -296,6 +300,11 @@ _PALABRAS_VACIAS = {
     "para", "como", "sobre", "desde", "entre", "hacia", "tras", "mediante", "trabajo",
     "trabajar", "trabajando", "sesion", "equipo", "ejercicio", "ejercicios", "jugadores",
     "mejorar", "entrenamiento", "ejercitar",
+    # relleno de una petición en lenguaje natural («crea un entrenamiento para trabajar defensa pero a media pista»):
+    # casi cualquier ficha las lleva en la descripción y la hacían «relevante» sin tratar del tema
+    "crea", "crear", "quiero", "quieres", "haz", "hacer", "pero", "esten", "estan", "atentos", "atento",
+    "pista", "pistas", "media", "medias", "medio", "campo", "jugador", "frente", "ventaja", "ataque",
+    "ataques", "que", "cada", "todos", "todas", "mismo", "misma", "ejercicios",
 }
 
 
@@ -333,3 +342,20 @@ def es_relevante(ej: dict, objetivo: str, con_asociados: bool = True) -> bool:
     tags = " ".join(ej.get("objetivos", {}).get("tacticos", []))
     texto = _sin_acentos(f"{ej.get('nombre', '')} {ej.get('descripcion', '')} {tags}")
     return any(re.search(rf"(?<!\w){re.escape(r)}", texto) for r in raices)
+
+
+def puntuacion_tema(ej: dict, objetivo: str) -> float:
+    """Cuánto trata la ficha del tema del objetivo: cada palabra significativa vale 3 si aparece en el nombre o
+    los tags tácticos y 1 si solo en la descripción; el diagrama (0,5) solo desempata."""
+    raices = {_raiz(p) for p in _palabras_significativas(objetivo)}
+    nombre_y_tags = _sin_acentos(f"{ej.get('nombre', '')} {' '.join(ej.get('objetivos', {}).get('tacticos', []))}")
+    descripcion = _sin_acentos(ej.get("descripcion", ""))
+    total = 0.0
+    for r in raices:
+        patron = rf"(?<!\w){re.escape(r)}"
+        if re.search(patron, nombre_y_tags):
+            total += 3
+        elif re.search(patron, descripcion):
+            total += 1
+    # una ficha de calentamiento vale menos en la parte principal que una de igual tema que no lo es
+    return total + (0.5 if "diagrama" in ej else 0) - (1 if ej.get("categoria") == "calentamiento" else 0)
