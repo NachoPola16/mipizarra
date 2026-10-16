@@ -220,6 +220,19 @@ def seleccionar_ejercicios(relevantes: list, n: int, azar=None) -> list:
     return base
 
 
+# Frases del entrenador que piden un tipo de ejercicio y no aparecen tal cual en las fichas: «ventaja de ataque frente a
+# defensa» son las fichas de superioridad numérica (2c1, 3c2...).
+CATEGORIAS_POR_FRASE = (
+    (r"ventaja\s+(numerica\s+)?(del?\s+)?(ataque|atacante)|superioridad|ataque\s+(en\s+)?(ventaja|superioridad)"
+     r"|ventaja\s+numerica|atacantes?\s+(en\s+)?ventaja", "ventaja_numerica"),
+)
+
+
+def categorias_pedidas(objetivo: str) -> set[str]:
+    t = _sin_acentos(objetivo)
+    return {cat for patron, cat in CATEGORIAS_POR_FRASE if re.search(patron, t)}
+
+
 def espacio_pedido(objetivo: str) -> str | None:
     """«media_pista» si el entrenador pide media pista (o medio campo / una sola canasta); None si no dice nada o
     si pide expresamente pista completa."""
@@ -241,6 +254,15 @@ def elegir_fichas(ejercicios: list, edad: str, objetivo: str, n: int, solo_direc
     `azar` (un `random.Random`) da variedad entre sesiones con los mismos parámetros; sin él es determinista."""
     relevantes = [e for e in filtrar_ejercicios(ejercicios, edad, objetivo)
                   if es_relevante(e, objetivo, con_asociados=not solo_directas)]
+    pedidas = categorias_pedidas(objetivo)
+    if pedidas:
+        # lo que el entrenador pide por su tipo (p. ej. «ventaja de ataque») entra aunque la ficha no use sus palabras
+        ids = {id(e) for e in relevantes}
+        extra = [e for e in ejercicios if e.get("categoria") in pedidas and _es_de_la_edad(e, edad)
+                 and id(e) not in ids and e.get("categoria") != "calentamiento"]
+        for e in extra:
+            e.setdefault("_fase", "OBJETIVO")
+        relevantes = relevantes + extra
     if espacio_pedido(objetivo) == "media_pista":
         # «a media pista»: fuera las que exigen ir a la otra canasta. Si no queda ninguna, el hueco lo propone la IA
         relevantes = [e for e in relevantes if e.get("espacio", "media_pista") != "pista_completa"]
@@ -372,5 +394,7 @@ def puntuacion_tema(ej: dict, objetivo: str) -> float:
             total += 3
         elif re.search(patron, descripcion):
             total += 1
+    if ej.get("categoria") in categorias_pedidas(objetivo):
+        total += 3
     # una ficha de calentamiento vale menos en la parte principal que una de igual tema que no lo es
     return total + (0.5 if "diagrama" in ej else 0) - (1 if ej.get("categoria") == "calentamiento" else 0)

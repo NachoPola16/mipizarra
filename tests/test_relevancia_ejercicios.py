@@ -104,3 +104,21 @@ def test_sin_pedir_media_pista_si_puede_haber_fichas_de_pista_completa(ejercicio
             if f:
                 vistas.add(f["espacio"])
     assert "pista_completa" in vistas
+
+
+# ── «Ventaja de ataque frente a defensa» = fichas de superioridad numérica ──────────────────────────
+def test_categorias_pedidas():
+    from ejercicios import categorias_pedidas
+    assert categorias_pedidas("ejercicios de ventaja de ataque frente a defensa") == {"ventaja_numerica"}
+    assert categorias_pedidas("trabajar la superioridad numérica") == {"ventaja_numerica"}
+    assert categorias_pedidas("defensa") == set()
+
+
+def test_ventaja_de_ataque_incluye_fichas_de_superioridad(ejercicios):
+    import random
+    from ejercicios import elegir_fichas
+    for semilla in range(20):
+        fichas = elegir_fichas([dict(e) for e in ejercicios], "U10", OBJETIVO_DEFENSA_MEDIA_PISTA, 6,
+                               azar=random.Random(semilla))
+        assert sum(f["categoria"] == "ventaja_numerica" for f in fichas if f) >= 1, semilla
+        assert not [f["id"] for f in fichas if f and f["espacio"] == "pista_completa"], semilla
