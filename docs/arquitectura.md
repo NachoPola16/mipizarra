@@ -59,6 +59,36 @@ El grafo es acíclico: ningún módulo importa a `rag_engine` salvo `main.py`.
 Al parchear una función en un test hay que hacerlo en el módulo donde vive (por ejemplo,
 `reglamento.consultar_coleccion` o `contexto.REGLAMENTO_DIR`), no en la fachada `rag_engine`.
 
+## Selección de fichas de la biblioteca (16-10-2026)
+
+`ejercicios.elegir_fichas` elige las fichas de la parte principal. Causa del cambio: una sesión U10 pedida como «defensa
+a media pista, ventaja de ataque frente a defensa» salió con transiciones a pista completa y pases, porque cualquier
+palabra suelta del objetivo («pista», «jugador», «media») hacía relevante casi cualquier ficha y el diagrama pesaba más
+que el tema. Cómo funciona ahora:
+
+- **Palabras:** se ignoran las de relleno (`_PALABRAS_VACIAS`: «pista», «jugador», «balón», «ataque», «ventaja»,
+  «divertida»…), se interpretan verbos y formas corrientes (`_EQUIVALENTES`: botar→bote, tirar→tiro, defienden→defensa)
+  y «se lo pasen bien» no cuenta como «pase». Con «rebote» en el objetivo, «bloqueen» no trae bloqueo directo.
+- **Puntuación de tema** (`puntuacion_tema`): cada palabra (con sus equivalentes, una sola vez) vale 3 si está en el
+  nombre, los tags tácticos o la categoría/subcategoría (no las genéricas `juego_equipo` y `calentamiento`) y 1 si solo
+  está en la descripción; el diagrama (0,5) solo desempata.
+- **Arco de oposición:** sigue siendo sin oposición → reducida → igualada, pero el tema pesa más (`PESO_NIVEL`): una
+  ficha del tema gana a otra ajena aunque se salga un nivel.
+- **Fichas flojas** (menos de 3 puntos): no pueden pasar de un tercio de los huecos; el resto lo propone la IA. Si
+  ninguna ficha relevante nombra el tema (p. ej. «bandeja»), no se limitan.
+- **Espacio** (campo `espacio` de la ficha: `media_pista`, `pista_completa`, `flexible`): si el objetivo pide «media
+  pista», «medio campo» o «una canasta» no se eligen fichas de `pista_completa` (ni en el calentamiento) y el prompt
+  avisa al modelo para los huecos que propone. «Pista completa» o «toda la pista» no filtra.
+- **Frases que piden un tipo** (`CATEGORIAS_POR_FRASE`): «ventaja de ataque», «superioridad» traen las fichas de
+  `ventaja_numerica` (2c1, 3c2) aunque no usen esas palabras.
+- **Calentamientos:** en U8–U12 entran en la parte principal (el bote vive ahí); en mayores se penalizan.
+
+Pruebas: `tests/test_relevancia_ejercicios.py` (caso real, espacio, categorías y 8 peticiones en lenguaje natural).
+Un barrido offline de 9 edades × 6 duraciones × 27 objetivos no dio errores. **Límites:** temas poco cubiertos (pick and
+roll, bloqueo directo, ataque posicional, juego sin balón) dejan más huecos a la IA; la tabla de equivalentes es corta;
+«posicional» puntúa en «Shell Drill — posiciones defensivas». **Sin probar con el modelo real** (el servidor no tiene
+RAM): generar una sesión de defensa a media pista y otra de un tema flojo en el PC.
+
 ## Flujo de una sesión
 
 1. El frontend envía categoría, duración y objetivo a la API.
