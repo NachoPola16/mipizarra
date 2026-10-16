@@ -305,14 +305,16 @@ def elegir_fichas(ejercicios: list, edad: str, objetivo: str, n: int, solo_direc
         con_calentamientos = seleccionar_ejercicios(relevantes, n, azar=azar)
         if sum(f is None for f in con_calentamientos) < sum(f is None for f in fichas):
             fichas = con_calentamientos
-    return _limitar_flojas(fichas, n)
+    return _limitar_flojas(fichas, n, hay_centradas=any(e.get("_tema", 0) >= 3 for e in relevantes))
 
 
-def _limitar_flojas(fichas: list, n: int) -> list:
+def _limitar_flojas(fichas: list, n: int, hay_centradas: bool = True) -> list:
     """Una ficha que solo menciona el tema de pasada en la descripción (menos de 3 puntos) vale de relleno, pero no
     debe llenar la sesión: pasado un tercio de los huecos, el resto queda a None y lo propone la IA, marcado como
-    tal, en vez de colar ejercicios de otro tema (p. ej. una defensa de la puerta en una sesión de pase)."""
-    tope = max(1, n // 3)
+    tal, en vez de colar ejercicios de otro tema (p. ej. una defensa de la puerta en una sesión de pase). Si ninguna
+    ficha relevante nombra el tema (p. ej. «bandeja», que solo aparece en descripciones), la descripción es la única
+    evidencia que hay y no se limita."""
+    tope = max(1, n // 3) if hay_centradas else n
     flojas = 0
     resultado = []
     for ficha in fichas:
