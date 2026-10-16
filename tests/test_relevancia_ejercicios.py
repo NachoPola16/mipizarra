@@ -172,3 +172,19 @@ def test_pasarlo_bien_no_es_pedir_pases():
     from ejercicios import _palabras_significativas
     assert "pasen" not in _palabras_significativas("juegos para que se lo pasen bien con el balón")
     assert "pasen" in _palabras_significativas("que se pasen el balón")
+
+
+def test_si_ninguna_ficha_nombra_el_tema_la_descripcion_basta_para_llenar_la_sesion(ejercicios):
+    # «bandeja» solo aparece en descripciones: limitar esas fichas dejaría la sesión casi vacía
+    import random
+    from ejercicios import elegir_fichas
+    fichas = elegir_fichas([dict(e) for e in ejercicios], "U12", "bandeja", 6, azar=random.Random(1))
+    assert sum(f is None for f in fichas) <= 1
+
+
+def test_las_fichas_flojas_no_pasan_de_un_tercio_si_otras_nombran_el_tema(ejercicios):
+    import random
+    from ejercicios import elegir_fichas
+    for semilla in range(10):
+        fichas = elegir_fichas([dict(e) for e in ejercicios], "U16", "bloqueo directo", 5, azar=random.Random(semilla))
+        assert sum(1 for f in fichas if f and f.get("_tema", 3) < 3) <= 1
