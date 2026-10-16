@@ -220,6 +220,17 @@ def seleccionar_ejercicios(relevantes: list, n: int, azar=None) -> list:
     return base
 
 
+def espacio_pedido(objetivo: str) -> str | None:
+    """«media_pista» si el entrenador pide media pista (o medio campo / una sola canasta); None si no dice nada o
+    si pide expresamente pista completa."""
+    t = _sin_acentos(objetivo)
+    if re.search(r"(pista|campo)\s+completa?|toda\s+(la\s+)?pista|todo\s+(el\s+)?campo|a\s+pista\s+entera", t):
+        return None
+    if re.search(r"media\s+pista|medio\s+campo|medias\s+pistas|una\s+(sola\s+)?canasta", t):
+        return "media_pista"
+    return None
+
+
 def elegir_fichas(ejercicios: list, edad: str, objetivo: str, n: int, solo_directas: bool = False,
                   azar=None) -> list:
     """n fichas de la biblioteca para la parte principal, siguiendo el arco de oposición. Solo entran
@@ -230,6 +241,9 @@ def elegir_fichas(ejercicios: list, edad: str, objetivo: str, n: int, solo_direc
     `azar` (un `random.Random`) da variedad entre sesiones con los mismos parámetros; sin él es determinista."""
     relevantes = [e for e in filtrar_ejercicios(ejercicios, edad, objetivo)
                   if es_relevante(e, objetivo, con_asociados=not solo_directas)]
+    if espacio_pedido(objetivo) == "media_pista":
+        # «a media pista»: fuera las que exigen ir a la otra canasta. Si no queda ninguna, el hueco lo propone la IA
+        relevantes = [e for e in relevantes if e.get("espacio", "media_pista") != "pista_completa"]
     # Las fichas de calentamiento son para el calentamiento: en la parte principal solo entran si nombran el
     # propio objetivo en el nombre o los tags (el bote de U8–U12 vive en fichas de calentamiento) o como último recurso, si sin ellas
     # quedaría un hueco. Así una ficha de calentamiento asociada de lejos no desplaza a una ficha de la parte principal.
@@ -257,7 +271,8 @@ def elegir_calentamiento(ejercicios: list, edad: str, objetivo: str, excluir=(),
     excluir = {i for i in excluir if i is not None}
     candidatas = [e for e in ejercicios
                   if e.get("categoria") == "calentamiento" and _es_de_la_edad(e, edad)
-                  and e.get("id") not in excluir]
+                  and e.get("id") not in excluir
+                  and not (espacio_pedido(objetivo) == "media_pista" and e.get("espacio") == "pista_completa")]
     if not candidatas:
         return None
     # relevancia directa (el objetivo en la propia ficha): con los fundamentos asociados casi todas encajaban y

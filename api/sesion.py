@@ -23,7 +23,7 @@ from config import EDAD_A_CATEGORIA, MODEL_SESION, OLLAMA_URL
 from contexto import construir_contexto_teoria
 from ejercicios import (
     cargar_ejercicios, elegir_calentamiento as _elegir_calentamiento, elegir_fichas as _elegir_fichas,
-    nivel_objetivo,
+    espacio_pedido, nivel_objetivo,
 )
 from lineas_rojas import (
     CATEGORIAS_MINIBASKET, aviso_pedido, aviso_pedido_no_incluido, instruccion_prompt, pedidos_presentes,
@@ -509,6 +509,9 @@ def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
     permitidos = terminos_pedidos(objetivo, edad)
     prohibido = instruccion_prompt(edad, permitidos)
     prohibido = f"{prohibido}\n\n" if prohibido else ""
+    if espacio_pedido(objetivo) == "media_pista":
+        prohibido += ("ESPACIO: el entrenador pide media pista. Todo lo que propongas se juega en una sola canasta, "
+                      "sin ir a la otra canasta ni usar la pista completa.\n\n")
 
     inicio_respuesta = f"**CALENTAMIENTO ({t_calent} min)**\nJuego:"
 

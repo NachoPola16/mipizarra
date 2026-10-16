@@ -4,6 +4,7 @@
     "nombre": "Rueda de media distancia",
     "categoria": "tiro",
     "subcategoria": "media_distancia",
+    "espacio": "media_pista",
     "edades": [
       "U12",
       "U14",
@@ -186,6 +187,7 @@
     "nombre": "Bloqueo directo a todo campo — pick & roll + 2c1 de vuelta",
     "categoria": "bloqueo_directo",
     "subcategoria": "pick_and_roll",
+    "espacio": "pista_completa",
     "edades": [
       "U16",
       "U18",
@@ -374,6 +376,7 @@
     "nombre": "Corte en V + cierre defensivo 1c1",
     "categoria": "juego_equipo",
     "subcategoria": "movimientos_sin_balon",
+    "espacio": "media_pista",
     "edades": [
       "U10",
       "U12",
@@ -472,6 +475,7 @@
     "nombre": "Pases en carrera + 2 contra 1 desde saque de banda",
     "categoria": "ventaja_numerica",
     "subcategoria": "contraataque",
+    "espacio": "pista_completa",
     "edades": [
       "U12",
       "U14",
@@ -640,6 +644,7 @@
     "nombre": "1c1 en poste bajo — series competitivas con pívot y cierre",
     "categoria": "1c1",
     "subcategoria": "juego_interior",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16",
@@ -729,6 +734,7 @@
     "nombre": "3c0 pase y corte — regla de los 5 pases máximo",
     "categoria": "juego_equipo",
     "subcategoria": "rotaciones",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -831,6 +837,7 @@
     "nombre": "Penetración por línea de fondo desde el 45° — fila + 1c1",
     "categoria": "1c1",
     "subcategoria": "penetracion",
+    "espacio": "media_pista",
     "edades": [
       "U10",
       "U12",
@@ -968,6 +975,7 @@
     "nombre": "Defensa del bloqueo directo 2c2 — competición defensiva",
     "categoria": "bloqueo_directo",
     "subcategoria": "defensa_pick_and_roll",
+    "espacio": "media_pista",
     "edades": [
       "U16",
       "U18",
@@ -1068,6 +1076,7 @@
     "nombre": "Circuito de bote en zigzag",
     "categoria": "calentamiento",
     "subcategoria": "tecnica_individual",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -1191,6 +1200,7 @@
     "nombre": "Tiro libre con consecuencia",
     "categoria": "tiro",
     "subcategoria": "concentracion",
+    "espacio": "media_pista",
     "edades": [
       "U10",
       "U14",
@@ -1225,6 +1235,7 @@
     "nombre": "5c0 ataque posicional — límite de posesión + transición a 5c5",
     "categoria": "juego_equipo",
     "subcategoria": "ataque_posicional",
+    "espacio": "media_pista",
     "edades": [
       "U16",
       "U18",
@@ -1333,6 +1344,7 @@
     "nombre": "Corte puerta atrás + cierre defensivo 1c1",
     "categoria": "juego_equipo",
     "subcategoria": "cortes",
+    "espacio": "media_pista",
     "edades": [
       "U12",
       "U14",
@@ -1434,6 +1446,7 @@
     "nombre": "1 contra 1 desde el codo",
     "categoria": "1c1",
     "subcategoria": "ataque_individual",
+    "espacio": "media_pista",
     "edades": [
       "U10",
       "U12",
@@ -1512,6 +1525,7 @@
     "nombre": "SSG Finalización 1c1 — defensor decide cuándo activar",
     "categoria": "1c1",
     "subcategoria": "finalizacion",
+    "espacio": "media_pista",
     "edades": [
       "U12",
       "U14",
@@ -1590,6 +1604,7 @@
     "nombre": "SSG Finalización 1c1 — defensor pasa y defiende",
     "categoria": "1c1",
     "subcategoria": "finalizacion",
+    "espacio": "media_pista",
     "edades": [
       "U12",
       "U14",
@@ -1672,6 +1687,7 @@
     "nombre": "SSG Finalización 1c1 — defensor elige cono, atacante va al lado contrario",
     "categoria": "1c1",
     "subcategoria": "finalizacion",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16",
@@ -1755,6 +1771,7 @@
     "nombre": "SSG Finalización 1c2 con superioridad defensiva",
     "categoria": "ventaja_numerica",
     "subcategoria": "finalizacion",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16",
@@ -1844,6 +1861,7 @@
     "nombre": "SSG Finalización — acción-reacción simultánea",
     "categoria": "1c1",
     "subcategoria": "finalizacion",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16",
@@ -1923,6 +1941,7 @@
     "nombre": "Tiro con lectura de bloqueo directo (cono + defensor)",
     "categoria": "tiro",
     "subcategoria": "lectura_defensa",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16",
@@ -1999,6 +2018,7 @@
     "nombre": "Finalización según altura del defensor — bomba o euroestep",
     "categoria": "1c1",
     "subcategoria": "finalizacion",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16",
@@ -2074,6 +2094,7 @@
     "nombre": "1c1 competitivo desde triple — puntuación por defensa",
     "categoria": "1c1",
     "subcategoria": "defensa_individual",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16",
@@ -2150,6 +2171,7 @@
     "nombre": "2c2 a pista completa — responsabilidad individual sin ayudas",
     "categoria": "juego_equipo",
     "subcategoria": "defensa",
+    "espacio": "pista_completa",
     "edades": [
       "U16",
       "U18",
@@ -2248,6 +2270,7 @@
     "nombre": "5c5 desde el rebote — cerrar rebote bajo presión",
     "categoria": "juego_equipo",
     "subcategoria": "rebote",
+    "espacio": "pista_completa",
     "edades": [
       "U16",
       "U18",
@@ -2359,6 +2382,7 @@
     "nombre": "Juego de pillar con balón",
     "categoria": "calentamiento",
     "subcategoria": "juego_dinamico",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -2395,6 +2419,7 @@
     "nombre": "Reversas en triángulo",
     "categoria": "juego_equipo",
     "subcategoria": "pase",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -2476,6 +2501,7 @@
     "nombre": "3 contra 2 por carriles",
     "categoria": "ventaja_numerica",
     "subcategoria": "contraataque",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16",
@@ -2592,6 +2618,7 @@
     "nombre": "3 contra 0 contraataque por carriles",
     "categoria": "ventaja_numerica",
     "subcategoria": "contraataque",
+    "espacio": "media_pista",
     "edades": [
       "U12",
       "U14",
@@ -2694,6 +2721,7 @@
     "nombre": "3 contra 2 con cruce de bandas — transición continua",
     "categoria": "ventaja_numerica",
     "subcategoria": "contraataque",
+    "espacio": "pista_completa",
     "edades": [
       "U14",
       "U16",
@@ -2812,6 +2840,7 @@
     "nombre": "2 contra 1 en media pista",
     "categoria": "ventaja_numerica",
     "subcategoria": "contraataque",
+    "espacio": "media_pista",
     "edades": [
       "U12",
       "U14",
@@ -2909,6 +2938,7 @@
     "nombre": "3 contra 3 en transición",
     "categoria": "juego_equipo",
     "subcategoria": "transicion_ofensiva",
+    "espacio": "pista_completa",
     "edades": [
       "U14",
       "U16",
@@ -3036,6 +3066,7 @@
     "nombre": "3 contra 3 — movilidad según la dirección del balón",
     "categoria": "juego_equipo",
     "subcategoria": "transicion_ofensiva",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16",
@@ -3156,6 +3187,7 @@
     "nombre": "2 contra 2 — lectura del compañero sin balón",
     "categoria": "juego_equipo",
     "subcategoria": "transicion_ofensiva",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16",
@@ -3266,6 +3298,7 @@
     "nombre": "2 contra 2 con pasadores fijos en esquinas",
     "categoria": "juego_equipo",
     "subcategoria": "transicion_ofensiva",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16",
@@ -3374,6 +3407,7 @@
     "nombre": "3 contra 2 con el tráiler (pívot llega tarde)",
     "categoria": "ventaja_numerica",
     "subcategoria": "transicion_ofensiva",
+    "espacio": "pista_completa",
     "edades": [
       "U14",
       "U16",
@@ -3489,6 +3523,7 @@
     "nombre": "3 contra 3 — inversión de lado",
     "categoria": "juego_equipo",
     "subcategoria": "transicion_ofensiva",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16",
@@ -3603,6 +3638,7 @@
     "nombre": "3 contra 3 en cuarto de pista",
     "categoria": "juego_equipo",
     "subcategoria": "ataque_posicional",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16",
@@ -3711,6 +3747,7 @@
     "nombre": "2 contra 0 canasta a canasta",
     "categoria": "juego_equipo",
     "subcategoria": "ataque_posicional",
+    "espacio": "pista_completa",
     "edades": [
       "U12",
       "U14",
@@ -3817,6 +3854,7 @@
     "nombre": "3 contra 0 canasta a canasta",
     "categoria": "juego_equipo",
     "subcategoria": "ataque_posicional",
+    "espacio": "pista_completa",
     "edades": [
       "U12",
       "U14",
@@ -3928,6 +3966,7 @@
     "nombre": "5 contra 5 estático (sin bote)",
     "categoria": "juego_equipo",
     "subcategoria": "ataque_posicional",
+    "espacio": "media_pista",
     "edades": [
       "U16",
       "U18",
@@ -4053,6 +4092,7 @@
     "nombre": "2 contra 1 con +1 recuperando (transición defensiva)",
     "categoria": "juego_equipo",
     "subcategoria": "transicion_defensiva",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16",
@@ -4164,6 +4204,7 @@
     "nombre": "2 contra 1 defensivo competitivo",
     "categoria": "juego_equipo",
     "subcategoria": "transicion_defensiva",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16",
@@ -4264,6 +4305,7 @@
     "nombre": "5 contra 4 con +1 recuperando",
     "categoria": "juego_equipo",
     "subcategoria": "transicion_defensiva",
+    "espacio": "media_pista",
     "edades": [
       "U16",
       "U18",
@@ -4401,6 +4443,7 @@
     "nombre": "2 contra 0 contraataque desde rebote (bote)",
     "categoria": "juego_equipo",
     "subcategoria": "rebote",
+    "espacio": "pista_completa",
     "edades": [
       "U12",
       "U14",
@@ -4495,6 +4538,7 @@
     "nombre": "3 contra 0 contraataque desde rebote (pase de salida)",
     "categoria": "juego_equipo",
     "subcategoria": "rebote",
+    "espacio": "pista_completa",
     "edades": [
       "U12",
       "U14",
@@ -4606,6 +4650,7 @@
     "nombre": "3 contra 3 con rebote — quien roba ataca",
     "categoria": "juego_equipo",
     "subcategoria": "rebote",
+    "espacio": "pista_completa",
     "edades": [
       "U14",
       "U16",
@@ -4718,6 +4763,7 @@
     "nombre": "1 contra 1 en el rebote",
     "categoria": "1c1",
     "subcategoria": "rebote",
+    "espacio": "media_pista",
     "edades": [
       "U12",
       "U14",
@@ -4805,6 +4851,7 @@
     "nombre": "5 contra 5 presión total a toda pista",
     "categoria": "juego_equipo",
     "subcategoria": "defensa",
+    "espacio": "pista_completa",
     "edades": [
       "U16",
       "U18",
@@ -4937,6 +4984,7 @@
     "nombre": "2 contra 3 a toda pista — superioridad defensiva",
     "categoria": "juego_equipo",
     "subcategoria": "defensa",
+    "espacio": "pista_completa",
     "edades": [
       "U14",
       "U16",
@@ -5047,6 +5095,7 @@
     "nombre": "1 contra 1 — defensor permite el primer pase",
     "categoria": "1c1",
     "subcategoria": "defensa_individual",
+    "espacio": "media_pista",
     "edades": [
       "U12",
       "U14",
@@ -5135,6 +5184,7 @@
     "nombre": "3 contra 2 con +1 — ayuda y rotación defensiva",
     "categoria": "juego_equipo",
     "subcategoria": "defensa",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16",
@@ -5265,6 +5315,7 @@
     "nombre": "Castillos — 1c1 de manejo en cuadrado",
     "categoria": "1c1",
     "subcategoria": "manejo_balon",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -5355,6 +5406,7 @@
     "nombre": "Tiro con presión — activación de defensores laterales",
     "categoria": "tiro",
     "subcategoria": "concentracion",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16",
@@ -5452,6 +5504,7 @@
     "nombre": "Winchester — 5 cierres defensivos consecutivos",
     "categoria": "1c1",
     "subcategoria": "defensa_individual",
+    "espacio": "media_pista",
     "edades": [
       "U16",
       "U18",
@@ -5536,6 +5589,7 @@
     "nombre": "3/4 de pista — 1c1 a campo abierto con persecución",
     "categoria": "1c1",
     "subcategoria": "penetracion",
+    "espacio": "pista_completa",
     "edades": [
       "U14",
       "U16",
@@ -5665,6 +5719,7 @@
     "nombre": "2c2 con hándicap — superioridad que se cierra",
     "categoria": "ventaja_numerica",
     "subcategoria": "superioridad",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16",
@@ -5776,6 +5831,7 @@
     "nombre": "Palomero — 3c2 continuo con rotación",
     "categoria": "ventaja_numerica",
     "subcategoria": "contraataque",
+    "espacio": "pista_completa",
     "edades": [
       "U14",
       "U16",
@@ -5952,6 +6008,7 @@
     "nombre": "Circus — 3c3 defensa de comunicación y rotaciones",
     "categoria": "juego_equipo",
     "subcategoria": "defensa",
+    "espacio": "media_pista",
     "edades": [
       "U16",
       "U18",
@@ -6063,6 +6120,7 @@
     "nombre": "Shell Drill — 4c4 posiciones defensivas de media pista",
     "categoria": "juego_equipo",
     "subcategoria": "defensa",
+    "espacio": "media_pista",
     "edades": [
       "U16",
       "U18",
@@ -6187,6 +6245,7 @@
     "nombre": "Pilla-pilla progresivo (0, 1 y 2 balones)",
     "categoria": "calentamiento",
     "subcategoria": "reaccion",
+    "espacio": "media_pista",
     "edades": [
       "U12"
     ],
@@ -6219,6 +6278,7 @@
     "nombre": "Carrera a cono + finalización + 1c1",
     "categoria": "1c1",
     "subcategoria": "reaccion",
+    "espacio": "pista_completa",
     "edades": [
       "U12"
     ],
@@ -6373,6 +6433,7 @@
     "nombre": "1c1 con 4 pasadores (doble reinicio obligatorio)",
     "categoria": "1c1",
     "subcategoria": "con_pasadores",
+    "espacio": "pista_completa",
     "edades": [
       "U10",
       "U12",
@@ -6495,6 +6556,7 @@
     "nombre": "Pases y superioridad 2c1 / 1c2 con rotación",
     "categoria": "ventaja_numerica",
     "subcategoria": "pases_y_rotacion",
+    "espacio": "media_pista",
     "edades": [
       "U12"
     ],
@@ -6585,6 +6647,7 @@
     "nombre": "Tiro en competición por parejas o tríos",
     "categoria": "tiro",
     "subcategoria": "competicion",
+    "espacio": "media_pista",
     "edades": [
       "U12"
     ],
@@ -6612,6 +6675,7 @@
     "nombre": "Bote con aro de gimnasia en la otra mano",
     "categoria": "calentamiento",
     "subcategoria": "manejo_balon",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -6660,6 +6724,7 @@
     "nombre": "Aros por el suelo: consigna y tiro",
     "categoria": "calentamiento",
     "subcategoria": "manejo_balon",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -6709,6 +6774,7 @@
     "nombre": "Lluvia de bolas de papel",
     "categoria": "calentamiento",
     "subcategoria": "manejo_balon",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -6757,6 +6823,7 @@
     "nombre": "Periódico en el pecho: relevos con bote",
     "categoria": "calentamiento",
     "subcategoria": "manejo_balon",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -6885,6 +6952,7 @@
     "nombre": "Bote y globo a la vez",
     "categoria": "calentamiento",
     "subcategoria": "manejo_balon",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -6933,6 +7001,7 @@
     "nombre": "Guerra de globos",
     "categoria": "calentamiento",
     "subcategoria": "juego_dinamico",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10"
@@ -6980,6 +7049,7 @@
     "nombre": "Globos en equipo",
     "categoria": "calentamiento",
     "subcategoria": "juego_dinamico",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10"
@@ -7026,6 +7096,7 @@
     "nombre": "Dos pelotas: baloncesto y tenis a la vez",
     "categoria": "calentamiento",
     "subcategoria": "manejo_balon",
+    "espacio": "media_pista",
     "edades": [
       "U10",
       "U12",
@@ -7074,6 +7145,7 @@
     "nombre": "Tiro cercano: pies, equilibrio y reto",
     "categoria": "tiro",
     "subcategoria": "mecanica",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -7123,6 +7195,7 @@
     "nombre": "Estaciones de tiro con retos personales",
     "categoria": "tiro",
     "subcategoria": "volumen",
+    "espacio": "media_pista",
     "edades": [
       "U10",
       "U12"
@@ -7169,6 +7242,7 @@
     "nombre": "Pasa y tira: recibir ya mirando al aro",
     "categoria": "tiro",
     "subcategoria": "recepcion",
+    "espacio": "media_pista",
     "edades": [
       "U10",
       "U12"
@@ -7216,6 +7290,7 @@
     "nombre": "Pase de pecho en parejas: cuántos seguidos",
     "categoria": "juego_equipo",
     "subcategoria": "pase",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -7306,6 +7381,7 @@
     "nombre": "Pasa y sigue tu pase en dos filas",
     "categoria": "juego_equipo",
     "subcategoria": "pase",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -7423,6 +7499,7 @@
     "nombre": "El cuadrado: pasa y busca un hueco",
     "categoria": "juego_equipo",
     "subcategoria": "pase",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -7472,6 +7549,7 @@
     "nombre": "Rebote: el balón es de quien llega",
     "categoria": "juego_equipo",
     "subcategoria": "rebote",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -7524,6 +7602,7 @@
     "nombre": "Salta y coge: rebote de tablero",
     "categoria": "juego_equipo",
     "subcategoria": "rebote",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10"
@@ -7573,6 +7652,7 @@
     "nombre": "Rebote y pase de salida",
     "categoria": "juego_equipo",
     "subcategoria": "rebote",
+    "espacio": "media_pista",
     "edades": [
       "U10",
       "U12"
@@ -7621,6 +7701,7 @@
     "nombre": "Los trozos de tela",
     "categoria": "juego_equipo",
     "subcategoria": "defensa",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -7674,6 +7755,7 @@
     "nombre": "El espejo defensivo",
     "categoria": "juego_equipo",
     "subcategoria": "defensa",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -7726,6 +7808,7 @@
     "nombre": "1c1 en el pasillo: tocar el balón",
     "categoria": "1c1",
     "subcategoria": "defensa_al_balon",
+    "espacio": "media_pista",
     "edades": [
       "U10",
       "U12"
@@ -7777,6 +7860,7 @@
     "nombre": "El pañuelo con balón: 1c1 a la canasta",
     "categoria": "1c1",
     "subcategoria": "reaccion",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10"
@@ -7829,6 +7913,7 @@
     "nombre": "1c1 en el cuadrado: guarda tu balón",
     "categoria": "1c1",
     "subcategoria": "manejo_balon",
+    "espacio": "flexible",
     "edades": [
       "U8",
       "U10",
@@ -7882,6 +7967,7 @@
     "nombre": "Tiro cercano por equipos: cada canasta suma",
     "categoria": "tiro",
     "subcategoria": "competicion",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10"
@@ -7932,6 +8018,7 @@
     "nombre": "Bomba sobre un pie en relevos",
     "categoria": "tiro",
     "subcategoria": "mecanica",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -7984,6 +8071,7 @@
     "nombre": "La vuelta al aro: tiro cercano en cinco marcas",
     "categoria": "tiro",
     "subcategoria": "volumen",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10"
@@ -8034,6 +8122,7 @@
     "nombre": "Defensa de la puerta: no dejes pasar al que bota",
     "categoria": "1c1",
     "subcategoria": "defensa_individual",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10"
@@ -8086,6 +8175,7 @@
     "nombre": "Defensa del pase: el del medio toca el balón",
     "categoria": "juego_equipo",
     "subcategoria": "defensa",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -8139,6 +8229,7 @@
     "nombre": "Defensa en relevos: desliza, toca el cono y vuelve",
     "categoria": "juego_equipo",
     "subcategoria": "defensa",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -8193,6 +8284,7 @@
     "nombre": "Rebote del tablero y salida botando",
     "categoria": "juego_equipo",
     "subcategoria": "rebote",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10"
@@ -8244,6 +8336,7 @@
     "nombre": "Rebote 2c2: tira uno, van todos",
     "categoria": "juego_equipo",
     "subcategoria": "rebote",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10",
@@ -8297,6 +8390,7 @@
     "nombre": "Contraataque 2c1 con vuelta en transición",
     "categoria": "ventaja_numerica",
     "subcategoria": "contraataque",
+    "espacio": "pista_completa",
     "edades": [
       "U10",
       "U12"
@@ -8350,6 +8444,7 @@
     "nombre": "Transición 3c2 tras rebote: abrir calles y llegar",
     "categoria": "ventaja_numerica",
     "subcategoria": "transicion_ofensiva",
+    "espacio": "pista_completa",
     "edades": [
       "U10",
       "U12",
@@ -8404,6 +8499,7 @@
     "nombre": "Transición continua 4c4: el que pierde vuelve primero",
     "categoria": "juego_equipo",
     "subcategoria": "transicion_defensiva",
+    "espacio": "pista_completa",
     "edades": [
       "U10",
       "U12",
@@ -8458,6 +8554,7 @@
     "nombre": "Transición 1c1: correr la banda y recibir en carrera",
     "categoria": "1c1",
     "subcategoria": "reaccion",
+    "espacio": "pista_completa",
     "edades": [
       "U12"
     ],
@@ -8510,6 +8607,7 @@
     "nombre": "Contraataque 2c0 tras rebote: un pase de salida y a la otra canasta",
     "categoria": "ventaja_numerica",
     "subcategoria": "contraataque",
+    "espacio": "pista_completa",
     "edades": [
       "U10",
       "U12"
@@ -8564,6 +8662,7 @@
     "nombre": "Contraataque 2c1 corto desde el medio campo: fija y pasa",
     "categoria": "ventaja_numerica",
     "subcategoria": "contraataque",
+    "espacio": "media_pista",
     "edades": [
       "U10",
       "U12"
@@ -8617,6 +8716,7 @@
     "nombre": "Transición 3c2 corta: tres calles contra dos defensores",
     "categoria": "ventaja_numerica",
     "subcategoria": "transicion_ofensiva",
+    "espacio": "media_pista",
     "edades": [
       "U10",
       "U12"
@@ -8670,6 +8770,7 @@
     "nombre": "Transición 2c2: quien coge el rebote ataca, el otro vuelve",
     "categoria": "juego_equipo",
     "subcategoria": "transicion_defensiva",
+    "espacio": "pista_completa",
     "edades": [
       "U10",
       "U12"
@@ -8724,6 +8825,7 @@
     "nombre": "Transición 3c0 en tres calles: rebote, un pase y a correr",
     "categoria": "ventaja_numerica",
     "subcategoria": "transicion_ofensiva",
+    "espacio": "pista_completa",
     "edades": [
       "U10",
       "U12"
@@ -8778,6 +8880,7 @@
     "nombre": "Contraataque 2c1 con un defensor que vuelve desde atrás",
     "categoria": "ventaja_numerica",
     "subcategoria": "contraataque",
+    "espacio": "pista_completa",
     "edades": [
       "U12"
     ],
@@ -8831,6 +8934,7 @@
     "nombre": "Espejo en el carril: 1c1 sin balón",
     "categoria": "1c1",
     "subcategoria": "defensa",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10"
@@ -8884,6 +8988,7 @@
     "nombre": "Cruza la línea: 1c1 de bote contra un defensor que frena",
     "categoria": "1c1",
     "subcategoria": "defensa_al_balon",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10"
@@ -8937,6 +9042,7 @@
     "nombre": "Carrera al aro: 1c1 con el defensor que sale de al lado",
     "categoria": "1c1",
     "subcategoria": "reaccion",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10"
@@ -8989,6 +9095,7 @@
     "nombre": "Defiende tu cono: 1c1 por equipos en el aro",
     "categoria": "1c1",
     "subcategoria": "defensa_individual",
+    "espacio": "media_pista",
     "edades": [
       "U8",
       "U10"
@@ -9042,6 +9149,7 @@
     "nombre": "Espejo con bote: el guía cambia de mano y el otro copia",
     "categoria": "calentamiento",
     "subcategoria": "manejo_balon",
+    "espacio": "flexible",
     "edades": [
       "U14",
       "U16"
@@ -9093,6 +9201,7 @@
     "nombre": "Cuatro esquinas con dos balones: pasa, sigue y recibe en carrera",
     "categoria": "calentamiento",
     "subcategoria": "tecnica_individual",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16"
@@ -9238,6 +9347,7 @@
     "nombre": "Pilla con bote: el pillado roba el peto y cambia de rol",
     "categoria": "calentamiento",
     "subcategoria": "reaccion",
+    "espacio": "media_pista",
     "edades": [
       "U12",
       "U14",
@@ -9290,6 +9400,7 @@
     "nombre": "Del medio campo al aro: finalizaciones variadas y vuelta a tu ritmo",
     "categoria": "calentamiento",
     "subcategoria": "tecnica_individual",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16"
@@ -9392,6 +9503,7 @@
     "nombre": "Tres sin defensa: leer la señal y pasar al lado libre",
     "categoria": "calentamiento",
     "subcategoria": "juego_dinamico",
+    "espacio": "media_pista",
     "edades": [
       "U16",
       "U18",
@@ -9508,6 +9620,7 @@
     "nombre": "Dos balones en oleadas: bote simultáneo, alterno y con cambio de ritmo",
     "categoria": "calentamiento",
     "subcategoria": "manejo_balon",
+    "espacio": "pista_completa",
     "edades": [
       "U12",
       "U14"
@@ -9557,6 +9670,7 @@
     "nombre": "Rondo de pase rápido con dos defensores dentro",
     "categoria": "calentamiento",
     "subcategoria": "juego_dinamico",
+    "espacio": "media_pista",
     "edades": [
       "U16",
       "U18",
@@ -9700,6 +9814,7 @@
     "nombre": "Parejas por toda la pista: pase en carrera sin bote y finalización",
     "categoria": "calentamiento",
     "subcategoria": "tecnica_individual",
+    "espacio": "pista_completa",
     "edades": [
       "U16",
       "U18",
@@ -9821,6 +9936,7 @@
     "nombre": "Movilidad dinámica con balón a lo ancho de la pista",
     "categoria": "calentamiento",
     "subcategoria": "movilidad",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16",
@@ -9872,6 +9988,7 @@
     "nombre": "Bote a la señal: parar, cambiar o salir a canasta",
     "categoria": "calentamiento",
     "subcategoria": "reaccion",
+    "espacio": "flexible",
     "edades": [
       "U14",
       "U16",
@@ -9925,6 +10042,7 @@
     "nombre": "Paradas y aterrizajes con balón: apoyo firme y rodillas sobre los pies",
     "categoria": "calentamiento",
     "subcategoria": "movilidad",
+    "espacio": "flexible",
     "edades": [
       "U14",
       "U16",
@@ -9976,6 +10094,7 @@
     "nombre": "Frenar, apoyar y salir: cambios de dirección controlados en calles",
     "categoria": "calentamiento",
     "subcategoria": "tecnica_individual",
+    "espacio": "media_pista",
     "edades": [
       "U14",
       "U16",
