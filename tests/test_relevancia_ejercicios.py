@@ -66,3 +66,41 @@ def test_defensa_en_u10_no_llena_la_sesion_de_transiciones_ni_pases(ejercicios):
         assert len(defensivas) >= 4, (semilla, nombres)
         assert not [n for n in nombres if any(k in n for k in ajenas)], (semilla, nombres)
         assert sum("transici" in n or "contraataque" in n for n in nombres) <= 2, (semilla, nombres)
+
+
+# ── Espacio: «a media pista» excluye las fichas de pista completa ──────────────────────────────────
+def test_espacio_pedido():
+    from ejercicios import espacio_pedido
+    assert espacio_pedido(OBJETIVO_DEFENSA_MEDIA_PISTA) == "media_pista"
+    assert espacio_pedido("defensa en medio campo") == "media_pista"
+    assert espacio_pedido("defensa a pista completa") is None
+    assert espacio_pedido("presión en toda la pista, no solo media pista") is None
+    assert espacio_pedido("defensa") is None
+
+
+def test_todas_las_fichas_tienen_espacio_valido(ejercicios):
+    from validacion_fichas import ESPACIOS
+    assert all(e.get("espacio") in ESPACIOS for e in ejercicios)
+
+
+def test_media_pista_no_elige_fichas_de_pista_completa(ejercicios):
+    import random
+    from ejercicios import elegir_calentamiento, elegir_fichas
+    for edad in ("U8", "U10", "U12", "U14", "U16"):
+        for semilla in range(10):
+            azar = random.Random(semilla)
+            fichas = elegir_fichas([dict(e) for e in ejercicios], edad, OBJETIVO_DEFENSA_MEDIA_PISTA, 6, azar=azar)
+            assert not [f["id"] for f in fichas if f and f["espacio"] == "pista_completa"], (edad, semilla)
+            calent = elegir_calentamiento(ejercicios, edad, OBJETIVO_DEFENSA_MEDIA_PISTA, azar=azar)
+            assert calent is None or calent["espacio"] != "pista_completa"
+
+
+def test_sin_pedir_media_pista_si_puede_haber_fichas_de_pista_completa(ejercicios):
+    import random
+    from ejercicios import elegir_fichas
+    vistas = set()
+    for semilla in range(30):
+        for f in elegir_fichas([dict(e) for e in ejercicios], "U10", "contraataque", 6, azar=random.Random(semilla)):
+            if f:
+                vistas.add(f["espacio"])
+    assert "pista_completa" in vistas

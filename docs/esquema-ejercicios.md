@@ -22,6 +22,7 @@ Cada ejercicio en `data/exercises.json` sigue esta estructura.
 |--------------------|----------|----------------------------------------------------|
 | `subcategoria`     | string   | Refinamiento de la categoría                       |
 | `fase_temporada`   | string[] | pretemporada, temporada, playoffs                  |
+| `espacio`          | string   | `media_pista` (se juega en una sola canasta), `pista_completa` (hay que ir a la otra canasta o usar toda la pista) o `flexible` (vale cualquiera de las dos). Si el entrenador pide «media pista», las `pista_completa` no se eligen. |
 | `jugadores_minimos`| int      | Mínimo para ejecutarlo                             |
 | `variantes`        | string[] | IDs de ejercicios derivados                        |
 | `puntos_clave`     | string[] | Indicaciones técnicas para el entrenador durante el ejercicio (qué observar, qué corregir, qué enfatizar) |

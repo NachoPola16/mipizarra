@@ -18,6 +18,7 @@ EDADES_MINIBASKET = {"U8", "U10", "U12"}
 CATEGORIAS_BLOQUEO = {"bloqueo_directo", "bloqueo_indirecto"}
 CAMPOS_OBLIGATORIOS = ("id", "nombre", "categoria", "edades", "duracion_min", "intensidad", "carga_cognitiva",
                        "objetivos", "descripcion", "puntos_clave")
+ESPACIOS = ("media_pista", "pista_completa", "flexible")
 DESCRIPCION_MINIMA = 80
 PUNTOS_CLAVE = (2, 7)
 DURACION_MIN, DURACION_MAX = 5, 30      # las fichas actuales duran de 6 a 15 minutos
@@ -97,6 +98,8 @@ def _problemas_de_campos_opcionales(ficha: dict) -> list[str]:
             v = ficha[campo]
             if not (isinstance(v, list) and v and all(isinstance(x, str) and x.strip() for x in v)):
                 problemas.append(f"{campo}: debe ser una lista de textos no vacíos")
+    if "espacio" in ficha and ficha["espacio"] not in ESPACIOS:
+        problemas.append(f"espacio: debe ser uno de {', '.join(ESPACIOS)}")
     if "progresion" in ficha:
         p = ficha["progresion"]
         if not (isinstance(p, dict) and p and set(p) <= {"facilitar", "complicar"}
