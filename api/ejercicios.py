@@ -66,8 +66,10 @@ def filtrar_ejercicios(ejercicios: list, edad: str, objetivo: str) -> list:
 
     def score(ej, palabras):
         # el tema pesa más que el diagrama: antes +10 por diagrama hacía ganar a fichas sin relación con el objetivo
-        return puntuacion_tema(ej, objetivo) if palabras is palabras_obj else (
-            sum(1 for p in palabras if p in texto_ej(ej)) + (1 if "diagrama" in ej else 0))
+        # (y una ficha de calentamiento vale menos en la parte principal que una de igual tema que no lo es)
+        penalizacion = 1 if ej.get("categoria") == "calentamiento" and edad not in _MINIBASKET else 0
+        return (puntuacion_tema(ej, objetivo) if palabras is palabras_obj else (
+            sum(1 for p in palabras if p in texto_ej(ej)) + (1 if "diagrama" in ej else 0))) - penalizacion
 
     # Fallback: si no hay directos, usar toda la categoría
     if not directos:
@@ -148,6 +150,9 @@ def nivel_objetivo(posicion: int, n: int) -> int:
     return min(2, (3 * posicion) // n)
 
 
+# En minibasket (U8–U12) el bote y los juegos viven en fichas de calentamiento: ahí no se penalizan en la parte principal.
+_MINIBASKET = {"U8", "U10", "U12", "Prebenjamín", "Benjamín", "Alevín"}
+
 # Con `azar`, cuántas fichas empatadas en nivel compiten por un hueco. Llegan ordenadas por relevancia:
 # limitarlo a las primeras evita que el azar elija una ficha floja habiendo mejores.
 EMPATES_CON_VARIEDAD = 3
@@ -167,7 +172,21 @@ def _entre_empates(candidatos: list, clave, azar):
     return azar.choice(empatados[:EMPATES_CON_VARIEDAD])
 
 
-def _elegir_por_arco(analiticos: list, directos: list, n: int, azar) -> list:
+# Cuánto pesa en la elección un nivel de oposición de distancia frente a un punto de tema: una palabra del objetivo en
+# el nombre o los tags vale 3, así que una ficha del tema le gana a otra de otro tema aunque se salga un nivel del arco.
+# Así una ficha ajena no ocupa un hueco solo porque su nivel encaje justo (p. ej. un 3c0 de pases en una sesión de defensa).
+PESO_NIVEL = 2
+
+
+def _tema(e: dict) -> int:
+    """Puntos de tema que `elegir_fichas` anota en la ficha; 0 si no los hay (fichas sueltas, tests)."""
+    # solo cuenta el tema que está en el nombre o los tags (3 o más): una mención suelta en la descripción no basta
+    # para que una ficha desplace a otra de su nivel
+    puntos = int(e.get("_tema", 0))
+    return puntos if puntos >= 3 else 0
+
+
+def _elegir_por_arco(analiticos: list, directos: list, n: int, azar, analiticos_reales: bool = True) -> list:
     """Una pasada del arco por posiciones; con `azar`, los empates de mismo nivel se sortean."""
     elegidos: list = []
     for posicion in range(n):
@@ -177,13 +196,14 @@ def _elegir_por_arco(analiticos: list, directos: list, n: int, azar) -> list:
         elegido = None
         if objetivo == 0:
             sin_usar = [e for e in analiticos if id(e) not in usados]
-            elegido = _entre_empates(sin_usar, lambda e: 0, azar)
+            if analiticos_reales:
+                elegido = _entre_empates(sin_usar, lambda e: -_tema(e), azar)
             if elegido is None:
-                elegido = _entre_empates(libres, lambda e: abs(_nivel_oposicion(e)), azar)
+                elegido = _entre_empates(libres, lambda e: PESO_NIVEL * abs(_nivel_oposicion(e)) - _tema(e), azar)
         elif objetivo == 1:
-            elegido = _entre_empates(libres, lambda e: abs(_nivel_oposicion(e) - 1), azar)
+            elegido = _entre_empates(libres, lambda e: PESO_NIVEL * abs(_nivel_oposicion(e) - 1) - _tema(e), azar)
         else:
-            elegido = _entre_empates(libres, lambda e: -_nivel_oposicion(e), azar)
+            elegido = _entre_empates(libres, lambda e: PESO_NIVEL * (2 - _nivel_oposicion(e)) - _tema(e), azar)
         elegidos.append(elegido)
     return elegidos
 
@@ -207,14 +227,15 @@ def seleccionar_ejercicios(relevantes: list, n: int, azar=None) -> list:
     más huecos ni encaje peor en el arco que la elección determinista."""
     analiticos = [e for e in relevantes if e.get('_fase') == 'ANALÍTICO']
     directos   = [e for e in relevantes if e.get('_fase') == 'OBJETIVO']
+    reales = bool(analiticos)
     if not analiticos:
         analiticos = [e for e in directos if _nivel_oposicion(e) == 0] or directos[:1]
 
-    base = _elegir_por_arco(analiticos, directos, n, None)
+    base = _elegir_por_arco(analiticos, directos, n, None, reales)
     if azar is None:
         return base
     for _ in range(INTENTOS_CON_VARIEDAD):
-        candidata = _elegir_por_arco(analiticos, directos, n, azar)
+        candidata = _elegir_por_arco(analiticos, directos, n, azar, reales)
         if _desvio_del_arco(candidata) <= _desvio_del_arco(base):
             return candidata
     return base
@@ -271,6 +292,8 @@ def elegir_fichas(ejercicios: list, edad: str, objetivo: str, n: int, solo_direc
     # quedaría un hueco. Así una ficha de calentamiento asociada de lejos no desplaza a una ficha de la parte principal.
     # Si hay fichas de sobra que nombran el tema (nombre o tags), las que solo lo mencionan de pasada en la descripción
     # no compiten: una ficha de pase con una frase sobre defensa no debe abrir una sesión de defensa.
+    for e in relevantes:
+        e["_tema"] = int(puntuacion_tema(e, objetivo))
     centradas = [e for e in relevantes if puntuacion_tema(e, objetivo) >= 3]
     if sum(e.get("categoria") != "calentamiento" for e in centradas) >= n:
         relevantes = centradas
@@ -281,8 +304,24 @@ def elegir_fichas(ejercicios: list, edad: str, objetivo: str, n: int, solo_direc
     if len(principales) < len(relevantes) and any(f is None for f in fichas):
         con_calentamientos = seleccionar_ejercicios(relevantes, n, azar=azar)
         if sum(f is None for f in con_calentamientos) < sum(f is None for f in fichas):
-            return con_calentamientos
-    return fichas
+            fichas = con_calentamientos
+    return _limitar_flojas(fichas, n)
+
+
+def _limitar_flojas(fichas: list, n: int) -> list:
+    """Una ficha que solo menciona el tema de pasada en la descripción (menos de 3 puntos) vale de relleno, pero no
+    debe llenar la sesión: pasado un tercio de los huecos, el resto queda a None y lo propone la IA, marcado como
+    tal, en vez de colar ejercicios de otro tema (p. ej. una defensa de la puerta en una sesión de pase)."""
+    tope = max(1, n // 3)
+    flojas = 0
+    resultado = []
+    for ficha in fichas:
+        if ficha is not None and ficha.get("_tema", 3) < 3:
+            flojas += 1
+            if flojas > tope:
+                ficha = None
+        resultado.append(ficha)
+    return resultado
 
 
 def elegir_calentamiento(ejercicios: list, edad: str, objetivo: str, excluir=(), azar=None) -> dict | None:
@@ -342,6 +381,17 @@ _PALABRAS_VACIAS = {
     "crea", "crear", "quiero", "quieres", "haz", "hacer", "pero", "esten", "estan", "atentos", "atento",
     "pista", "pistas", "media", "medias", "medio", "campo", "jugador", "frente", "ventaja", "ataque",
     "ataques", "que", "cada", "todos", "todas", "mismo", "misma", "ejercicios",
+    "divertida", "divertido", "divertidas", "divertidos", "pequenos", "pequenas", "aprendan", "aprender", "mejoren",
+    "mejora", "bien", "muchas", "muchos", "veces", "despues", "antes", "sobre", "todo", "tambien", "ademas",
+    "balon", "balones", "coger", "coge", "superar", "superen", "supere", "trabajo", "sesion", "grupo", "tengan", "puedan", "sean", "estar", "estos", "estas", "algo", "mas", "menos",
+}
+
+# Formas verbales y palabras de uso corriente que en las fichas se escriben de otra manera (raíz → raíces de la ficha):
+# «que aprendan a botar» no encontraba las fichas de «bote», ni «que tiren más» las de «tiro».
+_EQUIVALENTES = {
+    "bota": ("bote", "botan", "botando"), "pasa": ("pase", "pasar"), "tira": ("tiro",), "tire": ("tiro",),
+    "lanz": ("tiro",), "defien": ("defens",), "rebo": ("rebote",), "corr": ("carrera", "contraataque"),
+    "fina": ("finaliz",), "driv": ("penetraci",), "pene": ("penetraci",),
 }
 
 
@@ -358,18 +408,33 @@ def _raiz(palabra: str) -> str:
     return palabra[:max(4, len(palabra) - 3)]
 
 
+# «que se lo pasen bien» es pasarlo bien, no el pase
+_PASARLO_BIEN = re.compile(r"\bse\s+lo\s+pas\w+(\s+bien)?|\bpasarlo(\s+bien)?")
+
+
 def _palabras_significativas(objetivo: str) -> list[str]:
-    palabras = re.findall(r"[a-z0-9]+", _sin_acentos(objetivo))
+    texto = _PASARLO_BIEN.sub(" ", _sin_acentos(objetivo))
+    palabras = re.findall(r"[a-z0-9]+", texto)
+    if "rebot" in texto:
+        # «que bloqueen al rival» en una sesión de rebote es bloqueo de rebote, no las fichas de bloqueo directo
+        palabras = [p for p in palabras if not p.startswith("bloque") or p in ("bloqueo", "bloqueos")]
     return [p for p in palabras
             if p not in _PALABRAS_VACIAS and (len(p) >= 4 or any(c.isdigit() for c in p))]
+
+
+def _raices_del_objetivo(objetivo: str) -> set[str]:
+    raices = {_raiz(p) for p in _palabras_significativas(objetivo)}
+    for r in list(raices):
+        for equivalente in _EQUIVALENTES.get(r, ()):
+            raices.add(_raiz(equivalente))
+    return raices
 
 
 def es_relevante(ej: dict, objetivo: str, con_asociados: bool = True) -> bool:
     """¿Encaja el ejercicio con el objetivo? Sí si alguna palabra significativa del objetivo
     (o un fundamento analítico asociado a él) aparece al inicio de una palabra del nombre, la
     descripción o los tags tácticos. Si no encaja, ese hueco de la sesión lo propone la IA."""
-    palabras = _palabras_significativas(objetivo)
-    raices = {_raiz(p) for p in palabras}
+    raices = _raices_del_objetivo(objetivo)
     for clave, fundamentos in (COMPONENTES_ANALITICOS.items() if con_asociados else ()):
         clave_norm = _sin_acentos(clave)
         if any(clave_norm.startswith(r) or r.startswith(_raiz(clave_norm)) for r in raices):
@@ -381,20 +446,25 @@ def es_relevante(ej: dict, objetivo: str, con_asociados: bool = True) -> bool:
     return any(re.search(rf"(?<!\w){re.escape(r)}", texto) for r in raices)
 
 
+CATEGORIAS_GENERICAS = {"juego_equipo", "calentamiento"}
+
+
 def puntuacion_tema(ej: dict, objetivo: str) -> float:
     """Cuánto trata la ficha del tema del objetivo: cada palabra significativa vale 3 si aparece en el nombre o
     los tags tácticos y 1 si solo en la descripción; el diagrama (0,5) solo desempata."""
-    raices = {_raiz(p) for p in _palabras_significativas(objetivo)}
-    nombre_y_tags = _sin_acentos(f"{ej.get('nombre', '')} {' '.join(ej.get('objetivos', {}).get('tacticos', []))}")
+    # la categoría genérica («juego_equipo», «calentamiento») no dice de qué trata la ficha; la subcategoría sí
+    categoria = ej.get("categoria", "")
+    clase = f"{'' if categoria in CATEGORIAS_GENERICAS else categoria} {ej.get('subcategoria', '')}".replace("_", " ")
+    nombre_y_tags = _sin_acentos(f"{ej.get('nombre', '')} {' '.join(ej.get('objetivos', {}).get('tacticos', []))} {clase}")
     descripcion = _sin_acentos(ej.get("descripcion", ""))
     total = 0.0
-    for r in raices:
-        patron = rf"(?<!\w){re.escape(r)}"
-        if re.search(patron, nombre_y_tags):
+    for palabra in _palabras_significativas(objetivo):
+        # una palabra y sus equivalentes (botar/bote) cuentan una sola vez
+        raices = {_raiz(palabra), *(_raiz(q) for q in _EQUIVALENTES.get(_raiz(palabra), ()))}
+        if any(re.search(rf"(?<!\w){re.escape(r)}", nombre_y_tags) for r in raices):
             total += 3
-        elif re.search(patron, descripcion):
+        elif any(re.search(rf"(?<!\w){re.escape(r)}", descripcion) for r in raices):
             total += 1
     if ej.get("categoria") in categorias_pedidas(objetivo):
         total += 3
-    # una ficha de calentamiento vale menos en la parte principal que una de igual tema que no lo es
-    return total + (0.5 if "diagrama" in ej else 0) - (1 if ej.get("categoria") == "calentamiento" else 0)
+    return total + (0.5 if "diagrama" in ej else 0)
