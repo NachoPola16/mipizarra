@@ -1,6 +1,10 @@
 # tests/test_relevancia_ejercicios.py
 """Umbral de relevancia: un ejercicio de la biblioteca solo ocupa un hueco de la sesión si
 encaja con el objetivo pedido; si no, ese hueco lo propone la IA (marcado como tal)."""
+import re
+
+import pytest
+
 from ejercicios import es_relevante
 
 
@@ -122,3 +126,49 @@ def test_ventaja_de_ataque_incluye_fichas_de_superioridad(ejercicios):
                                azar=random.Random(semilla))
         assert sum(f["categoria"] == "ventaja_numerica" for f in fichas if f) >= 1, semilla
         assert not [f["id"] for f in fichas if f and f["espacio"] == "pista_completa"], semilla
+
+
+# ── Peticiones en lenguaje natural: la sesión trata del tema pedido ────────────────────────────────────
+# (edad, minutos, objetivo, nombres/tags esperados, cuántas fichas como mínimo, nombres que no deben salir)
+PETICIONES = [
+    ("U12", 90, "Quiero que mejoren el tiro, sobre todo la mecánica y que tiren muchas veces",
+     r"tiro|tir|bomba|mecanic|volumen|canasta", 4, r"defens|corte en v"),
+    ("U8", 60, "Sesión divertida para que los más pequeños aprendan a botar con las dos manos",
+     r"bote|bota|manejo|globo|aro|pelota", 3, r"bloqueo|pick"),
+    ("U10", 60, "Quiero trabajar el pase y que se muevan después de pasar", r"pas|mover|hueco|cuadrado", 3,
+     r"tiro libre|bloqueo"),
+    ("U12", 75, "Contraataque y transición rápida, que corran las calles",
+     r"contraataque|transici|calle|carril|2c1|3c2|2c0|3c0", 4, r"bloqueo directo"),
+    ("U14", 90, "Defensa individual: que no pierdan de vista al jugador y se coloquen bien respecto al balón",
+     r"defens|defiend|espejo|1c1|1 contra 1|desliz|cierre", 4, r"tiro libre"),
+    ("U14", 90, "Trabajar el rebote, que bloqueen al rival antes de ir a por el balón",
+     r"rebote", 3, r"bloqueo directo"),
+    ("U10", 60, "1c1 ofensivo: que aprendan a superar al defensor con bote y finalizar",
+     r"1c1|1 contra 1|penetraci|finaliz", 3, r"rebote 2c2"),
+    ("U12", 90, "Superioridad numérica 2c1 y 3c2, con defensores que vuelven",
+     r"2c1|3c2|2 contra 1|3 contra 2|superioridad|transici", 4, r"bote en zigzag"),
+]
+
+
+@pytest.mark.parametrize("edad,minutos,objetivo,esperado,minimo,vetado", PETICIONES)
+def test_la_sesion_trata_del_tema_pedido(ejercicios, edad, minutos, objetivo, esperado, minimo, vetado):
+    import random
+    import unicodedata
+    from ejercicios import elegir_fichas
+    from plan_sesion import plan_de_tiempos
+
+    def plano(t):
+        return "".join(c for c in unicodedata.normalize("NFD", t.lower()) if unicodedata.category(c) != "Mn")
+
+    n = len(plan_de_tiempos(minutos, edad).duraciones)
+    for semilla in range(15):
+        fichas = [f for f in elegir_fichas([dict(e) for e in ejercicios], edad, objetivo, n, azar=random.Random(semilla)) if f]
+        textos = [plano(f"{f['nombre']} {' '.join(f['objetivos']['tacticos'])} {f.get('subcategoria', '')}") for f in fichas]
+        assert sum(bool(re.search(esperado, t)) for t in textos) >= minimo, (semilla, [f["nombre"] for f in fichas])
+        assert not [f["nombre"] for f in fichas if re.search(vetado, plano(f["nombre"]))], (semilla, objetivo)
+
+
+def test_pasarlo_bien_no_es_pedir_pases():
+    from ejercicios import _palabras_significativas
+    assert "pasen" not in _palabras_significativas("juegos para que se lo pasen bien con el balón")
+    assert "pasen" in _palabras_significativas("que se pasen el balón")
