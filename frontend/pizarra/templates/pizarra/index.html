@@ -187,6 +187,8 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
 .feedback-msg.ok { color: #3fb950; }
 .feedback-msg.err { color: #d98a6f; }
 .feedback-msg.err[id="form-error"] { max-width: 800px; margin: 1.5rem auto 0; padding: .7rem 1rem; background: #241a10; border: 1px solid #b3452f; border-radius: 8px; }
+/* Aviso informativo (la sesión se hizo, con una salvedad): neutro, no es un error */
+#form-aviso { max-width: 800px; margin: 1.5rem auto 0; padding: .7rem 1rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; color: var(--text2); font-size: .85rem; line-height: 1.5; }
 
 /* ── Reglamento result ── */
 .rg-hilo { max-width: 800px; margin: 0 auto; padding: 1.5rem 0 0; }
@@ -223,7 +225,7 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
     @page { size: A4; margin: 16mm 15mm 18mm; }
     html, body { background: #fff !important; color: #1b1b1f !important; font-size: 10.5pt; }
     .topbar, .results-bar, .btn-back, .ej-select, .reprompt-bar, .downloads, .feedback, .consultados, .legal-footer,
-    #form-error, .prompt-section, .badge, #loading, .center-title { display: none !important; }
+    #form-error, #form-aviso, .prompt-section, .badge, #loading, .center-title { display: none !important; }
     .content, .results { max-width: none !important; width: auto !important; padding: 0 !important; margin: 0 !important; }
     .section-title { color: #b44a0c !important; border-bottom: 1.5pt solid #e8752c !important; font-size: 13pt;
         margin: 14pt 0 6pt; padding-bottom: 3pt; break-after: avoid; }
@@ -306,6 +308,7 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
 <main class="content">
 
     <div class="feedback-msg err" id="form-error" style="display:none;" role="alert"></div>
+    <div id="form-aviso" style="display:none;" role="status"></div>
 
     <!-- ── Sesión: estado inicial ── -->
     <div id="form-sesion" class="prompt-section">
@@ -561,6 +564,13 @@ function showFormError(msg) {
 }
 function clearFormError() {
     document.getElementById('form-error').style.display = 'none';
+    document.getElementById('form-aviso').style.display = 'none';
+}
+// Aviso que no es un error: la sesión o la corrección se hicieron, con una salvedad.
+function showFormAviso(msg) {
+    const el = document.getElementById('form-aviso');
+    el.textContent = msg;
+    el.style.display = '';
 }
 
 // ── Mode tabs ──────────────────────────────────────────────────────────────
@@ -1147,7 +1157,7 @@ async function aplicarReprompt() {
     btn.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2.5v3.2h-3.2"/></svg> Aplicar cambio';
     renderResults(currentResult);
     const aviso = textoAvisos(avisosReprompt);
-    if (aviso) showFormError(aviso);
+    if (aviso) showFormAviso(aviso);
 }
 
 function escHtml(s) {
@@ -1218,7 +1228,7 @@ document.getElementById('btn-pdf-top').addEventListener('click', async () => {
 // Aviso compacto: ver la sesión en la web (con sus avisos) o descargar el PDF sin abrirla.
 document.getElementById('listo-ver').addEventListener('click', () => {
     showResults();
-    if (_avisoSesion) showFormError(_avisoSesion);
+    if (_avisoSesion) showFormAviso(_avisoSesion);
 });
 document.getElementById('listo-pdf').addEventListener('click', async () => {
     const r = await descargarPdf(document.getElementById('listo-pdf'));
