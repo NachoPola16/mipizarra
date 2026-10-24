@@ -436,3 +436,9 @@ def test_el_arnes_rechaza_un_numero_de_ejercicios_distinto_al_del_plan():
     # el plan de U10 a 60 min pide 4 ejercicios: con 3 falla y lo dice
     criterio = _evaluar("U10", 60, 3)["criterios"]["num_ejercicios"]
     assert not criterio["ok"] and "3" in criterio["detalle"] and "4" in criterio["detalle"]
+
+
+def test_negacion_del_arnes_no_cruza_peticiones_pero_si_continua_tras_tampoco():
+    assert regresion.buscar_contenido_prohibido("Sin zona 2-3 pero tampoco bloqueo directo.", "U10") == []
+    assert regresion.buscar_contenido_prohibido("Prohibido hacer defensa zonal y usar bloqueo directo.", "U10") == []
+    assert regresion.buscar_contenido_prohibido("Sin zona 2-3, quiero bloqueo directo.", "U10")

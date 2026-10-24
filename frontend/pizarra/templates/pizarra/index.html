@@ -189,6 +189,8 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
 .feedback-msg.err[id="form-error"] { max-width: 800px; margin: 1.5rem auto 0; padding: .7rem 1rem; background: #241a10; border: 1px solid #b3452f; border-radius: 8px; }
 /* Aviso informativo (la sesión se hizo, con una salvedad): neutro, no es un error */
 #form-aviso { max-width: 800px; margin: 1.5rem auto 0; padding: .7rem 1rem; background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; color: var(--text2); font-size: .85rem; line-height: 1.5; }
+/* Siempre en el DOM (region viva): vacío se colapsa en vez de ocultarse, para que el lector de pantalla lo anuncie al llenarse */
+#form-aviso:empty { margin: 0; padding: 0; border: 0; }
 
 /* ── Reglamento result ── */
 .rg-hilo { max-width: 800px; margin: 0 auto; padding: 1.5rem 0 0; }
@@ -308,7 +310,7 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
 <main class="content">
 
     <div class="feedback-msg err" id="form-error" style="display:none;" role="alert"></div>
-    <div id="form-aviso" style="display:none;" role="status"></div>
+    <div id="form-aviso" role="status"></div>
 
     <!-- ── Sesión: estado inicial ── -->
     <div id="form-sesion" class="prompt-section">
@@ -564,13 +566,11 @@ function showFormError(msg) {
 }
 function clearFormError() {
     document.getElementById('form-error').style.display = 'none';
-    document.getElementById('form-aviso').style.display = 'none';
+    document.getElementById('form-aviso').textContent = '';
 }
 // Aviso que no es un error: la sesión o la corrección se hicieron, con una salvedad.
 function showFormAviso(msg) {
-    const el = document.getElementById('form-aviso');
-    el.textContent = msg;
-    el.style.display = '';
+    document.getElementById('form-aviso').textContent = msg;
 }
 
 // ── Mode tabs ──────────────────────────────────────────────────────────────
@@ -653,6 +653,7 @@ document.querySelectorAll('.chip[data-fill-pregunta]').forEach(chip => {
 
 // ── Volver a la entrada desde resultados ────────────────────────────────────
 document.getElementById('btn-nueva').addEventListener('click', () => {
+    clearFormError();           // el aviso era de la sesión que se deja
     showEmpty();
     document.getElementById(currentMode === 'sesion' ? 'objetivo' : 'pregunta').focus();
 });

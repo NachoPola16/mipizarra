@@ -138,10 +138,12 @@ PROHIBIDOS_FORMACION = {
 
 # Si el fragmento (frase) que contiene la coincidencia la niega antes («sin bloqueos
 # directos», «no se trabaja la defensa zonal»), no cuenta como contenido a trabajar.
-NEGACION = re.compile(r"\b(?:sin|no|nunca|ni|evit\w*|prohib\w*|todavia|aun)\b")
-# Mismo corte que api/lineas_rojas.py: la negación no cruza «pero» ni «, quiero…».
-_PETICION = r"(?:quiero|queremos|necesito|haz\w*|pon\w*|incluy\w+|inclui\w*|anad\w+|trabaj\w+|usa\w*|mete\w*)"
-FRASES = re.compile(rf"[.\n;:!?]+|\bpero\b|,\s*(?:y\s+)?(?={_PETICION}\b)|\by\s+(?={_PETICION}\b)")
+NEGACION = re.compile(r"\b(?:sin|no|nunca|ni|tampoco|nada|evit\w*|prohib\w*|todavia|aun)\b")
+# Mismo corte que api/lineas_rojas.py (copia: mantener las dos iguales).
+_PETICION = (r"(?:quiero|queremos|necesito|necesitamos|haz|hazlo|hazme|haced|pon|ponme|poned|incluye|incluid|"
+             r"anade|anademe|trabaja|trabajad|usa|usad|mete)")
+FRASES = re.compile(rf"[.\n;:!?]+|\bpero\b|\bsino\b|,\s*(?:y\s+)?(?={_PETICION}\b)|\by\s+(?={_PETICION}\b)"
+                    rf"|,\s*(?=solo\b|con\b)|\by\s+(?=con\b)")
 
 FUGAS = [
     ("mención a .pdf",          re.compile(r"\.pdf\b", re.IGNORECASE)),

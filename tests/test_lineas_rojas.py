@@ -79,6 +79,10 @@ def test_instruccion_prompt_por_edad():
     "Está prohibido el bloqueo directo en esta etapa.",
     "No hay bloqueos, pantallas ni defensa zonal.",
     "Trabajo de 1c1 sin bloqueos.",
+    "Prohibido hacer bloqueos y usar pantallas.",              # los infinitivos no cortan la negación
+    "No se pueden poner bloqueos y meter pantallas.",
+    "No hay pantallas, pero tampoco bloqueos.",
+    "Sin bloqueos y trabajando el 1x1, nada de pantallas.",
 ])
 def test_negar_un_contenido_vetado_no_es_trabajarlo(texto):
     assert violaciones(texto, "U12") == [], texto
@@ -91,6 +95,11 @@ def test_negar_un_contenido_vetado_no_es_trabajarlo(texto):
     "Sin bloqueos, quiero pantallas.",                         # la negación no alcanza a lo que se pide después
     "Sin bloqueos pero con pantallas.",
     "Sin bloqueos y haz pantallas.",
+    "Sin bloqueos y con pantallas.",
+    "Sin bloqueos, con pantallas.",
+    "Sin bloqueos, solo pantallas.",
+    "No quiero bloqueos sino pantallas.",
+    "Sin bloqueos, necesitamos pantallas.",
 ])
 def test_si_el_contenido_se_trabaja_de_verdad_sigue_detectandose(texto):
     assert violaciones(texto, "U12"), texto

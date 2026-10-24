@@ -33,11 +33,14 @@ def _normalizar(texto: str) -> str:
 
 # Decir que algo NO se trabaja («sin bloqueos», «no hay pantallas», «evitar el mano a mano») no es trabajarlo.
 # Mismo criterio que el arnés (tools/regresion.py): la negación va antes del término, en la misma frase.
-_NEGACION = re.compile(r"\b(?:sin|no|nunca|ni|evit\w*|prohib\w*|todavia|aun)\b")
-# La negación no cruza un «pero» ni una coma/«y» seguidos de un verbo de petición («sin bloqueos, quiero pantallas»);
-# una coma de lista («no hay bloqueos, pantallas ni mano a mano») sigue en la misma frase.
-_PETICION = r"(?:quiero|queremos|necesito|haz\w*|pon\w*|incluy\w+|inclui\w*|anad\w+|trabaj\w+|usa\w*|mete\w*)"
-_FRASES = re.compile(rf"[.\n;:!?]+|\bpero\b|,\s*(?:y\s+)?(?={_PETICION}\b)|\by\s+(?={_PETICION}\b)")
+_NEGACION = re.compile(r"\b(?:sin|no|nunca|ni|tampoco|nada|evit\w*|prohib\w*|todavia|aun)\b")
+# La negación no cruza «pero», «sino», «, solo/con…» ni una coma/«y» seguidos de una petición en imperativo o primera
+# persona («sin bloqueos, quiero pantallas»). Los infinitivos NO cortan («prohibido hacer bloqueos y usar pantallas»
+# sigue negado), y una coma de lista («no hay bloqueos, pantallas ni mano a mano») sigue en la misma frase.
+_PETICION = (r"(?:quiero|queremos|necesito|necesitamos|haz|hazlo|hazme|haced|pon|ponme|poned|incluye|incluid|"
+             r"anade|anademe|trabaja|trabajad|usa|usad|mete)")
+_FRASES = re.compile(rf"[.\n;:!?]+|\bpero\b|\bsino\b|,\s*(?:y\s+)?(?={_PETICION}\b)|\by\s+(?={_PETICION}\b)"
+                     rf"|,\s*(?=solo\b|con\b)|\by\s+(?=con\b)")
 
 
 def _coincidencias(texto: str, edad: str) -> list[str]:
