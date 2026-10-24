@@ -461,33 +461,14 @@ def _ensamblar(huecos: list[_Hueco], bloques: dict[str, str],
     return "\n\n".join(partes), propuestos
 
 
-def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
-    plan = plan_de_tiempos(duracion, edad)
-    n = len(plan.duraciones)
-    # azar: mismos parámetros, distinta elección de fichas entre los empates (misma calidad y arco)
-    biblioteca = cargar_ejercicios()
-    semilla = random.randrange(2 ** 32)
-    azar = random.Random(semilla)
-    logger.info(f"Selección de fichas con semilla {semilla}")      # para reproducir una sesión que salga mal
-    fichas = _elegir_fichas(biblioteca, edad, objetivo, n, azar=azar)
-    ctx_teoria = construir_contexto_teoria(objetivo, edad)
-
-    # Sin truncado global aquí: construir_contexto_teoria ya aplica presupuesto por
-    # colección, así que lo que devuelve ya está acotado a un tamaño razonable.
-    teoria_intro = f"CONTEXTO METODOLÓGICO:\n{ctx_teoria}\n\n" if ctx_teoria else ""
-
-    t_calent, t_vuelta, t_descanso = plan.t_calentamiento, plan.t_vuelta, plan.t_descanso
-    # Calentamiento: una ficha curada de la biblioteca si hay una para la edad (el 4B inventaba juegos
-    # poco adecuados y repetía material); si no, lo redacta el modelo como siempre.
-    ficha_calent = (_elegir_calentamiento(biblioteca, edad, objetivo, {f.get("id") for f in fichas if f}, azar)
-                    if t_calent else None)
-    categoria_nombre = EDAD_A_CATEGORIA.get(edad, edad)
-
-    # Una ficha con progresión curada se parte en N.1 + N.2 si el ejercicio dura más de lo que esa
-    # edad aguanta haciendo lo mismo; sin progresión curada va entera (el modelo no inventa variantes).
+def _montar_huecos(fichas: list, duraciones: list[int], edad: str) -> list[_Hueco]:
+    """Un hueco por ejercicio de la parte principal. Una ficha con progresión curada se parte en N.1 + N.2 si el
+    ejercicio dura más de lo que esa edad aguanta haciendo lo mismo; sin progresión curada va entera (el modelo
+    no inventa variantes)."""
+    n = len(duraciones)
     max_bloque = MAX_BLOQUE_POR_EDAD.get(edad, MAX_BLOQUE_DEFECTO)
     huecos = []
-    for numero, (ficha, minutos) in enumerate(zip(fichas, plan.duraciones), start=1):
+    for numero, (ficha, minutos) in enumerate(zip(fichas, duraciones), start=1):
         t1, t2, variante = minutos, 0, None
         if ficha and minutos > max_bloque:
             parte1, parte2 = _duraciones(minutos, True)
@@ -495,28 +476,23 @@ def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
             if variante:
                 t1, t2 = parte1, parte2
         huecos.append(_Hueco(numero, ficha, t1, t2, variante, nivel_objetivo(numero - 1, n)))
+    return huecos
 
-    # Presupuesto de generación: solo lo que escribe el modelo. Es un punto de partida, no una
-    # garantía (la verbosidad varía de una generación a otra); si se trunca de verdad,
-    # _texto_del_modelo reintenta con más en vez de confiar en una estimación fija.
-    n_propuestos = sum(1 for h in huecos if h.ficha is None)
-    num_predict_sesion = 1200 + 800 * n_propuestos
-    num_ctx_sesion     = 9000 + 800 * max(0, n - 3)
 
-    lineas_ejercicios = "\n".join(_linea_prompt(h) for h in huecos)
-    plantilla = _plantilla_modelo(huecos, t_calent, t_vuelta, con_calentamiento=ficha_calent is None)
-    # Lo que el entrenador pide expresamente en el objetivo se hace, con aviso (igual que en el ejercicio suelto).
-    permitidos = terminos_pedidos(objetivo, edad)
+def _restricciones_prompt(objetivo: str, edad: str, permitidos) -> str:
+    """Bloque del prompt con lo prohibido por edad (y su excepción pedida) y el espacio pedido ('' si nada)."""
     prohibido = instruccion_prompt(edad, permitidos)
     prohibido = f"{prohibido}\n\n" if prohibido else ""
     if espacio_pedido(objetivo) == "media_pista":
         prohibido += ("ESPACIO: el entrenador pide media pista. Todo lo que propongas se juega en una sola canasta, "
                       "sin ir a la otra canasta ni usar la pista completa.\n\n")
+    return prohibido
 
-    inicio_respuesta = f"**CALENTAMIENTO ({t_calent} min)**\nJuego:"
 
-    def cuerpo_prompt(correccion: str = "") -> str:
-        return f"""Eres MiPizarra, asistente de entrenamiento de baloncesto.
+def _prompt_sesion(edad: str, duracion: int, objetivo: str, teoria_intro: str, prohibido: str,
+                   lineas_ejercicios: str, plantilla: str, correccion: str = "") -> str:
+    categoria_nombre = EDAD_A_CATEGORIA.get(edad, edad)
+    return f"""Eres MiPizarra, asistente de entrenamiento de baloncesto.
 Rellena la plantilla de abajo con contenido concreto. No añadas texto fuera de la plantilla.
 Escribe SOLO los apartados que aparecen en la plantilla: los ejercicios con ficha del entrenador
 ya están redactados y se añaden solos (no escribas su bloque «Ejercicio N», ni repitas su contenido).
@@ -540,43 +516,117 @@ secundario o terciario si eso da más variedad a la sesión.
 RESPUESTA (rellena TODOS los apartados de la plantilla, en este orden, sin saltarte ninguno):
 """
 
+
+def _apartados_del_modelo(huecos: list[_Hueco], t_calent: int, t_vuelta: int,
+                          con_calentamiento: bool) -> tuple[dict[str, str], list[str], str]:
+    """Qué apartados redacta el modelo: (inicio de cada uno, sus claves en orden, inicio de la respuesta).
+    Con calentamiento de biblioteca el modelo arranca en el primer apartado que le toca."""
     inicios = {"fundamentos": "**Fundamentos**: En esta sesión se trabajan"}
-    if ficha_calent is None:
-        inicios["calentamiento"] = inicio_respuesta
+    if con_calentamiento:
+        inicios["calentamiento"] = f"**CALENTAMIENTO ({t_calent} min)**\nJuego:"
     if t_vuelta:
         inicios["vuelta"] = f"**VUELTA A LA CALMA ({t_vuelta} min)**\nJuego:"
     for h in huecos:
         for clave in h.claves_del_modelo():
             inicios[clave] = f"Ejercicio {clave[3:]}:"
 
-    claves_modelo = ((["calentamiento"] if ficha_calent is None else []) + (["vuelta"] if t_vuelta else [])
+    claves_modelo = ((["calentamiento"] if con_calentamiento else []) + (["vuelta"] if t_vuelta else [])
                      + ["fundamentos"] + [c for h in huecos for c in h.claves_del_modelo()])
-    if ficha_calent is not None:
-        # el modelo arranca en el primer apartado que le toca, en el orden de la sesión
+    if con_calentamiento:
+        inicio_respuesta = f"**CALENTAMIENTO ({t_calent} min)**\nJuego:"
+    else:
         primera = next((c for h in huecos for c in h.claves_del_modelo()),
                        "vuelta" if t_vuelta else "fundamentos")
         inicio_respuesta = inicios[primera]
+    return inicios, claves_modelo, inicio_respuesta
+
+
+def _redactar_piezas(armar_prompt, inicio_respuesta: str, huecos: list[_Hueco], inicios: dict[str, str],
+                     claves_modelo: list[str], edad: str, permitidos,
+                     num_predict: int, num_ctx: int) -> tuple[dict[str, str], dict[str, list[str]]]:
+    """Pide el texto al modelo (hasta 2 intentos si incumple las líneas rojas) y lo trocea en bloques.
+    Devuelve los bloques y las piezas que siguen incumpliendo tras el último intento."""
+    correccion = ""
+    for intento in (1, 2):
+        cuerpo = armar_prompt(correccion)
+        texto = _texto_del_modelo(cuerpo + inicio_respuesta, inicio_respuesta, num_predict, num_ctx)
+        texto = _limpiar_respuesta(_completar_apartados(
+            cuerpo, texto, huecos, inicios, num_ctx, _fundamentos_de_las_fichas(huecos)))
+        bloques = extraer_bloques(texto)
+        _normalizar_claves(huecos, bloques)
+        _arreglar_fundamentos_incompletos(bloques, _fundamentos_de_las_fichas(huecos))
+        malas = _piezas_con_linea_roja(bloques, claves_modelo, edad, permitidos)
+        if not malas or intento == 2:
+            break
+        detalle = "; ".join(f"{_nombre_de_pieza(c)}: {', '.join(v)}" for c, v in malas.items())
+        logger.warning(f"Línea roja en la sesión generada ({detalle}); reintentando...")
+        correccion = (f"CORRECCIÓN: tu respuesta anterior incumplió las reglas de la categoría "
+                      f"({detalle}). Reescríbela sin esos contenidos.\n\n")
+    return bloques, malas
+
+
+def _avisos_de_pedido(permitidos, texto: str, edad: str) -> list[str]:
+    """Avisos por lo que el entrenador pidió y es línea roja. Solo promete «se ha hecho» si el término aparece
+    en la sesión final."""
+    if not permitidos:
+        return []
+    presentes = pedidos_presentes(permitidos, texto, edad)
+    ausentes = [t for t in permitidos if t not in presentes]
+    avisos = []
+    if presentes:
+        avisos.append(aviso_pedido(presentes, edad))
+    if ausentes:
+        avisos.append(aviso_pedido_no_incluido(ausentes, edad))
+    return avisos
+
+
+def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
+    plan = plan_de_tiempos(duracion, edad)
+    n = len(plan.duraciones)
+    # azar: mismos parámetros, distinta elección de fichas entre los empates (misma calidad y arco)
+    biblioteca = cargar_ejercicios()
+    semilla = random.randrange(2 ** 32)
+    azar = random.Random(semilla)
+    logger.info(f"Selección de fichas con semilla {semilla}")      # para reproducir una sesión que salga mal
+    fichas = _elegir_fichas(biblioteca, edad, objetivo, n, azar=azar)
+    ctx_teoria = construir_contexto_teoria(objetivo, edad)
+
+    # Sin truncado global aquí: construir_contexto_teoria ya aplica presupuesto por
+    # colección, así que lo que devuelve ya está acotado a un tamaño razonable.
+    teoria_intro = f"CONTEXTO METODOLÓGICO:\n{ctx_teoria}\n\n" if ctx_teoria else ""
+
+    t_calent, t_vuelta, t_descanso = plan.t_calentamiento, plan.t_vuelta, plan.t_descanso
+    # Calentamiento: una ficha curada de la biblioteca si hay una para la edad (el 4B inventaba juegos
+    # poco adecuados y repetía material); si no, lo redacta el modelo como siempre.
+    ficha_calent = (_elegir_calentamiento(biblioteca, edad, objetivo, {f.get("id") for f in fichas if f}, azar)
+                    if t_calent else None)
+
+    huecos = _montar_huecos(fichas, plan.duraciones, edad)
+
+    # Presupuesto de generación: solo lo que escribe el modelo. Es un punto de partida, no una
+    # garantía (la verbosidad varía de una generación a otra); si se trunca de verdad,
+    # _texto_del_modelo reintenta con más en vez de confiar en una estimación fija.
+    n_propuestos = sum(1 for h in huecos if h.ficha is None)
+    num_predict_sesion = 1200 + 800 * n_propuestos
+    num_ctx_sesion     = 9000 + 800 * max(0, n - 3)
+
+    lineas_ejercicios = "\n".join(_linea_prompt(h) for h in huecos)
+    plantilla = _plantilla_modelo(huecos, t_calent, t_vuelta, con_calentamiento=ficha_calent is None)
+    # Lo que el entrenador pide expresamente en el objetivo se hace, con aviso (igual que en el ejercicio suelto).
+    permitidos = terminos_pedidos(objetivo, edad)
+    prohibido = _restricciones_prompt(objetivo, edad, permitidos)
+
+    inicios, claves_modelo, inicio_respuesta = _apartados_del_modelo(
+        huecos, t_calent, t_vuelta, con_calentamiento=ficha_calent is None)
+
+    def armar_prompt(correccion: str) -> str:
+        return _prompt_sesion(edad, duracion, objetivo, teoria_intro, prohibido,
+                              lineas_ejercicios, plantilla, correccion)
 
     avisos: list[str] = []      # fuera del try: si la generación falla, los ya acumulados no se pierden
     try:
-        correccion = ""
-        for intento in (1, 2):
-            cuerpo = cuerpo_prompt(correccion)
-            texto = _texto_del_modelo(cuerpo + inicio_respuesta, inicio_respuesta,
-                                     num_predict_sesion, num_ctx_sesion)
-            texto = _limpiar_respuesta(_completar_apartados(
-                cuerpo, texto, huecos, inicios, num_ctx_sesion, _fundamentos_de_las_fichas(huecos)))
-            bloques = extraer_bloques(texto)
-            _normalizar_claves(huecos, bloques)
-            _arreglar_fundamentos_incompletos(bloques, _fundamentos_de_las_fichas(huecos))
-            malas = _piezas_con_linea_roja(bloques, claves_modelo, edad, permitidos)
-            if not malas or intento == 2:
-                break
-            detalle = "; ".join(f"{_nombre_de_pieza(c)}: {', '.join(v)}" for c, v in malas.items())
-            logger.warning(f"Línea roja en la sesión generada ({detalle}); reintentando...")
-            correccion = (f"CORRECCIÓN: tu respuesta anterior incumplió las reglas de la categoría "
-                          f"({detalle}). Reescríbela sin esos contenidos.\n\n")
-
+        bloques, malas = _redactar_piezas(armar_prompt, inicio_respuesta, huecos, inicios, claves_modelo,
+                                          edad, permitidos, num_predict_sesion, num_ctx_sesion)
         for clave, encontradas in malas.items():
             bloques.pop(clave, None)
             avisos.append(f"{_nombre_de_pieza(clave)} omitido por incumplir las líneas rojas de {edad}: "
@@ -587,14 +637,7 @@ RESPUESTA (rellena TODOS los apartados de la plantilla, en este orden, sin salta
         if ficha_calent is not None:
             bloques["calentamiento"] = bloque_calentamiento(ficha_calent)
         texto, propuestos = _ensamblar(huecos, bloques, t_calent, t_vuelta, t_descanso)
-        if permitidos:
-            # el aviso solo promete «se ha hecho» si el término aparece en la sesión final
-            presentes = pedidos_presentes(permitidos, texto, edad)
-            ausentes = [t for t in permitidos if t not in presentes]
-            if ausentes:
-                avisos.insert(0, aviso_pedido_no_incluido(ausentes, edad))
-            if presentes:
-                avisos.insert(0, aviso_pedido(presentes, edad))
+        avisos[:0] = _avisos_de_pedido(permitidos, texto, edad)
         for h in huecos:
             ya_avisado = any(a.startswith(f"Ejercicio {h.numero}") for a in avisos)
             if h.ficha is None and h.numero not in propuestos and not ya_avisado:
