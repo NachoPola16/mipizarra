@@ -88,6 +88,9 @@ def test_negar_un_contenido_vetado_no_es_trabajarlo(texto):
     "Primero hacen un bloqueo directo y después tiran.",
     "No paran de moverse. Después hacen una pantalla.",       # la negación es de otra frase
     "Defensa zonal 2-3 durante cinco minutos.",
+    "Sin bloqueos, quiero pantallas.",                         # la negación no alcanza a lo que se pide después
+    "Sin bloqueos pero con pantallas.",
+    "Sin bloqueos y haz pantallas.",
 ])
 def test_si_el_contenido_se_trabaja_de_verdad_sigue_detectandose(texto):
     assert violaciones(texto, "U12"), texto
@@ -105,6 +108,7 @@ def test_terminos_pedidos_detecta_lo_vetado_que_pide_el_entrenador():
 
 def test_terminos_pedidos_ignora_lo_negado_y_las_edades_sin_veto():
     assert terminos_pedidos("hazlo sin bloqueos", "U12") == []
+    assert terminos_pedidos("sin bloqueos, quiero pantallas", "U12") == ["pantallas"]
     assert terminos_pedidos("añade un bloqueo directo", "U16") == []
 
 
