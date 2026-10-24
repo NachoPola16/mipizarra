@@ -694,3 +694,16 @@ def test_con_varios_terminos_pedidos_se_avisa_de_cada_uno(sesion_falsa):
     hecho = next(a for a in r["avisos"] if "Se ha hecho" in a)
     ausente = next(a for a in r["avisos"] if "no lo incluye" in a)
     assert "bloqueo" in hecho and "pantalla" in ausente
+
+
+def test_si_falla_el_ensamblado_se_conservan_los_avisos_ya_acumulados(sesion_falsa, monkeypatch):
+    # el calentamiento del modelo incumple dos veces: se omite con aviso; después el ensamblado revienta
+    sesion_falsa([FICHA_A, FICHA_B, FICHA_C],
+                 [_con_calentamiento("Defensa zonal 2-3"), _con_calentamiento("Defensa zonal 2-3")])
+
+    def _roto(*args, **kwargs):
+        raise RuntimeError("fallo simulado")
+    monkeypatch.setattr(sesion, "_ensamblar", _roto)
+    r = sesion.generar_sesion("U12", 90, "bote")
+    assert r["texto"].startswith("**Error generando sesión**")
+    assert any("omitido" in a for a in r["avisos"])

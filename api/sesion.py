@@ -557,6 +557,7 @@ RESPUESTA (rellena TODOS los apartados de la plantilla, en este orden, sin salta
                        "vuelta" if t_vuelta else "fundamentos")
         inicio_respuesta = inicios[primera]
 
+    avisos: list[str] = []      # fuera del try: si la generación falla, los ya acumulados no se pierden
     try:
         correccion = ""
         for intento in (1, 2):
@@ -576,7 +577,6 @@ RESPUESTA (rellena TODOS los apartados de la plantilla, en este orden, sin salta
             correccion = (f"CORRECCIÓN: tu respuesta anterior incumplió las reglas de la categoría "
                           f"({detalle}). Reescríbela sin esos contenidos.\n\n")
 
-        avisos = []
         for clave, encontradas in malas.items():
             bloques.pop(clave, None)
             avisos.append(f"{_nombre_de_pieza(clave)} omitido por incumplir las líneas rojas de {edad}: "
@@ -607,7 +607,7 @@ RESPUESTA (rellena TODOS los apartados de la plantilla, en este orden, sin salta
             "calentamiento_ficha": ficha_calent,
             "teoria_usada": bool(ctx_teoria),
             "propuestos": [],
-            "avisos": [],
+            "avisos": avisos,
         }
 
     return {
