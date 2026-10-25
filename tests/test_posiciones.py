@@ -210,8 +210,8 @@ _DIAGRAMAS = [
 ]
 
 
-def test_la_biblioteca_tiene_74_diagramas():
-    assert len(_DIAGRAMAS) == 74
+def test_la_biblioteca_tiene_81_diagramas():
+    assert len(_DIAGRAMAS) == 81
 
 
 @pytest.mark.parametrize("id_, i, d", _DIAGRAMAS, ids=[f"{a}_{b}" for a, b, _ in _DIAGRAMAS])
