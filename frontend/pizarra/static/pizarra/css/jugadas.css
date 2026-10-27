@@ -28,8 +28,8 @@ h1 { font-family: 'Sora', sans-serif; font-size: clamp(1.4rem, 4vw, 1.9rem); let
 .grupo { display: flex; flex-wrap: wrap; gap: .3rem; padding: .3rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; }
 .grupo > legend, .grupo-etq { font-size: .68rem; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); padding: 0 .3rem; align-self: center; }
 fieldset.grupo { margin: 0; min-width: 0; }
-button, select, input[type="text"] { font-family: 'Inter', sans-serif; font-size: .85rem; color: var(--text); background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: .45rem .8rem; min-height: 40px; cursor: pointer; }
-input[type="text"] { cursor: text; min-width: 0; width: 100%; }
+button, select, input[type="text"], input[type="password"] { font-family: 'Inter', sans-serif; font-size: .85rem; color: var(--text); background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: .45rem .8rem; min-height: 40px; cursor: pointer; }
+input[type="text"], input[type="password"] { cursor: text; min-width: 0; width: 100%; }
 button:hover:not(:disabled) { border-color: var(--accent); }
 button[aria-pressed="true"] { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 600; }
 button:disabled { opacity: .45; cursor: not-allowed; }
@@ -65,7 +65,9 @@ input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:foc
 }
 input:-webkit-autofill:focus { border-color: var(--accent); -webkit-box-shadow: 0 0 0 1000px var(--bg3) inset, 0 0 0 3px rgba(232, 117, 44, .35); box-shadow: 0 0 0 1000px var(--bg3) inset, 0 0 0 3px rgba(232, 117, 44, .35); }
 .campo-clave { position: relative; display: flex; }
-.campo-clave input { padding-right: 5.5rem; }
+/* Formulario de entrada: campos cómodos y del mismo alto con la contraseña oculta o visible */
+form.caja input[type="text"], form.caja input[type="password"] { min-height: 48px; padding: .65rem .9rem; font-size: 1rem; line-height: 1.4; }
+.campo-clave input { padding-right: 6rem; }
 .ver-clave { position: absolute; right: 4px; top: 4px; bottom: 4px; min-height: 0; padding: 0 .8rem; background: transparent; border: none; color: var(--accent); font-weight: 600; }
 .ver-clave:hover:not(:disabled) { background: var(--bg2); border: none; }
 .ver-clave[aria-pressed="true"] { background: transparent; color: var(--accent); }

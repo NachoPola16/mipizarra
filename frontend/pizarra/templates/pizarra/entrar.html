@@ -17,14 +17,10 @@
         <img class="brand-mark" src="{% static 'pizarra/brand/favicon.svg' %}" alt="" width="26" height="26">
         <span>Mi<em>Pizarra</em></span>
     </a>
-    <nav class="mode-tabs" aria-label="Secciones">
-        <a class="mode-tab" href="{% url 'index' %}">Sesión</a>
-        <a class="mode-tab" href="{% url 'jugadas' %}">Jugadas</a>
-    </nav>
 </header>
 <main style="max-width:420px;">
     <h1>Entrar</h1>
-    <p class="sub">Con tu cuenta, las jugadas que guardes se conservan en el servidor y no dependen del navegador.</p>
+    <p class="sub">Acceso privado: entra con tu cuenta para usar MiPizarra.</p>
     <form method="post" class="caja" autocomplete="on">
         {% csrf_token %}
         {% if form.non_field_errors %}<p role="alert" class="nota" style="color:#ffb4a2;">{{ form.non_field_errors.0 }}</p>{% endif %}
@@ -35,10 +31,9 @@
             <input type="password" name="password" id="id_password" autocomplete="current-password" required>
             <button type="button" id="ver-clave" class="ver-clave" aria-pressed="false" aria-controls="id_password">Mostrar</button>
         </div>
-        <input type="hidden" name="next" value="{{ next }}">
+        <input type="hidden" name="next" value="{{ next|default:'/' }}">
         <div class="fila"><button type="submit" class="primario" style="width:100%;">Entrar</button></div>
     </form>
-    <p class="nota">¿Sin cuenta? Puedes usar el editor igualmente: tus jugadas se guardan en este navegador.</p>
 </main>
 <script src="{% static 'pizarra/js/entrar.js' %}"></script>
 </body>

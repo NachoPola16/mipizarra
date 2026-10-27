@@ -35,7 +35,14 @@ GUION = textwrap.dedent('''
     # sin sesión: 401 en la API y la página del editor carga sin usuario
     anon = Client()
     assert anon.get("/jugadas/guardadas/", **H).status_code == 401
-    r = anon.get("/jugadas/", **H); assert r.status_code == 200 and b'data-usuario=""' in r.content
+    # toda la web exige cuenta: las páginas redirigen al login y las llamadas del navegador reciben 401 en JSON
+    for ruta in ("/", "/jugadas/"):
+        r = anon.get(ruta, **H); assert r.status_code == 302 and r["Location"].startswith("/cuenta/entrar/?next="), ruta
+    for ruta in ("/generar/", "/pdf/", "/reglamento/", "/reprompt/", "/feedback/"):
+        r = anon.post(ruta, data="{}", content_type="application/json", **H)
+        assert r.status_code == 401 and "error" in r.json(), ruta
+    for ruta in ("/cuenta/entrar/", "/privacidad/", "/aviso-legal/"):      # públicas
+        assert anon.get(ruta, **H).status_code == 200, ruta
     assert anon.get("/jugadas/guardadas/1/", **H).status_code == 401
 
     # el CSRF se exige
@@ -78,7 +85,6 @@ GUION = textwrap.dedent('''
     # la cabecera de la portada muestra la cuenta y salir vuelve a la misma página (nunca a un sitio de fuera)
     g = Client(); g.login(username="beto", password="clave-de-prueba-2")
     assert b"Salir (beto)" in g.get("/", **H).content
-    assert anon.get("/", **H).content.count(b"Entrar") >= 1 and b"Salir (" not in anon.get("/", **H).content
     r = g.post("/cuenta/salir/", {"next": "/jugadas/"}, **H); assert r.status_code == 302 and r["Location"] == "/jugadas/"
     g.login(username="beto", password="clave-de-prueba-2")
     r = g.post("/cuenta/salir/", {"next": "https://sitio-malo.example/"}, **H); assert r.status_code == 302 and r["Location"] == "/"
