@@ -9,7 +9,8 @@ a { color: var(--accent); }
 .mode-tab { display: inline-flex; align-items: center; padding: .4rem .9rem; font-size: .82rem; font-weight: 600; border: none; border-radius: 6px; background: transparent; color: var(--muted); text-decoration: none; min-height: 36px; }
 .mode-tab:hover { color: var(--text); }
 .mode-tab[aria-current="page"] { background: var(--accent); color: var(--bg); }
-:focus-visible { outline: 3px solid #ffd37a; outline-offset: 2px; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+select:focus-visible, textarea:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232, 117, 44, .35); }
 .skip { position: absolute; left: -999px; top: 0; background: var(--accent); color: var(--bg); padding: .6rem 1rem; z-index: 10; }
 .skip:focus { left: 0; }
 

@@ -23,7 +23,7 @@
     <p class="sub">Acceso privado: entra con tu cuenta para usar MiPizarra.</p>
     <form method="post" class="caja" autocomplete="on">
         {% csrf_token %}
-        {% if form.non_field_errors %}<p role="alert" class="nota" style="color:#ffb4a2;">{{ form.non_field_errors.0 }}</p>{% endif %}
+        {% if form.non_field_errors %}<p role="alert" class="nota" style="color:#d98a6f;">{{ form.non_field_errors.0 }}</p>{% endif %}
         <label for="id_username">Usuario</label>
         <input type="text" name="username" id="id_username" autocomplete="username" autocapitalize="none" required autofocus>
         <label for="id_password" style="margin-top:.6rem;">Contraseña</label>

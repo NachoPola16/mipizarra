@@ -16,6 +16,11 @@
     --muted:    #9c9186;
 }
 
+/* Controles nativos (casillas, selección de texto, cursor) con el naranja del tema, no el azul del navegador. */
+html { accent-color: var(--accent); }
+::selection { background: rgba(232, 117, 44, .4); color: var(--text); }
+input, textarea { caret-color: var(--accent); }
+
 /* Oculta visualmente pero deja accesible a lectores de pantalla: úsalo para
    encabezados de estructura que no necesitan verse (p. ej. el <h1> de la
    vista de resultados). */

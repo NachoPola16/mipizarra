@@ -14,7 +14,9 @@ def test_hay_enlace_de_salto_al_contenido():
 def test_el_foco_del_teclado_es_visible():
     assert ":focus-visible" in HTML
     # los campos que quitan el contorno por defecto lo recuperan con una regla propia
-    assert ".prompt-box:focus-within" in HTML and ".reprompt-bar textarea:focus-visible" in HTML
+    assert ".prompt-box:focus-within" in HTML and "textarea:focus-visible" in HTML
+    # el foco usa el naranja del tema, nunca otro color suelto
+    assert "#ffd37a" not in HTML and "outline: 3px solid var(--accent)" in HTML
 
 
 def test_las_pestanas_indican_cual_esta_activa():

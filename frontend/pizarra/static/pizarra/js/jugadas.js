@@ -20,11 +20,11 @@ var NOMBRE_PIEZA = { A: 'Atacante', D: 'Defensor', B: 'Balón', C: 'Cono' };
 
 var CLARO = { // tema de pantalla
     fondo: '#2a2118', linea: '#9c9186', ataque: '#e8752c', ataqueTxt: '#15120e', defensa: '#d8d0c4', defensaTxt: '#d8d0c4',
-    balon: '#ffc78a', balonTrazo: '#3b2412', cono: '#e8752c', flecha: '#f2ede4', pase: '#f2ede4', sel: '#ffd37a', fantasma: '#ffd37a'
+    balon: '#ffc78a', balonTrazo: '#3b2412', cono: '#e8752c', flecha: '#f2ede4', pase: '#f2ede4', sel: '#f2ede4', selFlecha: '#e8752c', fantasma: '#e8752c'
 };
 var IMPRESION = { // tema para PNG e impresión: tinta sobre blanco
     fondo: '#ffffff', linea: '#666666', ataque: '#e8752c', ataqueTxt: '#15120e', defensa: '#1b1b1f', defensaTxt: '#1b1b1f',
-    balon: '#ffd9a8', balonTrazo: '#1b1b1f', cono: '#e8752c', flecha: '#1b1b1f', pase: '#1b1b1f', sel: '#1b1b1f', fantasma: '#1b1b1f'
+    balon: '#ffd9a8', balonTrazo: '#1b1b1f', cono: '#e8752c', flecha: '#1b1b1f', pase: '#1b1b1f', sel: '#1b1b1f', selFlecha: '#1b1b1f', fantasma: '#1b1b1f'
 };
 
 var $ = function (id) { return document.getElementById(id); };
@@ -164,12 +164,12 @@ function dibujaFlechas(svg, f, c, interactivo) {
             g.setAttribute('aria-label', TIPOS_FLECHA[a.tipo].etiqueta + ' de ' + nombrePieza(de) + (a.aId ? '' : ' hacia ' + zona(fin.x, fin.y)));
             el('path', { d: trazoFlecha('corte', x1, y1, x2, y2, ctl[0], ctl[1]), stroke: 'transparent', 'stroke-width': 22, fill: 'none' }, g);
         }
-        var attrs = { d: trazoFlecha(a.tipo, x1, y1, x2, y2, ctl[0], ctl[1]), fill: 'none', stroke: esSel ? c.sel : color, 'stroke-width': esSel ? 4 : 3, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
+        var attrs = { d: trazoFlecha(a.tipo, x1, y1, x2, y2, ctl[0], ctl[1]), fill: 'none', stroke: esSel ? c.selFlecha : color, 'stroke-width': esSel ? 4 : 3, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
         if (a.tipo === 'pase') attrs['stroke-dasharray'] = '9 7';
         if (a.tipo !== 'bloqueo') attrs['marker-end'] = 'url(#flecha-' + (esSel ? 'sel' : 'n') + ')';
         el('path', attrs, g);
         if (a.tipo === 'bloqueo') {
-            el('line', { x1: x2 - uy * 14, y1: y2 + ux * 14, x2: x2 + uy * 14, y2: y2 - ux * 14, stroke: esSel ? c.sel : color, 'stroke-width': 4, 'stroke-linecap': 'round' }, g);
+            el('line', { x1: x2 - uy * 14, y1: y2 + ux * 14, x2: x2 + uy * 14, y2: y2 - ux * 14, stroke: esSel ? c.selFlecha : color, 'stroke-width': 4, 'stroke-linecap': 'round' }, g);
         }
     });
 }
@@ -203,7 +203,7 @@ function dibujaPieza(svg, p, c, interactivo) {
 function renderEn(svg, f, c, interactivo, sinFlechas) {
     while (svg.firstChild) svg.removeChild(svg.firstChild);
     var defs = el('defs', {}, svg);
-    marcador(defs, 'flecha-n', c.flecha); marcador(defs, 'flecha-sel', c.sel);
+    marcador(defs, 'flecha-n', c.flecha); marcador(defs, 'flecha-sel', c.selFlecha);
     el('rect', { x: -10, y: -10, width: W + 20, height: H + 20, fill: c.fondo }, svg);
     dibujaPista(svg, c);
     if (!sinFlechas) dibujaFlechas(svg, f, c, interactivo);

@@ -289,10 +289,12 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
 }
 
 /* ── Accesibilidad: foco visible y enlace de salto ── */
-:focus-visible { outline: 3px solid #ffd37a; outline-offset: 2px; }
-.dd-opt:focus-visible { outline: 3px solid #ffd37a; outline-offset: -3px; }
-.prompt-box:focus-within { outline: 3px solid #ffd37a; outline-offset: 2px; }
-.reprompt-bar textarea:focus-visible { outline: 3px solid #ffd37a; outline-offset: 1px; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+.dd-opt:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+/* Campos de texto: borde naranja y halo (igual que el login), en vez del contorno del navegador */
+input:focus-visible, select:focus-visible, textarea:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232, 117, 44, .35); }
+.prompt-box:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232, 117, 44, .35); }
+.prompt-box textarea:focus-visible { border-color: transparent; box-shadow: none; }   /* el halo lo pinta el cuadro entero, no el campo de dentro */
 .skip { position: absolute; left: -999px; top: 0; z-index: 20; background: var(--accent); color: var(--bg); padding: .6rem 1rem; font-weight: 600; }
 .skip:focus { left: 0; }
 main:focus { outline: none; }
