@@ -265,6 +265,14 @@ def espacio_pedido(objetivo: str) -> str | None:
     return None
 
 
+def limitar_por_jugadores(ejercicios: list, max_jugadores: int | None) -> list:
+    """Solo las fichas que se pueden hacer con `max_jugadores` o menos (su `jugadores_minimos` cabe en el grupo).
+    Sin límite (None) devuelve la biblioteca entera; una ficha sin `jugadores_minimos` se considera de 1."""
+    if not max_jugadores:
+        return ejercicios
+    return [e for e in ejercicios if (e.get("jugadores_minimos") or 1) <= max_jugadores]
+
+
 def elegir_fichas(ejercicios: list, edad: str, objetivo: str, n: int, solo_directas: bool = False,
                   azar=None) -> list:
     """n fichas de la biblioteca para la parte principal, siguiendo el arco de oposición. Solo entran

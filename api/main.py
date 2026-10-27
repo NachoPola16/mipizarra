@@ -179,6 +179,7 @@ class SesionRequest(BaseModel):
     duracion:          int  = Field(default=90, ge=MIN_DURACION, le=MAX_DURACION)
     objetivo:          str  = Field(default="defensa", min_length=1, max_length=MAX_OBJETIVO_LEN)
     generar_diagramas: bool = True
+    max_jugadores:     Optional[int] = Field(default=None, ge=2, le=40)   # solo fichas que se puedan hacer con tantos o menos
 
 
 class EjercicioRequest(BaseModel):
@@ -252,7 +253,8 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
     logger.info(f"Generando sesión: edad={edad}, duracion={req.duracion}, objetivo={req.objetivo[:60]}")
 
     try:
-        resultado = generar_sesion(edad=edad, duracion=req.duracion, objetivo=req.objetivo)
+        resultado = generar_sesion(edad=edad, duracion=req.duracion, objetivo=req.objetivo,
+                                  max_jugadores=req.max_jugadores)
     except Exception:
         logger.exception("Error en generar_sesion")
         raise HTTPException(status_code=500, detail="No se pudo generar la sesión")

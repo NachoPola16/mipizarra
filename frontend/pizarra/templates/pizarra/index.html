@@ -384,6 +384,33 @@ main:focus { outline: none; }
                     <option value="120">120 min</option>
                 </select>
             </div>
+            <div class="dd" id="dd-jugadores" data-prefix="Jugadores">
+                <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false">
+                    <svg class="dd-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="5.5" cy="5" r="2.5"/><circle cx="11" cy="6" r="2"/><path d="M1 13c0-2.5 2-4 4.5-4S10 10.500 10 13zM10.500 9.200c2.300 0 4.500 1.200 4.500 3.800h-3.800c0-1.500-.4-2.800-.7-3.800z"/></svg>
+                    <span class="dd-label">Jugadores: sin límite</span>
+                    <svg class="dd-caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>
+                </button>
+                <ul class="dd-list" role="listbox" aria-label="Número máximo de jugadores">
+                    <li class="dd-opt selected" role="option" aria-selected="true" tabindex="-1" data-value="">Sin límite</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="4">Hasta 4</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="6">Hasta 6</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="8">Hasta 8</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="10">Hasta 10</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="12">Hasta 12</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="14">Hasta 14</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="16">Hasta 16</li>
+                </ul>
+                <select id="max-jugadores" class="dd-native" tabindex="-1" aria-hidden="true">
+                    <option value="">Sin límite</option>
+                    <option value="4">Hasta 4</option>
+                    <option value="6">Hasta 6</option>
+                    <option value="8">Hasta 8</option>
+                    <option value="10">Hasta 10</option>
+                    <option value="12">Hasta 12</option>
+                    <option value="14">Hasta 14</option>
+                    <option value="16">Hasta 16</option>
+                </select>
+            </div>
         </div>
 
         <div class="prompt-box">
@@ -806,6 +833,7 @@ async function generar() {
     const edad = document.getElementById('edad').value;
     const genDiagramas = document.getElementById('gen-diagramas').checked;
     const duracion = parseInt(document.getElementById('duracion').value) || null;
+    const maxJugadores = parseInt(document.getElementById('max-jugadores').value) || null;
 
     currentObjetivo = objetivo;
     currentEdad = document.getElementById('edad').options[document.getElementById('edad').selectedIndex].text;
@@ -817,6 +845,7 @@ async function generar() {
     const payload = { objetivo, generar_diagramas: genDiagramas };
     if (edad) payload.edad = edad;
     if (duracion) payload.duracion = duracion;
+    if (maxJugadores) payload.max_jugadores = maxJugadores;
 
     try {
         const resp = await fetch('/generar/', {

@@ -23,7 +23,7 @@ from config import EDAD_A_CATEGORIA, MODEL_SESION, OLLAMA_URL
 from contexto import construir_contexto_teoria
 from ejercicios import (
     cargar_ejercicios, elegir_calentamiento as _elegir_calentamiento, elegir_fichas as _elegir_fichas,
-    espacio_pedido, nivel_objetivo,
+    espacio_pedido, limitar_por_jugadores, nivel_objetivo,
 )
 from lineas_rojas import (
     CATEGORIAS_MINIBASKET, aviso_pedido, aviso_pedido_no_incluido, instruccion_prompt, pedidos_presentes,
@@ -580,11 +580,11 @@ def _avisos_de_pedido(permitidos, texto: str, edad: str) -> list[str]:
     return avisos
 
 
-def generar_sesion(edad: str, duracion: int, objetivo: str) -> dict:
+def generar_sesion(edad: str, duracion: int, objetivo: str, max_jugadores: int | None = None) -> dict:
     plan = plan_de_tiempos(duracion, edad)
     n = len(plan.duraciones)
     # azar: mismos parámetros, distinta elección de fichas entre los empates (misma calidad y arco)
-    biblioteca = cargar_ejercicios()
+    biblioteca = limitar_por_jugadores(cargar_ejercicios(), max_jugadores)
     semilla = random.randrange(2 ** 32)
     azar = random.Random(semilla)
     logger.info(f"Selección de fichas con semilla {semilla}")      # para reproducir una sesión que salga mal
