@@ -23,7 +23,7 @@ from config import EDAD_A_CATEGORIA, MODEL_SESION, OLLAMA_URL
 from contexto import construir_contexto_teoria
 from ejercicios import (
     cargar_ejercicios, elegir_calentamiento as _elegir_calentamiento, elegir_fichas as _elegir_fichas,
-    espacio_pedido, limitar_por_jugadores, nivel_objetivo,
+    _raiz, _sin_acentos, espacio_pedido, limitar_por_jugadores, nivel_objetivo,
 )
 from lineas_rojas import (
     CATEGORIAS_MINIBASKET, aviso_pedido, aviso_pedido_no_incluido, instruccion_prompt, pedidos_presentes,
@@ -367,14 +367,22 @@ def _unir(inicio: str, continuacion: str) -> str:
     return inicio + continuacion
 
 
-def _fundamentos_de_las_fichas(huecos: list[_Hueco]) -> str:
-    """Fundamentos de reserva, sin inventar nada: los objetivos técnicos de las fichas de la sesión."""
-    vistos: list[str] = []
+def _fundamentos_de_las_fichas(huecos: list[_Hueco], objetivo: str = "") -> str:
+    """Fundamentos de reserva, sin inventar nada: los objetivos técnicos de las fichas de la sesión. Van primero
+    los que nombran el objetivo pedido y después los que más fichas comparten, para que una sesión de pase no
+    abra con «bomba sobre un pie» solo porque una ficha de 3c3 la menciona."""
+    cuenta: dict[str, int] = {}
     for h in huecos:
         for tecnico in (h.ficha or {}).get("objetivos", {}).get("tecnicos", []):
-            if tecnico not in vistos:
-                vistos.append(tecnico)
-    return (", ".join(vistos[:6]) + ".") if vistos else ""
+            cuenta[tecnico] = cuenta.get(tecnico, 0) + 1
+    raices = {_raiz(p) for p in re.findall(r"\w+", _sin_acentos(objetivo)) if len(p) > 2}
+
+    def peso(tecnico: str) -> int:
+        palabras = re.findall(r"\w+", _sin_acentos(tecnico))
+        return cuenta[tecnico] + (10 if any(_raiz(p) in raices for p in palabras) else 0)
+
+    ordenados = sorted(cuenta, key=lambda t: -peso(t))      # sorted es estable: a igual peso, el orden de las fichas
+    return (", ".join(ordenados[:5]) + ".") if ordenados else ""
 
 
 _ARRANQUE_FUNDAMENTOS = re.compile(r"^\s*en esta sesi[oó]n se trabaja[n]?[:,]?", re.IGNORECASE)
@@ -545,7 +553,7 @@ def _apartados_del_modelo(huecos: list[_Hueco], t_calent: int, t_vuelta: int,
 
 def _redactar_piezas(armar_prompt, inicio_respuesta: str, huecos: list[_Hueco], inicios: dict[str, str],
                      claves_modelo: list[str], edad: str, permitidos,
-                     num_predict: int, num_ctx: int) -> tuple[dict[str, str], dict[str, list[str]]]:
+                     num_predict: int, num_ctx: int, objetivo: str = "") -> tuple[dict[str, str], dict[str, list[str]]]:
     """Pide el texto al modelo (hasta 2 intentos si incumple las líneas rojas) y lo trocea en bloques.
     Devuelve los bloques y las piezas que siguen incumpliendo tras el último intento."""
     correccion = ""
@@ -553,10 +561,10 @@ def _redactar_piezas(armar_prompt, inicio_respuesta: str, huecos: list[_Hueco], 
         cuerpo = armar_prompt(correccion)
         texto = _texto_del_modelo(cuerpo + inicio_respuesta, inicio_respuesta, num_predict, num_ctx)
         texto = _limpiar_respuesta(_completar_apartados(
-            cuerpo, texto, huecos, inicios, num_ctx, _fundamentos_de_las_fichas(huecos)))
+            cuerpo, texto, huecos, inicios, num_ctx, _fundamentos_de_las_fichas(huecos, objetivo)))
         bloques = extraer_bloques(texto)
         _normalizar_claves(huecos, bloques)
-        _arreglar_fundamentos_incompletos(bloques, _fundamentos_de_las_fichas(huecos))
+        _arreglar_fundamentos_incompletos(bloques, _fundamentos_de_las_fichas(huecos, objetivo))
         malas = _piezas_con_linea_roja(bloques, claves_modelo, edad, permitidos)
         if not malas or intento == 2:
             break
@@ -628,7 +636,7 @@ def generar_sesion(edad: str, duracion: int, objetivo: str, max_jugadores: int |
     avisos: list[str] = []      # fuera del try: si la generación falla, los ya acumulados no se pierden
     try:
         bloques, malas = _redactar_piezas(armar_prompt, inicio_respuesta, huecos, inicios, claves_modelo,
-                                          edad, permitidos, num_predict_sesion, num_ctx_sesion)
+                                          edad, permitidos, num_predict_sesion, num_ctx_sesion, objetivo)
         for clave, encontradas in malas.items():
             bloques.pop(clave, None)
             avisos.append(f"{_nombre_de_pieza(clave)} omitido por incumplir las líneas rojas de {edad}: "

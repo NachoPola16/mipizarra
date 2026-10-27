@@ -564,7 +564,7 @@ def test_si_el_modelo_no_da_fundamentos_se_componen_con_los_objetivos_tecnicos_d
     b = dict(FICHA_B, objetivos={"tacticos": ["bote"], "tecnicos": ["cambio de mano", "bote bajo"]})
     sesion_falsa([a, b, FICHA_C], [CALENTAMIENTO_SOLO, " Estiramientos", ""])
     r = sesion.generar_sesion("U16", 90, "bote")
-    assert r["texto"].rstrip().endswith("**Fundamentos**: agarre del balón, cambio de mano, bote bajo.")
+    assert r["texto"].rstrip().endswith("**Fundamentos**: bote bajo, cambio de mano, agarre del balón.")
     assert r["avisos"] == []
 
 

@@ -65,3 +65,16 @@ def test_resumen_con_demasiados_temas_conserva_los_primeros():
     with patch.object(ro.requests, "post", return_value=_Resp(largo)):
         r = ro.resumir_objetivo(LARGO)
     assert len(r) <= ro.MAX_RESUMEN and r.startswith("Bote con ambas manos, mirada al frente") and not r.endswith(",")
+
+
+def test_los_fundamentos_de_reserva_priorizan_el_objetivo_pedido():
+    from sesion import _fundamentos_de_las_fichas
+
+    def hueco(*tecnicos):
+        return type("H", (), {"ficha": {"objetivos": {"tecnicos": list(tecnicos)}}})()
+
+    huecos = [hueco("bomba sobre un pie", "pase de pecho"), hueco("bote para avanzar", "recepción con dos manos"), hueco("pase picado")]
+    texto = _fundamentos_de_las_fichas(huecos, "pase y visión de juego")
+    assert texto.startswith("pase de pecho, pase picado")
+    assert "bomba sobre un pie" in texto and texto.endswith(".")
+    assert len(texto.split(", ")) <= 5
