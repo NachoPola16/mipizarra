@@ -490,8 +490,10 @@ def _restricciones_prompt(objetivo: str, edad: str, permitidos) -> str:
 
 
 def _prompt_sesion(edad: str, duracion: int, objetivo: str, teoria_intro: str, prohibido: str,
-                   lineas_ejercicios: str, plantilla: str, correccion: str = "") -> str:
+                   lineas_ejercicios: str, plantilla: str, correccion: str = "", max_jugadores: int | None = None) -> str:
     categoria_nombre = EDAD_A_CATEGORIA.get(edad, edad)
+    grupo = (f"GRUPO: como máximo {max_jugadores} jugadores. Todo lo que redactes debe poder hacerse con {max_jugadores} "
+             f"jugadores o menos, sin colas largas.\n\n") if max_jugadores else ""
     return f"""Eres MiPizarra, asistente de entrenamiento de baloncesto.
 Rellena la plantilla de abajo con contenido concreto. No añadas texto fuera de la plantilla.
 Escribe SOLO los apartados que aparecen en la plantilla: los ejercicios con ficha del entrenador
@@ -499,7 +501,7 @@ ya están redactados y se añaden solos (no escribas su bloque «Ejercicio N», 
 
 CATEGORÍA: {categoria_nombre} ({edad}) | DURACIÓN: {duracion} min | OBJETIVO: {objetivo}
 
-Si el objetivo es amplio o genérico (p.ej. solo "tiro", sin más detalle), no lo trates
+{grupo}Si el objetivo es amplio o genérico (p.ej. solo "tiro", sin más detalle), no lo trates
 igual en todos los ejercicios: cada uno debe concretar un aspecto distinto (tiro en
 estático, pies de tiro, mano/muñeca, tiro tras bote, tiro en movimiento...) en vez de
 repetir siempre la misma idea general. Además, el objetivo no tiene que ser
@@ -621,7 +623,7 @@ def generar_sesion(edad: str, duracion: int, objetivo: str, max_jugadores: int |
 
     def armar_prompt(correccion: str) -> str:
         return _prompt_sesion(edad, duracion, objetivo, teoria_intro, prohibido,
-                              lineas_ejercicios, plantilla, correccion)
+                              lineas_ejercicios, plantilla, correccion, max_jugadores)
 
     avisos: list[str] = []      # fuera del try: si la generación falla, los ya acumulados no se pierden
     try:

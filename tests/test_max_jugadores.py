@@ -30,3 +30,11 @@ def test_el_limite_se_valida_en_la_peticion():
     assert SesionRequest(objetivo="bote").max_jugadores is None
     with pytest.raises(ValueError):
         SesionRequest(objetivo="bote", max_jugadores=1)
+
+
+def test_el_limite_llega_al_prompt_del_modelo():
+    import sesion
+    con = sesion._prompt_sesion("U10", 75, "bote", "", "", "1. x", "plantilla", "", 8)
+    sin = sesion._prompt_sesion("U10", 75, "bote", "", "", "1. x", "plantilla", "")
+    assert "como máximo 8 jugadores" in con
+    assert "GRUPO:" not in sin
