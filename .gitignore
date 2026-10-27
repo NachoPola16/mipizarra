@@ -45,3 +45,8 @@ data/candidatos/
 
 # Capturas y registros del navegador de pruebas (Playwright MCP)
 .playwright-mcp/
+
+# Cuentas de la web (jugadas guardadas): base de datos local y volumen de Docker
+frontend/db.sqlite3
+data/frontend/
+frontend/secret_key.txt

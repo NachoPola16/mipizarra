@@ -68,6 +68,11 @@ services:
       - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS:-localhost 127.0.0.1} ${BIND_IP:-127.0.0.1}
       # El frontend llama a la API dentro de la misma red Docker; debe enviar el secret.
       - INTERNAL_SECRET=${MIPIZARRA_INTERNAL_SECRET:-}
+      # Cuentas (jugadas guardadas): base de datos SQLite en el volumen de abajo. Con HTTPS delante, DJANGO_COOKIE_SECURE=True.
+      - DJANGO_DB_PATH=/data/db.sqlite3
+      - DJANGO_COOKIE_SECURE=${DJANGO_COOKIE_SECURE:-False}
+    volumes:
+      - ./data/frontend:/data
     depends_on:
       - api
 

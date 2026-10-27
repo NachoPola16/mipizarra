@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="{% static 'pizarra/css/theme.css' %}">
 <link rel="stylesheet" href="{% static 'pizarra/css/jugadas.css' %}">
 </head>
-<body>
+<body data-usuario="{{ usuario }}">
 <a class="skip" href="#pista">Ir a la pista</a>
 <header class="topbar">
     <a class="brand" href="{% url 'index' %}" aria-label="MiPizarra, ir al inicio">
@@ -25,12 +25,17 @@
         <a class="mode-tab" href="{% url 'index' %}">Sesión</a>
         <a class="mode-tab" href="{% url 'index' %}#reglamento">Reglamento</a>
         <a class="mode-tab" href="{% url 'jugadas' %}" aria-current="page">Jugadas</a>
+        {% if usuario %}
+        <form method="post" action="{% url 'salir' %}" style="display:contents;">{% csrf_token %}<button type="submit" class="mode-tab" style="border:none;cursor:pointer;" aria-label="Cerrar sesión de {{ usuario }}">Salir ({{ usuario }})</button></form>
+        {% else %}
+        <a class="mode-tab" href="{% url 'entrar' %}?next={% url 'jugadas' %}">Entrar</a>
+        {% endif %}
     </nav>
 </header>
 
 <main id="contenido">
     <h1>Jugadas</h1>
-    <p class="sub">Coloca las piezas, dibuja pases, botes y cortes, y crea la jugada fase a fase. Todo se queda en tu navegador: no se envía nada a ningún servidor.</p>
+    <p class="sub">Coloca las piezas, dibuja pases, botes y cortes, y crea la jugada fase a fase. {% if usuario %}Con tu cuenta, las jugadas que guardes se conservan en el servidor.{% else %}Todo se queda en tu navegador: no se envía nada a ningún servidor.{% endif %}</p>
 
     <div class="editor">
         <section class="tablero" aria-label="Editor">
@@ -53,6 +58,11 @@
                     <button type="button" id="btn-rehacer" disabled>Rehacer</button>
                     <button type="button" id="btn-borrar" disabled>Borrar selección</button>
                     <button type="button" id="btn-limpiar">Vaciar fase</button>
+                </fieldset>
+                <fieldset class="grupo"><legend>Flecha seleccionada</legend>
+                    <button type="button" id="btn-curva-a" disabled aria-label="Curvar la flecha hacia un lado">Curvar ↶</button>
+                    <button type="button" id="btn-curva-b" disabled aria-label="Curvar la flecha hacia el otro lado">Curvar ↷</button>
+                    <button type="button" id="btn-recta" disabled>Enderezar</button>
                 </fieldset>
             </div>
             <p id="ayuda-herr" aria-live="off">Arrastra una pieza para moverla. Con el teclado: Tab hasta la pieza y flechas (Mayús mueve más).</p>
@@ -105,18 +115,21 @@
                 <p class="nota">Borradores redibujados a mano alzada: revísalos antes de usarlos con el equipo. Al abrir una, puedes editarla y guardarla como tuya.</p>
             </div>
             <div class="caja">
-                <h2>Guardadas en este navegador</h2>
+                <h2>{% if usuario %}Guardadas en tu cuenta{% else %}Guardadas en este navegador{% endif %}</h2>
                 <label for="guardadas" class="sr-only">Jugadas guardadas</label>
                 <select id="guardadas" style="width:100%"></select>
                 <div class="fila">
                     <button type="button" id="btn-abrir">Abrir</button>
                     <button type="button" id="btn-eliminar">Eliminar</button>
                     <button type="button" id="btn-json">Exportar</button>
-                    <label class="fila" style="margin:0;cursor:pointer;"><span class="sr-only">Importar archivo de jugada</span>
-                        <input type="file" id="archivo" accept="application/json,.json" style="max-width:100%;font-size:.8rem;color:var(--text2);">
-                    </label>
+                    <button type="button" id="btn-importar">Importar archivo…</button>
+                    <input type="file" id="archivo" accept="application/json,.json" class="sr-only" tabindex="-1" aria-label="Archivo de jugada (JSON)">
                 </div>
-                <p class="nota">Si limpias los datos del navegador se pierden; usa «Exportar» para tener copia.</p>
+                {% if usuario %}
+                <p class="nota">Se guardan en el servidor, ligadas a tu cuenta: no se pierden al limpiar el navegador.</p>
+                {% else %}
+                <p class="nota">Si limpias los datos del navegador se pierden; usa «Exportar» para tener copia o <a href="{% url 'entrar' %}?next={% url 'jugadas' %}">entra con tu cuenta</a> para guardarlas en el servidor.</p>
+                {% endif %}
             </div>
             <div class="caja">
                 <h2>Descripción en texto</h2>

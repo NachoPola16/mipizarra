@@ -1,0 +1,87 @@
+# tests/test_cuentas.py
+"""Cuentas y jugadas guardadas (frontend/pizarra/cuentas.py). Se ejecutan en un subproceso con una base de datos en
+memoria para no mezclar la configuración de Django con el resto de la suite."""
+import os
+import subprocess
+import sys
+import textwrap
+
+import pytest
+
+from conftest import RAIZ
+
+pytest.importorskip("django")
+pytest.importorskip("whitenoise")
+
+GUION = textwrap.dedent('''
+    import json, os
+    import django
+    django.setup()
+    from django.core.management import call_command
+    from django.contrib.auth import get_user_model
+    from django.test import Client
+    call_command("migrate", verbosity=0)
+    U = get_user_model()
+    U.objects.create_user("alicia", password="clave-de-prueba-1")
+    U.objects.create_user("beto", password="clave-de-prueba-2")
+    H = {"HTTP_HOST": "localhost"}
+
+    JUGADA = {"fases": [{"piezas": [{"tipo": "A", "n": 1, "x": 100, "y": 200}, {"tipo": "B", "n": 0, "x": 110, "y": 210}],
+                         "flechas": [{"tipo": "corte", "de": "A1", "a": {"x": 300.55, "y": 100}, "curva": 0.2}]}]}
+
+    def post(c, url, cuerpo, **kw):
+        return c.post(url, data=json.dumps(cuerpo), content_type="application/json", **H, **kw)
+
+    # sin sesión: 401 en la API y la página del editor carga sin usuario
+    anon = Client()
+    assert anon.get("/jugadas/guardadas/", **H).status_code == 401
+    r = anon.get("/jugadas/", **H); assert r.status_code == 200 and b'data-usuario=""' in r.content
+    assert anon.get("/jugadas/guardadas/1/", **H).status_code == 401
+
+    # el CSRF se exige
+    c = Client(enforce_csrf_checks=True)
+    assert c.login(username="alicia", password="clave-de-prueba-1")
+    assert post(c, "/jugadas/guardadas/", {"nombre": "x", "datos": JUGADA}).status_code == 403
+
+    # con sesión y token: guardar, listar, abrir, actualizar y borrar
+    c = Client(); c.login(username="alicia", password="clave-de-prueba-1")
+    r = post(c, "/jugadas/guardadas/", {"nombre": "Mi jugada", "datos": JUGADA}); assert r.status_code == 201, r.content
+    pk = r.json()["id"]
+    assert post(c, "/jugadas/guardadas/", {"nombre": "Mi jugada", "datos": JUGADA}).status_code == 200      # actualiza, no duplica
+    assert [j["nombre"] for j in c.get("/jugadas/guardadas/", **H).json()["jugadas"]] == ["Mi jugada"]
+    datos = c.get(f"/jugadas/guardadas/{pk}/", **H).json()["datos"]
+    assert datos["fases"][0]["flechas"][0]["curva"] == 0.2 and datos["fases"][0]["piezas"][0]["id"] == "A1"
+    assert b"alicia" in c.get("/jugadas/", **H).content
+
+    # otra cuenta no ve ni borra las jugadas ajenas
+    b = Client(); b.login(username="beto", password="clave-de-prueba-2")
+    assert b.get(f"/jugadas/guardadas/{pk}/", **H).status_code == 404
+    assert b.delete(f"/jugadas/guardadas/{pk}/", **H).status_code == 404
+    assert b.get("/jugadas/guardadas/", **H).json()["jugadas"] == []
+
+    # lo que no tiene la forma esperada se rechaza
+    for malo in ({"fases": []}, {"fases": [{"piezas": [{"tipo": "Z", "n": 1, "x": 1, "y": 1}]}]},
+                 {"fases": [{"piezas": [{"tipo": "A", "n": 1, "x": "<script>", "y": 1}]}]}, "texto", None):
+        assert post(c, "/jugadas/guardadas/", {"nombre": "mala", "datos": malo}).status_code == 400
+    assert post(c, "/jugadas/guardadas/", {"nombre": "  ", "datos": JUGADA}).status_code == 400
+    assert c.get("/jugadas/guardadas/", **H).json()["jugadas"][0]["nombre"] == "Mi jugada"
+
+    assert c.delete(f"/jugadas/guardadas/{pk}/", **H).status_code == 200
+    assert c.get("/jugadas/guardadas/", **H).json()["jugadas"] == []
+
+    # inicio de sesión: error con clave mala y freno tras varios fallos
+    f = Client()
+    for _ in range(8):
+        assert f.post("/cuenta/entrar/", {"username": "alicia", "password": "mala"}, **H).status_code == 200
+    r = f.post("/cuenta/entrar/", {"username": "alicia", "password": "clave-de-prueba-1"}, **H)
+    assert r.status_code == 429
+    print("OK")
+''')
+
+
+def test_cuentas_y_jugadas_guardadas():
+    entorno = {**os.environ, "DJANGO_SETTINGS_MODULE": "mipizarra_cfg.settings", "DJANGO_DB_PATH": ":memory:",
+               "DJANGO_DEBUG": "True", "DJANGO_SECRET_KEY": "clave-solo-para-tests", "PYTHONPATH": str(RAIZ / "frontend")}
+    r = subprocess.run([sys.executable, "-c", GUION], capture_output=True, text=True, encoding="utf-8",
+                       env=entorno, cwd=str(RAIZ / "frontend"), timeout=120)
+    assert r.returncode == 0 and r.stdout.strip().endswith("OK"), r.stdout + r.stderr

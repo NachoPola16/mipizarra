@@ -1,0 +1,41 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Entrar — MiPizarra</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#15120e">
+<link rel="icon" type="image/svg+xml" href="{% static 'pizarra/brand/favicon.svg' %}">
+<link rel="stylesheet" href="{% static 'pizarra/css/fonts.css' %}">
+<link rel="stylesheet" href="{% static 'pizarra/css/theme.css' %}">
+<link rel="stylesheet" href="{% static 'pizarra/css/jugadas.css' %}">
+</head>
+<body>
+<header class="topbar">
+    <a class="brand" href="{% url 'index' %}" aria-label="MiPizarra, ir al inicio">
+        <img class="brand-mark" src="{% static 'pizarra/brand/favicon.svg' %}" alt="" width="26" height="26">
+        <span>Mi<em>Pizarra</em></span>
+    </a>
+    <nav class="mode-tabs" aria-label="Secciones">
+        <a class="mode-tab" href="{% url 'index' %}">Sesión</a>
+        <a class="mode-tab" href="{% url 'jugadas' %}">Jugadas</a>
+    </nav>
+</header>
+<main style="max-width:420px;">
+    <h1>Entrar</h1>
+    <p class="sub">Con tu cuenta, las jugadas que guardes se conservan en el servidor y no dependen del navegador.</p>
+    <form method="post" class="caja" autocomplete="on">
+        {% csrf_token %}
+        {% if form.non_field_errors %}<p role="alert" class="nota" style="color:#ffb4a2;">{{ form.non_field_errors.0 }}</p>{% endif %}
+        <label for="id_username">Usuario</label>
+        <input type="text" name="username" id="id_username" autocomplete="username" autocapitalize="none" required autofocus>
+        <label for="id_password" style="margin-top:.6rem;">Contraseña</label>
+        <input type="password" name="password" id="id_password" autocomplete="current-password" required>
+        <input type="hidden" name="next" value="{{ next }}">
+        <div class="fila"><button type="submit" class="primario">Entrar</button></div>
+    </form>
+    <p class="nota">¿Sin cuenta? Puedes usar el editor igualmente: tus jugadas se guardan en este navegador.</p>
+</main>
+</body>
+</html>

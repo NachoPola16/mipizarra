@@ -7,7 +7,7 @@
 var NS = 'http://www.w3.org/2000/svg';
 var W = 500, H = 470, ARO = { x: 250, y: 52 };
 var R = 16;                                   // radio de una pieza
-var MAX_FASES = 12, MAX_FLECHAS = 40, MAX_CONOS = 8;
+var MAX_FASES = 12, MAX_FLECHAS = 40, MAX_CONOS = 8, CURVA_MAX = 0.8;
 var CLAVE = 'mipizarra.jugadas.v1';
 
 var TIPOS_FLECHA = {
@@ -123,13 +123,18 @@ function puntoFinal(f, a) {
     return a.a || null;
 }
 
-function trazoFlecha(tipo, x1, y1, x2, y2) {
-    var dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L;
-    if (tipo !== 'bote') return 'M' + x1 + ' ' + y1 + ' L' + x2 + ' ' + y2;
-    var d = 'M' + x1 + ' ' + y1, n = Math.max(2, Math.floor(L / 7));
+// Trazo de una flecha. (cx, cy) es el punto de control de una curva cuadrática; sin él, la flecha es recta.
+function trazoFlecha(tipo, x1, y1, x2, y2, cx, cy) {
+    var curva = typeof cx === 'number';
+    if (tipo !== 'bote') return curva ? 'M' + x1 + ' ' + y1 + ' Q' + cx + ' ' + cy + ' ' + x2 + ' ' + y2 : 'M' + x1 + ' ' + y1 + ' L' + x2 + ' ' + y2;
+    if (!curva) { cx = (x1 + x2) / 2; cy = (y1 + y2) / 2; }
+    var L = Math.hypot(x2 - x1, y2 - y1) || 1, n = Math.max(2, Math.floor(L / 7)), d = 'M' + x1 + ' ' + y1;
     for (var i = 1; i <= n; i++) {
-        var t = i / n, off = (i % 2 ? 1 : -1) * 5 * (i === n ? 0 : 1);
-        d += ' L' + redondea(x1 + dx * t - uy * off) + ' ' + redondea(y1 + dy * t + ux * off);
+        var t = i / n, m = 1 - t;
+        var px = m * m * x1 + 2 * m * t * cx + t * t * x2, py = m * m * y1 + 2 * m * t * cy + t * t * y2;
+        var tx = 2 * m * (cx - x1) + 2 * t * (x2 - cx), ty = 2 * m * (cy - y1) + 2 * t * (y2 - cy), tl = Math.hypot(tx, ty) || 1;
+        var off = (i % 2 ? 1 : -1) * 5 * (i === n ? 0 : 1);
+        d += ' L' + redondea(px - ty / tl * off) + ' ' + redondea(py + tx / tl * off);
     }
     return d;
 }
@@ -140,19 +145,24 @@ function dibujaFlechas(svg, f, c, interactivo) {
         if (!de || !fin) return;
         var dx = fin.x - de.x, dy = fin.y - de.y, L = Math.hypot(dx, dy);
         if (L < 4) return;
-        var ux = dx / L, uy = dy / L;
-        var x1 = de.x + ux * (R + 2), y1 = de.y + uy * (R + 2);
+        // curva: el punto de control se separa del centro de la cuerda un `curva` por ciento de su largo, hacia la izquierda de la marcha
+        var cv = a.curva || 0;
+        var cx = (de.x + fin.x) / 2 - dy * cv, cy = (de.y + fin.y) / 2 + dx * cv;
+        var t1 = Math.hypot(cx - de.x, cy - de.y) || 1, t2 = Math.hypot(fin.x - cx, fin.y - cy) || 1;
+        var u1x = (cx - de.x) / t1, u1y = (cy - de.y) / t1, ux = (fin.x - cx) / t2, uy = (fin.y - cy) / t2;
+        var x1 = de.x + u1x * (R + 2), y1 = de.y + u1y * (R + 2);
         var corta = a.aId ? R + 5 : 0;
         var x2 = fin.x - ux * corta, y2 = fin.y - uy * corta;
+        var ctl = cv ? [cx, cy] : [];
         var color = a.tipo === 'pase' ? c.pase : c.flecha;
         var esSel = interactivo && sel && sel.tipo === 'flecha' && sel.i === i;
         var g = el('g', { 'data-flecha': i }, svg);
         if (interactivo) {
             g.setAttribute('role', 'button'); g.setAttribute('tabindex', '0'); g.style.cursor = 'pointer';
             g.setAttribute('aria-label', TIPOS_FLECHA[a.tipo].etiqueta + ' de ' + nombrePieza(de) + (a.aId ? '' : ' hacia ' + zona(fin.x, fin.y)));
-            el('path', { d: trazoFlecha('corte', x1, y1, x2, y2), stroke: 'transparent', 'stroke-width': 22, fill: 'none' }, g);
+            el('path', { d: trazoFlecha('corte', x1, y1, x2, y2, ctl[0], ctl[1]), stroke: 'transparent', 'stroke-width': 22, fill: 'none' }, g);
         }
-        var attrs = { d: trazoFlecha(a.tipo, x1, y1, x2, y2), fill: 'none', stroke: esSel ? c.sel : color, 'stroke-width': esSel ? 4 : 3, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
+        var attrs = { d: trazoFlecha(a.tipo, x1, y1, x2, y2, ctl[0], ctl[1]), fill: 'none', stroke: esSel ? c.sel : color, 'stroke-width': esSel ? 4 : 3, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
         if (a.tipo === 'pase') attrs['stroke-dasharray'] = '9 7';
         if (a.tipo !== 'bloqueo') attrs['marker-end'] = 'url(#flecha-' + (esSel ? 'sel' : 'n') + ')';
         el('path', attrs, g);
@@ -219,6 +229,7 @@ function panelEstado() {
     $('btn-deshacer').disabled = !deshacer.length;
     $('btn-rehacer').disabled = !rehacer.length;
     $('btn-borrar').disabled = !sel;
+    ['btn-curva-a', 'btn-curva-b', 'btn-recta'].forEach(function (id) { $(id).disabled = !(sel && sel.tipo === 'flecha'); });
     $('btn-nueva-fase').disabled = estado.fases.length >= MAX_FASES || !!reproduccion;
     $('btn-borrar-fase').disabled = estado.fases.length < 2 || !!reproduccion;
     $('btn-reproducir').textContent = reproduccion ? 'Parar' : 'Reproducir';
@@ -291,6 +302,16 @@ function borrarSeleccion() {
     pintar();
 }
 
+function curvar(delta) {
+    if (!sel || sel.tipo !== 'flecha') return;
+    var a = fase().flechas[sel.i]; if (!a) return;
+    guardarPaso();
+    a.curva = delta === 0 ? 0 : redondea(acotar((a.curva || 0) + delta, -CURVA_MAX, CURVA_MAX));
+    if (!a.curva) delete a.curva;
+    pintar();
+    anuncia(a.curva ? 'Flecha curvada.' : 'Flecha recta.');
+}
+
 function nuevaFlecha(tipo, de, destino) {
     var f = fase();
     if (f.flechas.length >= MAX_FLECHAS) { anuncia('Demasiadas flechas en esta fase.'); return; }
@@ -359,7 +380,7 @@ function alSoltar(ev) {
         var nodo = document.elementFromPoint(ev.clientX, ev.clientY);
         var g = nodo && nodo.closest ? nodo.closest('[data-pieza]') : null;
         if (g) bajo = g.getAttribute('data-pieza');
-        nuevaFlecha(o.tipo, o.de, { x: o.x, y: o.y, aId: o.tipo === 'pase' ? bajo : null });
+        nuevaFlecha(o.tipo, o.de, { x: o.x, y: o.y, aId: (o.tipo === 'pase' || o.tipo === 'bloqueo') ? bajo : null });
         pintar();
     }
 }
@@ -493,13 +514,33 @@ function animar(t) {
 }
 
 // ── Guardar, abrir, exportar ─────────────────────────────────────────────
+// Con sesión iniciada las jugadas viven en el servidor (cuenta); sin ella, en el navegador (localStorage).
+var USUARIO = document.body.getAttribute('data-usuario') || '';
+function csrf() { var m = document.cookie.match(/(?:^|; )csrftoken=([^;]*)/); return m ? decodeURIComponent(m[1]) : ''; }
+function api(url, opciones) {
+    opciones = opciones || {};
+    opciones.credentials = 'same-origin';
+    opciones.headers = Object.assign({ 'X-CSRFToken': csrf() }, opciones.headers || {});
+    return fetch(url, opciones).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (cuerpo) {
+            if (!r.ok) { var e = new Error(cuerpo.error || 'Error ' + r.status); e.estado = r.status; throw e; }
+            return cuerpo;
+        });
+    });
+}
 function almacen() { try { return JSON.parse(localStorage.getItem(CLAVE) || '[]'); } catch (e) { return []; } }
 function escribeAlmacen(l) { try { localStorage.setItem(CLAVE, JSON.stringify(l)); return true; } catch (e) { return false; } }
 
+var guardadasCache = [];      // [{ id, nombre }] en modo cuenta; en modo local, el índice hace de id
 function pintaGuardadas() {
     var s = $('guardadas'); s.textContent = '';
     var o0 = document.createElement('option'); o0.value = ''; o0.textContent = 'Jugadas guardadas…'; s.appendChild(o0);
-    almacen().forEach(function (j, i) { var o = document.createElement('option'); o.value = String(i); o.textContent = j.nombre || 'Sin nombre'; s.appendChild(o); });
+    guardadasCache.forEach(function (j) { var o = document.createElement('option'); o.value = String(j.id); o.textContent = j.nombre || 'Sin nombre'; s.appendChild(o); });
+}
+function cargaGuardadas() {
+    if (!USUARIO) { guardadasCache = almacen().map(function (j, i) { return { id: i, nombre: j.nombre }; }); pintaGuardadas(); return Promise.resolve(); }
+    return api('/jugadas/guardadas/').then(function (r) { guardadasCache = r.jugadas || []; pintaGuardadas(); })
+        .catch(function (e) { anuncia(e.estado === 401 ? 'Tu sesión ha caducado: vuelve a entrar.' : 'No se pudo cargar tu lista de jugadas.'); });
 }
 
 function nombreJugada() { return ($('nombre').value || '').trim().slice(0, 80) || 'Mi jugada'; }
@@ -526,6 +567,7 @@ function validar(j) { // sanea cualquier JSON de fuera: solo se aceptan tipos y 
             if (typeof a.aId === 'string' && vistos[a.aId]) r.aId = a.aId;
             else if (a.a && num(a.a.x, 0, W) !== null && num(a.a.y, 0, H) !== null) r.a = { x: num(a.a.x, 0, W), y: num(a.a.y, 0, H) };
             else return;
+            var cv = num(a.curva, -CURVA_MAX, CURVA_MAX); if (cv) r.curva = redondea(cv);
             nf.flechas.push(r);
         });
         salida.fases.push(nf);
@@ -613,6 +655,9 @@ function iniciar() {
     $('btn-deshacer').addEventListener('click', function () { volverPaso(deshacer, rehacer); });
     $('btn-rehacer').addEventListener('click', function () { volverPaso(rehacer, deshacer); });
     $('btn-borrar').addEventListener('click', borrarSeleccion);
+    $('btn-curva-a').addEventListener('click', function () { curvar(0.2); });
+    $('btn-curva-b').addEventListener('click', function () { curvar(-0.2); });
+    $('btn-recta').addEventListener('click', function () { curvar(0); });
     $('btn-fase-ant').addEventListener('click', function () { irA(estado.actual - 1); });
     $('btn-fase-sig').addEventListener('click', function () { irA(estado.actual + 1); });
     $('btn-nueva-fase').addEventListener('click', nuevaFase);
@@ -627,25 +672,46 @@ function iniciar() {
         guardarPaso(); var j = plantilla(v); j.nombre = estado.nombre; estado = j; sel = null; e.target.value = ''; pintar(); anuncia('Plantilla colocada.');
     });
     $('btn-guardar').addEventListener('click', function () {
-        var l = almacen(), j = clon(estado); j.nombre = nombreJugada(); j.actual = 0;
+        var j = clon(estado); j.nombre = nombreJugada(); j.actual = 0;
+        if (USUARIO) {
+            api('/jugadas/guardadas/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre: j.nombre, datos: j }) })
+                .then(function (r) { anuncia(r.creada ? 'Jugada guardada en tu cuenta.' : 'Jugada actualizada en tu cuenta.'); return cargaGuardadas(); })
+                .catch(function (e) { anuncia(e.estado === 401 ? 'Tu sesión ha caducado: vuelve a entrar.' : 'No se pudo guardar: ' + e.message); });
+            return;
+        }
+        var l = almacen();
         var i = l.map(function (x) { return x.nombre; }).indexOf(j.nombre);
         if (i >= 0) l[i] = j; else { if (l.length >= 50) { anuncia('Hay demasiadas jugadas guardadas; borra alguna.'); return; } l.push(j); }
         anuncia(escribeAlmacen(l) ? 'Jugada guardada en este navegador.' : 'No se pudo guardar: el navegador bloquea el almacenamiento. Usa Exportar.');
-        pintaGuardadas();
+        cargaGuardadas();
     });
     $('btn-abrir').addEventListener('click', function () {
         var i = $('guardadas').value; if (i === '') return;
+        if (USUARIO) {
+            api('/jugadas/guardadas/' + encodeURIComponent(i) + '/').then(function (r) {
+                var j = validar(r.datos); if (!j) { anuncia('Esa jugada guardada no es válida.'); return; }
+                j.nombre = r.nombre; cargaJugada(j); anuncia('Jugada abierta.');
+            }).catch(function (e) { anuncia('No se pudo abrir: ' + e.message); });
+            return;
+        }
         var j = validar(almacen()[+i]); if (!j) { anuncia('Esa jugada guardada no es válida.'); return; }
         cargaJugada(j); anuncia('Jugada abierta.');
     });
     $('btn-eliminar').addEventListener('click', function () {
         var i = $('guardadas').value; if (i === '') return;
-        var l = almacen(); l.splice(+i, 1); escribeAlmacen(l); pintaGuardadas(); anuncia('Jugada guardada eliminada.');
+        if (USUARIO) {
+            api('/jugadas/guardadas/' + encodeURIComponent(i) + '/', { method: 'DELETE' })
+                .then(function () { anuncia('Jugada eliminada de tu cuenta.'); return cargaGuardadas(); })
+                .catch(function (e) { anuncia('No se pudo eliminar: ' + e.message); });
+            return;
+        }
+        var l = almacen(); l.splice(+i, 1); escribeAlmacen(l); cargaGuardadas(); anuncia('Jugada guardada eliminada.');
     });
     $('btn-json').addEventListener('click', function () {
         var j = clon(estado); j.nombre = nombreJugada();
         descarga(new Blob([JSON.stringify(j, null, 1)], { type: 'application/json' }), nombreArchivo() + '.json');
     });
+    $('btn-importar').addEventListener('click', function () { $('archivo').click(); });
     $('archivo').addEventListener('change', function (e) {
         var fch = e.target.files[0]; if (!fch) return;
         if (fch.size > 300000) { anuncia('El archivo es demasiado grande.'); e.target.value = ''; return; }
@@ -668,7 +734,7 @@ function iniciar() {
         else if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'y') { ev.preventDefault(); volverPaso(rehacer, deshacer); }
     });
     iniciaBiblioteca();
-    pintaGuardadas();
+    cargaGuardadas();
     pintar();
 }
 
