@@ -20,11 +20,11 @@ var NOMBRE_PIEZA = { A: 'Atacante', D: 'Defensor', B: 'Balón', C: 'Cono' };
 
 var CLARO = { // tema de pantalla
     fondo: '#2a2118', linea: '#9c9186', ataque: '#e8752c', ataqueTxt: '#15120e', defensa: '#d8d0c4', defensaTxt: '#d8d0c4',
-    balon: '#f2ede4', balonTrazo: '#15120e', cono: '#e8752c', flecha: '#f2ede4', pase: '#f2ede4', sel: '#ffd37a', fantasma: '#ffd37a'
+    balon: '#ffc78a', balonTrazo: '#3b2412', cono: '#e8752c', flecha: '#f2ede4', pase: '#f2ede4', sel: '#ffd37a', fantasma: '#ffd37a'
 };
 var IMPRESION = { // tema para PNG e impresión: tinta sobre blanco
     fondo: '#ffffff', linea: '#666666', ataque: '#e8752c', ataqueTxt: '#15120e', defensa: '#1b1b1f', defensaTxt: '#1b1b1f',
-    balon: '#ffffff', balonTrazo: '#1b1b1f', cono: '#e8752c', flecha: '#1b1b1f', pase: '#1b1b1f', sel: '#1b1b1f', fantasma: '#1b1b1f'
+    balon: '#ffd9a8', balonTrazo: '#1b1b1f', cono: '#e8752c', flecha: '#1b1b1f', pase: '#1b1b1f', sel: '#1b1b1f', fantasma: '#1b1b1f'
 };
 
 var $ = function (id) { return document.getElementById(id); };
@@ -180,8 +180,9 @@ function dibujaPieza(svg, p, c, interactivo) {
         var tx = el('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 17, 'font-weight': 700, fill: c.defensaTxt, 'font-family': 'Inter, sans-serif' }, g);
         tx.textContent = 'X' + p.n;
     } else if (p.tipo === 'B') {
-        el('circle', { r: 10, fill: c.balon, stroke: esSel ? c.sel : c.balonTrazo, 'stroke-width': esSel ? 4 : 2.5 }, g);
-        el('path', { d: 'M-10 0 H10 M0 -10 V10', stroke: c.balonTrazo, 'stroke-width': 1.5, fill: 'none' }, g);
+        el('circle', { r: 13, fill: c.balon, stroke: esSel ? c.sel : c.balonTrazo, 'stroke-width': esSel ? 4 : 2 }, g);
+        // costuras: línea vertical, horizontal y dos curvas laterales
+        el('path', { d: 'M-13 0 H13 M0 -13 V13 M-9.2 -9.2 Q-4.3 0 -9.2 9.2 M9.2 -9.2 Q4.3 0 9.2 9.2', stroke: c.balonTrazo, 'stroke-width': 1.3, fill: 'none', 'stroke-linecap': 'round' }, g);
     } else {
         el('path', { d: 'M0 -13 L11 10 L-11 10 Z', fill: c.cono, stroke: esSel ? c.sel : c.ataqueTxt, 'stroke-width': esSel ? 4 : 2 }, g);
     }
