@@ -63,7 +63,7 @@ services:
       - "${BIND_IP:-127.0.0.1}:8501:8000"
     environment:
       - API_URL=http://mipizarra-api:8090
-      # Vacío = el frontend genera una clave aleatoria en cada arranque (basta: no usa sesiones ni cookies firmadas).
+      # Vacío = el frontend genera una clave aleatoria una vez y la guarda junto a la base de datos (volumen /data).
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY:-}
       - DJANGO_ALLOWED_HOSTS=${DJANGO_ALLOWED_HOSTS:-localhost 127.0.0.1} ${BIND_IP:-127.0.0.1}
       # El frontend llama a la API dentro de la misma red Docker; debe enviar el secret.
@@ -71,6 +71,7 @@ services:
       # Cuentas (jugadas guardadas): base de datos SQLite en el volumen de abajo. Con HTTPS delante, DJANGO_COOKIE_SECURE=True.
       - DJANGO_DB_PATH=/data/db.sqlite3
       - DJANGO_COOKIE_SECURE=${DJANGO_COOKIE_SECURE:-False}
+      - DJANGO_CSRF_TRUSTED_ORIGINS=${DJANGO_CSRF_TRUSTED_ORIGINS:-}
     volumes:
       - ./data/frontend:/data
     depends_on:

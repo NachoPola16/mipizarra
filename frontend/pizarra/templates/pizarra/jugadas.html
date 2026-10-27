@@ -88,6 +88,11 @@
                 <h2>Jugada</h2>
                 <label for="nombre">Nombre</label>
                 <input type="text" id="nombre" maxlength="80" autocomplete="off" placeholder="Ej.: Entrada 2c1 al aro">
+                <label for="etiquetas" style="margin-top:.6rem;">Etiquetas de los jugadores</label>
+                <select id="etiquetas">
+                    <option value="letra">Letras A–E (sin posiciones)</option>
+                    <option value="num">Números 1–5 (posiciones)</option>
+                </select>
                 <label for="plantillas" style="margin-top:.6rem;">Empezar desde una plantilla</label>
                 <select id="plantillas">
                     <option value="">Elegir…</option>
@@ -140,7 +145,7 @@
                     <summary>Ayuda y atajos</summary>
                     <dl>
                         <dt>Con teclado</dt>
-                        <dd>Tab llega a cada pieza y flecha. Flechas mueven la pieza 1 m (Mayús: 4 m). Con una herramienta de flecha activa, Enter sobre la pieza elige el destino con las flechas y Enter confirma. En un pase, las teclas 1 a 5 saltan a ese atacante.</dd>
+                        <dd>Tab llega a cada pieza y flecha. Flechas mueven la pieza 1 m (Mayús: 4 m). Con una herramienta de flecha activa, Enter sobre la pieza elige el destino con las flechas y Enter confirma. En un pase, las teclas A a E (o 1 a 5) saltan a ese atacante.</dd>
                         <dt>Suprimir</dt><dd>Borra la pieza o la flecha seleccionada.</dd>
                         <dt>Ctrl+Z / Ctrl+Y</dt><dd>Deshacer y rehacer.</dd>
                         <dt>Edad</dt><dd>En U10 y U12 evita bloqueos, mano a mano y juego de poste (líneas rojas de la federación).</dd>

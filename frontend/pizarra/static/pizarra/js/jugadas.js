@@ -34,7 +34,9 @@ var reducirMovimiento = window.matchMedia && window.matchMedia('(prefers-reduced
 var estado, herramienta = 'mover', sel = null, deshacer = [], rehacer = [], reproduccion = null;
 
 function faseVacia() { return { piezas: [], flechas: [] }; }
-function jugadaNueva() { return { nombre: '', fases: [faseVacia()], actual: 0 }; }
+// etiquetas: 'letra' (A–E, para que no se confundan con las posiciones 1–5) o 'num' (números de posición)
+function jugadaNueva() { return { nombre: '', etiquetas: 'letra', fases: [faseVacia()], actual: 0 }; }
+function etiquetaAtacante(n) { return estado.etiquetas === 'num' ? String(n) : 'ABCDEFGHI'.charAt(n - 1); }
 function fase() { return estado.fases[estado.actual]; }
 function clon(o) { return JSON.parse(JSON.stringify(o)); }
 function acotar(v, a, b) { return Math.max(a, Math.min(b, v)); }
@@ -68,7 +70,7 @@ function zona(x, y) {
     return prof + ', ' + lado;
 }
 function nombrePieza(p) {
-    if (p.tipo === 'A') return 'el ' + p.n;
+    if (p.tipo === 'A') return estado.etiquetas === 'num' ? 'el ' + p.n : 'el jugador ' + etiquetaAtacante(p.n);
     if (p.tipo === 'D') return 'el defensor ' + p.n;
     return NOMBRE_PIEZA[p.tipo].toLowerCase();
 }
@@ -177,14 +179,14 @@ function dibujaPieza(svg, p, c, interactivo) {
     var esSel = interactivo && sel && sel.tipo === 'pieza' && sel.id === p.id;
     if (interactivo) {
         g.setAttribute('role', 'button'); g.setAttribute('tabindex', '0'); g.style.cursor = herramienta === 'mover' ? 'grab' : 'crosshair';
-        g.setAttribute('aria-label', NOMBRE_PIEZA[p.tipo] + (p.n ? ' ' + p.n : '') + ', ' + zona(p.x, p.y));
+        g.setAttribute('aria-label', NOMBRE_PIEZA[p.tipo] + (p.n ? ' ' + (p.tipo === 'A' ? etiquetaAtacante(p.n) : p.n) : '') + ', ' + zona(p.x, p.y));
         g.setAttribute('aria-pressed', esSel ? 'true' : 'false');
         el('circle', { r: 30, fill: 'transparent' }, g);
     }
     if (p.tipo === 'A') {
         el('circle', { r: R, fill: c.ataque, stroke: esSel ? c.sel : c.ataqueTxt, 'stroke-width': esSel ? 4 : 2 }, g);
         var t = el('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 18, 'font-weight': 700, fill: c.ataqueTxt, 'font-family': 'Inter, sans-serif' }, g);
-        t.textContent = String(p.n);
+        t.textContent = etiquetaAtacante(p.n);
     } else if (p.tipo === 'D') {
         el('circle', { r: R, fill: c.fondo, stroke: esSel ? c.sel : c.defensa, 'stroke-width': esSel ? 4 : 3 }, g);
         var tx = el('text', { 'text-anchor': 'middle', 'dominant-baseline': 'central', 'font-size': 17, 'font-weight': 700, fill: c.defensaTxt, 'font-family': 'Inter, sans-serif' }, g);
@@ -282,7 +284,7 @@ function colocar(tipo, pos) {
     f.piezas.push(p);
     sel = { tipo: 'pieza', id: p.id };
     pintar();
-    anuncia(NOMBRE_PIEZA[tipo] + (p.n ? ' ' + p.n : '') + ' colocado. ' + zona(p.x, p.y) + '.');
+    anuncia(NOMBRE_PIEZA[tipo] + (p.n ? ' ' + (tipo === 'A' ? etiquetaAtacante(p.n) : p.n) : '') + ' colocado. ' + zona(p.x, p.y) + '.');
     var nodo = document.querySelector('[data-pieza="' + p.id + '"]'); if (nodo) nodo.focus();
 }
 
@@ -396,8 +398,9 @@ function alTeclear(ev) {
         else if (k === 'ArrowRight') fantasma.x = acotar(fantasma.x + paso, 0, W);
         else if (k === 'ArrowUp') fantasma.y = acotar(fantasma.y - paso, 0, H);
         else if (k === 'ArrowDown') fantasma.y = acotar(fantasma.y + paso, 0, H);
-        else if (/^[1-5]$/.test(k) && destinoTeclado.tipo === 'pase') {
-            var q = pieza(f, 'A' + k); if (q) { fantasma.x = q.x; fantasma.y = q.y; fantasma.aId = q.id; anuncia('Destino: atacante ' + k + '.'); }
+        else if (/^[1-5a-eA-E]$/.test(k) && destinoTeclado.tipo === 'pase') {
+            var num = /\d/.test(k) ? +k : k.toLowerCase().charCodeAt(0) - 96;
+            var q = pieza(f, 'A' + num); if (q) { fantasma.x = q.x; fantasma.y = q.y; fantasma.aId = q.id; anuncia('Destino: atacante ' + etiquetaAtacante(num) + '.'); }
         } else if (k === 'Enter') {
             var d = destinoTeclado; destinoTeclado = null;
             var f2 = fantasma; fantasma = null;
@@ -417,7 +420,7 @@ function alTeclear(ev) {
             if (TIPOS_FLECHA[herramienta]) {
                 destinoTeclado = { tipo: herramienta, de: id };
                 fantasma = { x: p.x, y: p.y };
-                anuncia('Elige el destino con las flechas del teclado' + (herramienta === 'pase' ? ' o con las teclas 1 a 5 para un atacante' : '') + '. Enter confirma, Escape cancela.');
+                anuncia('Elige el destino con las flechas del teclado' + (herramienta === 'pase' ? ' o con las teclas A a E (o 1 a 5) para un atacante' : '') + '. Enter confirma, Escape cancela.');
             } else anuncia(NOMBRE_PIEZA[p.tipo] + (p.n ? ' ' + p.n : '') + ' seleccionado.');
             pintar(); refocalizar(id); return;
         }
@@ -548,7 +551,7 @@ function nombreJugada() { return ($('nombre').value || '').trim().slice(0, 80) |
 function validar(j) { // sanea cualquier JSON de fuera: solo se aceptan tipos y rangos conocidos
     if (!j || typeof j !== 'object' || !Array.isArray(j.fases) || !j.fases.length || j.fases.length > MAX_FASES) return null;
     var num = function (v, a, b) { return typeof v === 'number' && isFinite(v) ? acotar(v, a, b) : null; };
-    var salida = { nombre: typeof j.nombre === 'string' ? j.nombre.slice(0, 80) : '', fases: [], actual: 0 };
+    var salida = { nombre: typeof j.nombre === 'string' ? j.nombre.slice(0, 80) : '', etiquetas: j.etiquetas === 'letra' ? 'letra' : 'num', fases: [], actual: 0 };
     for (var i = 0; i < j.fases.length; i++) {
         var fs = j.fases[i], nf = faseVacia();
         if (!fs || !Array.isArray(fs.piezas) || fs.piezas.length > 30) return null;
@@ -577,6 +580,7 @@ function validar(j) { // sanea cualquier JSON de fuera: solo se aceptan tipos y 
 function cargaJugada(j) {
     estado = j; sel = null; deshacer = []; rehacer = [];
     $('nombre').value = j.nombre || '';
+    $('etiquetas').value = j.etiquetas;
     pintar();
 }
 
@@ -655,6 +659,7 @@ function iniciar() {
     $('btn-deshacer').addEventListener('click', function () { volverPaso(deshacer, rehacer); });
     $('btn-rehacer').addEventListener('click', function () { volverPaso(rehacer, deshacer); });
     $('btn-borrar').addEventListener('click', borrarSeleccion);
+    $('etiquetas').addEventListener('change', function (e) { guardarPaso(); estado.etiquetas = e.target.value === 'num' ? 'num' : 'letra'; pintar(); anuncia('Etiquetas de los jugadores: ' + (estado.etiquetas === 'num' ? 'números' : 'letras') + '.'); });
     $('btn-curva-a').addEventListener('click', function () { curvar(0.2); });
     $('btn-curva-b').addEventListener('click', function () { curvar(-0.2); });
     $('btn-recta').addEventListener('click', function () { curvar(0); });
@@ -669,7 +674,7 @@ function iniciar() {
     });
     $('plantillas').addEventListener('change', function (e) {
         var v = e.target.value; if (!v) return;
-        guardarPaso(); var j = plantilla(v); j.nombre = estado.nombre; estado = j; sel = null; e.target.value = ''; pintar(); anuncia('Plantilla colocada.');
+        guardarPaso(); var j = plantilla(v); j.nombre = estado.nombre; j.etiquetas = estado.etiquetas; estado = j; sel = null; e.target.value = ''; pintar(); anuncia('Plantilla colocada.');
     });
     $('btn-guardar').addEventListener('click', function () {
         var j = clon(estado); j.nombre = nombreJugada(); j.actual = 0;
@@ -757,7 +762,7 @@ function iniciaBiblioteca() {
         if (lista.value === '') { anuncia('Elige primero una jugada de la biblioteca.'); return; }
         var j = biblioteca[+lista.value]; guardarPaso();
         var v = validar(j.crudo); v.nombre = j.nombre;
-        estado = v; sel = null; $('nombre').value = j.nombre; pintar(); anuncia('Jugada «' + j.nombre + '» abierta, ' + estado.fases.length + ' fases.');
+        estado = v; sel = null; $('nombre').value = j.nombre; $('etiquetas').value = v.etiquetas; pintar(); anuncia('Jugada «' + j.nombre + '» abierta, ' + estado.fases.length + ' fases.');
     });
     fetch($('bib-lista').getAttribute('data-url'), { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (datos) {
         biblioteca = (Array.isArray(datos) ? datos : []).map(function (c) {

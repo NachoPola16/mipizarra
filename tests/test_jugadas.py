@@ -44,6 +44,7 @@ def test_el_catalogo_de_jugadas_es_coherente():
     import json
     datos = json.loads((PIZARRA / "static" / "pizarra" / "data" / "jugadas.json").read_text(encoding="utf-8"))
     assert len({j["id"] for j in datos}) == len(datos)
+    assert all(j.get("etiquetas") in ("num", "letra") for j in datos)
     for j in datos:
         for f in j["fases"]:
             ids = {p["id"] for p in f["piezas"]}

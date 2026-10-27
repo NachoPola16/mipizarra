@@ -5,6 +5,7 @@ ANCHO, ALTO = 500, 470
 MAX_FASES, MAX_PIEZAS, MAX_FLECHAS, CURVA_MAX = 12, 30, 40, 0.8
 TIPOS_PIEZA = ('A', 'D', 'B', 'C')
 TIPOS_FLECHA = ('pase', 'bote', 'corte', 'bloqueo')
+ETIQUETAS = ('num', 'letra')
 
 
 def _num(v, minimo, maximo, decimales=1):
@@ -54,4 +55,5 @@ def validar_jugada(datos):
                 f['curva'] = curva
             flechas.append(f)
         fases.append({'piezas': piezas, 'flechas': flechas})
-    return {'fases': fases}
+    etiquetas = datos.get('etiquetas')
+    return {'etiquetas': etiquetas if etiquetas in ETIQUETAS else 'num', 'fases': fases}
