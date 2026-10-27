@@ -92,6 +92,19 @@
                 </div>
             </div>
             <div class="caja">
+                <h2>Biblioteca de jugadas</h2>
+                <label for="bib-edad">Categoría</label>
+                <select id="bib-edad" style="width:100%">
+                    <option value="">Todas</option>
+                    <option>U10</option><option>U12</option><option>U14</option><option>U16</option><option>U18</option><option>Senior</option>
+                </select>
+                <label for="bib-lista" style="margin-top:.6rem;">Jugada</label>
+                <select id="bib-lista" style="width:100%" data-url="{% static 'pizarra/data/jugadas.json' %}"><option value="">Cargando…</option></select>
+                <p id="bib-desc" class="nota"></p>
+                <div class="fila"><button type="button" id="btn-bib-abrir" class="primario">Abrir en el editor</button></div>
+                <p class="nota">Borradores redibujados a mano alzada: revísalos antes de usarlos con el equipo. Al abrir una, puedes editarla y guardarla como tuya.</p>
+            </div>
+            <div class="caja">
                 <h2>Guardadas en este navegador</h2>
                 <label for="guardadas" class="sr-only">Jugadas guardadas</label>
                 <select id="guardadas" style="width:100%"></select>

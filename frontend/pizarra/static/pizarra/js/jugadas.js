@@ -666,8 +666,38 @@ function iniciar() {
         if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'z') { ev.preventDefault(); volverPaso(deshacer, rehacer); }
         else if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'y') { ev.preventDefault(); volverPaso(rehacer, deshacer); }
     });
+    iniciaBiblioteca();
     pintaGuardadas();
     pintar();
+}
+
+// ── Biblioteca de jugadas (catálogo estático del servidor) ────────────────
+var biblioteca = [];
+function iniciaBiblioteca() {
+    var lista = $('bib-lista'), edad = $('bib-edad'), desc = $('bib-desc');
+    function rellena() {
+        lista.textContent = '';
+        var o0 = document.createElement('option'); o0.value = ''; o0.textContent = 'Elegir…'; lista.appendChild(o0);
+        biblioteca.forEach(function (j, i) {
+            if (edad.value && j.edades.indexOf(edad.value) < 0) return;
+            var o = document.createElement('option'); o.value = String(i); o.textContent = j.nombre; lista.appendChild(o);
+        });
+        desc.textContent = lista.options.length > 1 ? '' : 'No hay jugadas para esta categoría.';
+    }
+    edad.addEventListener('change', rellena);
+    lista.addEventListener('change', function () { desc.textContent = lista.value === '' ? '' : biblioteca[+lista.value].descripcion; });
+    $('btn-bib-abrir').addEventListener('click', function () {
+        if (lista.value === '') { anuncia('Elige primero una jugada de la biblioteca.'); return; }
+        var j = biblioteca[+lista.value]; guardarPaso();
+        var v = validar(j.crudo); v.nombre = j.nombre;
+        estado = v; sel = null; $('nombre').value = j.nombre; pintar(); anuncia('Jugada «' + j.nombre + '» abierta, ' + estado.fases.length + ' fases.');
+    });
+    fetch($('bib-lista').getAttribute('data-url'), { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (datos) {
+        biblioteca = (Array.isArray(datos) ? datos : []).map(function (c) {
+            return { crudo: c, nombre: String(c.nombre || '').slice(0, 120), descripcion: String(c.descripcion || '').slice(0, 600), edades: Array.isArray(c.edades) ? c.edades.map(String) : [] };
+        }).filter(function (j) { return validar(j.crudo); });
+        rellena();
+    }).catch(function () { lista.firstChild.textContent = 'No se pudo cargar la biblioteca'; });
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar); else iniciar();
