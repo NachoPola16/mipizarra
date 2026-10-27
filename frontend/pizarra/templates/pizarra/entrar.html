@@ -31,11 +31,15 @@
         <label for="id_username">Usuario</label>
         <input type="text" name="username" id="id_username" autocomplete="username" autocapitalize="none" required autofocus>
         <label for="id_password" style="margin-top:.6rem;">Contraseña</label>
-        <input type="password" name="password" id="id_password" autocomplete="current-password" required>
+        <div class="campo-clave">
+            <input type="password" name="password" id="id_password" autocomplete="current-password" required>
+            <button type="button" id="ver-clave" class="ver-clave" aria-pressed="false" aria-controls="id_password">Mostrar</button>
+        </div>
         <input type="hidden" name="next" value="{{ next }}">
-        <div class="fila"><button type="submit" class="primario">Entrar</button></div>
+        <div class="fila"><button type="submit" class="primario" style="width:100%;">Entrar</button></div>
     </form>
     <p class="nota">¿Sin cuenta? Puedes usar el editor igualmente: tus jugadas se guardan en este navegador.</p>
 </main>
+<script src="{% static 'pizarra/js/entrar.js' %}"></script>
 </body>
 </html>

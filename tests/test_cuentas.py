@@ -75,13 +75,20 @@ GUION = textwrap.dedent('''
         assert f.post("/cuenta/entrar/", {"username": "alicia", "password": "mala"}, **H).status_code == 200
     r = f.post("/cuenta/entrar/", {"username": "alicia", "password": "clave-de-prueba-1"}, **H)
     assert r.status_code == 429
+    # la cabecera de la portada muestra la cuenta y salir vuelve a la misma página (nunca a un sitio de fuera)
+    g = Client(); g.login(username="beto", password="clave-de-prueba-2")
+    assert b"Salir (beto)" in g.get("/", **H).content
+    assert anon.get("/", **H).content.count(b"Entrar") >= 1 and b"Salir (" not in anon.get("/", **H).content
+    r = g.post("/cuenta/salir/", {"next": "/jugadas/"}, **H); assert r.status_code == 302 and r["Location"] == "/jugadas/"
+    g.login(username="beto", password="clave-de-prueba-2")
+    r = g.post("/cuenta/salir/", {"next": "https://sitio-malo.example/"}, **H); assert r.status_code == 302 and r["Location"] == "/"
     print("OK")
 ''')
 
 
 def test_cuentas_y_jugadas_guardadas():
     entorno = {**os.environ, "DJANGO_SETTINGS_MODULE": "mipizarra_cfg.settings", "DJANGO_DB_PATH": ":memory:",
-               "DJANGO_DEBUG": "True", "DJANGO_SECRET_KEY": "clave-solo-para-tests", "PYTHONPATH": str(RAIZ / "frontend")}
-    r = subprocess.run([sys.executable, "-c", GUION], capture_output=True, text=True, encoding="utf-8",
+               "DJANGO_DEBUG": "True", "DJANGO_SECRET_KEY": "clave-solo-para-tests", "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1", "PYTHONPATH": str(RAIZ / "frontend")}
+    r = subprocess.run([sys.executable, "-c", GUION], capture_output=True, text=True, encoding="utf-8", errors="replace",
                        env=entorno, cwd=str(RAIZ / "frontend"), timeout=120)
     assert r.returncode == 0 and r.stdout.strip().endswith("OK"), r.stdout + r.stderr

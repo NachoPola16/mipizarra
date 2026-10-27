@@ -52,6 +52,26 @@ details dt { font-weight: 600; color: var(--text); margin-top: .35rem; }
 .aviso-edad { border-left: 3px solid var(--accent); padding-left: .7rem; }
 #impresion { display: none; }
 
+/* ── Campos de formulario con los colores del tema ── */
+input, select, textarea { color-scheme: dark; }
+input[type="text"], input[type="password"] { background: var(--bg3); color: var(--text); border: 1px solid var(--border); border-radius: 8px; }
+input[type="text"]:focus, input[type="password"]:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(232, 117, 44, .35); }
+input::placeholder { color: var(--muted); }
+/* El relleno automático del navegador pinta un fondo azul/amarillo: se sustituye por el del tema */
+input:-webkit-autofill, input:-webkit-autofill:hover, input:-webkit-autofill:focus, input:-webkit-autofill:active {
+    -webkit-text-fill-color: var(--text); caret-color: var(--text);
+    -webkit-box-shadow: 0 0 0 1000px var(--bg3) inset; box-shadow: 0 0 0 1000px var(--bg3) inset;
+    border-color: var(--border); transition: background-color 9999s ease-out 0s;
+}
+input:-webkit-autofill:focus { border-color: var(--accent); -webkit-box-shadow: 0 0 0 1000px var(--bg3) inset, 0 0 0 3px rgba(232, 117, 44, .35); box-shadow: 0 0 0 1000px var(--bg3) inset, 0 0 0 3px rgba(232, 117, 44, .35); }
+.campo-clave { position: relative; display: flex; }
+.campo-clave input { padding-right: 5.5rem; }
+.ver-clave { position: absolute; right: 4px; top: 4px; bottom: 4px; min-height: 0; padding: 0 .8rem; background: transparent; border: none; color: var(--accent); font-weight: 600; }
+.ver-clave:hover:not(:disabled) { background: var(--bg2); border: none; }
+.ver-clave[aria-pressed="true"] { background: transparent; color: var(--accent); }
+.form-salir { display: contents; }
+button.mode-tab { border: none; cursor: pointer; font-family: 'Inter', sans-serif; }
+
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 @media (forced-colors: active) { button[aria-pressed="true"] { outline: 3px solid Highlight; } }
 

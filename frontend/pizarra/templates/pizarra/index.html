@@ -53,6 +53,8 @@ html, body {
 .ambito-hint:empty { display: none; }
 .tab-ico { width: 15px; height: 15px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .mode-link { text-decoration: none; }
+.form-salir { display: contents; }
+.mode-tab.mode-link:not(a) { border: none; cursor: pointer; }
 .mode-tab:hover { color: var(--text); }
 .mode-tab.active { background: var(--accent); color: var(--bg); }
 .mode-tab.active:hover { color: var(--bg); }
@@ -316,6 +318,11 @@ main:focus { outline: none; }
         <button class="mode-tab active" data-mode="sesion" aria-pressed="true"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2.5" width="12" height="9" rx="1.5"/><path d="M5 14h6M8 11.5V14M5 5.5h6M5 8h3.5"/></svg>Sesión</button>
         <button class="mode-tab" data-mode="reglamento" aria-pressed="false"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3.5C6.7 2.7 5 2.5 2.5 2.5v9c2.5 0 4.2.2 5.5 1 1.3-.8 3-1 5.5-1v-9C11 2.5 9.3 2.7 8 3.5zM8 3.5v9"/></svg>Reglamento</button>
         <a class="mode-tab mode-link" href="{% url 'jugadas' %}"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="4" cy="11.5" r="1.6"/><circle cx="12" cy="4.5" r="1.6"/><path d="M5.4 10.6C7 8 9 6.5 10.6 5.3" stroke-dasharray="2 2"/></svg>Jugadas</a>
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'salir' %}" class="form-salir">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button type="submit" class="mode-tab mode-link" aria-label="Cerrar sesión de {{ user.get_username }}"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5"/><path d="M3 13.500c.5-2.500 2.500-3.800 5-3.800s4.500 1.300 5 3.800"/></svg>Salir ({{ user.get_username }})</button></form>
+        {% else %}
+        <a class="mode-tab mode-link" href="{% url 'entrar' %}?next={{ request.path|urlencode }}"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5"/><path d="M3 13.500c.5-2.500 2.500-3.800 5-3.800s4.500 1.300 5 3.800"/></svg>Entrar</a>
+        {% endif %}
     </div>
 </header>
 

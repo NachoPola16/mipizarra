@@ -1,10 +1,11 @@
 """Cuentas y jugadas guardadas: inicio de sesión de Django y una API mínima (listar, guardar, abrir y borrar)."""
 import json
 
-from django.contrib.auth import views as vistas_auth
+from django.contrib.auth import logout, views as vistas_auth
 from django.core.cache import cache
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.decorators.http import require_http_methods, require_POST
 
@@ -50,8 +51,11 @@ class Entrar(vistas_auth.LoginView):
 
 @require_POST
 def salir(request):
-    vistas_auth.logout(request)
-    return redirect('jugadas')
+    logout(request)
+    destino = request.POST.get('next', '')
+    if destino and url_has_allowed_host_and_scheme(destino, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+        return redirect(destino)
+    return redirect('index')
 
 
 def _sin_sesion():
