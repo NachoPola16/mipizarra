@@ -90,7 +90,12 @@ CSRF_TRUSTED_ORIGINS = os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '').split()
 
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.ManifestStaticFilesStorage'
+# Estáticos con hash en el nombre (jugadas.<hash>.css): cada despliegue cambia la URL y ni el navegador ni Cloudflare
+# sirven un CSS o JS antiguo. (STATICFILES_STORAGE desapareció en Django 5.1; ahora se declara en STORAGES.)
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
+}
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_HSTS_SECONDS = 31536000
