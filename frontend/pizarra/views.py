@@ -92,6 +92,10 @@ def index(request):
     return render(request, 'pizarra/index.html', {'ambitos': _ambitos_reglamento()})
 
 
+def jugadas(request):
+    return render(request, 'pizarra/jugadas.html')
+
+
 def privacidad(request):
     return render(request, 'pizarra/privacidad.html')
 

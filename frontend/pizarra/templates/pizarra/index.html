@@ -52,6 +52,7 @@ html, body {
 .ambito-hint { font-size: .8rem; color: var(--muted); line-height: 1.5; max-width: 60ch; margin: -.2rem 0 1rem; }
 .ambito-hint:empty { display: none; }
 .tab-ico { width: 15px; height: 15px; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.mode-link { text-decoration: none; }
 .mode-tab:hover { color: var(--text); }
 .mode-tab.active { background: var(--accent); color: var(--bg); }
 .mode-tab.active:hover { color: var(--bg); }
@@ -304,6 +305,7 @@ body > .legal-footer { margin-top: auto; flex-shrink: 0; }
     <div class="mode-tabs">
         <button class="mode-tab active" data-mode="sesion"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2.5" width="12" height="9" rx="1.5"/><path d="M5 14h6M8 11.5V14M5 5.5h6M5 8h3.5"/></svg>Sesión</button>
         <button class="mode-tab" data-mode="reglamento"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3.5C6.7 2.7 5 2.5 2.5 2.5v9c2.5 0 4.2.2 5.5 1 1.3-.8 3-1 5.5-1v-9C11 2.5 9.3 2.7 8 3.5zM8 3.5v9"/></svg>Reglamento</button>
+        <a class="mode-tab mode-link" href="{% url 'jugadas' %}"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="4" cy="11.5" r="1.6"/><circle cx="12" cy="4.5" r="1.6"/><path d="M5.4 10.6C7 8 9 6.5 10.6 5.3" stroke-dasharray="2 2"/></svg>Jugadas</a>
     </div>
 </header>
 
@@ -574,15 +576,21 @@ function showFormAviso(msg) {
 }
 
 // ── Mode tabs ──────────────────────────────────────────────────────────────
-document.querySelectorAll('.mode-tab').forEach(btn => {
+document.querySelectorAll('.mode-tab:not(.mode-link)').forEach(btn => {
     btn.addEventListener('click', () => {
         currentMode = btn.dataset.mode;
-        document.querySelectorAll('.mode-tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.mode-tab:not(.mode-link)').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         clearFormError();
         showEmpty();
     });
 });
+
+// Enlace directo desde otras páginas (p. ej. «Reglamento» en Jugadas).
+if (location.hash === '#reglamento') {
+    const tabReg = document.querySelector('.mode-tab[data-mode="reglamento"]');
+    if (tabReg) tabReg.click();
+}
 
 // ── Desplegables a medida (edad, duración) ──────────────────────────────────
 document.querySelectorAll('.dd').forEach(dd => {

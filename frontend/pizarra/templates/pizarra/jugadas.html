@@ -1,0 +1,131 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jugadas — MiPizarra</title>
+<meta name="description" content="Dibuja jugadas de baloncesto por fases: pases, botes y cortes, con descripción en texto, exportación a imagen y a PDF.">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#15120e">
+<link rel="icon" type="image/svg+xml" href="{% static 'pizarra/brand/favicon.svg' %}">
+<link rel="alternate icon" href="{% static 'pizarra/brand/favicon.ico' %}">
+<link rel="apple-touch-icon" href="{% static 'pizarra/brand/apple-touch-icon.png' %}">
+<link rel="stylesheet" href="{% static 'pizarra/css/fonts.css' %}">
+<link rel="stylesheet" href="{% static 'pizarra/css/theme.css' %}">
+<link rel="stylesheet" href="{% static 'pizarra/css/jugadas.css' %}">
+</head>
+<body>
+<a class="skip" href="#pista">Ir a la pista</a>
+<header class="topbar">
+    <a class="brand" href="{% url 'index' %}" aria-label="MiPizarra, ir al inicio">
+        <img class="brand-mark" src="{% static 'pizarra/brand/favicon.svg' %}" alt="" width="26" height="26">
+        <span>Mi<em>Pizarra</em></span>
+    </a>
+    <nav class="mode-tabs" aria-label="Secciones">
+        <a class="mode-tab" href="{% url 'index' %}">Sesión</a>
+        <a class="mode-tab" href="{% url 'index' %}#reglamento">Reglamento</a>
+        <a class="mode-tab" href="{% url 'jugadas' %}" aria-current="page">Jugadas</a>
+    </nav>
+</header>
+
+<main id="contenido">
+    <h1>Jugadas</h1>
+    <p class="sub">Coloca las piezas, dibuja pases, botes y cortes, y crea la jugada fase a fase. Todo se queda en tu navegador: no se envía nada a ningún servidor.</p>
+
+    <div class="editor">
+        <section class="tablero" aria-label="Editor">
+            <div class="barra">
+                <fieldset class="grupo"><legend>Piezas</legend>
+                    <button type="button" data-herr="mover" aria-pressed="true" data-ayuda="Arrastra una pieza para moverla. Con el teclado: Tab hasta la pieza y flechas (Mayús mueve más).">Mover</button>
+                    <button type="button" data-herr="A" aria-pressed="false" data-ayuda="Toca la pista para colocar un atacante numerado (hasta cinco).">Atacante</button>
+                    <button type="button" data-herr="D" aria-pressed="false" data-ayuda="Toca la pista para colocar un defensor (hasta cinco).">Defensor</button>
+                    <button type="button" data-herr="B" aria-pressed="false" data-ayuda="Toca la pista para colocar el balón.">Balón</button>
+                    <button type="button" data-herr="C" aria-pressed="false" data-ayuda="Toca la pista para colocar un cono.">Cono</button>
+                </fieldset>
+                <fieldset class="grupo"><legend>Flechas</legend>
+                    <button type="button" data-herr="pase" aria-pressed="false" data-ayuda="Pase (línea discontinua): arrastra desde quien pasa hasta quien recibe. Con teclado: Enter sobre la pieza, flechas o números 1 a 5, Enter.">Pase</button>
+                    <button type="button" data-herr="bote" aria-pressed="false" data-ayuda="Bote (línea ondulada): arrastra desde el jugador hasta donde bota.">Bote</button>
+                    <button type="button" data-herr="corte" aria-pressed="false" data-ayuda="Corte o desplazamiento (línea continua): arrastra desde el jugador hasta donde va.">Corte</button>
+                    <button type="button" data-herr="bloqueo" aria-pressed="false" data-ayuda="Bloqueo (línea con barra al final). Recuerda: no es para categorías hasta U12.">Bloqueo</button>
+                </fieldset>
+                <fieldset class="grupo"><legend>Editar</legend>
+                    <button type="button" id="btn-deshacer" disabled>Deshacer</button>
+                    <button type="button" id="btn-rehacer" disabled>Rehacer</button>
+                    <button type="button" id="btn-borrar" disabled>Borrar selección</button>
+                    <button type="button" id="btn-limpiar">Vaciar fase</button>
+                </fieldset>
+            </div>
+            <p id="ayuda-herr" aria-live="off">Arrastra una pieza para moverla. Con el teclado: Tab hasta la pieza y flechas (Mayús mueve más).</p>
+
+            <svg id="pista" viewBox="-10 -10 520 490" role="application" aria-label="Pista de medio campo. Tab para pasar de una pieza a otra; flechas para moverla; Suprimir para borrarla." tabindex="-1" xmlns="http://www.w3.org/2000/svg"></svg>
+
+            <div class="barra" style="margin-top:.7rem;">
+                <fieldset class="grupo"><legend>Fases</legend>
+                    <button type="button" id="btn-fase-ant" aria-label="Fase anterior">◀</button>
+                    <span id="fase-etq" class="grupo-etq" style="text-transform:none;letter-spacing:0;font-size:.85rem;color:var(--text);" aria-live="polite">Fase 1 de 1</span>
+                    <button type="button" id="btn-fase-sig" aria-label="Fase siguiente">▶</button>
+                    <button type="button" id="btn-nueva-fase" class="primario">Nueva fase</button>
+                    <button type="button" id="btn-borrar-fase">Quitar fase</button>
+                    <button type="button" id="btn-reproducir" aria-pressed="false">Reproducir</button>
+                </fieldset>
+                <span id="cuenta" class="nota" style="margin:0;"></span>
+            </div>
+            <p class="nota">«Nueva fase» copia la fase actual dejando cada jugador donde terminó su flecha y el balón en quien recibió el pase.</p>
+        </section>
+
+        <aside class="lateral" aria-label="Opciones">
+            <div class="caja">
+                <h2>Jugada</h2>
+                <label for="nombre">Nombre</label>
+                <input type="text" id="nombre" maxlength="80" autocomplete="off" placeholder="Ej.: Entrada 2c1 al aro">
+                <label for="plantillas" style="margin-top:.6rem;">Empezar desde una plantilla</label>
+                <select id="plantillas">
+                    <option value="">Elegir…</option>
+                    <option value="cinco-fuera">5 fuera (cinco jugadores abiertos)</option>
+                    <option value="4-1">4 fuera 1 dentro</option>
+                    <option value="2c1">2 contra 1</option>
+                </select>
+                <div class="fila">
+                    <button type="button" id="btn-guardar" class="primario">Guardar</button>
+                    <button type="button" id="btn-png">Imagen PNG</button>
+                    <button type="button" id="btn-imprimir">Imprimir / PDF</button>
+                </div>
+            </div>
+            <div class="caja">
+                <h2>Guardadas en este navegador</h2>
+                <label for="guardadas" class="sr-only">Jugadas guardadas</label>
+                <select id="guardadas" style="width:100%"></select>
+                <div class="fila">
+                    <button type="button" id="btn-abrir">Abrir</button>
+                    <button type="button" id="btn-eliminar">Eliminar</button>
+                    <button type="button" id="btn-json">Exportar</button>
+                    <label class="fila" style="margin:0;cursor:pointer;"><span class="sr-only">Importar archivo de jugada</span>
+                        <input type="file" id="archivo" accept="application/json,.json" style="max-width:100%;font-size:.8rem;color:var(--text2);">
+                    </label>
+                </div>
+                <p class="nota">Si limpias los datos del navegador se pierden; usa «Exportar» para tener copia.</p>
+            </div>
+            <div class="caja">
+                <h2>Descripción en texto</h2>
+                <ol id="descripcion"></ol>
+            </div>
+            <div class="caja aviso-edad">
+                <details>
+                    <summary>Ayuda y atajos</summary>
+                    <dl>
+                        <dt>Con teclado</dt>
+                        <dd>Tab llega a cada pieza y flecha. Flechas mueven la pieza 1 m (Mayús: 4 m). Con una herramienta de flecha activa, Enter sobre la pieza elige el destino con las flechas y Enter confirma. En un pase, las teclas 1 a 5 saltan a ese atacante.</dd>
+                        <dt>Suprimir</dt><dd>Borra la pieza o la flecha seleccionada.</dd>
+                        <dt>Ctrl+Z / Ctrl+Y</dt><dd>Deshacer y rehacer.</dd>
+                        <dt>Edad</dt><dd>En U10 y U12 evita bloqueos, mano a mano y juego de poste (líneas rojas de la federación).</dd>
+                    </dl>
+                </details>
+            </div>
+        </aside>
+    </div>
+    <div id="anuncio" class="sr-only" role="status" aria-live="polite"></div>
+</main>
+<div id="impresion" aria-hidden="true"></div>
+<script src="{% static 'pizarra/js/jugadas.js' %}"></script>
+</body>
+</html>
