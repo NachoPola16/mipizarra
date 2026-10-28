@@ -1,6 +1,7 @@
 # Esquema de un ejercicio
 
-Cada ejercicio en `data/exercises.json` sigue esta estructura.
+Cada ejercicio en `data/exercises.json` sigue esta estructura. El administrador puede cambiar cualquier campo (diagrama
+incluido) desde la pestaña «Fichas»: ver [Administración de fichas](administracion-fichas.md).
 
 ## Campos obligatorios
 

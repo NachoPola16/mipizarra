@@ -82,3 +82,16 @@ docker compose up -d api frontend
 
 > `/docs`, `/openapi.json` y `/redoc` de la API son accesibles sin secret.
 > Si no quieres exponer el esquema de la API, aplica el paso 3.
+
+## Endurecimiento y otros controles (28-10-2026)
+
+- **Límites de la API por cuenta:** el frontend manda `X-Usuario` (id de la cuenta) y la API cuenta los límites de
+  `slowapi` por él; solo se fía de la cabecera si `INTERNAL_SECRET` está activo (`_clave_de_limite` en `api/main.py`).
+- **CSP:** `script-src 'self'` (sin `'unsafe-inline'`): ninguna plantilla lleva JS en línea (un test lo comprueba).
+- **Contenedores:** `api` y `frontend` con `cap_drop: [ALL]` y `no-new-privileges`; `data/frontend` en 700 y
+  `db.sqlite3` en 600 (lleva las contraseñas cifradas).
+- **Rutas de administración:** `/admin/fichas` y `/admin/diagrama/vista` de la API cuelgan del mismo secreto interno; el
+  permiso de administrador lo comprueba la web. Ver [Administración de fichas](docs/administracion-fichas.md).
+- **Copia de seguridad:** `tools/backup_data.py` (base de cuentas, cambios de fichas, sesiones) con rotación; hay que
+  programarla (cron) y llevarla fuera del servidor.
+- **Dependencias:** revisar con `pip-audit` (`pipx run pip-audit -r <requirements>`) al reconstruir las imágenes.

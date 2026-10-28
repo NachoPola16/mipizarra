@@ -80,6 +80,7 @@ resetea. Los resultados no se versionan (`data/regresion/` está en `.gitignore`
 - [Arquitectura](docs/arquitectura.md)
 - [Entrenamiento del modelo](ENTRENAMIENTO_MODELO.md) (experimental, no forma parte del flujo actual)
 - [Esquema de ejercicios](docs/esquema-ejercicios.md)
+- [Administración de fichas](docs/administracion-fichas.md) (pestaña «Fichas» para editar fichas y diagramas)
 - [Coordenadas del diagrama](docs/coordenadas.md)
 - [Seguridad y despliegue](SEGURIDAD.md)
 - [Hoja de ruta](docs/fases.md)
