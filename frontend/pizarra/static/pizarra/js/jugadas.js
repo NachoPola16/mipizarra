@@ -125,26 +125,41 @@ function puntoFinal(f, a) {
     return a.a || null;
 }
 
+// Punto de una curva cuadrática (o recta, si no hay punto de control) y su tangente.
+function puntoCurva(x1, y1, x2, y2, cx, cy, t) {
+    if (typeof cx !== 'number') { cx = (x1 + x2) / 2; cy = (y1 + y2) / 2; }
+    var m = 1 - t;
+    var x = m * m * x1 + 2 * m * t * cx + t * t * x2, y = m * m * y1 + 2 * m * t * cy + t * t * y2;
+    var tx = 2 * m * (cx - x1) + 2 * t * (x2 - cx), ty = 2 * m * (cy - y1) + 2 * t * (y2 - cy), tl = Math.hypot(tx, ty) || 1;
+    return { x: x, y: y, tx: tx / tl, ty: ty / tl };
+}
+
 // Trazo de una flecha. (cx, cy) es el punto de control de una curva cuadrática; sin él, la flecha es recta.
+// El bote es una onda suave (una curva por cada media onda) que nace y muere sobre el eje para que la punta apunte bien.
 function trazoFlecha(tipo, x1, y1, x2, y2, cx, cy) {
     var curva = typeof cx === 'number';
     if (tipo !== 'bote') return curva ? 'M' + x1 + ' ' + y1 + ' Q' + cx + ' ' + cy + ' ' + x2 + ' ' + y2 : 'M' + x1 + ' ' + y1 + ' L' + x2 + ' ' + y2;
-    if (!curva) { cx = (x1 + x2) / 2; cy = (y1 + y2) / 2; }
-    var L = Math.hypot(x2 - x1, y2 - y1) || 1, n = Math.max(2, Math.floor(L / 7)), d = 'M' + x1 + ' ' + y1;
+    var L = Math.hypot(x2 - x1, y2 - y1) || 1, media = 12, n = Math.max(2, Math.round(L / media)), AMP = 5.5;
+    var d = 'M' + redondea(x1) + ' ' + redondea(y1), ant = puntoCurva(x1, y1, x2, y2, cx, cy, 0);
     for (var i = 1; i <= n; i++) {
-        var t = i / n, m = 1 - t;
-        var px = m * m * x1 + 2 * m * t * cx + t * t * x2, py = m * m * y1 + 2 * m * t * cy + t * t * y2;
-        var tx = 2 * m * (cx - x1) + 2 * t * (x2 - cx), ty = 2 * m * (cy - y1) + 2 * t * (y2 - cy), tl = Math.hypot(tx, ty) || 1;
-        var off = (i % 2 ? 1 : -1) * 5 * (i === n ? 0 : 1);
-        d += ' L' + redondea(px - ty / tl * off) + ' ' + redondea(py + tx / tl * off);
+        var p = puntoCurva(x1, y1, x2, y2, cx, cy, i / n), m = puntoCurva(x1, y1, x2, y2, cx, cy, (i - 0.5) / n);
+        // la amplitud crece al empezar y se apaga al acabar; la última media onda queda sobre el eje
+        var ventana = Math.min(1, i / 2, (n - i + 0.5) / 1.5), signo = i % 2 ? 1 : -1;
+        var amp = i === n ? 0 : AMP * 2 * signo * Math.max(0.3, ventana);
+        d += ' Q' + redondea(m.x - m.ty * amp) + ' ' + redondea(m.y + m.tx * amp) + ' ' + redondea(p.x) + ' ' + redondea(p.y);
     }
     return d;
 }
 
-function dibujaFlechas(svg, f, c, interactivo) {
+// Dibuja las flechas de una fase. `extra` (opcional): { prog: [0..1 por flecha], dim: true } para la reproducción.
+function dibujaFlechas(svg, f, c, interactivo, extra) {
+    extra = extra || {};
+    var balon = pieza(f, 'B');
     f.flechas.forEach(function (a, i) {
         var de = pieza(f, a.de), fin = puntoFinal(f, a);
         if (!de || !fin) return;
+        var k = extra.prog ? extra.prog[i] : 1;
+        if (k <= 0) return;
         var dx = fin.x - de.x, dy = fin.y - de.y, L = Math.hypot(dx, dy);
         if (L < 4) return;
         // curva: el punto de control se separa del centro de la cuerda un `curva` por ciento de su largo, hacia la izquierda de la marcha
@@ -152,23 +167,41 @@ function dibujaFlechas(svg, f, c, interactivo) {
         var cx = (de.x + fin.x) / 2 - dy * cv, cy = (de.y + fin.y) / 2 + dx * cv;
         var t1 = Math.hypot(cx - de.x, cy - de.y) || 1, t2 = Math.hypot(fin.x - cx, fin.y - cy) || 1;
         var u1x = (cx - de.x) / t1, u1y = (cy - de.y) / t1, ux = (fin.x - cx) / t2, uy = (fin.y - cy) / t2;
-        var x1 = de.x + u1x * (R + 2), y1 = de.y + u1y * (R + 2);
+        // el bote arranca más lejos si el jugador lleva el balón al lado, para no pisarlo
+        var conBalon = a.tipo === 'bote' && balon && Math.hypot(balon.x - de.x, balon.y - de.y) < 36;
+        var salida = conBalon ? R + 24 : R + 3;
+        if (L < salida + 12) salida = R + 3;
+        var x1 = de.x + u1x * salida, y1 = de.y + u1y * salida;
         var corta = a.aId ? R + 5 : 0;
         var x2 = fin.x - ux * corta, y2 = fin.y - uy * corta;
         var ctl = cv ? [cx, cy] : [];
         var color = a.tipo === 'pase' ? c.pase : c.flecha;
         var esSel = interactivo && sel && sel.tipo === 'flecha' && sel.i === i;
         var g = el('g', { 'data-flecha': i }, svg);
+        if (extra.dim) g.setAttribute('opacity', '0.35');
         if (interactivo) {
             g.setAttribute('role', 'button'); g.setAttribute('tabindex', '0'); g.style.cursor = 'pointer';
             g.setAttribute('aria-label', TIPOS_FLECHA[a.tipo].etiqueta + ' de ' + nombrePieza(de) + (a.aId ? '' : ' hacia ' + zona(fin.x, fin.y)));
             el('path', { d: trazoFlecha('corte', x1, y1, x2, y2, ctl[0], ctl[1]), stroke: 'transparent', 'stroke-width': 22, fill: 'none' }, g);
         }
-        var attrs = { d: trazoFlecha(a.tipo, x1, y1, x2, y2, ctl[0], ctl[1]), fill: 'none', stroke: esSel ? c.selFlecha : color, 'stroke-width': esSel ? 4 : 3, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
-        if (a.tipo === 'pase') attrs['stroke-dasharray'] = '9 7';
-        if (a.tipo !== 'bloqueo') attrs['marker-end'] = 'url(#flecha-' + (esSel ? 'sel' : 'n') + ')';
+        var d = trazoFlecha(a.tipo, x1, y1, x2, y2, ctl[0], ctl[1]);
+        var comun = { d: d, fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
+        var dibujando = k < 1;
+        if (a.tipo === 'pase') {               // el pase es discontinuo: aparece de golpe con un fundido
+            comun['stroke-dasharray'] = '9 7';
+            if (dibujando) g.setAttribute('opacity', String(Math.min(1, k * 3)));
+        } else if (dibujando) {                // trazo progresivo: la flecha se dibuja en el momento
+            comun.pathLength = 1; comun['stroke-dasharray'] = '1'; comun['stroke-dashoffset'] = String(1 - k);
+        }
+        // funda del color de la pista debajo: la flecha no se mezcla con las líneas ni con otras flechas que cruza
+        var funda = {}; for (var q in comun) funda[q] = comun[q];
+        funda.stroke = c.fondo; funda['stroke-width'] = 8; funda.opacity = '.9';
+        el('path', funda, g);
+        var attrs = {}; for (var w in comun) attrs[w] = comun[w];
+        attrs.stroke = esSel ? c.selFlecha : color; attrs['stroke-width'] = esSel ? 4 : 3;
+        if (a.tipo !== 'bloqueo' && k >= 0.85) attrs['marker-end'] = 'url(#flecha-' + (esSel ? 'sel' : 'n') + ')';
         el('path', attrs, g);
-        if (a.tipo === 'bloqueo') {
+        if (a.tipo === 'bloqueo' && k >= 0.85) {
             el('line', { x1: x2 - uy * 14, y1: y2 + ux * 14, x2: x2 + uy * 14, y2: y2 - ux * 14, stroke: esSel ? c.selFlecha : color, 'stroke-width': 4, 'stroke-linecap': 'round' }, g);
         }
     });
@@ -200,13 +233,15 @@ function dibujaPieza(svg, p, c, interactivo) {
     }
 }
 
-function renderEn(svg, f, c, interactivo, sinFlechas) {
+// capas (opcional, para la reproducción): [{ f, prog, dim }] fases cuyas flechas se pintan antes de las piezas de `f`.
+function renderEn(svg, f, c, interactivo, sinFlechas, capas) {
     while (svg.firstChild) svg.removeChild(svg.firstChild);
     var defs = el('defs', {}, svg);
     marcador(defs, 'flecha-n', c.flecha); marcador(defs, 'flecha-sel', c.selFlecha);
     el('rect', { x: -10, y: -10, width: W + 20, height: H + 20, fill: c.fondo }, svg);
     dibujaPista(svg, c);
-    if (!sinFlechas) dibujaFlechas(svg, f, c, interactivo);
+    if (capas) capas.forEach(function (l) { dibujaFlechas(svg, l.f, c, false, { prog: l.prog, dim: l.dim }); });
+    else if (!sinFlechas) dibujaFlechas(svg, f, c, interactivo);
     f.piezas.forEach(function (p) { if (p.tipo === 'C') dibujaPieza(svg, p, c, interactivo); });
     f.piezas.forEach(function (p) { if (p.tipo === 'D') dibujaPieza(svg, p, c, interactivo); });
     f.piezas.forEach(function (p) { if (p.tipo === 'A') dibujaPieza(svg, p, c, interactivo); });
@@ -473,47 +508,175 @@ function borrarFase() {
     pintar();
 }
 
-function reproducir() {
-    if (reproduccion) { paraReproduccion(); return; }
-    if (estado.fases.length < 2) { anuncia('Crea al menos dos fases para reproducir.'); return; }
-    sel = null;
-    reproduccion = { t0: null, fase: 0, temporizador: null, copia: estado.actual };
-    estado.actual = 0;
-    pintar();
-    if (reducirMovimiento) { pasoSinAnimacion(); return; }
-    requestAnimationFrame(animar);
+// Reproductor: una línea de tiempo con todas las fases. En cada fase las flechas se dibujan en el momento y las piezas las
+// siguen; el pase hace volar el balón. El estado se calcula siempre a partir del tiempo, así la barra y los saltos de fase
+// funcionan igual hacia delante que hacia atrás.
+var TV = { ENTRADA: 0.5, ESCALON: 0.45, DUR: 1.0, DUR_PASE: 0.75, TRANS: 0.55, PAUSA: 0.45 };
+function suave(t) { t = acotar(t, 0, 1); return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
+
+function construyeLinea() {
+    var t = TV.ENTRADA, fases = [];
+    estado.fases.forEach(function (f, i) {
+        var inicio = t, tt = t, flechas = [];
+        f.flechas.forEach(function (a, idx) {
+            var d = a.tipo === 'pase' ? TV.DUR_PASE : TV.DUR;
+            flechas.push({ a: a, i: idx, t0: tt, t1: tt + d });
+            tt += TV.ESCALON;
+        });
+        var fin = flechas.length ? Math.max.apply(null, flechas.map(function (x) { return x.t1; })) : inicio + 0.3;
+        var P1 = fin + TV.PAUSA, ultima = i === estado.fases.length - 1;
+        fases.push({ f: f, P0: i === 0 ? 0 : inicio, P1: P1, P2: ultima ? P1 : P1 + TV.TRANS, flechas: flechas });
+        t = ultima ? P1 : P1 + TV.TRANS;
+    });
+    // el tiempo de cada fase empieza justo después de la transición anterior (la primera arranca en 0 con una entrada)
+    fases.forEach(function (F, i) { if (i > 0) { var previa = fases[i - 1]; F.P0 = previa.P2; } });
+    return { fases: fases, total: t + 0.8 };
 }
-function paraReproduccion() {
-    if (!reproduccion) return;
-    clearTimeout(reproduccion.temporizador);
-    var volver = reproduccion.copia; reproduccion = null;
-    estado.actual = volver; pintar();
+
+function faseEn(L, T) { var k = 0; L.fases.forEach(function (F, i) { if (T >= F.P0 - 1e-6) k = i; }); return k; }
+function controlDe(a, b, curva) { return { x: (a.x + b.x) / 2 - (b.y - a.y) * (curva || 0), y: (a.y + b.y) / 2 + (b.x - a.x) * (curva || 0) }; }
+
+function posPieza(L, k, id, T) {
+    var F = L.fases[k], p = pieza(F.f, id);
+    if (!p) return null;
+    var cur = { x: p.x, y: p.y };
+    var movs = F.flechas.filter(function (m) { return m.a.de === id && m.a.tipo !== 'pase'; });
+    for (var j = 0; j < movs.length; j++) {
+        var m = movs[j], fin = puntoFinal(F.f, m.a);
+        if (!fin) continue;
+        if (T < m.t0) return cur;
+        if (T < m.t1) {
+            var c = controlDe(cur, fin, m.a.curva), q = puntoCurva(cur.x, cur.y, fin.x, fin.y, m.a.curva ? c.x : undefined, m.a.curva ? c.y : undefined, suave((T - m.t0) / (m.t1 - m.t0)));
+            return { x: q.x, y: q.y };
+        }
+        cur = { x: fin.x, y: fin.y };
+    }
+    if (k < L.fases.length - 1 && T > F.P1) {
+        var sig = pieza(L.fases[k + 1].f, id);
+        if (sig) { var e = suave((T - F.P1) / TV.TRANS); return { x: cur.x + (sig.x - cur.x) * e, y: cur.y + (sig.y - cur.y) * e }; }
+    }
+    return cur;
 }
-function pasoSinAnimacion() {
-    reproduccion.temporizador = setTimeout(function () {
-        if (!reproduccion) return;
-        if (reproduccion.fase + 1 >= estado.fases.length) { paraReproduccion(); return; }
-        reproduccion.fase++; estado.actual = reproduccion.fase; pintar(); pasoSinAnimacion();
-    }, 1500);
+
+function portadorDe(f) {      // quién lleva el balón al empezar la fase: el atacante más cercano a la pelota
+    var b = pieza(f, 'B'), mejor = null, dmin = 44;
+    if (!b) return null;
+    f.piezas.forEach(function (p) { if (p.tipo !== 'A') return; var d = Math.hypot(p.x - b.x, p.y - b.y); if (d < dmin) { dmin = d; mejor = p.id; } });
+    return mejor;
 }
-function animar(t) {
-    if (!reproduccion) return;
-    if (reproduccion.t0 === null) reproduccion.t0 = t;
-    var i = reproduccion.fase, A = estado.fases[i], B = estado.fases[i + 1];
-    if (!B) { setTimeout(paraReproduccion, 700); return; }
-    var k = acotar((t - reproduccion.t0) / 1100, 0, 1), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
-    var mezcla = { piezas: B.piezas.map(function (pb) {
-        var pa = pieza(A, pb.id), q = clon(pb);
-        if (pa) { q.x = pa.x + (pb.x - pa.x) * e; q.y = pa.y + (pb.y - pa.y) * e; }
+
+function posBalon(L, k, T) {
+    var F = L.fases[k], b = pieza(F.f, 'B');
+    if (!b) return null;
+    var OFS = 15, ahora = portadorDe(F.f), libre = { x: b.x, y: b.y };
+    var pases = F.flechas.filter(function (m) { return m.a.tipo === 'pase'; });
+    var rebote = 0;
+    for (var j = 0; j < pases.length; j++) {
+        var m = pases[j];
+        if (T < m.t0) break;
+        var origen = ahora ? posPieza(L, k, ahora, m.t0) : libre, fin = puntoFinal(F.f, m.a);
+        if (!origen || !fin) continue;
+        var recibe = m.a.aId || null;
+        if (T < m.t1) {
+            var e = suave((T - m.t0) / (m.t1 - m.t0)), destino = recibe ? posPieza(L, k, recibe, m.t1) : fin;
+            var oo = { x: origen.x + OFS, y: origen.y + OFS }, dd = recibe ? { x: destino.x + OFS, y: destino.y + OFS } : destino;
+            return { x: oo.x + (dd.x - oo.x) * e, y: oo.y + (dd.y - oo.y) * e - Math.sin(Math.PI * e) * 14 };
+        }
+        if (recibe) { ahora = recibe; } else { ahora = null; libre = { x: fin.x, y: fin.y }; }
+    }
+    // el balón bota mientras su portador lleva un bote
+    F.flechas.forEach(function (m) { if (m.a.tipo === 'bote' && m.a.de === ahora && T >= m.t0 && T <= m.t1) rebote = Math.abs(Math.sin((T - m.t0) * 11)) * 9; });
+    var pos;
+    if (ahora) { var q = posPieza(L, k, ahora, T); pos = { x: q.x + OFS, y: q.y + OFS - rebote }; } else pos = libre;
+    if (k < L.fases.length - 1 && T > F.P1) {
+        var sig = pieza(L.fases[k + 1].f, 'B');
+        if (sig) { var e2 = suave((T - F.P1) / TV.TRANS); pos = { x: pos.x + (sig.x - pos.x) * e2, y: pos.y + (sig.y - pos.y) * e2 }; }
+    }
+    return pos;
+}
+
+function pintaReproduccion(T) {
+    var L = reproduccion.L, k = faseEn(L, T), F = L.fases[k];
+    var mezcla = { piezas: F.f.piezas.map(function (p) {
+        var q = { id: p.id, tipo: p.tipo, n: p.n, x: p.x, y: p.y };
+        if (p.tipo !== 'B') { var pos = posPieza(L, k, p.id, T); if (pos) { q.x = pos.x; q.y = pos.y; } }
         return q;
     }), flechas: [] };
-    renderEn($('pista'), mezcla, CLARO, false, true);
-    if (k >= 1) {
-        reproduccion.fase++; reproduccion.t0 = null; estado.actual = reproduccion.fase;
-        if (!estado.fases[reproduccion.fase + 1]) { pintar(); setTimeout(paraReproduccion, 900); return; }
-        pintar(); setTimeout(function () { requestAnimationFrame(animar); }, 450); return;
+    var pb = posBalon(L, k, T);
+    if (pb) mezcla.piezas.forEach(function (q) { if (q.tipo === 'B') { q.x = pb.x; q.y = pb.y; } });
+    var capas = [];
+    if (reproduccion.mantener) for (var j = 0; j < k; j++) capas.push({ f: L.fases[j].f, prog: null, dim: true });
+    capas.push({ f: F.f, prog: F.flechas.reduce(function (acc, m) { acc[m.i] = acotar((T - m.t0) / (m.t1 - m.t0), 0, 1); return acc; }, []), dim: false });
+    renderEn($('pista'), mezcla, CLARO, false, false, capas);
+    reproduccion.T = T;
+    $('rep-barra').value = String(Math.round(T / L.total * 1000));
+    var texto = describeFase(F.f, k).replace(/^Fase \d+: /, '');
+    if (reproduccion.fase !== k) {
+        reproduccion.fase = k;
+        $('rep-texto').textContent = 'Fase ' + (k + 1) + ' de ' + L.fases.length + ' · ' + texto;
     }
-    requestAnimationFrame(animar);
+    estado.actual = k;
+    $('fase-etq').textContent = 'Fase ' + (k + 1) + ' de ' + estado.fases.length;
+}
+
+function bucleReproduccion(ahora) {
+    if (!reproduccion || !reproduccion.sonando) return;
+    if (reproduccion.ultimo === null) reproduccion.ultimo = ahora;
+    var dt = Math.min(0.25, (ahora - reproduccion.ultimo) / 1000) * reproduccion.vel;
+    reproduccion.ultimo = ahora;
+    var T = reproduccion.T + dt, total = reproduccion.L.total;
+    if (T >= total) { T = total; reproduccion.sonando = false; paintaPlay(); }
+    pintaReproduccion(T);
+    if (reproduccion.sonando) requestAnimationFrame(bucleReproduccion);
+}
+
+function paintaPlay() {
+    var b = $('rep-play'); if (!b || !reproduccion) return;
+    b.textContent = reproduccion.sonando ? 'Pausa' : (reproduccion.T >= reproduccion.L.total - 0.01 ? 'Repetir' : 'Seguir');
+    b.setAttribute('aria-label', reproduccion.sonando ? 'Pausar la reproducción' : 'Reproducir');
+}
+
+function repPlay() {
+    if (!reproduccion) return;
+    if (reproduccion.sonando) { reproduccion.sonando = false; paintaPlay(); return; }
+    if (reproduccion.T >= reproduccion.L.total - 0.01) { reproduccion.T = 0; reproduccion.fase = -1; }
+    reproduccion.sonando = true; reproduccion.ultimo = null; paintaPlay();
+    requestAnimationFrame(bucleReproduccion);
+}
+
+function repSalta(dir) {                  // salto a la fase anterior o siguiente (con la fase completa dibujada si no hay movimiento)
+    if (!reproduccion) return;
+    var L = reproduccion.L, k = faseEn(L, reproduccion.T), objetivo;
+    reproduccion.sonando = false;
+    if (dir > 0) objetivo = k < L.fases.length - 1 ? L.fases[k + 1].P0 + 0.001 : L.total;
+    else objetivo = reproduccion.T - L.fases[k].P0 > 0.8 || k === 0 ? L.fases[k].P0 + 0.001 : L.fases[k - 1].P0 + 0.001;
+    reproduccion.fase = -1;
+    pintaReproduccion(acotar(objetivo, 0, L.total));
+    paintaPlay();
+}
+
+function reproducir() {
+    if (reproduccion) { paraReproduccion(); return; }
+    sel = null;
+    reproduccion = { L: null, T: 0, fase: -1, sonando: false, ultimo: null, vel: 1, mantener: $('rep-mantener').checked, volver: estado.actual };
+    reproduccion.L = construyeLinea();
+    $('reproductor').hidden = false;
+    $('btn-reproducir').textContent = 'Parar'; $('btn-reproducir').setAttribute('aria-pressed', 'true');
+    document.querySelectorAll('.tablero fieldset button:not(#btn-reproducir)').forEach(function (b) { b.disabled = true; });
+    if (reducirMovimiento || estado.fases.length < 2 && !estado.fases[0].flechas.length) {
+        pintaReproduccion(reproduccion.L.fases[0].P1);       // sin animación: la fase entera, y se avanza con los botones
+        paintaPlay();
+    } else { repPlay(); }
+    anuncia('Reproduciendo la jugada. Usa los botones del reproductor para pausar o cambiar de fase.');
+}
+
+function paraReproduccion() {
+    if (!reproduccion) return;
+    reproduccion.sonando = false;
+    var volver = reproduccion.volver; reproduccion = null;
+    $('reproductor').hidden = true;
+    document.querySelectorAll('.tablero fieldset button').forEach(function (b) { b.disabled = false; });
+    estado.actual = volver; pintar();
 }
 
 // ── Guardar, abrir, exportar ─────────────────────────────────────────────
@@ -668,6 +831,16 @@ function iniciar() {
     $('btn-nueva-fase').addEventListener('click', nuevaFase);
     $('btn-borrar-fase').addEventListener('click', borrarFase);
     $('btn-reproducir').addEventListener('click', reproducir);
+    $('rep-play').addEventListener('click', repPlay);
+    $('rep-ant').addEventListener('click', function () { repSalta(-1); });
+    $('rep-sig').addEventListener('click', function () { repSalta(1); });
+    $('rep-barra').addEventListener('input', function () {
+        if (!reproduccion) return;
+        reproduccion.sonando = false; reproduccion.fase = -1;
+        pintaReproduccion($('rep-barra').value / 1000 * reproduccion.L.total); paintaPlay();
+    });
+    $('rep-mantener').addEventListener('change', function (e) { if (reproduccion) { reproduccion.mantener = e.target.checked; reproduccion.fase = -1; pintaReproduccion(reproduccion.T); } });
+    $('rep-vel').addEventListener('change', function (e) { if (reproduccion) reproduccion.vel = +e.target.value; });
     $('btn-limpiar').addEventListener('click', function () {
         if (!fase().piezas.length) return;
         guardarPaso(); fase().piezas = []; fase().flechas = []; sel = null; pintar(); anuncia('Fase vaciada. Puedes deshacer.');
@@ -734,7 +907,9 @@ function iniciar() {
     $('nombre').addEventListener('input', function () { estado.nombre = nombreJugada(); });
     document.addEventListener('keydown', function (ev) {
         var t = ev.target;
+        if (reproduccion && ev.key === 'Escape') { ev.preventDefault(); paraReproduccion(); return; }
         if (t && /^(INPUT|SELECT|TEXTAREA)$/.test(t.tagName)) return;
+        if (reproduccion && ev.key === ' ' && !(t && t.tagName === 'BUTTON')) { ev.preventDefault(); repPlay(); return; }
         if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'z') { ev.preventDefault(); volverPaso(deshacer, rehacer); }
         else if ((ev.ctrlKey || ev.metaKey) && ev.key.toLowerCase() === 'y') { ev.preventDefault(); volverPaso(rehacer, deshacer); }
     });

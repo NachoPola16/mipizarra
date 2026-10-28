@@ -75,6 +75,20 @@ form.caja input[type="text"], form.caja input[type="password"] { min-height: 48p
 .form-salir { display: contents; }
 button.mode-tab { border: none; cursor: pointer; font-family: 'Inter', sans-serif; }
 
+.pasos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .6rem; list-style: none; counter-reset: paso; margin: 0 0 1.1rem; padding: 0; }
+.pasos li { counter-increment: paso; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: .6rem .8rem .6rem 2.4rem; position: relative; font-size: .85rem; color: var(--text2); }
+.pasos li::before { content: counter(paso); position: absolute; left: .7rem; top: .55rem; width: 1.3rem; height: 1.3rem; border-radius: 50%; background: var(--accent); color: var(--bg); font-weight: 700; font-size: .75rem; display: grid; place-items: center; }
+.pasos strong { color: var(--text); }
+@media (max-width: 900px) { .pasos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .pasos { grid-template-columns: minmax(0, 1fr); } }
+.reproductor { margin-top: .6rem; padding: .6rem; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; }
+.rep-texto { color: var(--text); font-size: .88rem; margin: 0 0 .5rem; min-height: 2.6em; }
+.rep-controles { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.rep-barra-etq { flex: 1 1 160px; min-width: 120px; }
+#rep-barra { width: 100%; min-height: 0; padding: 0; background: none; border: none; accent-color: var(--accent); cursor: pointer; }
+.rep-op { display: inline-flex; align-items: center; gap: .4rem; font-size: .8rem; color: var(--text2); margin: 0; }
+.rep-op select { min-height: 36px; padding: .25rem .5rem; }
+.rep-op input[type="checkbox"] { width: 1.1rem; height: 1.1rem; min-height: 0; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 @media (forced-colors: active) { button[aria-pressed="true"] { outline: 3px solid Highlight; } }
 

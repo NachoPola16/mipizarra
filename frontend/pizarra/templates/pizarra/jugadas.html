@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Jugadas — MiPizarra</title>
-<meta name="description" content="Dibuja jugadas de baloncesto por fases: pases, botes y cortes, con descripción en texto, exportación a imagen y a PDF.">
+<title>Pizarra de jugadas — MiPizarra</title>
+<meta name="description" content="Pizarra de jugadas de baloncesto: dibuja por fases, reproduce con las flechas trazándose en directo y exporta a imagen, PDF o archivo.">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#15120e">
 <link rel="icon" type="image/svg+xml" href="{% static 'pizarra/brand/favicon.svg' %}">
@@ -34,8 +34,14 @@
 </header>
 
 <main id="contenido">
-    <h1>Jugadas</h1>
-    <p class="sub">Coloca las piezas, dibuja pases, botes y cortes, y crea la jugada fase a fase. {% if usuario %}Con tu cuenta, las jugadas que guardes se conservan en el servidor.{% else %}Todo se queda en tu navegador: no se envía nada a ningún servidor.{% endif %}</p>
+    <h1>Pizarra de jugadas</h1>
+    <p class="sub">Dibuja una jugada fase a fase, reprodúcela viendo cómo se trazan las flechas y los jugadores las siguen, y llévatela en imagen, PDF o archivo. {% if usuario %}Lo que guardes queda en tu cuenta.{% else %}Todo se queda en tu navegador.{% endif %}</p>
+    <ol class="pasos" aria-label="Cómo se usa">
+        <li><strong>Coloca</strong> atacantes, defensores y balón.</li>
+        <li><strong>Dibuja</strong> pases, botes, cortes y bloqueos arrastrando desde cada jugador.</li>
+        <li><strong>Nueva fase</strong> deja a cada uno donde acabó su flecha: sigue la jugada.</li>
+        <li><strong>Reproduce</strong> para ver la jugada completa.</li>
+    </ol>
 
     <div class="editor">
         <section class="tablero" aria-label="Editor">
@@ -80,7 +86,20 @@
                 </fieldset>
                 <span id="cuenta" class="nota" style="margin:0;"></span>
             </div>
-            <p class="nota">«Nueva fase» copia la fase actual dejando cada jugador donde terminó su flecha y el balón en quien recibió el pase.</p>
+            <div id="reproductor" class="reproductor" hidden>
+                <p id="rep-texto" class="rep-texto" aria-live="polite"></p>
+                <div class="rep-controles">
+                    <button type="button" id="rep-ant">◀ Fase</button>
+                    <button type="button" id="rep-play" class="primario" aria-label="Reproducir">Pausa</button>
+                    <button type="button" id="rep-sig">Fase ▶</button>
+                    <label class="rep-barra-etq"><span class="sr-only">Progreso de la reproducción</span><input type="range" id="rep-barra" min="0" max="1000" value="0"></label>
+                    <label class="rep-op"><input type="checkbox" id="rep-mantener" checked> Dejar las flechas dibujadas</label>
+                    <label class="rep-op">Velocidad
+                        <select id="rep-vel"><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="2">2×</option></select>
+                    </label>
+                </div>
+            </div>
+            <p class="nota">«Nueva fase» copia la fase actual dejando cada jugador donde terminó su flecha y el balón en quien recibió el pase. «Reproducir» dibuja las flechas en directo y mueve a los jugadores por ellas.</p>
         </section>
 
         <aside class="lateral" aria-label="Opciones">
@@ -117,7 +136,7 @@
                 <select id="bib-lista" style="width:100%" data-url="{% static 'pizarra/data/jugadas.json' %}"><option value="">Cargando…</option></select>
                 <p id="bib-desc" class="nota"></p>
                 <div class="fila"><button type="button" id="btn-bib-abrir" class="primario">Abrir en el editor</button></div>
-                <p class="nota">Borradores redibujados a mano alzada: revísalos antes de usarlos con el equipo. Al abrir una, puedes editarla y guardarla como tuya.</p>
+                <p class="nota">Borradores redibujados a mano alzada: revísalos antes de usarlos con el equipo. Al abrir una puedes editarla (flechas, fases, etiquetas) y guardarla como tuya.</p>
             </div>
             <div class="caja">
                 <h2>{% if usuario %}Guardadas en tu cuenta{% else %}Guardadas en este navegador{% endif %}</h2>
@@ -148,6 +167,7 @@
                         <dd>Tab llega a cada pieza y flecha. Flechas mueven la pieza 1 m (Mayús: 4 m). Con una herramienta de flecha activa, Enter sobre la pieza elige el destino con las flechas y Enter confirma. En un pase, las teclas A a E (o 1 a 5) saltan a ese atacante.</dd>
                         <dt>Suprimir</dt><dd>Borra la pieza o la flecha seleccionada.</dd>
                         <dt>Ctrl+Z / Ctrl+Y</dt><dd>Deshacer y rehacer.</dd>
+                        <dt>Reproducción</dt><dd>Espacio pausa o sigue; Escape vuelve al editor. Puedes saltar de fase o arrastrar la barra.</dd>
                         <dt>Edad</dt><dd>En U10 y U12 evita bloqueos, mano a mano y juego de poste (líneas rojas de la federación).</dd>
                     </dl>
                 </details>

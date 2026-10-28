@@ -35,7 +35,7 @@ def _bezier_ctrl_pt(x1, y1, x2, y2, curvature):
     return mx + curvature * px, my + curvature * py
 
 
-def _wavy_path(x1, y1, x2, y2, amplitude=12.0, cx=None, cy=None):
+def _wavy_path(x1, y1, x2, y2, amplitude=7.0, cx=None, cy=None):
     """
     SVG path string for a sinusoidal wave from (x1,y1) to (x2,y2).
     If cx,cy given the wave follows the quadratic bezier through that control point.
@@ -69,7 +69,7 @@ def _wavy_path(x1, y1, x2, y2, amplitude=12.0, cx=None, cy=None):
         for i in range(N_ARC)
     )
 
-    n_waves = max(2, round(arc / 35))
+    n_waves = max(2, round(arc / 26))
     n_segs  = n_waves * 2   # 2 quadratic half-arcs per full wave
 
     p0x, p0y = _pos(0)
@@ -92,6 +92,15 @@ def _wavy_path(x1, y1, x2, y2, amplitude=12.0, cx=None, cy=None):
         parts.append(f"Q {cp_x:.1f},{cp_y:.1f} {ex:.1f},{ey:.1f}")
 
     return " ".join(parts)
+
+
+def _avanza(x1, y1, x2, y2, r):
+    """Mueve el origen (x1, y1) `r` píxeles hacia (x2, y2) (si queda recorrido): el trazo no nace dentro del jugador."""
+    dx, dy = x2 - x1, y2 - y1
+    L = math.sqrt(dx**2 + dy**2)
+    if L < r + 20:
+        return x1, y1
+    return x1 + dx / L * r, y1 + dy / L * r
 
 
 def _half_court_elements(svg: list, cx: float, base_y: float, pad_x: float,
@@ -225,6 +234,7 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
         r = (L-d)/L
         return x1, y1, x1+dx*r, y1+dy*r
 
+    portador_balon = (data.get("balon_inicio") or {}).get("portador")
     movimientos = sorted(data.get("movimientos", []), key=lambda m: m.get("orden", 0))
     for mov in movimientos:
         tipo      = mov.get("tipo", "desplazamiento")
@@ -246,13 +256,18 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
             x2, y2 = to_px(*p)
             a, b, c, d2 = shorten(x1, y1, x2, y2, 26)
             if tipo == "bote":
+                # el bote arranca fuera del jugador (y del balón si lo lleva en la mano) para no pisarlos
+                a, b = _avanza(a, b, c, d2, RADIO_JUGADOR + (32 if portador_balon == de else 6))
                 if curvature is not None:
                     cx_ctrl, cy_ctrl = _bezier_ctrl_pt(a, b, c, d2, curvature)
                     path_d = _wavy_path(a, b, c, d2, cx=cx_ctrl, cy=cy_ctrl)
                 else:
                     path_d = _wavy_path(a, b, c, d2)
+                # funda blanca debajo: la onda no se mezcla con las líneas de la pista que cruza
+                svg.append(f'<path d="{path_d}" fill="none" stroke="#ffffff" stroke-width="8" opacity="0.9" '
+                           f'stroke-linecap="round" stroke-linejoin="round"/>')
                 svg.append(f'<path d="{path_d}" fill="none" stroke="#334155" stroke-width="3" '
-                           f'marker-end="url(#arr)"/>')
+                           f'stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arr)"/>')
             else:  # desplazamiento — solid line
                 if curvature is not None:
                     cx_ctrl, cy_ctrl = _bezier_ctrl_pt(a, b, c, d2, curvature)
