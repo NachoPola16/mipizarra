@@ -45,7 +45,7 @@ def test_formatear_no_pierde_ni_cambia_ni_una_palabra_en_los_63_ejercicios(ejerc
 def test_extraer_seccion_devuelve_el_texto_de_la_progresion(ejercicios):
     desc = formatear_descripcion(_ficha(ejercicios, "ej_003")["descripcion"])
     assert extraer_seccion(desc, ("PROGRESIÓN", "VARIANTES")) == (
-        "sin A2 defendiendo (solo corte y tiro) → A2 defiende pasivo → A2 defiende activo."
+        "sin 2 defendiendo (solo corte y tiro) → 2 defiende pasivo → 2 defiende activo."
     )
 
 
@@ -70,7 +70,7 @@ def test_bloque_curado_lleva_nombre_duracion_descripcion_y_todos_los_puntos_clav
     assert "Puntos clave:" in lineas
     for punto in ej["puntos_clave"]:
         assert f"- {punto}" in lineas
-    assert "A1 da un paso lento hacia la línea de fondo" in bloque
+    assert "1 da un paso lento hacia la línea de fondo" in bloque
 
 
 def test_bloque_curado_partido_se_numera_n_1(ejercicios):
@@ -106,10 +106,10 @@ def test_variante_curada_sale_de_la_progresion_de_la_ficha(ejercicios):
     bloque = bloque_variante_curada("2", ej, 10)
     assert bloque.split("\n")[0] == f'Ejercicio 2.2 (variante de "{ej["nombre"]}"):'
     assert "Duración: 10 min" in bloque
-    assert "A2 defiende pasivo → A2 defiende activo" in bloque
+    assert "2 defiende pasivo → 2 defiende activo" in bloque
     parseado = parsear_ejercicios_de_sesion(bloque)[0]
     assert parseado["nombre"] == ej["nombre"]
-    assert "A2 defiende pasivo" in parseado["descripcion"]
+    assert "2 defiende pasivo" in parseado["descripcion"]
 
 
 def test_variante_curada_es_none_si_la_ficha_no_tiene_progresion():
