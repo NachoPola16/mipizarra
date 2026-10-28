@@ -57,7 +57,7 @@ services:
   frontend:
     build: ./frontend
     container_name: mipizarra-frontend
-    mem_limit: ${FRONTEND_MEM_LIMIT:-128m}
+    mem_limit: ${FRONTEND_MEM_LIMIT:-256m}
     restart: "no"
     ports:
       - "${BIND_IP:-127.0.0.1}:8501:8000"
