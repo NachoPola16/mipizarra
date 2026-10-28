@@ -1288,7 +1288,8 @@ function iniciaBiblioteca() {
             var meta = document.createElement('span'); meta.className = 't-meta';
             var e = document.createElement('span'); e.className = 't-edad'; e.textContent = j.edades.length ? j.edades[0] + (j.edades.length > 1 ? '+' : '') : '—';
             var f = document.createElement('span'); f.textContent = j.fases + (j.fases === 1 ? ' fase' : ' fases');
-            meta.appendChild(e); meta.appendChild(f); cuerpo.appendChild(nombre); cuerpo.appendChild(meta);
+            meta.appendChild(e); meta.appendChild(f);
+            if (j.conceptos) { var cc = document.createElement('span'); cc.textContent = 'Por conceptos'; cc.title = 'Juego por conceptos: se improvisa en la llegada o tras otra jugada, no es una jugada cerrada'; meta.appendChild(cc); b.setAttribute('aria-label', b.getAttribute('aria-label') + ' Juego por conceptos.'); } cuerpo.appendChild(nombre); cuerpo.appendChild(meta);
             b.appendChild(img); b.appendChild(cuerpo);
             b.addEventListener('click', function () { abre(j); });
             lista.appendChild(b);
@@ -1309,7 +1310,7 @@ function iniciaBiblioteca() {
     fetch(lista.getAttribute('data-url'), { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (datos) {
         biblioteca = (Array.isArray(datos) ? datos : []).map(function (c) {
             var v = validar(c);
-            return { crudo: c, nombre: String(c.nombre || '').slice(0, 120), descripcion: String(c.descripcion || '').slice(0, 600), edades: Array.isArray(c.edades) ? c.edades.map(String) : [], fases: v ? v.fases.length : 0, valida: !!v };
+            return { crudo: c, nombre: String(c.nombre || '').slice(0, 120), descripcion: String(c.descripcion || '').slice(0, 600), edades: Array.isArray(c.edades) ? c.edades.map(String) : [], fases: v ? v.fases.length : 0, conceptos: c.conceptos === true, valida: !!v };
         }).filter(function (j) { return j.valida; });
         rellena();
     }).catch(function () { lista.textContent = 'No se pudo cargar la biblioteca'; lista.setAttribute('aria-busy', 'false'); });
