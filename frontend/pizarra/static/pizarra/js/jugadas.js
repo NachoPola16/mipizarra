@@ -662,10 +662,10 @@ function construyeLinea() {
         var bloqueos = {};                    // índice de flecha de bloqueo → { t1, fin } una vez programado
         // Los bloqueos se ponen primero (si la pieza no hace antes otro movimiento) y quien pasa por ellos espera a que lleguen.
         var orden = f.flechas.map(function (a, idx) { return idx; });
-        var movio = {}, antes = [], despues = [];
+        var movio = {}, pasa = {}, antes = [], despues = [], llegada = {};   // llegada: cuándo recibe el balón cada jugador
         f.flechas.forEach(function (a, idx) {
-            if (a.tipo === 'bloqueo' && !movio[a.de]) antes.push(idx); else despues.push(idx);
-            if (a.tipo !== 'pase') movio[a.de] = true;
+            if (a.tipo === 'bloqueo' && !movio[a.de] && !pasa[a.de]) antes.push(idx); else despues.push(idx);
+            if (a.tipo !== 'pase') movio[a.de] = true; else pasa[a.de] = true;      // quien pasa antes de bloquear pasa primero
         });
         orden = antes.concat(despues);
         orden.forEach(function (idx) {
@@ -683,7 +683,9 @@ function construyeLinea() {
                     if (cerca) t0 = Math.max(t0, b.t1 - 0.15);
                 });
             }
+            if (a.tipo === 'pase' && llegada[a.de] !== undefined) t0 = Math.max(t0, llegada[a.de] + 0.05);              // no pasa el balón quien aún no lo ha recibido
             if (a.tipo === 'pase' && a.aId && ultimo[a.aId] !== undefined) t0 = Math.max(t0, ultimo[a.aId] - d + 0.05);   // el pase llega cuando el receptor ya está
+            if (a.tipo === 'pase' && a.aId) llegada[a.aId] = t0 + d;
             flechas.push({ a: a, i: idx, t0: t0, t1: t0 + d });
             if (a.tipo === 'bloqueo' && puntoFinal(f, a)) bloqueos[idx] = { t1: t0 + d, fin: puntoFinal(f, a) };
             if (a.tipo !== 'pase') ultimo[a.de] = t0 + d;
