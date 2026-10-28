@@ -1,0 +1,67 @@
+{% load static %}<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fichas — MiPizarra</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#15120e">
+<link rel="icon" type="image/svg+xml" href="{% static 'pizarra/brand/favicon.svg' %}">
+<link rel="alternate icon" href="{% static 'pizarra/brand/favicon.ico' %}">
+<link rel="stylesheet" href="{% static 'pizarra/css/fonts.css' %}">
+<link rel="stylesheet" href="{% static 'pizarra/css/theme.css' %}">
+<link rel="stylesheet" href="{% static 'pizarra/css/jugadas.css' %}">
+<link rel="stylesheet" href="{% static 'pizarra/css/fichas.css' %}">
+</head>
+<body data-url-datos="{% url 'fichas_datos' %}" data-url-ficha="/fichas/__ID__/">
+<a class="skip" href="#editor">Ir al editor</a>
+{% include 'pizarra/_cabecera.html' with seccion='fichas' %}
+
+<main id="contenido">
+    <h1>Fichas de ejercicios</h1>
+    <p class="sub">Solo para ti. Revisa las fichas una a una y cambia cualquier campo (el diagrama no se toca aquí). Los cambios se guardan en el servidor, fuera de git, y valen enseguida para generar sesiones; cada ficha se puede restaurar a la original.</p>
+
+    <div class="fi-barra">
+        <label class="sr-only" for="fi-buscar">Buscar</label>
+        <input type="text" id="fi-buscar" placeholder="Buscar por nombre, id o texto" autocomplete="off">
+        <label class="sr-only" for="fi-edad">Edad</label>
+        <select id="fi-edad"><option value="">Todas las edades</option></select>
+        <label class="sr-only" for="fi-cat">Categoría</label>
+        <select id="fi-cat"><option value="">Todas las categorías</option></select>
+        <label class="rep-op"><input type="checkbox" id="fi-mod"> Solo modificadas</label>
+        <span id="fi-cuenta" class="nota" style="margin:0;" aria-live="polite"></span>
+    </div>
+
+    <div class="fi-grid">
+        <nav class="fi-lista" aria-label="Lista de fichas"><ul id="fi-ul" aria-busy="true"></ul></nav>
+
+        <section id="editor" class="fi-editor" aria-label="Editor de la ficha" tabindex="-1">
+            <p id="fi-vacio" class="nota">Elige una ficha de la lista.</p>
+            <form id="fi-form" hidden autocomplete="off">
+                <div class="fi-cab">
+                    <div>
+                        <span id="fi-id" class="fi-id"></span>
+                        <span id="fi-mod-etq" class="fi-etq" hidden>Modificada</span>
+                        <span id="fi-diag" class="nota" style="margin:0;"></span>
+                    </div>
+                    <div class="barra" style="margin:0;">
+                        <button type="button" id="fi-ant">◀ Anterior</button>
+                        <span id="fi-pos" class="nota" style="margin:0;"></span>
+                        <button type="button" id="fi-sig">Siguiente ▶</button>
+                    </div>
+                </div>
+                <div id="fi-campos"></div>
+                <div id="fi-errores" class="fi-errores" role="alert" hidden></div>
+                <div class="barra fi-acciones">
+                    <button type="submit" id="fi-guardar" class="primario" disabled>Guardar</button>
+                    <button type="button" id="fi-descartar" disabled>Descartar cambios</button>
+                    <button type="button" id="fi-restaurar" hidden>Restaurar la original</button>
+                    <span id="fi-estado" class="nota" style="margin:0;" role="status" aria-live="polite"></span>
+                </div>
+            </form>
+        </section>
+    </div>
+</main>
+<script src="{% static 'pizarra/js/fichas.js' %}"></script>
+</body>
+</html>

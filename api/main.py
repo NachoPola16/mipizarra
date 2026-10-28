@@ -20,6 +20,10 @@ from rag_engine import (
     listar_ambitos, normalizar_ambito,
 )
 from diagram_renderer import render_diagram, render_all_diagrams
+from ficha_cambios import (
+    CAMPOS_EDITABLES, CAMPOS_OPCIONALES, aplicar as aplicar_cambios_fichas, borrar_cambio, guardar_cambio, leer_cambios,
+)
+from validacion_fichas import validar_ficha
 from plantillas import plantilla_para_texto
 from resumen_objetivo import resumir_objetivo
 
@@ -239,14 +243,98 @@ def root():
     return {"status": "ok", "version": "0.3.0"}
 
 
-@app.get("/ejercicios")
-@limiter.limit("60/minute")
-def listar_ejercicios(request: Request):
+def _base_ejercicios() -> list:
+    """exercises.json tal cual, sin los cambios del administrador."""
     try:
         with open(EXERCISES_PATH, encoding="utf-8") as f:
             return json.load(f)
     except FileNotFoundError:
         raise HTTPException(status_code=503, detail="Biblioteca de ejercicios no disponible")
+
+
+@app.get("/ejercicios")
+@limiter.limit("60/minute")
+def listar_ejercicios(request: Request):
+    return aplicar_cambios_fichas(_base_ejercicios())
+
+
+# ── Administración de fichas ─────────────────────────────────────────────────
+# Solo las llama el frontend, que comprueba que la cuenta es la del administrador (la API no tiene usuarios: su única
+# barrera es el secreto interno). Los cambios no tocan exercises.json: viven en ficha_cambios.json (ver ficha_cambios.py).
+ID_FICHA = re.compile(r"^ej_\d{3,}$")
+MAX_BYTES_FICHA = 30_000
+
+
+class FichaCambioRequest(BaseModel):
+    ficha: dict
+
+
+@app.get("/admin/fichas")
+@limiter.limit("60/minute")
+def admin_listar_fichas(request: Request):
+    base = _base_ejercicios()
+    cambios = leer_cambios()
+    ids = {f.get("id") for f in base}
+    modificadas = [i for i in cambios if i in ids]
+    return {
+        "fichas": aplicar_cambios_fichas(base, cambios),
+        "modificadas": modificadas,
+        "originales": {f["id"]: {k: f[k] for k in CAMPOS_EDITABLES if k in f} for f in base if f.get("id") in modificadas},
+    }
+
+
+def _limpiar_campos_de_ficha(crudo: dict) -> dict:
+    """Solo los campos editables, con los textos recortados; los opcionales vacíos se quitan."""
+    def limpio(v):
+        if isinstance(v, str):
+            return v.strip()
+        if isinstance(v, list):
+            return [limpio(x) for x in v if not (isinstance(x, str) and not x.strip())]
+        if isinstance(v, dict):
+            return {k: limpio(x) for k, x in v.items() if not (isinstance(x, str) and not x.strip())}
+        return v
+
+    campos = {k: limpio(crudo[k]) for k in CAMPOS_EDITABLES if k in crudo}
+    for k in CAMPOS_OPCIONALES:
+        if k in campos and campos[k] in ("", [], {}, None):
+            del campos[k]
+    return campos
+
+
+@app.put("/admin/fichas/{ficha_id}")
+@limiter.limit("60/minute")
+def admin_guardar_ficha(request: Request, ficha_id: str, req: FichaCambioRequest):
+    if not ID_FICHA.match(ficha_id):
+        raise HTTPException(status_code=400, detail="Identificador de ficha no válido")
+    if len(json.dumps(req.ficha, ensure_ascii=False)) > MAX_BYTES_FICHA:
+        raise HTTPException(status_code=413, detail="La ficha es demasiado grande")
+    base = _base_ejercicios()
+    original = next((f for f in base if f.get("id") == ficha_id), None)
+    if original is None:
+        raise HTTPException(status_code=404, detail="No existe esa ficha")
+    campos = _limpiar_campos_de_ficha(req.ficha)
+    candidata = {**{k: v for k, v in original.items() if k not in CAMPOS_EDITABLES}, **campos}
+    otras = [f for f in aplicar_cambios_fichas(base) if f.get("id") != ficha_id]
+    problemas = validar_ficha(candidata, otras)
+    jm = candidata.get("jugadores_minimos")
+    if not (isinstance(jm, int) and not isinstance(jm, bool) and 1 <= jm <= 40):
+        problemas.append("jugadores_minimos: entero entre 1 y 40")
+    if problemas:
+        return JSONResponse(status_code=422, content={"detail": "La ficha no es válida", "problemas": problemas})
+    guardar_cambio(ficha_id, campos)
+    return {"ok": True, "ficha": candidata}
+
+
+@app.delete("/admin/fichas/{ficha_id}")
+@limiter.limit("60/minute")
+def admin_restaurar_ficha(request: Request, ficha_id: str):
+    if not ID_FICHA.match(ficha_id):
+        raise HTTPException(status_code=400, detail="Identificador de ficha no válido")
+    original = next((f for f in _base_ejercicios() if f.get("id") == ficha_id), None)
+    if original is None:
+        raise HTTPException(status_code=404, detail="No existe esa ficha")
+    borrar_cambio(ficha_id)
+    return {"ok": True, "ficha": original}
 
 
 @app.post("/generar")

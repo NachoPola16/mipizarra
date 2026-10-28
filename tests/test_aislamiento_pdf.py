@@ -31,7 +31,7 @@ def test_la_api_no_monta_la_carpeta_de_pdf_ni_toda_la_carpeta_data():
 def test_la_api_solo_monta_lo_que_necesita_de_data():
     montados = {m.split(":")[0].replace("\\", "/") for m in _montajes_de_data("api")}
     assert montados == {"./data/exercises.json", "./data/teoria", "./data/reglamento",
-                        "./data/chroma_db", "./data/sessions"}
+                        "./data/chroma_db", "./data/sessions", "./data/cambios"}
 
 
 def test_los_documentos_de_solo_lectura_se_montan_asi():

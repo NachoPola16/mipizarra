@@ -50,3 +50,6 @@ data/candidatos/
 frontend/db.sqlite3
 data/frontend/
 frontend/secret_key.txt
+
+# cambios del administrador sobre las fichas (solo en el servidor)
+data/cambios/

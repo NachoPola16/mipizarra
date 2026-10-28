@@ -40,6 +40,8 @@ services:
       - ./data/reglamento:/app/data/reglamento:ro
       - ./data/chroma_db:/app/data/chroma_db
       - ./data/sessions:/app/data/sessions
+      # Cambios del administrador sobre las fichas (ficha_cambios.json); fuera de git, entran en la copia de seguridad.
+      - ./data/cambios:/app/data/cambios
       - ./api:/app
       - ./tools:/app/tools
       - ./experimental:/app/experimental
