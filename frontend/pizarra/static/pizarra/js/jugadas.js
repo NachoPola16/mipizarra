@@ -852,6 +852,7 @@ function validar(j) { // sanea cualquier JSON de fuera: solo se aceptan tipos y 
     return salida;
 }
 function cargaJugada(j) {
+    paraReproduccion();                      // si se estaba reproduciendo otra jugada, se para antes de cambiar
     estado = j; sel = null; deshacer = []; rehacer = [];
     $('nombre').value = j.nombre || '';
     $('etiquetas').value = j.etiquetas;
@@ -958,7 +959,7 @@ function iniciar() {
     });
     $('plantillas').addEventListener('change', function (e) {
         var v = e.target.value; if (!v) return;
-        guardarPaso(); var j = plantilla(v); j.nombre = estado.nombre; j.etiquetas = estado.etiquetas; estado = j; sel = null; e.target.value = ''; pintar(); anuncia('Plantilla colocada.');
+        paraReproduccion(); guardarPaso(); var j = plantilla(v); j.nombre = estado.nombre; j.etiquetas = estado.etiquetas; estado = j; sel = null; e.target.value = ''; pintar(); anuncia('Plantilla colocada.');
     });
     $('btn-guardar').addEventListener('click', function () {
         var j = clon(estado); j.nombre = nombreJugada(); j.actual = 0;
@@ -1043,6 +1044,7 @@ function previaDe(j) {
 function iniciaBiblioteca() {
     var lista = $('bib-lista'), vacio = $('bib-vacio'), nota = $('jugada-nota'), filtro = '';
     function abre(j) {
+        paraReproduccion();                  // si se estaba reproduciendo otra jugada, se para antes de abrir esta
         guardarPaso();
         var v = validar(j.crudo); v.nombre = j.nombre;
         estado = v; sel = null; $('nombre').value = j.nombre; $('etiquetas').value = v.etiquetas; pintar();
