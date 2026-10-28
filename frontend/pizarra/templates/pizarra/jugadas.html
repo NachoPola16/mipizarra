@@ -16,22 +16,7 @@
 </head>
 <body data-usuario="{{ usuario }}">
 <a class="skip" href="#pista">Ir a la pista</a>
-<header class="topbar">
-    <a class="brand" href="{% url 'index' %}" aria-label="MiPizarra, ir al inicio">
-        <img class="brand-mark" src="{% static 'pizarra/brand/favicon.svg' %}" alt="" width="26" height="26">
-        <span>Mi<em>Pizarra</em></span>
-    </a>
-    <nav class="mode-tabs" aria-label="Secciones">
-        <a class="mode-tab" href="{% url 'index' %}">Sesión</a>
-        <a class="mode-tab" href="{% url 'index' %}#reglamento">Reglamento</a>
-        <a class="mode-tab" href="{% url 'jugadas' %}" aria-current="page">Jugadas</a>
-        {% if usuario %}
-        <form method="post" action="{% url 'salir' %}" class="form-salir">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button type="submit" class="mode-tab" aria-label="Cerrar sesión de {{ usuario }}">Salir ({{ usuario }})</button></form>
-        {% else %}
-        <a class="mode-tab" href="{% url 'entrar' %}?next={% url 'jugadas' %}">Entrar</a>
-        {% endif %}
-    </nav>
-</header>
+{% include 'pizarra/_cabecera.html' with seccion='jugadas' %}
 
 <main id="contenido">
     <h1>Pizarra de jugadas</h1>
@@ -86,6 +71,7 @@
                 </fieldset>
                 <span id="cuenta" class="nota" style="margin:0;"></span>
             </div>
+            <p id="jugada-nota" class="jugada-nota" hidden></p>
             <div id="reproductor" class="reproductor" hidden>
                 <p id="rep-texto" class="rep-texto" aria-live="polite"></p>
                 <div class="rep-controles">
@@ -126,19 +112,6 @@
                 </div>
             </div>
             <div class="caja">
-                <h2>Biblioteca de jugadas</h2>
-                <label for="bib-edad">Categoría</label>
-                <select id="bib-edad" style="width:100%">
-                    <option value="">Todas</option>
-                    <option>U10</option><option>U12</option><option>U14</option><option>U16</option><option>U18</option><option>Senior</option>
-                </select>
-                <label for="bib-lista" style="margin-top:.6rem;">Jugada</label>
-                <select id="bib-lista" style="width:100%" data-url="{% static 'pizarra/data/jugadas.json' %}"><option value="">Cargando…</option></select>
-                <p id="bib-desc" class="nota"></p>
-                <div class="fila"><button type="button" id="btn-bib-abrir" class="primario">Abrir en el editor</button></div>
-                <p class="nota">Borradores redibujados a mano alzada: revísalos antes de usarlos con el equipo. Al abrir una puedes editarla (flechas, fases, etiquetas) y guardarla como tuya.</p>
-            </div>
-            <div class="caja">
                 <h2>{% if usuario %}Guardadas en tu cuenta{% else %}Guardadas en este navegador{% endif %}</h2>
                 <label for="guardadas" class="sr-only">Jugadas guardadas</label>
                 <select id="guardadas" style="width:100%"></select>
@@ -174,6 +147,23 @@
             </div>
         </aside>
     </div>
+    <section id="biblioteca" class="biblioteca" aria-labelledby="bib-titulo">
+        <div class="bib-cab">
+            <h2 id="bib-titulo">Biblioteca de jugadas</h2>
+            <div class="bib-filtros" role="group" aria-label="Filtrar por categoría">
+                <button type="button" class="chip" data-edad="" aria-pressed="true">Todas</button>
+                <button type="button" class="chip" data-edad="U10" aria-pressed="false">U10</button>
+                <button type="button" class="chip" data-edad="U12" aria-pressed="false">U12</button>
+                <button type="button" class="chip" data-edad="U14" aria-pressed="false">U14</button>
+                <button type="button" class="chip" data-edad="U16" aria-pressed="false">U16</button>
+                <button type="button" class="chip" data-edad="U18" aria-pressed="false">U18</button>
+                <button type="button" class="chip" data-edad="Senior" aria-pressed="false">Senior</button>
+            </div>
+        </div>
+        <p class="nota">Borradores redibujados a mano alzada: revísalos antes de usarlos con el equipo. Elige una para abrirla en el editor; allí puedes editarla (flechas, fases, etiquetas) y guardarla como tuya.</p>
+        <div id="bib-lista" class="bib-grid" role="list" data-url="{% static 'pizarra/data/jugadas.json' %}" aria-busy="true"><p class="nota">Cargando…</p></div>
+        <p id="bib-vacio" class="nota" hidden>No hay jugadas para esta categoría.</p>
+    </section>
     <div id="anuncio" class="sr-only" role="status" aria-live="polite"></div>
 </main>
 <div id="impresion" aria-hidden="true"></div>

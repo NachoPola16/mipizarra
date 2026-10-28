@@ -920,31 +920,58 @@ function iniciar() {
 
 // ── Biblioteca de jugadas (catálogo estático del servidor) ────────────────
 var biblioteca = [];
+// vista previa de la primera fase: una imagen SVG independiente (sin ids repetidos en la página)
+function previaDe(j) {
+    var v = validar(j.crudo), svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('xmlns', NS); svg.setAttribute('viewBox', '-10 -10 ' + (W + 20) + ' ' + (H + 20));
+    var guardado = estado; estado = v;               // etiquetaAtacante lee estado.etiquetas
+    try { renderEn(svg, v.fases[0], CLARO, false, false); } finally { estado = guardado; }
+    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(svg));
+}
 function iniciaBiblioteca() {
-    var lista = $('bib-lista'), edad = $('bib-edad'), desc = $('bib-desc');
-    function rellena() {
-        lista.textContent = '';
-        var o0 = document.createElement('option'); o0.value = ''; o0.textContent = 'Elegir…'; lista.appendChild(o0);
-        biblioteca.forEach(function (j, i) {
-            if (edad.value && j.edades.indexOf(edad.value) < 0) return;
-            var o = document.createElement('option'); o.value = String(i); o.textContent = j.nombre; lista.appendChild(o);
-        });
-        desc.textContent = lista.options.length > 1 ? '' : 'No hay jugadas para esta categoría.';
-    }
-    edad.addEventListener('change', rellena);
-    lista.addEventListener('change', function () { desc.textContent = lista.value === '' ? '' : biblioteca[+lista.value].descripcion; });
-    $('btn-bib-abrir').addEventListener('click', function () {
-        if (lista.value === '') { anuncia('Elige primero una jugada de la biblioteca.'); return; }
-        var j = biblioteca[+lista.value]; guardarPaso();
+    var lista = $('bib-lista'), vacio = $('bib-vacio'), nota = $('jugada-nota'), filtro = '';
+    function abre(j) {
+        guardarPaso();
         var v = validar(j.crudo); v.nombre = j.nombre;
-        estado = v; sel = null; $('nombre').value = j.nombre; $('etiquetas').value = v.etiquetas; pintar(); anuncia('Jugada «' + j.nombre + '» abierta, ' + estado.fases.length + ' fases.');
+        estado = v; sel = null; $('nombre').value = j.nombre; $('etiquetas').value = v.etiquetas; pintar();
+        nota.textContent = j.descripcion; nota.hidden = !j.descripcion;
+        anuncia('Jugada «' + j.nombre + '» abierta, ' + estado.fases.length + ' fases.');
+        $('pista').scrollIntoView({ behavior: reducirMovimiento ? 'auto' : 'smooth', block: 'center' });
+    }
+    function rellena() {
+        lista.textContent = ''; var n = 0;
+        biblioteca.forEach(function (j) {
+            if (filtro && j.edades.indexOf(filtro) < 0) return;
+            n++;
+            var b = document.createElement('button'); b.type = 'button'; b.className = 'tarjeta'; b.setAttribute('role', 'listitem');
+            b.setAttribute('aria-label', j.nombre + '. ' + j.fases + (j.fases === 1 ? ' fase' : ' fases') + '. Abrir en el editor.');
+            var img = document.createElement('img'); img.alt = ''; img.loading = 'lazy'; img.decoding = 'async'; img.src = j.previa || (j.previa = previaDe(j));
+            var cuerpo = document.createElement('span'); cuerpo.className = 't-cuerpo';
+            var nombre = document.createElement('span'); nombre.className = 't-nombre'; nombre.textContent = j.nombre;
+            var meta = document.createElement('span'); meta.className = 't-meta';
+            var e = document.createElement('span'); e.className = 't-edad'; e.textContent = j.edades.length ? j.edades[0] + (j.edades.length > 1 ? '+' : '') : '—';
+            var f = document.createElement('span'); f.textContent = j.fases + (j.fases === 1 ? ' fase' : ' fases');
+            meta.appendChild(e); meta.appendChild(f); cuerpo.appendChild(nombre); cuerpo.appendChild(meta);
+            b.appendChild(img); b.appendChild(cuerpo);
+            b.addEventListener('click', function () { abre(j); });
+            lista.appendChild(b);
+        });
+        lista.setAttribute('aria-busy', 'false'); vacio.hidden = n > 0;
+    }
+    document.querySelectorAll('.bib-filtros .chip').forEach(function (c) {
+        c.addEventListener('click', function () {
+            filtro = c.getAttribute('data-edad') || '';
+            document.querySelectorAll('.bib-filtros .chip').forEach(function (o) { o.setAttribute('aria-pressed', o === c ? 'true' : 'false'); });
+            rellena();
+        });
     });
-    fetch($('bib-lista').getAttribute('data-url'), { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (datos) {
+    fetch(lista.getAttribute('data-url'), { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (datos) {
         biblioteca = (Array.isArray(datos) ? datos : []).map(function (c) {
-            return { crudo: c, nombre: String(c.nombre || '').slice(0, 120), descripcion: String(c.descripcion || '').slice(0, 600), edades: Array.isArray(c.edades) ? c.edades.map(String) : [] };
-        }).filter(function (j) { return validar(j.crudo); });
+            var v = validar(c);
+            return { crudo: c, nombre: String(c.nombre || '').slice(0, 120), descripcion: String(c.descripcion || '').slice(0, 600), edades: Array.isArray(c.edades) ? c.edades.map(String) : [], fases: v ? v.fases.length : 0, valida: !!v };
+        }).filter(function (j) { return j.valida; });
         rellena();
-    }).catch(function () { lista.firstChild.textContent = 'No se pudo cargar la biblioteca'; });
+    }).catch(function () { lista.textContent = 'No se pudo cargar la biblioteca'; lista.setAttribute('aria-busy', 'false'); });
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar); else iniciar();
