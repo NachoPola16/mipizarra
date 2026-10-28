@@ -659,15 +659,37 @@ function construyeLinea() {
     estado.fases.forEach(function (f, i) {
         var inicio = t, tt = t, flechas = [];
         var ultimo = {};                      // fin del último movimiento de cada pieza: los tramos encadenados van en fila
+        var bloqueos = {};                    // índice de flecha de bloqueo → { t1, fin } una vez programado
+        // Los bloqueos se ponen primero (si la pieza no hace antes otro movimiento) y quien pasa por ellos espera a que lleguen.
+        var orden = f.flechas.map(function (a, idx) { return idx; });
+        var movio = {}, antes = [], despues = [];
         f.flechas.forEach(function (a, idx) {
+            if (a.tipo === 'bloqueo' && !movio[a.de]) antes.push(idx); else despues.push(idx);
+            if (a.tipo !== 'pase') movio[a.de] = true;
+        });
+        orden = antes.concat(despues);
+        orden.forEach(function (idx) {
+            var a = f.flechas[idx];
             var cadena = a.sigue && a.tipo !== 'pase' && ultimo[a.de] !== undefined;
             var d = a.tipo === 'pase' ? TV.DUR_PASE : ((cadena || haySiguiente(f, idx)) ? 0.6 : TV.DUR);
             var t0 = cadena ? Math.max(tt, ultimo[a.de]) : tt;
+            if (a.tipo === 'corte' || a.tipo === 'bote') {          // espera al bloqueador cuyo bloqueo cruza su recorrido
+                var ini = inicioDe(f, idx), fn = puntoFinal(f, a);
+                Object.keys(bloqueos).forEach(function (k) {
+                    var b = bloqueos[k];
+                    if (f.flechas[k].de === a.de || !ini || !fn) return;
+                    var c = controlDe(ini, fn, a.curva), cerca = false;
+                    for (var u = 0; u <= 10; u++) { var q = puntoCurva(ini.x, ini.y, fn.x, fn.y, a.curva ? c.x : undefined, a.curva ? c.y : undefined, u / 10); if (Math.hypot(q.x - b.fin.x, q.y - b.fin.y) < 60) cerca = true; }
+                    if (cerca) t0 = Math.max(t0, b.t1 - 0.15);
+                });
+            }
             if (a.tipo === 'pase' && a.aId && ultimo[a.aId] !== undefined) t0 = Math.max(t0, ultimo[a.aId] - d + 0.05);   // el pase llega cuando el receptor ya está
             flechas.push({ a: a, i: idx, t0: t0, t1: t0 + d });
+            if (a.tipo === 'bloqueo' && puntoFinal(f, a)) bloqueos[idx] = { t1: t0 + d, fin: puntoFinal(f, a) };
             if (a.tipo !== 'pase') ultimo[a.de] = t0 + d;
             tt += TV.ESCALON;
         });
+        flechas.sort(function (x, y) { return x.i - y.i; });      // el resto del reproductor espera el orden original
         var fin = flechas.length ? Math.max.apply(null, flechas.map(function (x) { return x.t1; })) : inicio + 0.3;
         var P1 = fin + TV.PAUSA, ultima = i === estado.fases.length - 1;
         fases.push({ f: f, P0: i === 0 ? 0 : inicio, P1: P1, P2: ultima ? P1 : P1 + TV.TRANS, flechas: flechas });
