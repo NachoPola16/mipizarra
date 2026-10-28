@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="{% static 'pizarra/css/theme.css' %}">
 <link rel="stylesheet" href="{% static 'pizarra/css/jugadas.css' %}">
 </head>
-<body data-usuario="{{ usuario }}">
+<body data-usuario="{{ usuario }}"{% if es_admin %} data-admin="1"{% endif %}>
 <a class="skip" href="#pista">Ir a la pista</a>
 {% include 'pizarra/_cabecera.html' with seccion='jugadas' %}
 
@@ -108,6 +108,9 @@
                 </select>
                 <div class="fila">
                     <button type="button" id="btn-guardar" class="primario">Guardar</button>
+                    {% if es_admin %}<button type="button" id="btn-bib-guardar" hidden>Guardar en la biblioteca</button>
+                    <button type="button" id="btn-bib-nueva" hidden>Añadir a la biblioteca como nueva</button>
+                    <button type="button" id="btn-bib-restaurar" hidden>Restaurar la original</button>{% endif %}
                     <button type="button" id="btn-png">Imagen PNG</button>
                     <button type="button" id="btn-gif" data-lib="{% static 'pizarra/js/gifenc.esm.js' %}">GIF animado</button>
                     <button type="button" id="btn-imprimir">Imprimir / PDF</button>
@@ -163,7 +166,7 @@
             </div>
         </div>
         <p class="nota">Borradores redibujados a mano alzada: revísalos antes de usarlos con el equipo. Elige una para abrirla en el editor; allí puedes editarla (flechas, fases, etiquetas) y guardarla como tuya.</p>
-        <div id="bib-lista" class="bib-grid" role="list" data-url="{% static 'pizarra/data/jugadas.json' %}" aria-busy="true"><p class="nota">Cargando…</p></div>
+        <div id="bib-lista" class="bib-grid" role="list" data-url="{% url 'biblioteca_json' %}" aria-busy="true"><p class="nota">Cargando…</p></div>
         <p id="bib-vacio" class="nota" hidden>No hay jugadas para esta categoría.</p>
     </section>
     <div id="anuncio" class="sr-only" role="status" aria-live="polite"></div>

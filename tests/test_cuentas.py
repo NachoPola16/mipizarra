@@ -24,6 +24,7 @@ GUION = textwrap.dedent('''
     U = get_user_model()
     U.objects.create_user("alicia", password="clave-de-prueba-1")
     U.objects.create_user("beto", password="clave-de-prueba-2")
+    U.objects.create_user("nacho", password="clave-de-prueba-3")
     H = {"HTTP_HOST": "localhost"}
 
     JUGADA = {"fases": [{"piezas": [{"tipo": "A", "n": 1, "x": 100, "y": 200}, {"tipo": "B", "n": 0, "x": 110, "y": 210}],
@@ -88,6 +89,30 @@ GUION = textwrap.dedent('''
     r = g.post("/cuenta/salir/", {"next": "/jugadas/"}, **H); assert r.status_code == 302 and r["Location"] == "/jugadas/"
     g.login(username="beto", password="clave-de-prueba-2")
     r = g.post("/cuenta/salir/", {"next": "https://sitio-malo.example/"}, **H); assert r.status_code == 302 and r["Location"] == "/"
+    # biblioteca: solo el administrador (nacho) la cambia; los demás la ven con los cambios
+    base = anon.get("/jugadas/biblioteca.json", **H)
+    assert base.status_code == 302                      # como el resto de la web, exige cuenta
+    biblio = c.get("/jugadas/biblioteca.json", **H).json(); n0 = len(biblio); jid = biblio[0]["id"]
+    assert b'id="btn-bib-guardar"' not in c.get("/jugadas/", **H).content        # el botón no existe para los demás
+    cambio = {"nombre": "Cambiada", "fases": [{"piezas": [{"tipo": "A", "n": 1, "x": 10, "y": 20}, {"tipo": "A", "n": 2, "x": 50, "y": 60}],
+              "flechas": [{"tipo": "corte", "de": "A1", "a": {"x": 30, "y": 30}}, {"tipo": "bote", "de": "A1", "a": {"x": 40, "y": 40}, "sigue": True}]}], "defensa": True}
+    assert post(c, f"/jugadas/biblioteca/{jid}/", {"datos": cambio}).status_code == 403       # alicia no
+    assert c.delete(f"/jugadas/biblioteca/{jid}/", **H).status_code == 403
+    assert post(c, "/jugadas/biblioteca/nueva/", {"datos": cambio}).status_code == 403
+    assert len(c.get("/jugadas/biblioteca.json", **H).json()) == n0
+    n = Client(); n.login(username="nacho", password="clave-de-prueba-3")
+    assert b'id="btn-bib-guardar"' in n.get("/jugadas/", **H).content
+    assert post(n, f"/jugadas/biblioteca/{jid}/", {"datos": cambio}).status_code == 200
+    nueva = [j for j in c.get("/jugadas/biblioteca.json", **H).json() if j["id"] == jid][0]      # alicia ve lo que guardó nacho
+    assert nueva["nombre"] == "Cambiada" and nueva["fases"][0]["flechas"][1]["sigue"] is True and nueva["defensa"] is True
+    assert nueva["edades"] == biblio[0]["edades"] and len(c.get("/jugadas/biblioteca.json", **H).json()) == n0       # conserva la ficha
+    r = post(n, "/jugadas/biblioteca/nueva/", {"datos": cambio}); assert r.status_code == 200
+    assert len(c.get("/jugadas/biblioteca.json", **H).json()) == n0 + 1 and r.json()["id"] not in [j["id"] for j in biblio]
+    assert post(n, "/jugadas/biblioteca/x/", {"datos": cambio}).status_code == 403             # id raro
+    assert post(n, f"/jugadas/biblioteca/{jid}/", {"datos": {"fases": []}}).status_code == 400
+    assert n.delete(f"/jugadas/biblioteca/{jid}/", **H).status_code == 200                       # restaura la original
+    assert n.delete("/jugadas/biblioteca/" + r.json()["id"] + "/", **H).status_code == 200      # y la nueva desaparece
+    assert c.get("/jugadas/biblioteca.json", **H).json() == biblio
     print("OK")
 ''')
 

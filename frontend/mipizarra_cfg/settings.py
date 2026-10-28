@@ -105,3 +105,6 @@ SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 API_URL         = os.environ.get('API_URL', 'http://mipizarra-api:8090')
 INTERNAL_SECRET = os.environ.get('INTERNAL_SECRET', '')
+
+# Usuario que puede sobrescribir las jugadas de la biblioteca desde el editor (vacío = nadie).
+JUGADAS_ADMIN = os.environ.get('JUGADAS_ADMIN', 'nacho')

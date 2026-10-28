@@ -15,3 +15,14 @@ class Jugada(models.Model):
 
     def __str__(self):
         return f'{self.nombre} ({self.usuario})'
+
+
+class JugadaBiblioteca(models.Model):
+    """Cambio del administrador sobre una jugada de la biblioteca (jugadas.json): sustituye a la original con ese id o la añade.
+    Vive en la base de datos (volumen /data), así que sobrevive a los despliegues; borrar la fila restaura la original."""
+    id_jugada = models.CharField(max_length=20, unique=True)
+    datos = models.JSONField()
+    actualizada = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.id_jugada

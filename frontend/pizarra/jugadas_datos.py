@@ -53,7 +53,12 @@ def validar_jugada(datos):
             curva = _num(a.get('curva'), -CURVA_MAX, CURVA_MAX, 2)
             if curva:
                 f['curva'] = curva
+            if a.get('sigue') is True and a['tipo'] != 'pase':
+                f['sigue'] = True      # tramo encadenado con el anterior de la misma pieza
             flechas.append(f)
         fases.append({'piezas': piezas, 'flechas': flechas})
     etiquetas = datos.get('etiquetas')
-    return {'etiquetas': etiquetas if etiquetas in ETIQUETAS else 'num', 'fases': fases}
+    salida = {'etiquetas': etiquetas if etiquetas in ETIQUETAS else 'num', 'fases': fases}
+    if datos.get('defensa') is True:
+        salida['defensa'] = True       # jugada de defensa: la reproducción no acaba en tiro
+    return salida

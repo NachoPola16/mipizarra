@@ -949,6 +949,8 @@ function paraReproduccion() {
 // ── Guardar, abrir, exportar ─────────────────────────────────────────────
 // Con sesión iniciada las jugadas viven en el servidor (cuenta); sin ella, en el navegador (localStorage).
 var USUARIO = document.body.getAttribute('data-usuario') || '';
+var ADMIN = document.body.getAttribute('data-admin') === '1';      // solo el administrador puede cambiar la biblioteca
+var bibId = '';                                                       // id de la jugada de la biblioteca abierta en el editor (vacío si no viene de ahí)
 function csrf() { var m = document.cookie.match(/(?:^|; )csrftoken=([^;]*)/); return m ? decodeURIComponent(m[1]) : ''; }
 function api(url, opciones) {
     opciones = opciones || {};
@@ -1011,7 +1013,7 @@ function validar(j) { // sanea cualquier JSON de fuera: solo se aceptan tipos y 
 }
 function cargaJugada(j) {
     paraReproduccion();                      // si se estaba reproduciendo otra jugada, se para antes de cambiar
-    estado = j; sel = null; deshacer = []; rehacer = []; notaTexto = '';
+    estado = j; sel = null; deshacer = []; rehacer = []; notaTexto = ''; bibId = '';
     $('nombre').value = j.nombre || '';
     $('etiquetas').value = j.etiquetas;
     pintar();
@@ -1183,7 +1185,7 @@ function iniciar() {
     });
     $('plantillas').addEventListener('change', function (e) {
         var v = e.target.value; if (!v) return;
-        paraReproduccion(); guardarPaso(); var j = plantilla(v); j.nombre = estado.nombre; j.etiquetas = estado.etiquetas; estado = j; sel = null; e.target.value = ''; pintar(); anuncia('Plantilla colocada.');
+        paraReproduccion(); guardarPaso(); var j = plantilla(v); j.nombre = estado.nombre; j.etiquetas = estado.etiquetas; estado = j; sel = null; bibId = ''; e.target.value = ''; pintar(); anuncia('Plantilla colocada.');
     });
     $('btn-guardar').addEventListener('click', function () {
         var j = clon(estado); j.nombre = nombreJugada(); j.actual = 0;
@@ -1272,7 +1274,7 @@ function iniciaBiblioteca() {
         paraReproduccion();                  // si se estaba reproduciendo otra jugada, se para antes de abrir esta
         guardarPaso();
         var v = validar(j.crudo); v.nombre = j.nombre;
-        estado = v; sel = null; notaTexto = j.descripcion; $('nombre').value = j.nombre; $('etiquetas').value = v.etiquetas; pintar();
+        estado = v; sel = null; bibId = j.crudo.id || ''; if (ADMIN) pintaAdmin(); notaTexto = j.descripcion; $('nombre').value = j.nombre; $('etiquetas').value = v.etiquetas; pintar();
         anuncia('Jugada «' + j.nombre + '» abierta, ' + estado.fases.length + ' fases.');
         $('pista').scrollIntoView({ behavior: reducirMovimiento ? 'auto' : 'smooth', block: 'center' });
     }
@@ -1308,13 +1310,40 @@ function iniciaBiblioteca() {
             rellena();
         });
     });
-    fetch(lista.getAttribute('data-url'), { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (datos) {
-        biblioteca = (Array.isArray(datos) ? datos : []).map(function (c) {
-            var v = validar(c);
-            return { crudo: c, nombre: String(c.nombre || '').slice(0, 120), descripcion: String(c.descripcion || '').slice(0, 600), edades: Array.isArray(c.edades) ? c.edades.map(String) : [], fases: v ? v.fases.length : 0, conceptos: c.conceptos === true, valida: !!v };
-        }).filter(function (j) { return j.valida; });
-        rellena();
-    }).catch(function () { lista.textContent = 'No se pudo cargar la biblioteca'; lista.setAttribute('aria-busy', 'false'); });
+    function pintaAdmin() {
+        if (!ADMIN) return;
+        $('btn-bib-guardar').hidden = !bibId; $('btn-bib-restaurar').hidden = !bibId; $('btn-bib-nueva').hidden = false;
+    }
+    function cargaBiblioteca() {
+        fetch(lista.getAttribute('data-url'), { credentials: 'same-origin' }).then(function (r) { return r.json(); }).then(function (datos) {
+            biblioteca = (Array.isArray(datos) ? datos : []).map(function (c) {
+                var v = validar(c);
+                return { crudo: c, nombre: String(c.nombre || '').slice(0, 120), descripcion: String(c.descripcion || '').slice(0, 600), edades: Array.isArray(c.edades) ? c.edades.map(String) : [], fases: v ? v.fases.length : 0, conceptos: c.conceptos === true, valida: !!v };
+            }).filter(function (j) { return j.valida; });
+            rellena();
+        }).catch(function () { lista.textContent = 'No se pudo cargar la biblioteca'; lista.setAttribute('aria-busy', 'false'); });
+    }
+    cargaBiblioteca();
+    if (ADMIN) {
+        var cuerpoJugada = function () { var j = clon(estado); j.nombre = nombreJugada(); j.actual = 0; return JSON.stringify({ datos: j }); };
+        var avisa = function (r, texto) { anuncia(texto); cargaBiblioteca(); return r; };
+        var falla = function (e) { anuncia('No se pudo guardar en la biblioteca: ' + e.message); };
+        pintaAdmin();
+        $('btn-bib-guardar').addEventListener('click', function () {
+            if (!bibId) return;
+            api('/jugadas/biblioteca/' + encodeURIComponent(bibId) + '/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: cuerpoJugada() })
+                .then(function (r) { avisa(r, 'Guardada en la biblioteca para todos (' + bibId + ').'); }).catch(falla);
+        });
+        $('btn-bib-nueva').addEventListener('click', function () {
+            api('/jugadas/biblioteca/nueva/', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: cuerpoJugada() })
+                .then(function (r) { bibId = r.id; pintaAdmin(); avisa(r, 'Añadida a la biblioteca para todos como ' + r.id + '.'); }).catch(falla);
+        });
+        $('btn-bib-restaurar').addEventListener('click', function () {
+            if (!bibId || !window.confirm('Se descartan tus cambios en la biblioteca: vuelve la jugada original (si la creaste tú, desaparece). ¿Seguro?')) return;
+            api('/jugadas/biblioteca/' + encodeURIComponent(bibId) + '/', { method: 'DELETE' })
+                .then(function (r) { bibId = ''; pintaAdmin(); avisa(r, 'Hecho: la biblioteca vuelve a la versión original.'); }).catch(falla);
+        });
+    }
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', iniciar); else iniciar();
