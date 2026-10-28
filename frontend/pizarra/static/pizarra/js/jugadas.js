@@ -126,7 +126,11 @@ function puntoFinal(f, a) {
     if (a.aId) {
         var p = pieza(f, a.aId);
         if (p && a.tipo === 'pase') {         // pase a un jugador que corre en la misma fase: va hacia donde llega, no hacia donde sale
-            f.flechas.forEach(function (m) { if (m.de === a.aId && m.tipo !== 'pase' && m.a) p = m.a; });
+            f.flechas.some(function (m) {         // solo cuentan los movimientos que van antes del pase en la lista
+                if (m === a) return true;
+                if (m.de === a.aId && m.tipo !== 'pase' && m.a) p = m.a;
+                return false;
+            });
             return { x: p.x, y: p.y };
         }
         if (p) return { x: p.x, y: p.y };
@@ -194,7 +198,8 @@ function dibujaFlechas(svg, f, c, interactivo, extra) {
         var salida = a.sigue ? 0 : (conBalon ? R + 24 : R + 3);
         if (!a.sigue && L < salida + 12) salida = R + 3;
         var x1 = de.x + u1x * salida, y1 = de.y + u1y * salida;
-        var corta = a.aId ? R + 8 : 0;
+        // el bloqueo se marca un poco más allá de donde queda el jugador, no bajo su ficha
+        var corta = a.aId ? R + 8 : (a.tipo === 'bloqueo' ? -(R + 8) : 0);
         var x2 = fin.x - ux * corta, y2 = fin.y - uy * corta;
         var ctl = cv ? [cx, cy] : [];
         var color = a.tipo === 'pase' ? c.pase : c.flecha;
@@ -270,9 +275,7 @@ function renderEn(svg, f, c, interactivo, sinFlechas, capas) {
     f.piezas.forEach(function (p) { if (p.tipo === 'D') dibujaPieza(svg, p, c, interactivo); });
     f.piezas.forEach(function (p) { if (p.tipo === 'A') dibujaPieza(svg, p, c, interactivo); });
     f.piezas.forEach(function (p) { if (p.tipo === 'B') dibujaPieza(svg, p, c, interactivo); });
-    barrasArriba.forEach(function (b) {              // salvo la de un jugador que ya está sobre su propio bloqueo (la ficha lo cubre)
-        var dueno = pieza(f, b.de);
-        if (dueno && Math.hypot(dueno.x - b.cx, dueno.y - b.cy) < R + 8) return;
+    barrasArriba.forEach(function (b) {              // las barras de bloqueo van sobre las fichas
         var at = {}; for (var kk in b) if (kk !== 'de' && kk !== 'cx' && kk !== 'cy') at[kk] = b[kk];
         el('line', at, svg);
     });

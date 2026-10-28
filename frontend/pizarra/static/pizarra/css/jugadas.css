@@ -12,7 +12,9 @@ a { color: var(--accent); }
 .brand-mark { transition: transform .3s cubic-bezier(.16,1,.3,1); }
 .brand:hover .brand-mark { transform: rotate(-8deg) scale(1.08); }
 .mode-tab.active:hover { color: var(--bg); }
-@media (max-width: 700px) { .topbar { justify-content: center; } .mode-tab { padding-inline: 1rem; min-height: 44px; } .brand { min-height: 44px; } }
+.topbar .mode-tab { line-height: normal; min-height: 0; padding: .4rem .9rem; font-size: .82rem; }   /* igual que en la página de sesión, aunque aquí haya reglas generales para botones */
+@media (max-width: 560px) { .topbar { justify-content: center; } }
+@media (pointer: coarse), (max-width: 560px) { .topbar .mode-tab, .brand { min-height: 44px; } .topbar .mode-tab { padding-inline: 1rem; } }
 .mode-tab:hover { color: var(--text); }
 .mode-tab.active, .mode-tab[aria-current="page"] { background: var(--accent); color: var(--bg); }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
