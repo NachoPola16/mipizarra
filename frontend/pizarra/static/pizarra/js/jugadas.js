@@ -80,8 +80,9 @@ function describeFase(f, indice) {
     var ataque = f.piezas.filter(function (p) { return p.tipo === 'A'; }).length;
     var defensa = f.piezas.filter(function (p) { return p.tipo === 'D'; }).length;
     partes.push('Fase ' + (indice + 1) + ': ' + ataque + (ataque === 1 ? ' atacante' : ' atacantes') + (defensa ? ' y ' + defensa + (defensa === 1 ? ' defensor' : ' defensores') : '') + '.');
-    f.flechas.forEach(function (a) {
+    f.flechas.forEach(function (a, i) {
         var de = pieza(f, a.de); if (!de) return;
+        if (haySiguiente(f, i)) return;                    // los tramos intermedios no se repiten en el texto
         var dest = a.aId ? pieza(f, a.aId) : null;
         var verbo = TIPOS_FLECHA[a.tipo].verbo;
         var txt = nombrePieza(de);
@@ -142,6 +143,18 @@ function puntoCurva(x1, y1, x2, y2, cx, cy, t) {
     return { x: x, y: y, tx: tx / tl, ty: ty / tl };
 }
 
+// Tramos encadenados: una flecha con `sigue` nace donde acabó la anterior de la misma pieza (un recorrido con varios giros).
+function inicioDe(f, i) {
+    var a = f.flechas[i], de = pieza(f, a.de);
+    if (a.sigue) for (var k = i - 1; k >= 0; k--) { var m = f.flechas[k]; if (m.de === a.de && m.tipo !== 'pase') return puntoFinal(f, m); }
+    return de ? { x: de.x, y: de.y } : null;
+}
+function haySiguiente(f, i) {
+    var a = f.flechas[i];
+    for (var k = i + 1; k < f.flechas.length; k++) if (f.flechas[k].de === a.de && f.flechas[k].sigue && f.flechas[k].tipo !== 'pase') return true;
+    return false;
+}
+
 // Trazo de una flecha. (cx, cy) es el punto de control de una curva cuadrática; sin él, la flecha es recta.
 // El bote es una onda suave (una curva por cada media onda) que nace y muere sobre el eje para que la punta apunte bien.
 function trazoFlecha(tipo, x1, y1, x2, y2, cx, cy) {
@@ -160,11 +173,12 @@ function trazoFlecha(tipo, x1, y1, x2, y2, cx, cy) {
 }
 
 // Dibuja las flechas de una fase. `extra` (opcional): { prog: [0..1 por flecha], dim: true } para la reproducción.
+var barrasArriba = [];                        // barras de bloqueo de la fase que se está dibujando (se pintan sobre las fichas)
 function dibujaFlechas(svg, f, c, interactivo, extra) {
     extra = extra || {};
     var balon = pieza(f, 'B');
     f.flechas.forEach(function (a, i) {
-        var de = pieza(f, a.de), fin = puntoFinal(f, a);
+        var de = inicioDe(f, i), fin = puntoFinal(f, a), pDe = pieza(f, a.de);
         if (!de || !fin) return;
         var k = extra.prog ? extra.prog[i] : 1;
         if (k <= 0) return;
@@ -177,8 +191,8 @@ function dibujaFlechas(svg, f, c, interactivo, extra) {
         var u1x = (cx - de.x) / t1, u1y = (cy - de.y) / t1, ux = (fin.x - cx) / t2, uy = (fin.y - cy) / t2;
         // el bote arranca más lejos si el jugador lleva el balón al lado, para no pisarlo
         var conBalon = a.tipo === 'bote' && balon && Math.hypot(balon.x - de.x, balon.y - de.y) < 36;
-        var salida = conBalon ? R + 24 : R + 3;
-        if (L < salida + 12) salida = R + 3;
+        var salida = a.sigue ? 0 : (conBalon ? R + 24 : R + 3);
+        if (!a.sigue && L < salida + 12) salida = R + 3;
         var x1 = de.x + u1x * salida, y1 = de.y + u1y * salida;
         var corta = a.aId ? R + 8 : 0;
         var x2 = fin.x - ux * corta, y2 = fin.y - uy * corta;
@@ -189,7 +203,7 @@ function dibujaFlechas(svg, f, c, interactivo, extra) {
         if (extra.dim) g.setAttribute('opacity', '0.35');
         if (interactivo) {
             g.setAttribute('role', 'button'); g.setAttribute('tabindex', '0'); g.style.cursor = 'pointer';
-            g.setAttribute('aria-label', TIPOS_FLECHA[a.tipo].etiqueta + ' de ' + nombrePieza(de) + (a.aId ? '' : ' hacia ' + zona(fin.x, fin.y)));
+            g.setAttribute('aria-label', TIPOS_FLECHA[a.tipo].etiqueta + ' de ' + nombrePieza(pDe) + (a.aId ? '' : ' hacia ' + zona(fin.x, fin.y)));
             el('path', { d: trazoFlecha('corte', x1, y1, x2, y2, ctl[0], ctl[1]), stroke: 'transparent', 'stroke-width': 22, fill: 'none' }, g);
         }
         var d = trazoFlecha(a.tipo, x1, y1, x2, y2, ctl[0], ctl[1]);
@@ -207,9 +221,10 @@ function dibujaFlechas(svg, f, c, interactivo, extra) {
         el('path', funda, g);
         var attrs = {}; for (var w in comun) attrs[w] = comun[w];
         attrs.stroke = esSel ? c.selFlecha : color; attrs['stroke-width'] = (esSel ? 4 : 3) * escalaTrazo;
-        if (a.tipo !== 'bloqueo' && k >= 0.85) attrs['marker-end'] = 'url(#flecha-' + (esSel ? 'sel' : 'n') + ')';
+        if (a.tipo !== 'bloqueo' && k >= 0.85 && !haySiguiente(f, i)) attrs['marker-end'] = 'url(#flecha-' + (esSel ? 'sel' : 'n') + ')';
         el('path', attrs, g);
         if (a.tipo === 'bloqueo' && k >= 0.85) {
+            barrasArriba.push({ de: a.de, cx: x2, cy: y2, x1: x2 - uy * 14 * escalaTrazo, y1: y2 + ux * 14 * escalaTrazo, x2: x2 + uy * 14 * escalaTrazo, y2: y2 - ux * 14 * escalaTrazo, stroke: esSel ? c.selFlecha : color, 'stroke-width': 4 * escalaTrazo, 'stroke-linecap': 'round', 'pointer-events': 'none', opacity: extra.dim ? '0.35' : '1' });
             el('line', { x1: x2 - uy * 14 * escalaTrazo, y1: y2 + ux * 14 * escalaTrazo, x2: x2 + uy * 14 * escalaTrazo, y2: y2 - ux * 14 * escalaTrazo, stroke: esSel ? c.selFlecha : color, 'stroke-width': 4 * escalaTrazo, 'stroke-linecap': 'round' }, g);
         }
     });
@@ -248,12 +263,19 @@ function renderEn(svg, f, c, interactivo, sinFlechas, capas) {
     marcador(defs, 'flecha-n', c.flecha); marcador(defs, 'flecha-sel', c.selFlecha);
     el('rect', { x: -10, y: -10, width: W + 20, height: H + 20, fill: c.fondo }, svg);
     dibujaPista(svg, c);
+    barrasArriba = [];
     if (capas) capas.forEach(function (l) { dibujaFlechas(svg, l.f, c, false, { prog: l.prog, dim: l.dim }); });
     else if (!sinFlechas) dibujaFlechas(svg, f, c, interactivo);
     f.piezas.forEach(function (p) { if (p.tipo === 'C') dibujaPieza(svg, p, c, interactivo); });
     f.piezas.forEach(function (p) { if (p.tipo === 'D') dibujaPieza(svg, p, c, interactivo); });
     f.piezas.forEach(function (p) { if (p.tipo === 'A') dibujaPieza(svg, p, c, interactivo); });
     f.piezas.forEach(function (p) { if (p.tipo === 'B') dibujaPieza(svg, p, c, interactivo); });
+    barrasArriba.forEach(function (b) {              // salvo la de un jugador que ya está sobre su propio bloqueo (la ficha lo cubre)
+        var dueno = pieza(f, b.de);
+        if (dueno && Math.hypot(dueno.x - b.cx, dueno.y - b.cy) < R + 8) return;
+        var at = {}; for (var kk in b) if (kk !== 'de' && kk !== 'cx' && kk !== 'cy') at[kk] = b[kk];
+        el('line', at, svg);
+    });
 }
 
 function pintar() {
@@ -524,16 +546,21 @@ function borrarFase() {
 // Reproductor: una línea de tiempo con todas las fases. En cada fase las flechas se dibujan en el momento y las piezas las
 // siguen; el pase hace volar el balón. El estado se calcula siempre a partir del tiempo, así la barra y los saltos de fase
 // funcionan igual hacia delante que hacia atrás.
-var TV = { ENTRADA: 0.5, ESCALON: 0.45, DUR: 1.0, DUR_PASE: 0.75, TRANS: 0.55, PAUSA: 0.45 };
+var TV = { ENTRADA: 0.5, ESCALON: 0.45, DUR: 1.0, DUR_PASE: 0.75, TRANS: 0.55, PAUSA: 0.45, TIRO: 1.0, PUNTOS: 1.4 };
 function suave(t) { t = acotar(t, 0, 1); return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
 
 function construyeLinea() {
     var t = TV.ENTRADA, fases = [];
     estado.fases.forEach(function (f, i) {
         var inicio = t, tt = t, flechas = [];
+        var ultimo = {};                      // fin del último movimiento de cada pieza: los tramos encadenados van en fila
         f.flechas.forEach(function (a, idx) {
-            var d = a.tipo === 'pase' ? TV.DUR_PASE : TV.DUR;
-            flechas.push({ a: a, i: idx, t0: tt, t1: tt + d });
+            var cadena = a.sigue && a.tipo !== 'pase' && ultimo[a.de] !== undefined;
+            var d = a.tipo === 'pase' ? TV.DUR_PASE : ((cadena || haySiguiente(f, idx)) ? 0.6 : TV.DUR);
+            var t0 = cadena ? Math.max(tt, ultimo[a.de]) : tt;
+            if (a.tipo === 'pase' && a.aId && ultimo[a.aId] !== undefined) t0 = Math.max(t0, ultimo[a.aId] - d + 0.05);   // el pase llega cuando el receptor ya está
+            flechas.push({ a: a, i: idx, t0: t0, t1: t0 + d });
+            if (a.tipo !== 'pase') ultimo[a.de] = t0 + d;
             tt += TV.ESCALON;
         });
         var fin = flechas.length ? Math.max.apply(null, flechas.map(function (x) { return x.t1; })) : inicio + 0.3;
@@ -545,16 +572,21 @@ function construyeLinea() {
     fases.forEach(function (F, i) { if (i > 0) { var previa = fases[i - 1]; F.P0 = previa.P2; } });
     fases.forEach(function (F, i) { F.salto = i < fases.length - 1 && hayCorte(F.f, fases[i + 1].f); });
     fases.forEach(function (F, i) { if (i > 0 && fases[i - 1].salto) F.P0 = fases[i - 1].P1 + TV.TRANS / 2; });
-    return { fases: fases, total: t + 0.8 };
+    return { fases: fases, total: t + TV.TIRO + TV.PUNTOS };       // t = fin de la última fase; después, siempre, el tiro a canasta
 }
 
 // Si al acabar la fase las piezas están lejos de donde empieza la siguiente (las jugadas de la biblioteca vienen de diagramas
 // sueltos), no se las hace cruzar la pista: la transición es un fundido y la nueva formación aparece en su sitio.
-var UMBRAL_CORTE = 80;
+var UMBRAL_CORTE = 140;
 function hayCorte(f, sig) {
     var fin = {};
     f.piezas.forEach(function (p) { fin[p.id] = { x: p.x, y: p.y }; });
-    f.flechas.forEach(function (a) { if (a.tipo === 'pase') return; var q = puntoFinal(f, a); if (q && fin[a.de]) fin[a.de] = { x: q.x, y: q.y }; });
+    var movida = {};
+    f.flechas.forEach(function (a) {
+        if (a.tipo === 'pase' || (movida[a.de] && !a.sigue)) return;
+        var q = puntoFinal(f, a); movida[a.de] = true;
+        if (q && fin[a.de]) fin[a.de] = { x: q.x, y: q.y };
+    });
     return sig.piezas.some(function (p) { return p.tipo === 'A' && fin[p.id] && Math.hypot(fin[p.id].x - p.x, fin[p.id].y - p.y) > UMBRAL_CORTE; });
 }
 function faseEn(L, T) { var k = 0; L.fases.forEach(function (F, i) { if (T >= F.P0 - 1e-6) k = i; }); return k; }
@@ -564,7 +596,8 @@ function posPieza(L, k, id, T) {
     var F = L.fases[k], p = pieza(F.f, id);
     if (!p) return null;
     var cur = { x: p.x, y: p.y };
-    var movs = F.flechas.filter(function (m) { return m.a.de === id && m.a.tipo !== 'pase'; });
+    var movs = F.flechas.filter(function (m) { return m.a.de === id && m.a.tipo !== 'pase'; })
+        .filter(function (m, idx) { return idx === 0 || m.a.sigue; });      // las alternativas del diagrama no se juegan
     for (var j = 0; j < movs.length; j++) {
         var m = movs[j], fin = puntoFinal(F.f, m.a);
         if (!fin) continue;
@@ -602,6 +635,7 @@ function posBalon(L, k, T) {
     for (var j = 0; j < pases.length; j++) {
         var m = pases[j];
         if (T < m.t0) break;
+        if (ahora && m.a.de !== ahora) continue;          // otra opción desde el mismo jugador (el diagrama las dibuja todas): no se juega
         var origen = ahora ? posPieza(L, k, ahora, m.t0) : libre, fin = puntoFinal(F.f, m.a);
         if (!origen || !fin) continue;
         var recibe = m.a.aId || null;
@@ -616,6 +650,10 @@ function posBalon(L, k, T) {
     F.flechas.forEach(function (m) { if (m.a.tipo === 'bote' && m.a.de === ahora && T >= m.t0 && T <= m.t1) rebote = Math.abs(Math.sin((T - m.t0) * 11)) * 9; });
     var pos;
     if (ahora) { var q = posPieza(L, k, ahora, T); pos = { x: q.x + OFS, y: q.y + OFS - rebote }; } else pos = libre;
+    if (k === L.fases.length - 1 && T > F.P1) {                    // final: tiro a canasta desde donde está el balón
+        var e3 = suave(acotar((T - F.P1) / TV.TIRO, 0, 1));
+        return { x: pos.x + (ARO.x - pos.x) * e3, y: pos.y + (ARO.y + 6 - pos.y) * e3 - Math.sin(Math.PI * e3) * 70 };
+    }
     if (k < L.fases.length - 1 && T > F.P1) {
         var sig = pieza(L.fases[k + 1].f, 'B');
         if (sig) {
@@ -624,6 +662,24 @@ function posBalon(L, k, T) {
         }
     }
     return pos;
+}
+
+// Final de toda reproducción: tira quien acaba con el balón (las opciones alternativas del diagrama no se juegan).
+function finalista(L) {
+    var F = L.fases[L.fases.length - 1], ahora = portadorDe(F.f), libre = null;
+    F.flechas.forEach(function (m) {
+        if (m.a.tipo !== 'pase' || (ahora && m.a.de !== ahora)) return;
+        if (m.a.aId) { ahora = m.a.aId; libre = null; } else { ahora = null; libre = puntoFinal(F.f, m.a); }
+    });
+    var fin = function (id) { return posPieza(L, L.fases.length - 1, id, F.P1); };
+    if (!ahora && libre) {
+        var mejor = null, dmin = 1e9;
+        F.f.piezas.forEach(function (p) { if (p.tipo !== 'A') return; var q = fin(p.id), d = Math.hypot(q.x - libre.x, q.y - libre.y); if (d < dmin) { dmin = d; mejor = p.id; } });
+        ahora = mejor;
+    }
+    if (!ahora) return null;
+    var q = fin(ahora), d = Math.hypot(q.x - ARO.x, q.y - ARO.y);
+    return { id: ahora, pieza: pieza(F.f, ahora), puntos: d > 237 ? 3 : 2, cerca: d < 110 };
 }
 
 function pintaReproduccion(T) {
@@ -645,12 +701,26 @@ function pintaReproduccion(T) {
     if (F.salto && T > F.P1) op = acotar(1 - (T - F.P1) / mitad, 0, 1);
     else if (k > 0 && L.fases[k - 1].salto && T < F.P0 + mitad) op = acotar((T - F.P0) / mitad, 0, 1);
     if (op < 1) Array.prototype.forEach.call($('pista').querySelectorAll('[data-pieza]'), function (g) { g.setAttribute('opacity', String(op)); });
+    var ult = L.fases.length - 1, tirando = k === ult && T > F.P1;
+    if (tirando) {                                                  // balón a canasta y marcador
+        var fi = reproduccion.final || (reproduccion.final = finalista(L));
+        var e4 = (T - F.P1) / TV.TIRO;
+        if (fi && e4 >= 1) {
+            var sube = acotar((T - F.P1 - TV.TIRO) / 0.8, 0, 1);
+            var tx = el('text', { x: ARO.x, y: ARO.y + 46 - sube * 18, 'text-anchor': 'middle', 'font-size': 34, 'font-weight': 800, fill: CLARO.ataque, opacity: String(1 - Math.max(0, sube - 0.6) / 0.4), 'font-family': 'Sora, Inter, sans-serif' }, $('pista'));
+            tx.textContent = '+' + fi.puntos;
+        }
+    }
     reproduccion.T = T;
     $('rep-barra').value = String(Math.round(T / L.total * 1000));
     var texto = describeFase(F.f, k).replace(/^Fase \d+: /, '');
-    if (reproduccion.fase !== k) {
-        reproduccion.fase = k;
-        $('rep-texto').textContent = 'Fase ' + (k + 1) + ' de ' + L.fases.length + ' · ' + texto;
+    var marca = tirando ? 'final' : k;
+    if (reproduccion.fase !== marca) {
+        reproduccion.fase = marca;
+        var fi2 = tirando ? (reproduccion.final || (reproduccion.final = finalista(L))) : null;
+        $('rep-texto').textContent = tirando
+            ? 'Final · ' + (fi2 ? nombrePieza(fi2.pieza).replace(/^el /, 'El ').replace(/^el jugador /, 'El jugador ') + (fi2.cerca ? ' ataca el aro y anota' : ' tira y anota') + ' (' + fi2.puntos + (fi2.puntos === 3 ? ' puntos' : ' puntos') + ').' : 'Canasta.')
+            : 'Fase ' + (k + 1) + ' de ' + L.fases.length + ' · ' + texto;
     }
     estado.actual = k;
     $('fase-etq').textContent = 'Fase ' + (k + 1) + ' de ' + estado.fases.length;
@@ -771,6 +841,7 @@ function validar(j) { // sanea cualquier JSON de fuera: solo se aceptan tipos y 
             else if (a.a && num(a.a.x, 0, W) !== null && num(a.a.y, 0, H) !== null) r.a = { x: num(a.a.x, 0, W), y: num(a.a.y, 0, H) };
             else return;
             var cv = num(a.curva, -CURVA_MAX, CURVA_MAX); if (cv) r.curva = redondea(cv);
+            if (a.sigue === true && a.tipo !== 'pase') r.sigue = true;   // este tramo continúa desde donde acabó el anterior de la misma pieza
             nf.flechas.push(r);
         });
         salida.fases.push(nf);
