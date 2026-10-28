@@ -811,8 +811,9 @@ function finalista(L) {
     return { id: ahora, pieza: pieza(F.f, ahora), puntos: d > 237 ? 3 : 2, cerca: d < 110 };
 }
 
-function pintaReproduccion(T) {
-    var L = reproduccion.L, k = faseEn(L, T), F = L.fases[k];
+// destino (opcional): otro <svg> y tema para dibujar el fotograma sin tocar la página (exportar GIF).
+function pintaReproduccion(T, destino, tema) {
+    var L = reproduccion.L, k = faseEn(L, T), F = L.fases[k], lienzo = destino || $('pista'), c = tema || CLARO;
     var mezcla = { piezas: F.f.piezas.map(function (p) {
         var q = { id: p.id, tipo: p.tipo, n: p.n, x: p.x, y: p.y };
         if (p.tipo !== 'B') { var pos = posPieza(L, k, p.id, T); if (pos) { q.x = pos.x; q.y = pos.y; } }
@@ -825,21 +826,22 @@ function pintaReproduccion(T) {
     for (var j0 = 0; j0 < k; j0++) if (L.fases[j0].salto) desde = j0 + 1;
     if (reproduccion.mantener) for (var j = desde; j < k; j++) capas.push({ f: L.fases[j].f, prog: null, dim: true });
     capas.push({ f: F.f, prog: F.flechas.reduce(function (acc, m) { acc[m.i] = acotar((T - m.t0) / (m.t1 - m.t0), 0, 1); return acc; }, []), dim: false, act: mezcla });
-    renderEn($('pista'), mezcla, CLARO, false, false, capas);
+    renderEn(lienzo, mezcla, c, false, false, capas);
     var op = 1, mitad = TV.TRANS / 2;       // fundido entre formaciones: la vieja se apaga y la nueva aparece
     if (F.salto && T > F.P1) op = acotar(1 - (T - F.P1) / mitad, 0, 1);
     else if (k > 0 && L.fases[k - 1].salto && T < F.P0 + mitad) op = acotar((T - F.P0) / mitad, 0, 1);
-    if (op < 1) Array.prototype.forEach.call($('pista').querySelectorAll('[data-pieza]'), function (g) { g.setAttribute('opacity', String(op)); });
+    if (op < 1) Array.prototype.forEach.call(lienzo.querySelectorAll('[data-pieza]'), function (g) { g.setAttribute('opacity', String(op)); });
     var ult = L.fases.length - 1, tirando = k === ult && T > F.P1;
     if (tirando) {                                                  // balón a canasta y marcador
         var fi = reproduccion.final || (reproduccion.final = finalista(L));
         var e4 = (T - F.P1) / TV.TIRO;
         if (fi && e4 >= 1) {
             var sube = acotar((T - F.P1 - TV.TIRO) / 0.8, 0, 1);
-            var tx = el('text', { x: ARO.x, y: ARO.y + 46 - sube * 18, 'text-anchor': 'middle', 'font-size': 34, 'font-weight': 800, fill: CLARO.ataque, opacity: String(1 - Math.max(0, sube - 0.6) / 0.4), 'font-family': 'Sora, Inter, sans-serif' }, $('pista'));
+            var tx = el('text', { x: ARO.x, y: ARO.y + 46 - sube * 18, 'text-anchor': 'middle', 'font-size': 34, 'font-weight': 800, fill: c.ataque, opacity: String(1 - Math.max(0, sube - 0.6) / 0.4), 'font-family': 'Sora, Inter, sans-serif' }, lienzo);
             tx.textContent = '+' + fi.puntos;
         }
     }
+    if (destino) return;
     reproduccion.T = T;
     $('rep-barra').value = String(Math.round(T / L.total * 1000));
     var texto = describeFase(F.f, k).replace(/^Fase \d+: /, '');
@@ -993,12 +995,19 @@ function descarga(blob, nombre) {
 }
 function nombreArchivo() { return nombreJugada().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'jugada'; }
 
+// Marca de agua de las exportaciones (PNG, impresión y GIF): discreta, abajo a la derecha, dentro de la pista.
+function marcaAgua(svg, c) {
+    var t = el('text', { x: W - 10, y: H - 10, 'text-anchor': 'end', 'font-size': 15, 'font-weight': 600, fill: c.linea, opacity: '.7', 'font-family': 'Inter, Arial, sans-serif', 'pointer-events': 'none' }, svg);
+    t.textContent = 'MiPizarra · Nacho Pola';
+}
+
 function pngDeFase(f, ancho, cb) {
     var svg = document.createElementNS(NS, 'svg');
     svg.setAttribute('xmlns', NS); svg.setAttribute('viewBox', '-10 -10 ' + (W + 20) + ' ' + (H + 20));
     var alto = Math.round(ancho * (H + 20) / (W + 20));
     svg.setAttribute('width', ancho); svg.setAttribute('height', alto);
     renderEn(svg, f, IMPRESION, false, false);
+    marcaAgua(svg, IMPRESION);
     var url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(svg)], { type: 'image/svg+xml;charset=utf-8' }));
     var img = new Image();
     img.onload = function () {
@@ -1020,9 +1029,63 @@ function preparaImpresion() {
         svg.setAttribute('viewBox', '-10 -10 ' + (W + 20) + ' ' + (H + 20)); svg.setAttribute('role', 'img');
         svg.setAttribute('aria-label', describeFase(f, i));
         renderEn(svg, f, IMPRESION, false, false);
+        marcaAgua(svg, IMPRESION);
         var cap = document.createElement('figcaption'); cap.textContent = describeFase(f, i);
         fig.appendChild(svg); fig.appendChild(cap); cont.appendChild(fig);
     });
+}
+
+// GIF animado: la jugada entera (con el tiro final) en el tema claro y con marca de agua. La librería de GIF se carga solo al pedirlo.
+var exportandoGif = false;
+function exportaGif() {
+    if (exportandoGif) return;
+    var boton = $('btn-gif'), url = boton.getAttribute('data-lib');
+    exportandoGif = true; boton.disabled = true;
+    var guardada = reproduccion;
+    var fin = function (msg) { reproduccion = guardada; exportandoGif = false; boton.disabled = false; boton.textContent = 'GIF animado'; if (msg) anuncia(msg); };
+    import(new URL(url, document.baseURI).href).then(function (lib) {
+        var L = construyeLinea(), fps = L.total > 40 ? 8 : 12, n = Math.ceil(L.total * fps) + 1, ancho = 480, alto = Math.round(ancho * (H + 20) / (W + 20));
+        reproduccion = { L: L, mantener: true, final: null, T: 0, fase: -1 };
+        var lienzo = document.createElement('canvas'); lienzo.width = ancho; lienzo.height = alto;
+        var ctx = lienzo.getContext('2d', { willReadFrequently: true });
+        var svg = document.createElementNS(NS, 'svg');
+        svg.setAttribute('xmlns', NS); svg.setAttribute('viewBox', '-10 -10 ' + (W + 20) + ' ' + (H + 20)); svg.setAttribute('width', ancho); svg.setAttribute('height', alto);
+        function fotograma(i) {                // dibuja el instante i y devuelve sus píxeles
+            pintaReproduccion(Math.min(L.total, i / fps), svg, IMPRESION);
+            marcaAgua(svg, IMPRESION);
+            var u = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(svg)], { type: 'image/svg+xml;charset=utf-8' }));
+            return new Promise(function (ok, mal) {
+                var img = new Image();
+                img.onload = function () { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, ancho, alto); ctx.drawImage(img, 0, 0, ancho, alto); URL.revokeObjectURL(u); ok(ctx.getImageData(0, 0, ancho, alto).data); };
+                img.onerror = function () { URL.revokeObjectURL(u); mal(new Error('imagen')); };
+                img.src = u;
+            });
+        }
+        var gif = lib.GIFEncoder(), paleta = null, i = 0;
+        function siguiente() {
+            if (i >= n) {
+                gif.finish();
+                descarga(new Blob([gif.bytes()], { type: 'image/gif' }), nombreArchivo() + '.gif');
+                fin('GIF guardado.'); return;
+            }
+            boton.textContent = 'GIF ' + Math.round(i / n * 100) + ' %';
+            fotograma(i).then(function (px) {
+                if (paleta) return px;
+                // una sola paleta para toda la jugada: el primer fotograma más otro a mitad (con flechas y bloqueos dibujados)
+                return fotograma(Math.floor(n * 0.4)).then(function (otro) {
+                    var junto = new Uint8ClampedArray(px.length + otro.length); junto.set(px); junto.set(otro, px.length);
+                    paleta = lib.quantize(junto, 256);
+                    return fotograma(i);
+                });
+            }).then(function (px) {
+                var idx = lib.applyPalette(px, paleta);
+                var ultimo = i === n - 1;
+                gif.writeFrame(idx, ancho, alto, i === 0 ? { palette: paleta, delay: Math.round(1000 / fps), repeat: 0 } : { delay: ultimo ? 1800 : Math.round(1000 / fps) });
+                i++; setTimeout(siguiente, 0);
+            }).catch(function () { fin('No se pudo generar el GIF.'); });
+        }
+        siguiente();
+    }).catch(function () { fin('No se pudo cargar el generador de GIF.'); });
 }
 
 // ── Arranque ─────────────────────────────────────────────────────────────
@@ -1146,6 +1209,7 @@ function iniciar() {
     $('btn-png').addEventListener('click', function () {
         pngDeFase(fase(), 1200, function (b) { if (b) descarga(b, nombreArchivo() + '-fase-' + (estado.actual + 1) + '.png'); });
     });
+    $('btn-gif').addEventListener('click', exportaGif);
     $('btn-imprimir').addEventListener('click', function () { preparaImpresion(); window.print(); });
     $('nombre').addEventListener('input', function () { estado.nombre = nombreJugada(); });
     document.addEventListener('keydown', function (ev) {
