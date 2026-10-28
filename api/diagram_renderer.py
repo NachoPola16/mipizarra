@@ -1,5 +1,6 @@
 # api/diagram_renderer.py
 import html
+import re
 import math
 import logging
 
@@ -352,8 +353,19 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
 def render_diagram(data: dict, edad: str = "U16") -> str:
     tipo = data.get("tipo", "media_pista")
     if tipo == "pista_completa":
-        return _render_pista_completa(data, edad)
-    return _render_media_pista(data, edad)
+        return _marca_agua(_render_pista_completa(data, edad))
+    return _marca_agua(_render_media_pista(data, edad))
+
+
+def _marca_agua(svg: str) -> str:
+    """Marca de agua discreta abajo a la derecha, igual que en las exportaciones de /jugadas/."""
+    m = re.search(r'viewBox="0 0 (\d+(?:\.\d+)?) (\d+(?:\.\d+)?)"', svg)
+    if not m:
+        return svg
+    w, h = float(m.group(1)), float(m.group(2))
+    texto = (f'<text x="{w - 14:.0f}" y="{h - 10:.0f}" text-anchor="end" font-family="Inter, Arial, sans-serif" '
+             f'font-size="13" font-weight="600" fill="{TINTA}" opacity="0.55">MiPizarra · Nacho Pola</text>')
+    return svg.replace("</svg>", texto + "</svg>")
 
 
 def render_all_diagrams(ejercicio: dict, edad: str = "U16") -> list:
