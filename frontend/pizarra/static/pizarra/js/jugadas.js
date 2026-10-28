@@ -383,8 +383,18 @@ function renderEn(svg, f, c, interactivo, sinFlechas, capas) {
     });
 }
 
+// Nota con la descripción de la jugada abierta de la biblioteca. Los jugadores van como {1}…{5} y se rotulan según las etiquetas
+// elegidas (números o letras), así la descripción siempre coincide con lo que se ve en la pista.
+var notaTexto = '';
+function pintaNota() {
+    var n = $('jugada-nota'); if (!n) return;
+    n.textContent = notaTexto.replace(/\{([1-5])\}/g, function (_, d) { return estado.etiquetas === 'num' ? d : 'ABCDE'.charAt(+d - 1); });
+    n.hidden = !notaTexto;
+}
+
 function pintar() {
     var svg = $('pista');
+    pintaNota();
     renderEn(svg, fase(), CLARO, true, false);
     if (fantasma) { el('circle', { cx: fantasma.x, cy: fantasma.y, r: 10, fill: 'none', stroke: CLARO.fantasma, 'stroke-width': 3, 'stroke-dasharray': '4 4', 'data-fantasma': '1' }, svg); }
     if (previa) {
@@ -996,7 +1006,7 @@ function validar(j) { // sanea cualquier JSON de fuera: solo se aceptan tipos y 
 }
 function cargaJugada(j) {
     paraReproduccion();                      // si se estaba reproduciendo otra jugada, se para antes de cambiar
-    estado = j; sel = null; deshacer = []; rehacer = [];
+    estado = j; sel = null; deshacer = []; rehacer = []; notaTexto = '';
     $('nombre').value = j.nombre || '';
     $('etiquetas').value = j.etiquetas;
     pintar();
@@ -1257,8 +1267,7 @@ function iniciaBiblioteca() {
         paraReproduccion();                  // si se estaba reproduciendo otra jugada, se para antes de abrir esta
         guardarPaso();
         var v = validar(j.crudo); v.nombre = j.nombre;
-        estado = v; sel = null; $('nombre').value = j.nombre; $('etiquetas').value = v.etiquetas; pintar();
-        nota.textContent = j.descripcion; nota.hidden = !j.descripcion;
+        estado = v; sel = null; notaTexto = j.descripcion; $('nombre').value = j.nombre; $('etiquetas').value = v.etiquetas; pintar();
         anuncia('Jugada «' + j.nombre + '» abierta, ' + estado.fases.length + ' fases.');
         $('pista').scrollIntoView({ behavior: reducirMovimiento ? 'auto' : 'smooth', block: 'center' });
     }
