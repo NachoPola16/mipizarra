@@ -48,9 +48,12 @@ button:disabled { opacity: .45; cursor: not-allowed; }
 .caja h2 { font-family: 'Sora', sans-serif; font-size: .98rem; margin-bottom: .5rem; }
 .caja label { display: block; font-size: .78rem; color: var(--muted); margin-bottom: .25rem; }
 .fila { display: flex; gap: .4rem; flex-wrap: wrap; margin-top: .5rem; }
-#descripcion { margin: 0; padding-left: 1.2rem; color: var(--text2); font-size: .88rem; }
-#descripcion li { margin-bottom: .45rem; padding-left: .2rem; }
-#descripcion li.actual { color: var(--text); font-weight: 600; }
+#descripcion { margin: 0; padding: 0; list-style: none; display: grid; gap: .5rem; color: var(--text2); font-size: .88rem; }
+#descripcion li { display: flex; flex-direction: column; gap: .2rem; padding: .5rem .7rem; border-left: 3px solid var(--border); border-radius: 0 8px 8px 0; }
+#descripcion li.actual { color: var(--text); background: var(--bg2); border-left-color: var(--accent); }
+#descripcion .f-etq { align-self: flex-start; min-height: 0; padding: 0; border: none; background: none; color: var(--accent); font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; cursor: pointer; }
+#descripcion .f-etq:hover:not(:disabled) { background: none; text-decoration: underline; }
+#descripcion .f-etq:disabled { cursor: default; opacity: 1; }
 .nota { color: var(--muted); font-size: .8rem; margin-top: .5rem; }
 #ayuda-herr { color: var(--text2); font-size: .85rem; margin: .5rem 0 0; min-height: 2.6em; }
 details summary { cursor: pointer; font-weight: 600; }

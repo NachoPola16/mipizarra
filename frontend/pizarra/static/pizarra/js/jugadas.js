@@ -9,6 +9,7 @@ var W = 500, H = 470, ARO = { x: 250, y: 52 };
 var R = 16;                                   // radio de una pieza
 var MAX_FASES = 12, MAX_FLECHAS = 40, MAX_CONOS = 8, CURVA_MAX = 0.8;
 var CLAVE = 'mipizarra.jugadas.v1';
+var escalaTrazo = 1;                          // 2 en las miniaturas de la biblioteca: el mismo dibujo, con el trazo más grueso
 
 var TIPOS_FLECHA = {
     pase:    { etiqueta: 'Pase',    verbo: 'pasa' },
@@ -121,7 +122,14 @@ function marcador(svg, id, color, bloqueo) {
 }
 
 function puntoFinal(f, a) {
-    if (a.aId) { var p = pieza(f, a.aId); if (p) return { x: p.x, y: p.y }; }
+    if (a.aId) {
+        var p = pieza(f, a.aId);
+        if (p && a.tipo === 'pase') {         // pase a un jugador que corre en la misma fase: va hacia donde llega, no hacia donde sale
+            f.flechas.forEach(function (m) { if (m.de === a.aId && m.tipo !== 'pase' && m.a) p = m.a; });
+            return { x: p.x, y: p.y };
+        }
+        if (p) return { x: p.x, y: p.y };
+    }
     return a.a || null;
 }
 
@@ -139,7 +147,7 @@ function puntoCurva(x1, y1, x2, y2, cx, cy, t) {
 function trazoFlecha(tipo, x1, y1, x2, y2, cx, cy) {
     var curva = typeof cx === 'number';
     if (tipo !== 'bote') return curva ? 'M' + x1 + ' ' + y1 + ' Q' + cx + ' ' + cy + ' ' + x2 + ' ' + y2 : 'M' + x1 + ' ' + y1 + ' L' + x2 + ' ' + y2;
-    var L = Math.hypot(x2 - x1, y2 - y1) || 1, media = 12, n = Math.max(2, Math.round(L / media)), AMP = 5.5;
+    var L = Math.hypot(x2 - x1, y2 - y1) || 1, media = 12 * escalaTrazo, n = Math.max(2, Math.round(L / media)), AMP = 5.5 * escalaTrazo;
     var d = 'M' + redondea(x1) + ' ' + redondea(y1), ant = puntoCurva(x1, y1, x2, y2, cx, cy, 0);
     for (var i = 1; i <= n; i++) {
         var p = puntoCurva(x1, y1, x2, y2, cx, cy, i / n), m = puntoCurva(x1, y1, x2, y2, cx, cy, (i - 0.5) / n);
@@ -188,21 +196,21 @@ function dibujaFlechas(svg, f, c, interactivo, extra) {
         var comun = { d: d, fill: 'none', 'stroke-linecap': 'round', 'stroke-linejoin': 'round' };
         var dibujando = k < 1;
         if (a.tipo === 'pase') {               // el pase es discontinuo: aparece de golpe con un fundido
-            comun['stroke-dasharray'] = '9 7';
+            comun['stroke-dasharray'] = (9 * escalaTrazo) + ' ' + (7 * escalaTrazo);
             if (dibujando) g.setAttribute('opacity', String(Math.min(1, k * 3)));
         } else if (dibujando) {                // trazo progresivo: la flecha se dibuja en el momento
             comun.pathLength = 1; comun['stroke-dasharray'] = '1'; comun['stroke-dashoffset'] = String(1 - k);
         }
         // funda del color de la pista debajo: la flecha no se mezcla con las líneas ni con otras flechas que cruza
         var funda = {}; for (var q in comun) funda[q] = comun[q];
-        funda.stroke = c.fondo; funda['stroke-width'] = 8; funda.opacity = '.9';
+        funda.stroke = c.fondo; funda['stroke-width'] = 8 * escalaTrazo; funda.opacity = '.9';
         el('path', funda, g);
         var attrs = {}; for (var w in comun) attrs[w] = comun[w];
-        attrs.stroke = esSel ? c.selFlecha : color; attrs['stroke-width'] = esSel ? 4 : 3;
+        attrs.stroke = esSel ? c.selFlecha : color; attrs['stroke-width'] = (esSel ? 4 : 3) * escalaTrazo;
         if (a.tipo !== 'bloqueo' && k >= 0.85) attrs['marker-end'] = 'url(#flecha-' + (esSel ? 'sel' : 'n') + ')';
         el('path', attrs, g);
         if (a.tipo === 'bloqueo' && k >= 0.85) {
-            el('line', { x1: x2 - uy * 14, y1: y2 + ux * 14, x2: x2 + uy * 14, y2: y2 - ux * 14, stroke: esSel ? c.selFlecha : color, 'stroke-width': 4, 'stroke-linecap': 'round' }, g);
+            el('line', { x1: x2 - uy * 14 * escalaTrazo, y1: y2 + ux * 14 * escalaTrazo, x2: x2 + uy * 14 * escalaTrazo, y2: y2 - ux * 14 * escalaTrazo, stroke: esSel ? c.selFlecha : color, 'stroke-width': 4 * escalaTrazo, 'stroke-linecap': 'round' }, g);
         }
     });
 }
@@ -279,7 +287,12 @@ function panelEstado() {
     estado.fases.forEach(function (fs, i) {
         var li = document.createElement('li');
         if (i === estado.actual) li.className = 'actual';
-        li.textContent = describeFase(fs, i).replace(/^Fase \d+: /, '');
+        var etq = document.createElement('button'); etq.type = 'button'; etq.className = 'f-etq';
+        etq.textContent = 'Fase ' + (i + 1); etq.disabled = !!reproduccion;
+        etq.setAttribute('aria-label', 'Ir a la fase ' + (i + 1));
+        etq.addEventListener('click', function () { irA(i); });
+        var txt = document.createElement('span'); txt.textContent = describeFase(fs, i).replace(/^Fase \d+: /, '');
+        li.appendChild(etq); li.appendChild(txt);
         lista.appendChild(li);
     });
     document.querySelectorAll('[data-herr]').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.herr === herramienta ? 'true' : 'false'); });
@@ -530,9 +543,20 @@ function construyeLinea() {
     });
     // el tiempo de cada fase empieza justo después de la transición anterior (la primera arranca en 0 con una entrada)
     fases.forEach(function (F, i) { if (i > 0) { var previa = fases[i - 1]; F.P0 = previa.P2; } });
+    fases.forEach(function (F, i) { F.salto = i < fases.length - 1 && hayCorte(F.f, fases[i + 1].f); });
+    fases.forEach(function (F, i) { if (i > 0 && fases[i - 1].salto) F.P0 = fases[i - 1].P1 + TV.TRANS / 2; });
     return { fases: fases, total: t + 0.8 };
 }
 
+// Si al acabar la fase las piezas están lejos de donde empieza la siguiente (las jugadas de la biblioteca vienen de diagramas
+// sueltos), no se las hace cruzar la pista: la transición es un fundido y la nueva formación aparece en su sitio.
+var UMBRAL_CORTE = 80;
+function hayCorte(f, sig) {
+    var fin = {};
+    f.piezas.forEach(function (p) { fin[p.id] = { x: p.x, y: p.y }; });
+    f.flechas.forEach(function (a) { if (a.tipo === 'pase') return; var q = puntoFinal(f, a); if (q && fin[a.de]) fin[a.de] = { x: q.x, y: q.y }; });
+    return sig.piezas.some(function (p) { return p.tipo === 'A' && fin[p.id] && Math.hypot(fin[p.id].x - p.x, fin[p.id].y - p.y) > UMBRAL_CORTE; });
+}
 function faseEn(L, T) { var k = 0; L.fases.forEach(function (F, i) { if (T >= F.P0 - 1e-6) k = i; }); return k; }
 function controlDe(a, b, curva) { return { x: (a.x + b.x) / 2 - (b.y - a.y) * (curva || 0), y: (a.y + b.y) / 2 + (b.x - a.x) * (curva || 0) }; }
 
@@ -553,7 +577,11 @@ function posPieza(L, k, id, T) {
     }
     if (k < L.fases.length - 1 && T > F.P1) {
         var sig = pieza(L.fases[k + 1].f, id);
-        if (sig) { var e = suave((T - F.P1) / TV.TRANS); return { x: cur.x + (sig.x - cur.x) * e, y: cur.y + (sig.y - cur.y) * e }; }
+        if (sig) {
+            var e = suave((T - F.P1) / TV.TRANS);
+            if (F.salto) return cur;
+            return { x: cur.x + (sig.x - cur.x) * e, y: cur.y + (sig.y - cur.y) * e };
+        }
     }
     return cur;
 }
@@ -590,7 +618,10 @@ function posBalon(L, k, T) {
     if (ahora) { var q = posPieza(L, k, ahora, T); pos = { x: q.x + OFS, y: q.y + OFS - rebote }; } else pos = libre;
     if (k < L.fases.length - 1 && T > F.P1) {
         var sig = pieza(L.fases[k + 1].f, 'B');
-        if (sig) { var e2 = suave((T - F.P1) / TV.TRANS); pos = { x: pos.x + (sig.x - pos.x) * e2, y: pos.y + (sig.y - pos.y) * e2 }; }
+        if (sig) {
+            var e2 = suave((T - F.P1) / TV.TRANS);
+            if (!F.salto) pos = { x: pos.x + (sig.x - pos.x) * e2, y: pos.y + (sig.y - pos.y) * e2 };
+        }
     }
     return pos;
 }
@@ -605,9 +636,15 @@ function pintaReproduccion(T) {
     var pb = posBalon(L, k, T);
     if (pb) mezcla.piezas.forEach(function (q) { if (q.tipo === 'B') { q.x = pb.x; q.y = pb.y; } });
     var capas = [];
-    if (reproduccion.mantener) for (var j = 0; j < k; j++) capas.push({ f: L.fases[j].f, prog: null, dim: true });
+    var desde = 0;                       // las flechas dejadas solo valen mientras la formación es la misma
+    for (var j0 = 0; j0 < k; j0++) if (L.fases[j0].salto) desde = j0 + 1;
+    if (reproduccion.mantener) for (var j = desde; j < k; j++) capas.push({ f: L.fases[j].f, prog: null, dim: true });
     capas.push({ f: F.f, prog: F.flechas.reduce(function (acc, m) { acc[m.i] = acotar((T - m.t0) / (m.t1 - m.t0), 0, 1); return acc; }, []), dim: false });
     renderEn($('pista'), mezcla, CLARO, false, false, capas);
+    var op = 1, mitad = TV.TRANS / 2;       // fundido entre formaciones: la vieja se apaga y la nueva aparece
+    if (F.salto && T > F.P1) op = acotar(1 - (T - F.P1) / mitad, 0, 1);
+    else if (k > 0 && L.fases[k - 1].salto && T < F.P0 + mitad) op = acotar((T - F.P0) / mitad, 0, 1);
+    if (op < 1) Array.prototype.forEach.call($('pista').querySelectorAll('[data-pieza]'), function (g) { g.setAttribute('opacity', String(op)); });
     reproduccion.T = T;
     $('rep-barra').value = String(Math.round(T / L.total * 1000));
     var texto = describeFase(F.f, k).replace(/^Fase \d+: /, '');
@@ -925,7 +962,8 @@ function previaDe(j) {
     var v = validar(j.crudo), svg = document.createElementNS(NS, 'svg');
     svg.setAttribute('xmlns', NS); svg.setAttribute('viewBox', '-10 -10 ' + (W + 20) + ' ' + (H + 20));
     var guardado = estado; estado = v;               // etiquetaAtacante lee estado.etiquetas
-    try { renderEn(svg, v.fases[0], CLARO, false, false); } finally { estado = guardado; }
+    escalaTrazo = 2;
+    try { renderEn(svg, v.fases[0], CLARO, false, false); } finally { estado = guardado; escalaTrazo = 1; }
     return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(new XMLSerializer().serializeToString(svg));
 }
 function iniciaBiblioteca() {
