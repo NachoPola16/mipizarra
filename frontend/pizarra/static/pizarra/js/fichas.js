@@ -18,6 +18,8 @@
     var instantanea = '';     // estado del formulario al abrir/guardar, para saber si hay cambios
     var campos = {};          // nombre de campo → función que lee su valor
     var confirmaRestaurar = false;
+    var pilaDeshacer = [], pilaRehacer = [], ultimoEstado = '', temporizadorRegistro = null, aplicando = false;   // deshacer/rehacer
+    var MAX_PASOS = 100;
 
     function csrf() { var m = document.cookie.match(/(?:^|; )csrftoken=([^;]*)/); return m ? decodeURIComponent(m[1]) : ''; }
     function api(url, opciones) {
@@ -153,11 +155,44 @@
         return v;
     }
     function cambio() {
+        if (!aplicando) programaRegistro();
         var sucio = JSON.stringify(lee()) !== instantanea;
         $('fi-guardar').disabled = !sucio; $('fi-descartar').disabled = !sucio;
         if (sucio) estado('Cambios sin guardar');
         else if ($('fi-estado').textContent === 'Cambios sin guardar') estado('');
     }
+    // ── Deshacer / rehacer ───────────────────────────────────────────────────
+    // Cada «paso» es una foto del formulario entero (campos y diagrama). Lo que se escribe o arrastra seguido cuenta
+    // como un solo paso: se registra cuando uno deja de tocar medio segundo.
+    function botonesPasos() { $('fi-deshacer').disabled = !pilaDeshacer.length; $('fi-rehacer').disabled = !pilaRehacer.length; }
+    function programaRegistro() { clearTimeout(temporizadorRegistro); temporizadorRegistro = setTimeout(registra, 500); }
+    function registra() {
+        clearTimeout(temporizadorRegistro); temporizadorRegistro = null;
+        if (!actual || aplicando) return;
+        var ahora = JSON.stringify(lee());
+        if (ahora === ultimoEstado) return;
+        pilaDeshacer.push(ultimoEstado); if (pilaDeshacer.length > MAX_PASOS) pilaDeshacer.shift();
+        pilaRehacer = []; ultimoEstado = ahora; botonesPasos();
+    }
+    function vuelveA(estado) {
+        aplicando = true;
+        try { construye(JSON.parse(estado)); } finally { aplicando = false; }
+        ultimoEstado = estado; cambio(); botonesPasos();
+    }
+    function deshacer() {
+        if (!actual) return;
+        registra();
+        if (!pilaDeshacer.length) return;
+        pilaRehacer.push(ultimoEstado); vuelveA(pilaDeshacer.pop());
+    }
+    function rehacer() {
+        if (!actual) return;
+        registra();
+        if (!pilaRehacer.length) return;
+        pilaDeshacer.push(ultimoEstado); vuelveA(pilaRehacer.pop());
+    }
+    function reiniciaPasos() { clearTimeout(temporizadorRegistro); temporizadorRegistro = null; pilaDeshacer = []; pilaRehacer = []; ultimoEstado = instantanea; botonesPasos(); }
+
     function haySinGuardar() { return !$('fi-guardar').disabled; }
 
     function muestraErrores(lista) {
@@ -176,9 +211,9 @@
         $('fi-vacio').hidden = true; $('fi-form').hidden = false;
         $('fi-id').textContent = f.id;
         $('fi-mod-etq').hidden = !modificadas[f.id];
-        $('fi-restaurar').hidden = !modificadas[f.id]; $('fi-restaurar').textContent = 'Restaurar la original';
+        $('fi-restaurar').hidden = !modificadas[f.id]; $('fi-restaurar').textContent = 'Volver a la versión guardada anterior';
         construye(f);
-        instantanea = JSON.stringify(lee());
+        instantanea = JSON.stringify(lee()); reiniciaPasos();
         $('fi-guardar').disabled = true; $('fi-descartar').disabled = true;
         muestraErrores(null); estado('');
         pintaLista();
@@ -218,7 +253,7 @@
         api(URL_FICHA.replace('__ID__', id), { method: 'DELETE' }).then(function (r) {
             if (!r.ok) { muestraErrores([r.cuerpo.error || 'No se pudo restaurar.']); return; }
             reemplaza(r.cuerpo.ficha, false);
-            abre(id, true); filtra(); estado('Restaurada la original.');
+            abre(id, true); filtra(); estado('Ficha devuelta a la versión anterior.');
         }).catch(function () { estado('No se pudo restaurar: sin conexión con el servidor.'); });
     }
 
@@ -241,10 +276,16 @@
     $('fi-form').addEventListener('submit', guarda);
     $('fi-descartar').addEventListener('click', function () { if (actual) abre(actual.id, true); });
     $('fi-restaurar').addEventListener('click', restaura);
+    $('fi-deshacer').addEventListener('click', deshacer);
+    $('fi-rehacer').addEventListener('click', rehacer);
     $('fi-ant').addEventListener('click', function () { vecina(-1); });
     $('fi-sig').addEventListener('click', function () { vecina(1); });
     document.addEventListener('keydown', function (e) {
-        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); guarda(); }
+        if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+        var k = e.key.toLowerCase();
+        if (k === 's') { e.preventDefault(); guarda(); }
+        else if (k === 'z' && !e.shiftKey) { e.preventDefault(); deshacer(); }
+        else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); rehacer(); }
     });
     window.addEventListener('beforeunload', function (e) { if (haySinGuardar()) { e.preventDefault(); e.returnValue = ''; } });
 })();

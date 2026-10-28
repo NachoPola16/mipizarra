@@ -2,21 +2,30 @@
 """Cambios del administrador sobre las fichas: se guardan aparte (ficha_cambios.json), se aplican encima de
 exercises.json, se validan con validar_ficha y se pueden restaurar."""
 import json
+import shutil
 
 import pytest
 from fastapi.testclient import TestClient
 
-import ficha_cambios
+import ejercicios
+import fichas_edicion
 import main
-from ejercicios import cargar_ejercicios
+from conftest import RAIZ
 
 
 @pytest.fixture
 def api(tmp_path, monkeypatch):
-    monkeypatch.setattr(ficha_cambios, "CAMBIOS_PATH", str(tmp_path / "cambios" / "ficha_cambios.json"))
+    """La API sobre una COPIA de exercises.json (los tests nunca tocan el del repositorio)."""
+    copia = tmp_path / "exercises.json"
+    shutil.copy(RAIZ / "data" / "exercises.json", copia)
+    monkeypatch.setattr(main, "EXERCISES_PATH", str(copia))
+    monkeypatch.setattr(ejercicios, "EXERCISES_PATH", str(copia))
+    monkeypatch.setattr(fichas_edicion, "CARPETA", str(tmp_path / "cambios"))
     monkeypatch.setattr(main, "INTERNAL_SECRET", "")
     main.limiter.reset()
-    return TestClient(main.app)
+    cliente = TestClient(main.app)
+    cliente.ruta = copia
+    return cliente
 
 
 def _ficha(api, ficha_id="ej_176"):
@@ -25,8 +34,8 @@ def _ficha(api, ficha_id="ej_176"):
 
 def test_sin_cambios_la_biblioteca_es_la_de_git(api):
     datos = api.get("/admin/fichas").json()
-    assert datos["modificadas"] == [] and datos["originales"] == {}
-    assert len(datos["fichas"]) == len(json.load(open(main.EXERCISES_PATH, encoding="utf-8")))
+    assert datos["modificadas"] == []
+    assert len(datos["fichas"]) == len(json.load(open(RAIZ / "data" / "exercises.json", encoding="utf-8")))
 
 
 def test_guardar_cambia_la_ficha_y_conserva_id_y_diagrama(api):
@@ -38,18 +47,21 @@ def test_guardar_cambia_la_ficha_y_conserva_id_y_diagrama(api):
     assert despues["nombre"].endswith("(revisada)") and despues["intensidad"] == 2
     assert despues["id"] == "ej_003" and despues["diagrama"] == f["diagrama"]
     assert api.get("/admin/fichas").json()["modificadas"] == ["ej_003"]
-    # el resto de la API ve el cambio (generación de sesiones, /ejercicios)
-    assert next(e for e in cargar_ejercicios() if e["id"] == "ej_003")["intensidad"] == 2
+    # se escribió en exercises.json y el resto de la API lo ve (generación de sesiones, /ejercicios)
+    assert next(e for e in json.loads(api.ruta.read_text(encoding="utf-8")) if e["id"] == "ej_003")["intensidad"] == 2
+    assert next(e for e in ejercicios.cargar_ejercicios() if e["id"] == "ej_003")["intensidad"] == 2
     assert next(e for e in api.get("/ejercicios").json() if e["id"] == "ej_003")["intensidad"] == 2
 
 
-def test_restaurar_vuelve_a_la_original(api):
+def test_volver_atras_deja_la_ficha_como_estaba(api):
     f = _ficha(api)
     api.put("/admin/fichas/ej_176", json={"ficha": {**f, "duracion_min": 12}})
     assert _ficha(api)["duracion_min"] == 12
+    assert api.get("/admin/fichas").json()["modificadas"] == ["ej_176"]
     assert api.delete("/admin/fichas/ej_176").status_code == 200
-    assert _ficha(api)["duracion_min"] == f["duracion_min"]
+    assert _ficha(api) == f
     assert api.get("/admin/fichas").json()["modificadas"] == []
+    assert api.delete("/admin/fichas/ej_176").status_code == 404          # ya no hay versión anterior
 
 
 def test_una_ficha_invalida_no_se_guarda_y_dice_por_que(api):
@@ -92,33 +104,10 @@ def test_sin_el_marcador_sin_diagrama_el_diagrama_no_se_toca_ni_el_id(api):
     assert g["id"] == "ej_003" and g["diagrama"] == f["diagrama"] and "sin_diagrama" not in g
 
 
-def test_un_fichero_de_cambios_estropeado_no_rompe_la_biblioteca(api, tmp_path):
-    ruta = tmp_path / "cambios" / "ficha_cambios.json"
-    ruta.parent.mkdir()
-    ruta.write_text("{esto no es json", encoding="utf-8")
-    assert len(api.get("/admin/fichas").json()["fichas"]) > 100
-
-
 def test_con_secreto_las_rutas_de_admin_exigen_el_secreto(api, monkeypatch):
     monkeypatch.setattr(main, "INTERNAL_SECRET", "s")
     assert api.get("/admin/fichas").status_code == 401
     assert api.get("/admin/fichas", headers={"X-Internal-Secret": "s"}).status_code == 200
-
-
-def test_el_script_vuelca_los_cambios_a_exercises_json(tmp_path):
-    import importlib.util
-    from conftest import RAIZ
-    spec = importlib.util.spec_from_file_location("aplicar_cambios_fichas", RAIZ / "tools" / "aplicar_cambios_fichas.py")
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    base = json.load(open(main.EXERCISES_PATH, encoding="utf-8"))[:3]
-    destino = tmp_path / "ejercicios.json"
-    destino.write_text(json.dumps(base, ensure_ascii=False), encoding="utf-8")
-    cambios = {base[1]["id"]: {k: base[1][k] for k in ficha_cambios.CAMPOS_EDITABLES if k in base[1]}}
-    cambios[base[1]["id"]]["intensidad"] = 1
-    assert mod.volcar(destino, cambios) == (1 if base[1]["intensidad"] != 1 else 0)
-    despues = json.loads(destino.read_text(encoding="utf-8"))
-    assert despues[1]["intensidad"] == 1 and despues[0] == base[0] and despues[1]["id"] == base[1]["id"]
 
 
 # ── diagramas ────────────────────────────────────────────────────────────────
@@ -181,9 +170,47 @@ def test_un_diagrama_invalido_no_se_guarda(api):
     assert _ficha(api, "ej_003")["diagrama"] == f["diagrama"]
 
 
-def test_un_cambio_sin_diagrama_conserva_el_de_la_base(api):
-    # los cambios guardados antes de poder editar diagramas (sin esos campos) no los borran
-    f = _ficha(api, "ej_003")
-    ficha_cambios.guardar_cambio("ej_003", {"nombre": f["nombre"] + " x", "categoria": f["categoria"]})
-    g = _ficha(api, "ej_003")
-    assert g["diagrama"] == f["diagrama"] and g["nombre"].endswith(" x")
+# ── red de seguridad: copias del fichero e historial ─────────────────────────
+
+def test_cada_guardado_hace_una_copia_del_fichero_y_guarda_la_version_anterior(api, tmp_path):
+    f = _ficha(api)
+    original = api.ruta.read_text(encoding="utf-8")
+    api.put("/admin/fichas/ej_176", json={"ficha": {**f, "intensidad": 2}})
+    copias = list((tmp_path / "cambios" / "copias").iterdir())
+    assert len(copias) == 1 and copias[0].read_text(encoding="utf-8") == original
+    historial = json.loads((tmp_path / "cambios" / "ficha_historial.json").read_text(encoding="utf-8"))
+    assert historial["ej_176"][0]["ficha"] == f
+
+
+def test_guardar_sin_cambios_no_toca_nada(api, tmp_path):
+    f = _ficha(api)
+    antes = api.ruta.read_bytes()
+    assert api.put("/admin/fichas/ej_176", json={"ficha": f}).status_code == 200
+    assert api.ruta.read_bytes() == antes and not (tmp_path / "cambios").exists()
+
+
+def test_se_conservan_solo_las_ultimas_copias_y_versiones(api, tmp_path, monkeypatch):
+    monkeypatch.setattr(fichas_edicion, "COPIAS_MAX", 3)
+    monkeypatch.setattr(fichas_edicion, "HISTORIAL_MAX", 2)
+    f = _ficha(api)
+    for n in range(1, 6):
+        assert api.put("/admin/fichas/ej_176", json={"ficha": {**f, "duracion_min": 5 + n}}).status_code == 200
+    assert len(list((tmp_path / "cambios" / "copias").iterdir())) == 3
+    historial = json.loads((tmp_path / "cambios" / "ficha_historial.json").read_text(encoding="utf-8"))
+    assert [v["ficha"]["duracion_min"] for v in historial["ej_176"]] == [8, 9]
+    assert api.delete("/admin/fichas/ej_176").status_code == 200 and _ficha(api)["duracion_min"] == 9
+
+
+def test_apagar_la_red_de_seguridad(api, tmp_path, monkeypatch):
+    monkeypatch.setattr(fichas_edicion, "COPIAS_MAX", 0)
+    monkeypatch.setattr(fichas_edicion, "HISTORIAL_MAX", 0)
+    f = _ficha(api)
+    assert api.put("/admin/fichas/ej_176", json={"ficha": {**f, "intensidad": 2}}).status_code == 200
+    assert _ficha(api)["intensidad"] == 2 and not (tmp_path / "cambios").exists()
+    assert api.delete("/admin/fichas/ej_176").status_code == 404
+
+
+def test_el_orden_de_las_claves_se_conserva_para_que_el_diff_de_git_sea_limpio(api):
+    f = _ficha(api)
+    api.put("/admin/fichas/ej_176", json={"ficha": {**f, "intensidad": 2}})
+    assert list(_ficha(api)) == list(f)

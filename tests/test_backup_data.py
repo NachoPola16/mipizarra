@@ -20,7 +20,8 @@ def _datos(tmp_path):
     con.commit()
     con.close()
     (tmp_path / "cambios").mkdir()
-    (tmp_path / "cambios" / "ficha_cambios.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "cambios" / "ficha_historial.json").write_text("{}", encoding="utf-8")
+    (tmp_path / "exercises.json").write_text("[]", encoding="utf-8")
     (tmp_path / "sessions").mkdir()
     (tmp_path / "sessions" / "sesion_20261001_101010.json").write_text("{}", encoding="utf-8")
     return tmp_path
@@ -30,7 +31,7 @@ def test_la_copia_trae_la_base_legible_y_las_sesiones(tmp_path):
     datos = _datos(tmp_path / "datos")
     salida = backup.hacer_copia(datos, tmp_path / "copias", conservar=3)
     with tarfile.open(salida) as tar:
-        assert {"frontend/db.sqlite3", "cambios/ficha_cambios.json", "sessions/sesion_20261001_101010.json"} <= set(tar.getnames())
+        assert {"frontend/db.sqlite3", "cambios/ficha_historial.json", "exercises.json", "sessions/sesion_20261001_101010.json"} <= set(tar.getnames())
         tar.extract("frontend/db.sqlite3", tmp_path / "restaurado")
     con = sqlite3.connect(tmp_path / "restaurado" / "frontend" / "db.sqlite3")
     fila = con.execute("SELECT n FROM cuentas").fetchone()

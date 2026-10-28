@@ -92,6 +92,6 @@ docker compose up -d api frontend
   `db.sqlite3` en 600 (lleva las contraseñas cifradas).
 - **Rutas de administración:** `/admin/fichas` y `/admin/diagrama/vista` de la API cuelgan del mismo secreto interno; el
   permiso de administrador lo comprueba la web. Ver [Administración de fichas](docs/administracion-fichas.md).
-- **Copia de seguridad:** `tools/backup_data.py` (base de cuentas, cambios de fichas, sesiones) con rotación; hay que
+- **Copia de seguridad:** `tools/backup_data.py` (base de cuentas, `exercises.json` editado desde la web e historial, sesiones) con rotación; hay que
   programarla (cron) y llevarla fuera del servidor.
 - **Dependencias:** revisar con `pip-audit` (`pipx run pip-audit -r <requirements>`) al reconstruir las imágenes.

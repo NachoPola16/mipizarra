@@ -19,7 +19,7 @@
 
 <main id="contenido">
     <h1>Fichas de ejercicios</h1>
-    <p class="sub">Solo para ti. Revisa las fichas una a una y cambia cualquier campo (también el diagrama: arrastra jugadores, conos y destinos). Los cambios se guardan en el servidor, fuera de git, y valen enseguida para generar sesiones; cada ficha se puede restaurar a la original.</p>
+    <p class="sub">Solo para ti. Revisa las fichas una a una y cambia cualquier campo (también el diagrama: arrastra jugadores, conos y destinos). Al guardar, el cambio se escribe en la ficha del servidor y vale enseguida para generar sesiones. Mientras editas puedes deshacer y rehacer (Ctrl+Z / Ctrl+Y); después de guardar, «Volver a la versión guardada anterior» recupera la ficha como estaba.</p>
 
     <div class="fi-barra">
         <label class="sr-only" for="fi-buscar">Buscar</label>
@@ -54,8 +54,10 @@
                 <div id="fi-errores" class="fi-errores" role="alert" hidden></div>
                 <div class="barra fi-acciones">
                     <button type="submit" id="fi-guardar" class="primario" disabled>Guardar</button>
+                    <button type="button" id="fi-deshacer" disabled title="Ctrl+Z">Deshacer</button>
+                    <button type="button" id="fi-rehacer" disabled title="Ctrl+Y">Rehacer</button>
                     <button type="button" id="fi-descartar" disabled>Descartar cambios</button>
-                    <button type="button" id="fi-restaurar" hidden>Restaurar la original</button>
+                    <button type="button" id="fi-restaurar" hidden title="Deja la ficha como estaba antes del último guardado">Volver a la versión guardada anterior</button>
                     <span id="fi-estado" class="nota" style="margin:0;" role="status" aria-live="polite"></span>
                 </div>
             </form>

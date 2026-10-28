@@ -13,34 +13,56 @@ cambiar **cualquier campo, diagrama incluido**, sin tocar git ni redesplegar.
 - Diagrama: sin diagrama (la IA dibuja uno al generar), juego libre, uno o varios (con título). La vista previa la dibuja el
   servidor (la misma que verán en las sesiones); se arrastran jugadores, conos y destinos de movimiento sobre ella, hay
   tablas de jugadores/conos/balón/movimientos y un JSON avanzado.
-- Guardar (botón o Ctrl+S), descartar cambios y «Restaurar la original» (pide pulsar dos veces).
+- **Deshacer / rehacer** mientras se edita (botones o Ctrl+Z / Ctrl+Y, como en las jugadas): cada paso es una foto del
+  formulario entero (campos y diagrama); lo que se escribe o arrastra seguido cuenta como un paso. Se reinicia al abrir
+  otra ficha o al guardar.
+- Guardar (botón o Ctrl+S), descartar cambios y «Volver a la versión guardada anterior» (pide pulsar dos veces).
 
 ## Dónde se guardan los cambios
 
-`exercises.json` (git) es la base y **no se modifica**. Los cambios van a `data/cambios/ficha_cambios.json` (`{id: campos}`,
-volumen propio de la API, fuera de git, en `.gitignore`) y se aplican encima cada vez que se carga la biblioteca
-(`api/ficha_cambios.py`, usado por `cargar_ejercicios()` y por `GET /ejercicios`). Valen enseguida para generar sesiones.
+**Directamente en `data/exercises.json`** del servidor (el fichero está montado con permiso de escritura en el contenedor
+de la API). Valen enseguida para generar sesiones. El orden de las claves se conserva para que el `git diff` sea limpio.
 
-- Un cambio sustituye los campos editables de la ficha; el `id` sale siempre de la base. El diagrama solo se sustituye si
-  el cambio lo trae (el editor manda siempre `sin_diagrama`).
-- **Copia de seguridad:** `tools/backup_data.py` incluye el fichero.
-- **Subirlos a git:** copia `ficha_cambios.json` del servidor y ejecuta
-  `python tools/aplicar_cambios_fichas.py --cambios ficha_cambios.json [--vaciar]`; revisa `git diff` y haz commit.
+Red de seguridad **temporal** (`api/fichas_edicion.py`), por si algo sale mal; cuando se vea que no hace falta se apaga con
+variables de entorno de la API (`FICHAS_COPIAS_MAX=0` y `FICHAS_HISTORIAL_MAX=0`):
+
+- Antes de cada guardado: copia del `exercises.json` entero en `data/cambios/copias/` (se conservan las últimas
+  `FICHAS_COPIAS_MAX`, 20 por defecto).
+- La versión anterior de la ficha va a `data/cambios/ficha_historial.json` (hasta `FICHAS_HISTORIAL_MAX`, 10 por ficha);
+  de ahí sale «Volver a la versión guardada anterior». Sin historial (0) ese botón deja de funcionar.
+- `tools/backup_data.py` incluye `exercises.json` y el historial, porque ahora el fichero del servidor puede ir **por delante
+  de git**.
+
+### Traer las ediciones a git (importante al desplegar)
+
+El servidor puede tener `exercises.json` distinto del de git. Antes de desplegar (`git pull` en el servidor) hay que subir
+esas ediciones, o el `pull` se negará (si ambos tocaron el fichero) o dejará el fichero del servidor como estaba:
+
+```bash
+# 1. ¿hay ediciones sin subir? (en el servidor: cd /root/docker/mipizarra; git status --short data/exercises.json)
+# 2. traer el fichero, revisar y subir
+ssh proxmox "pct exec 102 -- cat /root/docker/mipizarra/data/exercises.json" > data/exercises.json
+git diff --stat data/exercises.json      # revisa qué fichas cambiaron
+git add data/exercises.json && git commit -m "fichas: ediciones hechas desde la pestaña Fichas" && git push
+# 3. en el servidor: git checkout -- data/exercises.json && git pull --ff-only   (ya es idéntico al commit)
+```
+
+Si se editó una ficha en el servidor y esa misma ficha cambió en git, mezcla a mano (`git diff` por ficha).
 
 ## Validación
 
 Antes de guardar, la API pasa la ficha por `validar_ficha` (esquema, líneas rojas por edad, nombres e ids repetidos,
 límites de duración/intensidad…) y cada diagrama por la validación de diagramas, que además repara lo determinista
 (separar jugadores pegados, deducir `a_pos`): lo que se guarda es lo que se dibuja. Si algo falla no se guarda y la
-respuesta (422) trae la lista de `problemas`.
+respuesta (422) trae la lista de `problemas`. Guardar sin cambios no escribe nada.
 
 ## API (solo con el secreto interno)
 
 | Ruta | Para qué |
 |---|---|
-| `GET /admin/fichas` | Fichas con los cambios aplicados, ids modificados y originales de las modificadas |
-| `PUT /admin/fichas/{id}` | `{ficha: {...}}` guarda los cambios; 422 con `problemas` si no es válida |
-| `DELETE /admin/fichas/{id}` | Restaura la original |
+| `GET /admin/fichas` | Todas las fichas e ids con versión anterior (`modificadas`) |
+| `PUT /admin/fichas/{id}` | `{ficha: {...}}` guarda en exercises.json; 422 con `problemas` si no es válida |
+| `DELETE /admin/fichas/{id}` | Vuelve a la versión anterior (404 si no hay) |
 | `POST /admin/diagrama/vista` | `{diagrama}` → `{svg, diagrama}` o 422 con `problemas` |
 
 La API no tiene usuarios: el permiso lo comprueba la web (`frontend/pizarra/fichas_admin.py`: 404 en la página y 403 en los

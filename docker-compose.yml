@@ -35,12 +35,13 @@ services:
       - "${BIND_IP:-127.0.0.1}:8090:8090"
     volumes:
       # Solo lo que la API necesita: los PDF de terceros (data/pdfs) NO se montan, el sistema no puede verlos.
-      - ./data/exercises.json:/app/data/exercises.json:ro
+      # exercises.json se puede escribir: la pestaña «Fichas» del administrador guarda ahí sus cambios.
+      - ./data/exercises.json:/app/data/exercises.json
       - ./data/teoria:/app/data/teoria:ro
       - ./data/reglamento:/app/data/reglamento:ro
       - ./data/chroma_db:/app/data/chroma_db
       - ./data/sessions:/app/data/sessions
-      # Cambios del administrador sobre las fichas (ficha_cambios.json); fuera de git, entran en la copia de seguridad.
+      # Red de seguridad de la edición de fichas: copias de exercises.json y versiones anteriores (fuera de git).
       - ./data/cambios:/app/data/cambios
       - ./api:/app
       - ./tools:/app/tools

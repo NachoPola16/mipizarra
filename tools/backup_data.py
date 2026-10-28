@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Copia de seguridad de lo que NO está en git: la base de las cuentas (data/frontend/db.sqlite3: cuentas, jugadas
-guardadas y cambios de la biblioteca del botón de administrador), los cambios del administrador sobre
-las fichas (data/cambios/ficha_cambios.json), la clave secreta si vive en el volumen y las
+guardadas y cambios de la biblioteca del botón de administrador), las fichas editadas desde la web (data/exercises.json
+y su historial), la clave secreta si vive en el volumen y las
 sesiones guardadas. Solo biblioteca estándar; se puede ejecutar con la web en marcha (la base se copia con la API de
 copias de SQLite, que es coherente aunque alguien esté escribiendo).
 
@@ -55,9 +55,9 @@ def hacer_copia(datos: Path, destino: Path, conservar: int, ahora: datetime.date
             clave = datos / "frontend" / "secret_key.txt"
             if clave.is_file():
                 tar.add(clave, arcname="frontend/secret_key.txt")
-            cambios = datos / "cambios" / "ficha_cambios.json"      # cambios del administrador sobre las fichas
-            if cambios.is_file():
-                tar.add(cambios, arcname="cambios/ficha_cambios.json")
+            for nombre in ("exercises.json", "cambios/ficha_historial.json"):      # fichas editadas desde la web (por delante de git)
+                if (datos / nombre).is_file():
+                    tar.add(datos / nombre, arcname=nombre)
             sesiones = datos / "sessions"
             if sesiones.is_dir():
                 tar.add(sesiones, arcname="sessions")

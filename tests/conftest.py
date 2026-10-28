@@ -23,8 +23,6 @@ EXERCISES_JSON = DATA_DIR / "exercises.json"
 # contenedor (/app/data/...).
 os.environ["EXERCISES_PATH"] = str(EXERCISES_JSON)
 os.environ["REGLAMENTO_DIR"] = str(DATA_DIR / "reglamento")
-# los tests nunca leen los cambios reales del administrador
-os.environ["FICHA_CAMBIOS_PATH"] = str(RAIZ / "data" / "_sin_cambios_en_tests.json")
 os.environ.setdefault("FEEDBACK_DIR", str(RAIZ / "data" / "sessions"))
 
 if str(API_DIR) not in sys.path:

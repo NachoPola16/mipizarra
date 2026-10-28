@@ -5,7 +5,6 @@ import re
 import unicodedata
 
 from config import EDAD_A_CATEGORIA, EXERCISES_PATH
-from ficha_cambios import aplicar as _aplicar_cambios
 
 # ─── Ejercicios ──────────────────────────────────────────────────────────
 
@@ -26,9 +25,8 @@ COMPONENTES_ANALITICOS = {
 
 
 def cargar_ejercicios() -> list:
-    """La biblioteca: exercises.json con los cambios del administrador (ficha_cambios.py) encima."""
     with open(EXERCISES_PATH, encoding="utf-8") as f:
-        return _aplicar_cambios(json.load(f))
+        return json.load(f)
 
 
 def _palabras_objetivo(objetivo: str) -> tuple[list[str], list[str]]:

@@ -36,7 +36,7 @@ def test_la_api_solo_monta_lo_que_necesita_de_data():
 
 def test_los_documentos_de_solo_lectura_se_montan_asi():
     por_origen = {m.split(":")[0]: m for m in _montajes_de_data("api")}
-    for origen in ("./data/exercises.json", "./data/teoria", "./data/reglamento"):
+    for origen in ("./data/teoria", "./data/reglamento"):       # exercises.json es escribible: lo edita la pestaña «Fichas»
         assert por_origen[origen].endswith(":ro"), origen
 
 
