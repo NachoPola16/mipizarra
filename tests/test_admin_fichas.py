@@ -85,9 +85,9 @@ def test_los_opcionales_vacios_se_quitan_y_los_textos_se_recortan(api):
     assert g["nombre"] == f["nombre"] and "material" not in g and "errores_frecuentes" not in g and "progresion" not in g
 
 
-def test_no_se_puede_cambiar_el_diagrama_ni_el_id_por_esta_via(api):
+def test_sin_el_marcador_sin_diagrama_el_diagrama_no_se_toca_ni_el_id(api):
     f = _ficha(api, "ej_003")
-    api.put("/admin/fichas/ej_003", json={"ficha": {**f, "id": "ej_999", "diagrama": {"tipo": "x"}, "sin_diagrama": True}})
+    api.put("/admin/fichas/ej_003", json={"ficha": {**f, "id": "ej_999", "diagrama": {"tipo": "x"}}})
     g = _ficha(api, "ej_003")
     assert g["id"] == "ej_003" and g["diagrama"] == f["diagrama"] and "sin_diagrama" not in g
 
@@ -119,3 +119,71 @@ def test_el_script_vuelca_los_cambios_a_exercises_json(tmp_path):
     assert mod.volcar(destino, cambios) == (1 if base[1]["intensidad"] != 1 else 0)
     despues = json.loads(destino.read_text(encoding="utf-8"))
     assert despues[1]["intensidad"] == 1 and despues[0] == base[0] and despues[1]["id"] == base[1]["id"]
+
+
+# ── diagramas ────────────────────────────────────────────────────────────────
+
+DIAG = {"tipo": "media_pista", "titulo": "Prueba",
+        "jugadores_ataque": [{"id": "A1", "x": 20, "y": 30}, {"id": "A2", "x": 60, "y": 50}],
+        "jugadores_defensa": [{"id": "D1", "x": 22, "y": 36}],
+        "balon_inicio": {"portador": "A1"},
+        "movimientos": [{"de": "A1", "tipo": "pase", "a": "A2", "orden": 1},
+                        {"de": "A2", "tipo": "desplazamiento", "a_pos": {"x": 70, "y": 40}, "orden": 2, "curva": 0.3},
+                        {"de": "A2", "tipo": "tiro", "orden": 3}],
+        "conos": [{"x": 50, "y": 20}]}
+
+
+def test_vista_previa_devuelve_el_svg_o_los_problemas(api):
+    r = api.post("/admin/diagrama/vista", json={"diagrama": DIAG})
+    assert r.status_code == 200 and r.json()["svg"].startswith("<svg") and "MiPizarra" in r.json()["svg"]
+    malo = {**DIAG, "movimientos": [{"de": "Z9", "tipo": "pase", "a": "A1", "orden": 1}]}
+    r = api.post("/admin/diagrama/vista", json={"diagrama": malo})
+    assert r.status_code == 422 and "Z9" in " ".join(r.json()["problemas"])
+    fuera = {**DIAG, "jugadores_ataque": [{"id": "A1", "x": 150, "y": 30}]}
+    assert api.post("/admin/diagrama/vista", json={"diagrama": fuera}).status_code == 422
+
+
+def test_la_vista_ignora_claves_raras_y_no_rompe_con_basura(api):
+    r = api.post("/admin/diagrama/vista", json={"diagrama": {**DIAG, "script": "<x>", "jugadores_ataque":
+                 [{"id": "A1", "x": 20, "y": 30, "html": "<b>"}, {"id": "A2", "x": 60, "y": 50}]}})
+    assert r.status_code == 200 and "<b>" not in r.text
+    assert api.post("/admin/diagrama/vista", json={"diagrama": {"jugadores_ataque": "no"}}).status_code == 422
+    assert api.post("/admin/diagrama/vista", json={"diagrama": {"jugadores_ataque": [3]}}).status_code == 422
+
+
+def test_editar_el_diagrama_de_una_ficha_y_restaurarlo(api):
+    f = _ficha(api, "ej_003")
+    r = api.put("/admin/fichas/ej_003", json={"ficha": {**f, "sin_diagrama": False, "diagrama": DIAG}})
+    assert r.status_code == 200, r.text
+    g = _ficha(api, "ej_003")
+    assert g["diagrama"]["titulo"] == "Prueba" and len(g["diagrama"]["movimientos"]) == 3 and "diagramas" not in g
+    assert api.delete("/admin/fichas/ej_003").status_code == 200
+    assert _ficha(api, "ej_003")["diagrama"] == f["diagrama"]
+
+
+def test_pasar_de_un_diagrama_a_varios_o_a_juego_libre(api):
+    f = _ficha(api, "ej_003")
+    sin = {k: v for k, v in f.items() if k != "diagrama"}
+    r = api.put("/admin/fichas/ej_003", json={"ficha": {**sin, "sin_diagrama": False, "diagramas": [DIAG, {**DIAG, "titulo": "Fase 2"}]}})
+    assert r.status_code == 200, r.text
+    g = _ficha(api, "ej_003")
+    assert "diagrama" not in g and [d["titulo"] for d in g["diagramas"]] == ["Prueba", "Fase 2"]
+    r = api.put("/admin/fichas/ej_003", json={"ficha": {**sin, "sin_diagrama": True}})
+    assert r.status_code == 200
+    g = _ficha(api, "ej_003")
+    assert g["sin_diagrama"] is True and "diagrama" not in g and "diagramas" not in g
+
+
+def test_un_diagrama_invalido_no_se_guarda(api):
+    f = _ficha(api, "ej_003")
+    r = api.put("/admin/fichas/ej_003", json={"ficha": {**f, "sin_diagrama": False, "diagrama": {**DIAG, "balon_inicio": {"portador": "Q"}}}})
+    assert r.status_code == 422 and "portador" in " ".join(r.json()["problemas"])
+    assert _ficha(api, "ej_003")["diagrama"] == f["diagrama"]
+
+
+def test_un_cambio_sin_diagrama_conserva_el_de_la_base(api):
+    # los cambios guardados antes de poder editar diagramas (sin esos campos) no los borran
+    f = _ficha(api, "ej_003")
+    ficha_cambios.guardar_cambio("ej_003", {"nombre": f["nombre"] + " x", "categoria": f["categoria"]})
+    g = _ficha(api, "ej_003")
+    assert g["diagrama"] == f["diagrama"] and g["nombre"].endswith(" x")

@@ -53,6 +53,21 @@ def datos(request):
     return _respuesta(resp)
 
 
+@require_http_methods(['POST'])
+def vista(request):
+    """POST {diagrama}: el SVG del diagrama tal como se verá en las sesiones, o los problemas que tiene."""
+    if not _es_admin(request):
+        return _sin_permiso()
+    if len(request.body) > 100_000:
+        return JsonResponse({'error': 'El diagrama es demasiado grande.'}, status=413)
+    try:
+        resp = requests.post(f"{settings.API_URL}/admin/diagrama/vista", data=request.body, headers=_api_headers(request), timeout=TIMEOUT)
+    except requests.RequestException:
+        logger.exception('No se pudo pedir la vista del diagrama a la API')
+        return JsonResponse({'error': 'No se pudo hablar con la API.'}, status=502)
+    return _respuesta(resp)
+
+
 @require_http_methods(['PUT', 'DELETE'])
 def guardar(request, ficha_id):
     """PUT {ficha: {...}}: guarda los cambios de la ficha. DELETE: vuelve a la original."""
@@ -63,7 +78,7 @@ def guardar(request, ficha_id):
         if request.method == 'DELETE':
             resp = requests.delete(url, headers=_api_headers(request), timeout=TIMEOUT)
         else:
-            if len(request.body) > 40_000:
+            if len(request.body) > 100_000:
                 return JsonResponse({'error': 'La ficha es demasiado grande.'}, status=413)
             resp = requests.put(url, data=request.body, headers=_api_headers(request), timeout=TIMEOUT)
     except requests.RequestException:

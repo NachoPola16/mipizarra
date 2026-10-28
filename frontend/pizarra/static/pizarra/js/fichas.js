@@ -1,10 +1,12 @@
 // Pestaña «Fichas» (solo administrador): lista, filtros y editor de una ficha cada vez. Todo el texto entra con
-// textContent / value: nada de innerHTML.
+// textContent / value: nada de innerHTML (el diagrama lo gestiona fichas_diagrama.js).
 (function () {
     'use strict';
     var $ = function (id) { return document.getElementById(id); };
     var URL_DATOS = document.body.getAttribute('data-url-datos');
     var URL_FICHA = document.body.getAttribute('data-url-ficha');
+    var URL_VISTA = document.body.getAttribute('data-url-vista');
+    var editorDiagrama = null;   // se crea la primera vez que se abre una ficha
     var CATEGORIAS = ['juego_equipo', '1c1', 'ventaja_numerica', 'calentamiento', 'tiro', 'fisico', 'bloqueo_directo', 'bloqueo_indirecto'];
     var ESPACIOS = ['media_pista', 'pista_completa', 'flexible'];
     var EDADES = ['U8', 'U10', 'U12', 'U14', 'U16', 'U18', 'Senior'];
@@ -137,6 +139,8 @@
         pr.appendChild(campo('Progresión: complicar', 'opcional', pd = area('c-comp', p.complicar), 'p_complicar', function () { return pd.value.trim(); }));
         cont.appendChild(pr);
         cont.addEventListener('input', cambio); cont.addEventListener('change', cambio);
+        if (!editorDiagrama) editorDiagrama = new window.EditorDiagrama($('fi-diagrama'), { api: api, urlVista: URL_VISTA, onCambio: cambio });
+        editorDiagrama.cargar(f);
     }
 
     function lee() {
@@ -145,6 +149,7 @@
             'descripcion', 'puntos_clave', 'material', 'consigna', 'errores_frecuentes', 'que_observar'].forEach(function (k) { v[k] = g(k); });
         v.objetivos = { tacticos: g('o_tacticos'), tecnicos: g('o_tecnicos'), fisicos: g('o_fisicos') };
         v.progresion = { facilitar: g('p_facilitar'), complicar: g('p_complicar') };
+        if (editorDiagrama) Object.assign(v, editorDiagrama.leer());
         return v;
     }
     function cambio() {
@@ -171,7 +176,6 @@
         $('fi-vacio').hidden = true; $('fi-form').hidden = false;
         $('fi-id').textContent = f.id;
         $('fi-mod-etq').hidden = !modificadas[f.id];
-        $('fi-diag').textContent = f.diagrama || f.diagramas ? 'Tiene diagrama (no editable aquí)' : (f.sin_diagrama ? 'Sin diagrama (juego libre)' : '');
         $('fi-restaurar').hidden = !modificadas[f.id]; $('fi-restaurar').textContent = 'Restaurar la original';
         construye(f);
         instantanea = JSON.stringify(lee());

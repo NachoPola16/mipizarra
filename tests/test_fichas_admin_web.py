@@ -49,6 +49,7 @@ GUION = textwrap.dedent('''
         assert beto.get("/fichas/datos/", **H).status_code == 403
         assert put(beto, "ej_001", {}).status_code == 403
         assert beto.delete("/fichas/ej_001/", **H).status_code == 403
+        assert beto.post("/fichas/diagrama/vista/", data="{}", content_type="application/json", **H).status_code == 403
         assert not rq.get.called and not rq.put.called and not rq.delete.called
     # la pestaña solo se ve para el administrador
     assert b"/fichas/" not in beto.get("/", **H).content and b"/fichas/" in nacho.get("/", **H).content
@@ -67,6 +68,12 @@ GUION = textwrap.dedent('''
         assert json.loads(p.call_args.kwargs["data"]) == {"ficha": {"nombre": "x"}}
     with mock.patch("pizarra.fichas_admin.requests.delete", return_value=Resp(200, {"ok": True, "ficha": {}})) as d:
         assert nacho.delete("/fichas/ej_001/", **H).status_code == 200 and d.called
+    with mock.patch("pizarra.fichas_admin.requests.post", return_value=Resp(200, {"svg": "<svg/>", "diagrama": {}})) as v:
+        r = nacho.post("/fichas/diagrama/vista/", data=json.dumps({"diagrama": {"tipo": "media_pista"}}), content_type="application/json", **H)
+        assert r.status_code == 200 and r.json()["svg"] == "<svg/>" and v.call_args.args[0].endswith("/admin/diagrama/vista")
+    with mock.patch("pizarra.fichas_admin.requests.post", return_value=Resp(422, {"detail": "x", "problemas": ["mal"]})):
+        r = nacho.post("/fichas/diagrama/vista/", data="{}", content_type="application/json", **H)
+        assert r.status_code == 422 and r.json()["problemas"] == ["mal"]
     # API caída
     import requests
     with mock.patch("pizarra.fichas_admin.requests.get", side_effect=requests.ConnectionError()):

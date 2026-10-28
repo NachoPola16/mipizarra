@@ -4,7 +4,7 @@
 `data/exercises.json` (git) es la base; los cambios viven aparte, en un fichero propio del servidor
 (`ficha_cambios.json`: {id: campos}), y se aplican encima al cargar la biblioteca. Así `git pull` nunca choca con
 ellos, cada ficha se puede «restaurar la original» y el fichero entra en la copia de seguridad. Un cambio sustituye
-los campos editables de la ficha; el id y el diagrama salen siempre de la base. Sin dependencias pesadas: lo importa
+los campos editables de la ficha (el diagrama solo si el cambio lo trae); el id sale siempre de la base. Sin dependencias pesadas: lo importa
 `ejercicios.py`."""
 import json
 import os
@@ -13,13 +13,16 @@ import threading
 
 CAMBIOS_PATH = os.environ.get("FICHA_CAMBIOS_PATH", "/app/data/cambios/ficha_cambios.json")
 
-# Lo que el administrador puede editar. Todo lo demás (id, diagrama, diagramas, sin_diagrama) viene de la base.
+# Lo que el administrador puede editar. El id viene siempre de la base.
 CAMPOS_EDITABLES = (
     "nombre", "categoria", "subcategoria", "espacio", "edades", "duracion_min", "intensidad", "carga_cognitiva",
     "jugadores_minimos", "objetivos", "descripcion", "puntos_clave", "material", "consigna", "errores_frecuentes",
-    "que_observar", "progresion",
+    "que_observar", "progresion", "diagrama", "diagramas", "sin_diagrama",
 )
 CAMPOS_OPCIONALES = ("material", "consigna", "errores_frecuentes", "que_observar", "progresion")
+# Un cambio solo sustituye el diagrama de la ficha si trae alguno de estos campos (el editor de fichas manda siempre
+# `sin_diagrama`); así los cambios guardados antes de poder editar diagramas no los borran.
+CAMPOS_DIAGRAMA = ("diagrama", "diagramas", "sin_diagrama")
 
 _cerrojo = threading.Lock()
 _cache: dict = {"clave": None, "datos": {}}
@@ -53,8 +56,12 @@ def aplicar(base: list, cambios: dict | None = None) -> list:
     for ficha in base:
         cambio = cambios.get(ficha.get("id"))
         if isinstance(cambio, dict):
-            fija = {k: v for k, v in ficha.items() if k not in CAMPOS_EDITABLES}
-            ficha = {**fija, **{k: v for k, v in cambio.items() if k in CAMPOS_EDITABLES}}
+            toca_diagrama = any(k in cambio for k in CAMPOS_DIAGRAMA)
+            propios = [k for k in CAMPOS_EDITABLES if toca_diagrama or k not in CAMPOS_DIAGRAMA]
+            fija = {k: v for k, v in ficha.items() if k not in propios}
+            ficha = {**fija, **{k: v for k, v in cambio.items() if k in propios}}
+            if not ficha.get("sin_diagrama"):
+                ficha.pop("sin_diagrama", None)
         salida.append(ficha)
     return salida
 

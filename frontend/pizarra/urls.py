@@ -11,6 +11,7 @@ urlpatterns = [
     path('jugadas/', cuentas.jugadas, name='jugadas'),
     path('fichas/', fichas_admin.pagina, name='fichas'),
     path('fichas/datos/', fichas_admin.datos, name='fichas_datos'),
+    path('fichas/diagrama/vista/', fichas_admin.vista, name='fichas_vista'),
     path('fichas/<str:ficha_id>/', fichas_admin.guardar, name='ficha_guardar'),
     path('jugadas/guardadas/', cuentas.guardadas, name='jugadas_guardadas'),
     path('jugadas/guardadas/<int:pk>/', cuentas.guardada, name='jugada_guardada'),

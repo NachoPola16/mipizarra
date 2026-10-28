@@ -1,4 +1,5 @@
 # api/main.py
+import copy
 import datetime
 import json
 import logging
@@ -21,9 +22,10 @@ from rag_engine import (
 )
 from diagram_renderer import render_diagram, render_all_diagrams
 from ficha_cambios import (
-    CAMPOS_EDITABLES, CAMPOS_OPCIONALES, aplicar as aplicar_cambios_fichas, borrar_cambio, guardar_cambio, leer_cambios,
+    CAMPOS_DIAGRAMA, CAMPOS_EDITABLES, CAMPOS_OPCIONALES, aplicar as aplicar_cambios_fichas, borrar_cambio, guardar_cambio, leer_cambios,
 )
-from validacion_fichas import validar_ficha
+from diagramas import _validar_diagrama
+from validacion_fichas import _problemas_de_diagrama, validar_ficha
 from plantillas import plantilla_para_texto
 from resumen_objetivo import resumir_objetivo
 
@@ -262,7 +264,7 @@ def listar_ejercicios(request: Request):
 # Solo las llama el frontend, que comprueba que la cuenta es la del administrador (la API no tiene usuarios: su única
 # barrera es el secreto interno). Los cambios no tocan exercises.json: viven en ficha_cambios.json (ver ficha_cambios.py).
 ID_FICHA = re.compile(r"^ej_\d{3,}$")
-MAX_BYTES_FICHA = 30_000
+MAX_BYTES_FICHA = 80_000
 
 
 class FichaCambioRequest(BaseModel):
@@ -294,11 +296,67 @@ def _limpiar_campos_de_ficha(crudo: dict) -> dict:
             return {k: limpio(x) for k, x in v.items() if not (isinstance(x, str) and not x.strip())}
         return v
 
-    campos = {k: limpio(crudo[k]) for k in CAMPOS_EDITABLES if k in crudo}
+    campos = {k: limpio(crudo[k]) for k in CAMPOS_EDITABLES if k in crudo and k not in CAMPOS_DIAGRAMA}
     for k in CAMPOS_OPCIONALES:
         if k in campos and campos[k] in ("", [], {}, None):
             del campos[k]
+    if "sin_diagrama" in crudo:         # el editor lo manda siempre: marca que el diagrama también viene en la petición
+        campos["sin_diagrama"] = bool(crudo["sin_diagrama"])
+        if not campos["sin_diagrama"]:
+            if isinstance(crudo.get("diagramas"), list) and crudo["diagramas"]:
+                campos["diagramas"] = [_sanear_diagrama(d) for d in crudo["diagramas"]]
+            elif crudo.get("diagrama"):
+                campos["diagrama"] = _sanear_diagrama(crudo["diagrama"])
     return campos
+
+
+_CLAVES_DIAGRAMA = {"tipo", "titulo", "jugadores_ataque", "jugadores_defensa", "balon_inicio", "movimientos", "conos"}
+_CLAVES_MOVIMIENTO = {"de", "a", "a_pos", "tipo", "orden", "curva"}
+
+
+def _sanear_diagrama(d):
+    """Solo las claves que entiende el renderizador, con textos recortados (no valida: eso lo hace la validación)."""
+    if not isinstance(d, dict):
+        return d
+
+    def de_lista(clave, permitidas):
+        lista = d.get(clave)
+        if not isinstance(lista, list):
+            return lista
+        return [{k: v for k, v in x.items() if k in permitidas} if isinstance(x, dict) else x for x in lista]
+
+    s = {k: v for k, v in d.items() if k in _CLAVES_DIAGRAMA}
+    for clave in ("jugadores_ataque", "jugadores_defensa"):
+        if clave in s:
+            s[clave] = de_lista(clave, {"id", "x", "y", "rol"})
+    if "conos" in s:
+        s["conos"] = de_lista("conos", {"x", "y"})
+    if "movimientos" in s:
+        s["movimientos"] = de_lista("movimientos", _CLAVES_MOVIMIENTO)
+    if isinstance(s.get("balon_inicio"), dict):
+        s["balon_inicio"] = {k: v for k, v in s["balon_inicio"].items() if k == "portador"}
+    if isinstance(s.get("titulo"), str):
+        s["titulo"] = s["titulo"].strip()
+        if not s["titulo"]:
+            del s["titulo"]
+    return s
+
+
+def _diagrama_valido(d, etiqueta: str = "diagrama"):
+    """(diagrama tal como se dibujará, problemas). El diagrama devuelto es el que la validación deja tras sus
+    reparaciones deterministas (separar jugadores pegados, deducir `a_pos`): lo que se guarda es lo que se ve."""
+    if not isinstance(d, dict):
+        return None, [f"{etiqueta}: no es un objeto"]
+    try:
+        problemas = _problemas_de_diagrama({"diagrama": copy.deepcopy(d)})
+        reparado = copy.deepcopy(d)
+        if not problemas:
+            _validar_diagrama(reparado, "")
+    except Exception as e:        # un diagrama mal formado puede romper el validador
+        return None, [f"{etiqueta}: no se puede validar ({type(e).__name__})"]
+    if problemas:
+        return None, [p.replace("diagrama 1", etiqueta, 1) for p in problemas]
+    return reparado, []
 
 
 @app.put("/admin/fichas/{ficha_id}")
@@ -313,9 +371,22 @@ def admin_guardar_ficha(request: Request, ficha_id: str, req: FichaCambioRequest
     if original is None:
         raise HTTPException(status_code=404, detail="No existe esa ficha")
     campos = _limpiar_campos_de_ficha(req.ficha)
-    candidata = {**{k: v for k, v in original.items() if k not in CAMPOS_EDITABLES}, **campos}
-    otras = [f for f in aplicar_cambios_fichas(base) if f.get("id") != ficha_id]
-    problemas = validar_ficha(candidata, otras)
+    problemas: list[str] = []
+    if "sin_diagrama" in campos:
+        if "diagramas" in campos:
+            for i, d in enumerate(campos["diagramas"], start=1):
+                campos["diagramas"][i - 1], malos = _diagrama_valido(d, f"diagrama {i}")
+                problemas += malos
+        elif "diagrama" in campos:
+            campos["diagrama"], malos = _diagrama_valido(campos["diagrama"])
+            problemas += malos
+    propios = [k for k in CAMPOS_EDITABLES if "sin_diagrama" in campos or k not in CAMPOS_DIAGRAMA]
+    candidata = {**{k: v for k, v in original.items() if k not in propios}, **campos}
+    if not candidata.get("sin_diagrama"):
+        candidata.pop("sin_diagrama", None)
+    if not problemas:
+        otras = [f for f in aplicar_cambios_fichas(base) if f.get("id") != ficha_id]
+        problemas = validar_ficha(candidata, otras)
     jm = candidata.get("jugadores_minimos")
     if not (isinstance(jm, int) and not isinstance(jm, bool) and 1 <= jm <= 40):
         problemas.append("jugadores_minimos: entero entre 1 y 40")
@@ -323,6 +394,22 @@ def admin_guardar_ficha(request: Request, ficha_id: str, req: FichaCambioRequest
         return JSONResponse(status_code=422, content={"detail": "La ficha no es válida", "problemas": problemas})
     guardar_cambio(ficha_id, campos)
     return {"ok": True, "ficha": candidata}
+
+
+class DiagramaVistaRequest(BaseModel):
+    diagrama: dict
+
+
+@app.post("/admin/diagrama/vista")
+@limiter.limit("240/minute")
+def admin_vista_diagrama(request: Request, req: DiagramaVistaRequest):
+    """El diagrama tal como lo verán en las sesiones (mismo dibujo), o por qué no es válido."""
+    if len(json.dumps(req.diagrama, ensure_ascii=False)) > MAX_BYTES_FICHA:
+        raise HTTPException(status_code=413, detail="El diagrama es demasiado grande")
+    d, problemas = _diagrama_valido(_sanear_diagrama(req.diagrama))
+    if problemas:
+        return JSONResponse(status_code=422, content={"detail": "El diagrama no es válido", "problemas": problemas})
+    return {"svg": render_diagram(copy.deepcopy(d)), "diagrama": d}
 
 
 @app.delete("/admin/fichas/{ficha_id}")

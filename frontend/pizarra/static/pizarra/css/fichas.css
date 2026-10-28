@@ -27,3 +27,20 @@
 .fi-errores ul { margin: .3rem 0 0 1.1rem; }
 .fi-acciones { margin-top: 1rem; }
 @media (max-width: 820px) { .fi-grid { grid-template-columns: 1fr; } .fi-lista { max-height: 34vh; } }
+
+/* Editor de diagramas */
+.dg-pest { margin: .6rem 0; }
+.dg-rejilla { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(280px, 1fr); gap: 1rem; margin-top: .6rem; align-items: start; }
+.dg-svg { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; touch-action: none; cursor: crosshair; padding: .3rem; }
+.dg-svg svg { width: 100%; height: auto; display: block; max-height: 70vh; }
+.dg-msg { font-size: .8rem; color: var(--muted); min-height: 1.2rem; margin-top: .3rem; }
+.dg-mal { color: #f1c9bb; }
+.dg-sec { margin-bottom: .7rem; }
+.dg-sec h3 { font-size: .75rem; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; margin-bottom: .3rem; }
+.dg-fila { display: flex; flex-wrap: wrap; gap: .3rem; align-items: center; margin-bottom: .3rem; }
+.dg-fila input, .dg-fila select { width: auto; min-height: 34px; padding: .25rem .4rem; font-size: .8rem; background: var(--bg3); color: var(--text); border: 1px solid var(--border); border-radius: 6px; }
+.dg-mini { min-height: 34px; padding: .2rem .55rem; font-size: .8rem; }
+.dg-n { color: var(--accent); font-weight: 700; width: 1.2rem; text-align: right; }
+.dg-json { margin-top: .8rem; }
+.dg-json textarea { width: 100%; min-height: 12rem; font-family: ui-monospace, Consolas, monospace; font-size: .78rem; background: var(--bg3); color: var(--text); border: 1px solid var(--border); border-radius: 8px; padding: .5rem; margin: .4rem 0; }
+@media (max-width: 820px) { .dg-rejilla { grid-template-columns: 1fr; } }
