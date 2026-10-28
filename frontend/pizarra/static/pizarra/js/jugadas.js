@@ -106,8 +106,8 @@ function dibujaPista(svg, c) {
     var g = el('g', { fill: 'none', stroke: c.linea, 'stroke-width': 2, 'stroke-linecap': 'round' }, svg);
     el('rect', { x: 0, y: 0, width: W, height: H }, g);
     el('rect', { x: 170, y: 0, width: 160, height: 190 }, g);                       // pintura
-    el('path', { d: 'M170 190 A60 60 0 0 0 330 190' }, g);                          // semicírculo del tiro libre (hacia fuera)
-    el('path', { d: 'M190 190 A60 60 0 0 1 310 190', 'stroke-dasharray': '6 6' }, g);
+    el('path', { d: 'M170 190 A80 80 0 0 0 330 190' }, g);                          // semicírculo del tiro libre (hacia fuera)
+    el('path', { d: 'M170 190 A80 80 0 0 1 330 190', 'stroke-dasharray': '6 6' }, g);   // el de dentro, discontinuo: mismo radio
     el('line', { x1: 220, y1: 40, x2: 280, y2: 40, 'stroke-width': 3 }, g);          // tablero
     el('circle', { cx: ARO.x, cy: ARO.y, r: 9 }, g);                                 // aro
     el('path', { d: 'M210 52 A40 40 0 0 0 290 52' }, g);                             // zona de no carga
@@ -178,14 +178,93 @@ function trazoFlecha(tipo, x1, y1, x2, y2, cx, cy) {
 
 // Dibuja las flechas de una fase. `extra` (opcional): { prog: [0..1 por flecha], dim: true } para la reproducción.
 var barrasArriba = [];                        // barras de bloqueo de la fase que se está dibujando (se pintan sobre las fichas)
+
+// Defensores automáticos («Mostrar defensores»): uno por atacante, entre él y el aro y un poco hacia el balón.
+// Solo si la fase no trae defensores propios. No son piezas de la jugada: se calculan al dibujar.
+var mostrarDef = false;
+function unit(dx, dy) { var l = Math.hypot(dx, dy) || 1; return { x: dx / l, y: dy / l }; }
+function conDefensores(piezas) {
+    if (!mostrarDef || piezas.some(function (p) { return p.tipo === 'D'; })) return piezas;
+    var b = piezas.filter(function (p) { return p.tipo === 'B'; })[0], salida = piezas.slice(), portador = null, dm = 44;
+    if (b) piezas.forEach(function (p) { if (p.tipo !== 'A') return; var d = Math.hypot(p.x - b.x, p.y - b.y); if (d < dm) { dm = d; portador = p.id; } });
+    piezas.forEach(function (p) {
+        if (p.tipo !== 'A') return;
+        var h = unit(ARO.x - p.x, ARO.y - p.y), v = h;
+        if (b && p.id !== portador) { var u = unit(b.x - p.x, b.y - p.y); v = unit(h.x * 0.7 + u.x * 0.3, h.y * 0.7 + u.y * 0.3); }
+        salida.push({ id: 'D' + p.n, tipo: 'D', n: p.n, x: acotar(p.x + v.x * 38, 0, W), y: acotar(p.y + v.y * 38, 0, H), auto: true });
+    });
+    return salida;
+}
+
+// Dónde acaba cada pieza que se mueve en la fase (primer movimiento y sus tramos encadenados).
+function finalesDe(f) {
+    var fin = {}, visto = {};
+    f.flechas.forEach(function (a) {
+        if (a.tipo === 'pase' || (visto[a.de] && !a.sigue)) return;
+        visto[a.de] = true;
+        var q = puntoFinal(f, a); if (q) fin[a.de] = q;
+    });
+    return fin;
+}
+function distSegmento(p, a, b) {
+    var dx = b.x - a.x, dy = b.y - a.y, l2 = dx * dx + dy * dy, t = l2 ? acotar(((p.x - a.x) * dx + (p.y - a.y) * dy) / l2, 0, 1) : 0;
+    return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+}
+
+// Centro de la marca (la T) de un bloqueo. Con defensor en la fase, la marca se apoya en el defensor del jugador que usa el
+// bloqueo (el atacante cuyo recorrido pasa más cerca). Sin defensor, va un poco más allá de donde queda el bloqueador, en un
+// hueco libre: sin pisar otras fichas (donde empiezan o donde acaban) ni otras marcas.
+function marcaBloqueo(f, a, s, fin, finales, marcas) {
+    var ataq = f.piezas.filter(function (p) { return p.tipo === 'A' && p.id !== a.de; });
+    if (a.aId) { var o = pieza(f, a.aId), u0 = o ? unit(o.x - s.x, o.y - s.y) : null; if (o) return { x: o.x - u0.x * (R + 8), y: o.y - u0.y * (R + 8) }; }
+    var defs = f.piezas.filter(function (p) { return p.tipo === 'D'; });
+    if (defs.length && ataq.length) {
+        var uso = null, dm = 1e9;
+        ataq.forEach(function (p) { var q = finales[p.id], d = q ? distSegmento(fin, p, q) : Math.hypot(p.x - fin.x, p.y - fin.y); if (d < dm) { dm = d; uso = p; } });
+        var dd = null, dn = 1e9;
+        defs.forEach(function (q) { var d = Math.hypot(q.x - uso.x, q.y - uso.y); if (d < dn) { dn = d; dd = q; } });
+        if (dd && dn < 80 && Math.hypot(dd.x - fin.x, dd.y - fin.y) < 110) {
+            var u = unit(dd.x - fin.x, dd.y - fin.y);
+            return { x: dd.x - u.x * (R + 8), y: dd.y - u.y * (R + 8) };
+        }
+    }
+    var d0 = Math.hypot(fin.x - s.x, fin.y - s.y) < 1 ? { x: 0, y: 1 } : unit(fin.x - s.x, fin.y - s.y);
+    var libre = function (t) {
+        if (marcas.some(function (m) { return Math.hypot(m.x - t.x, m.y - t.y) < 30; })) return false;
+        return !f.piezas.some(function (p) {
+            if (p.tipo === 'B' || p.id === a.de) return false;
+            var q = finales[p.id];
+            return Math.hypot(p.x - t.x, p.y - t.y) < R + 12 || (q && Math.hypot(q.x - t.x, q.y - t.y) < R + 12);
+        });
+    };
+    var primero = null;
+    var giros = [0, 25, -25, 50, -50, 80, -80, 115, -115, 150, -150, 180];
+    for (var g = 0; g < giros.length; g++) {
+        var an = giros[g] * Math.PI / 180, co = Math.cos(an), si = Math.sin(an);
+        var t = { x: acotar(fin.x + (d0.x * co - d0.y * si) * (R + 8), 0, W), y: acotar(fin.y + (d0.x * si + d0.y * co) * (R + 8), 0, H) };
+        if (!primero) primero = t;
+        if (libre(t)) return t;
+    }
+    return primero;
+}
+
 function dibujaFlechas(svg, f, c, interactivo, extra) {
     extra = extra || {};
+    f = { piezas: conDefensores(f.piezas), flechas: f.flechas };
     var balon = pieza(f, 'B');
+    var finales = finalesDe(f), marcas = [], centros = {};
+    f.flechas.forEach(function (a, i) {            // primero todas las marcas de bloqueo: cada una esquiva a las anteriores
+        if (a.tipo !== 'bloqueo') return;
+        var s = inicioDe(f, i), fin = puntoFinal(f, a);
+        if (!s || !fin) return;
+        centros[i] = marcaBloqueo(f, a, s, fin, finales, marcas); marcas.push(centros[i]);
+    });
     f.flechas.forEach(function (a, i) {
         var de = inicioDe(f, i), fin = puntoFinal(f, a), pDe = pieza(f, a.de);
         if (!de || !fin) return;
         var k = extra.prog ? extra.prog[i] : 1;
         if (k <= 0) return;
+        if (a.tipo === 'bloqueo') { dibujaBloqueo(svg, f, c, interactivo, extra, a, i, de, centros[i], k); return; }
         var dx = fin.x - de.x, dy = fin.y - de.y, L = Math.hypot(dx, dy);
         if (L < 4) return;
         // curva: el punto de control se separa del centro de la cuerda un `curva` por ciento de su largo, hacia la izquierda de la marcha
@@ -198,8 +277,7 @@ function dibujaFlechas(svg, f, c, interactivo, extra) {
         var salida = a.sigue ? 0 : (conBalon ? R + 24 : R + 3);
         if (!a.sigue && L < salida + 12) salida = R + 3;
         var x1 = de.x + u1x * salida, y1 = de.y + u1y * salida;
-        // el bloqueo se marca un poco más allá de donde queda el jugador, no bajo su ficha
-        var corta = a.aId ? R + 8 : (a.tipo === 'bloqueo' ? -(R + 8) : 0);
+        var corta = a.aId ? R + 8 : 0;
         var x2 = fin.x - ux * corta, y2 = fin.y - uy * corta;
         var ctl = cv ? [cx, cy] : [];
         var color = a.tipo === 'pase' ? c.pase : c.flecha;
@@ -226,17 +304,40 @@ function dibujaFlechas(svg, f, c, interactivo, extra) {
         el('path', funda, g);
         var attrs = {}; for (var w in comun) attrs[w] = comun[w];
         attrs.stroke = esSel ? c.selFlecha : color; attrs['stroke-width'] = (esSel ? 4 : 3) * escalaTrazo;
-        if (a.tipo !== 'bloqueo' && k >= 0.85 && !haySiguiente(f, i)) attrs['marker-end'] = 'url(#flecha-' + (esSel ? 'sel' : 'n') + ')';
+        if (k >= 0.85 && !haySiguiente(f, i)) attrs['marker-end'] = 'url(#flecha-' + (esSel ? 'sel' : 'n') + ')';
         el('path', attrs, g);
-        if (a.tipo === 'bloqueo' && k >= 0.85) {
-            barrasArriba.push({ de: a.de, cx: x2, cy: y2, x1: x2 - uy * 14 * escalaTrazo, y1: y2 + ux * 14 * escalaTrazo, x2: x2 + uy * 14 * escalaTrazo, y2: y2 - ux * 14 * escalaTrazo, stroke: esSel ? c.selFlecha : color, 'stroke-width': 4 * escalaTrazo, 'stroke-linecap': 'round', 'pointer-events': 'none', opacity: extra.dim ? '0.35' : '1' });
-            el('line', { x1: x2 - uy * 14 * escalaTrazo, y1: y2 + ux * 14 * escalaTrazo, x2: x2 + uy * 14 * escalaTrazo, y2: y2 - ux * 14 * escalaTrazo, stroke: esSel ? c.selFlecha : color, 'stroke-width': 4 * escalaTrazo, 'stroke-linecap': 'round' }, g);
-        }
     });
 }
 
+// Bloqueo: una línea recta que sale del borde de la ficha (de donde está ahora, no de donde empezó) y acaba en la T.
+function dibujaBloqueo(svg, f, c, interactivo, extra, a, i, ini, T, k) {
+    if (!T) return;
+    var act = extra.act ? pieza(extra.act, a.de) : null, s = act ? { x: act.x, y: act.y } : ini;
+    var esSel = interactivo && sel && sel.tipo === 'flecha' && sel.i === i, col = esSel ? c.selFlecha : c.flecha;
+    var dist = Math.hypot(T.x - s.x, T.y - s.y), u = unit(T.x - s.x, T.y - s.y);
+    var g = el('g', { 'data-flecha': i }, svg);
+    if (extra.dim) g.setAttribute('opacity', '0.35');
+    if (interactivo) {
+        g.setAttribute('role', 'button'); g.setAttribute('tabindex', '0'); g.style.cursor = 'pointer';
+        g.setAttribute('aria-label', 'Bloqueo de ' + nombrePieza(pieza(f, a.de)) + (a.aId ? '' : ' hacia ' + zona(T.x, T.y)));
+    }
+    var largo = dist - (R + 3);
+    if (largo > 4) {
+        var cola = Math.min(1, k / 0.85), x1 = s.x + u.x * (R + 3), y1 = s.y + u.y * (R + 3);
+        var d = 'M' + x1 + ' ' + y1 + ' L' + (x1 + u.x * largo * cola) + ' ' + (y1 + u.y * largo * cola);
+        if (interactivo) el('path', { d: d, stroke: 'transparent', 'stroke-width': 22, fill: 'none' }, g);
+        el('path', { d: d, fill: 'none', 'stroke-linecap': 'butt', stroke: c.fondo, 'stroke-width': 8 * escalaTrazo, opacity: '.9' }, g);
+        el('path', { d: d, fill: 'none', 'stroke-linecap': 'butt', stroke: col, 'stroke-width': (esSel ? 4 : 3) * escalaTrazo }, g);
+    }
+    if (k >= 0.85) {
+        var m = 14 * escalaTrazo;
+        barrasArriba.push({ x1: T.x - u.y * m, y1: T.y + u.x * m, x2: T.x + u.y * m, y2: T.y - u.x * m, stroke: col, 'stroke-width': 4 * escalaTrazo, 'stroke-linecap': 'round', 'pointer-events': 'none', opacity: extra.dim ? '0.35' : '1' });
+    }
+}
+
 function dibujaPieza(svg, p, c, interactivo) {
-    var g = el('g', { 'data-pieza': p.id, transform: 'translate(' + p.x + ' ' + p.y + ')' }, svg);
+    var g = el('g', p.auto ? { transform: 'translate(' + p.x + ' ' + p.y + ')', 'pointer-events': 'none' } : { 'data-pieza': p.id, transform: 'translate(' + p.x + ' ' + p.y + ')' }, svg);
+    if (p.auto) interactivo = false;
     var esSel = interactivo && sel && sel.tipo === 'pieza' && sel.id === p.id;
     if (interactivo) {
         g.setAttribute('role', 'button'); g.setAttribute('tabindex', '0'); g.style.cursor = herramienta === 'mover' ? 'grab' : 'crosshair';
@@ -269,7 +370,8 @@ function renderEn(svg, f, c, interactivo, sinFlechas, capas) {
     el('rect', { x: -10, y: -10, width: W + 20, height: H + 20, fill: c.fondo }, svg);
     dibujaPista(svg, c);
     barrasArriba = [];
-    if (capas) capas.forEach(function (l) { dibujaFlechas(svg, l.f, c, false, { prog: l.prog, dim: l.dim }); });
+    f = { piezas: conDefensores(f.piezas), flechas: f.flechas };      // con «Mostrar defensores», los de la fase si no trae propios
+    if (capas) capas.forEach(function (l) { dibujaFlechas(svg, l.f, c, false, { prog: l.prog, dim: l.dim, act: l.act }); });
     else if (!sinFlechas) dibujaFlechas(svg, f, c, interactivo);
     f.piezas.forEach(function (p) { if (p.tipo === 'C') dibujaPieza(svg, p, c, interactivo); });
     f.piezas.forEach(function (p) { if (p.tipo === 'D') dibujaPieza(svg, p, c, interactivo); });
@@ -698,7 +800,7 @@ function pintaReproduccion(T) {
     var desde = 0;                       // las flechas dejadas solo valen mientras la formación es la misma
     for (var j0 = 0; j0 < k; j0++) if (L.fases[j0].salto) desde = j0 + 1;
     if (reproduccion.mantener) for (var j = desde; j < k; j++) capas.push({ f: L.fases[j].f, prog: null, dim: true });
-    capas.push({ f: F.f, prog: F.flechas.reduce(function (acc, m) { acc[m.i] = acotar((T - m.t0) / (m.t1 - m.t0), 0, 1); return acc; }, []), dim: false });
+    capas.push({ f: F.f, prog: F.flechas.reduce(function (acc, m) { acc[m.i] = acotar((T - m.t0) / (m.t1 - m.t0), 0, 1); return acc; }, []), dim: false, act: mezcla });
     renderEn($('pista'), mezcla, CLARO, false, false, capas);
     var op = 1, mitad = TV.TRANS / 2;       // fundido entre formaciones: la vieja se apaga y la nueva aparece
     if (F.salto && T > F.P1) op = acotar(1 - (T - F.P1) / mitad, 0, 1);
@@ -952,6 +1054,11 @@ function iniciar() {
         pintaReproduccion($('rep-barra').value / 1000 * reproduccion.L.total); paintaPlay();
     });
     $('rep-mantener').addEventListener('change', function (e) { if (reproduccion) { reproduccion.mantener = e.target.checked; reproduccion.fase = -1; pintaReproduccion(reproduccion.T); } });
+    $('mostrar-def').addEventListener('change', function (e) {
+        mostrarDef = e.target.checked;
+        if (reproduccion) { reproduccion.fase = -1; pintaReproduccion(reproduccion.T); } else pintar();
+        anuncia(mostrarDef ? 'Defensores automáticos mostrados.' : 'Defensores automáticos ocultos.');
+    });
     $('rep-vel').addEventListener('change', function (e) { if (reproduccion) reproduccion.vel = +e.target.value; });
     $('btn-limpiar').addEventListener('click', function () {
         if (!fase().piezas.length) return;
