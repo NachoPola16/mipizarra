@@ -17,9 +17,9 @@ RADIO_JUGADOR  = 22
 CATEGORIAS_MINI = ["U8", "U10", "U12", "Prebenjamín", "Benjamín", "Alevín"]
 
 ARROW_DEFS = """<defs>
-<marker id="arr"  markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+<marker id="arr"  markerWidth="8" markerHeight="8" refX="5.5" refY="3" orient="auto">
   <path d="M0,0 L0,6 L7,3 z" fill="#2d3748"/></marker>
-<marker id="arrs" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto">
+<marker id="arrs" markerWidth="8" markerHeight="8" refX="5.5" refY="3" orient="auto">
   <path d="M0,0 L0,6 L7,3 z" fill="#15803d"/></marker>
 </defs>"""
 

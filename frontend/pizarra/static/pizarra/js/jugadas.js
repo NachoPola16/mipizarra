@@ -116,7 +116,7 @@ function dibujaPista(svg, c) {
 }
 
 function marcador(svg, id, color, bloqueo) {
-    var m = el('marker', { id: id, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, svg);
+    var m = el('marker', { id: id, viewBox: '0 0 10 10', refX: 6.5, refY: 5, markerWidth: 7, markerHeight: 7, orient: 'auto-start-reverse' }, svg);
     if (!bloqueo) el('path', { d: 'M1 1 L9 5 L1 9 z', fill: color }, m);
 }
 
@@ -172,7 +172,7 @@ function dibujaFlechas(svg, f, c, interactivo, extra) {
         var salida = conBalon ? R + 24 : R + 3;
         if (L < salida + 12) salida = R + 3;
         var x1 = de.x + u1x * salida, y1 = de.y + u1y * salida;
-        var corta = a.aId ? R + 5 : 0;
+        var corta = a.aId ? R + 8 : 0;
         var x2 = fin.x - ux * corta, y2 = fin.y - uy * corta;
         var ctl = cv ? [cx, cy] : [];
         var color = a.tipo === 'pase' ? c.pase : c.flecha;
