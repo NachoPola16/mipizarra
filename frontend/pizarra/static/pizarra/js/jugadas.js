@@ -701,7 +701,8 @@ function construyeLinea() {
     fases.forEach(function (F, i) { if (i > 0) { var previa = fases[i - 1]; F.P0 = previa.P2; } });
     fases.forEach(function (F, i) { F.salto = i < fases.length - 1 && hayCorte(F.f, fases[i + 1].f); });
     fases.forEach(function (F, i) { if (i > 0 && fases[i - 1].salto) F.P0 = fases[i - 1].P1 + TV.TRANS / 2; });
-    return { fases: fases, total: t + TV.TIRO + TV.PUNTOS };       // t = fin de la última fase; después, siempre, el tiro a canasta
+    // t = fin de la última fase; después, siempre, el tiro a canasta (salvo en las jugadas de defensa: enseñan rotaciones y no acaban en tiro)
+    return { fases: fases, total: estado.defensa ? t : t + TV.TIRO + TV.PUNTOS };
 }
 
 // Si al acabar la fase las piezas están lejos de donde empieza la siguiente (las jugadas de la biblioteca vienen de diagramas
@@ -779,7 +780,7 @@ function posBalon(L, k, T) {
     F.flechas.forEach(function (m) { if (m.a.tipo === 'bote' && m.a.de === ahora && T >= m.t0 && T <= m.t1) rebote = Math.abs(Math.sin((T - m.t0) * 11)) * 9; });
     var pos;
     if (ahora) { var q = posPieza(L, k, ahora, T); pos = { x: q.x + OFS, y: q.y + OFS - rebote }; } else pos = libre;
-    if (k === L.fases.length - 1 && T > F.P1) {                    // final: tiro a canasta desde donde está el balón
+    if (!estado.defensa && k === L.fases.length - 1 && T > F.P1) {   // final: tiro a canasta desde donde está el balón
         var e3 = suave(acotar((T - F.P1) / TV.TIRO, 0, 1));
         return { x: pos.x + (ARO.x - pos.x) * e3, y: pos.y + (ARO.y + 6 - pos.y) * e3 - Math.sin(Math.PI * e3) * 70 };
     }
@@ -831,7 +832,7 @@ function pintaReproduccion(T, destino, tema) {
     if (F.salto && T > F.P1) op = acotar(1 - (T - F.P1) / mitad, 0, 1);
     else if (k > 0 && L.fases[k - 1].salto && T < F.P0 + mitad) op = acotar((T - F.P0) / mitad, 0, 1);
     if (op < 1) Array.prototype.forEach.call(lienzo.querySelectorAll('[data-pieza]'), function (g) { g.setAttribute('opacity', String(op)); });
-    var ult = L.fases.length - 1, tirando = k === ult && T > F.P1;
+    var ult = L.fases.length - 1, tirando = !estado.defensa && k === ult && T > F.P1;
     if (tirando) {                                                  // balón a canasta y marcador
         var fi = reproduccion.final || (reproduccion.final = finalista(L));
         var e4 = (T - F.P1) / TV.TIRO;
@@ -953,6 +954,7 @@ function validar(j) { // sanea cualquier JSON de fuera: solo se aceptan tipos y 
     if (!j || typeof j !== 'object' || !Array.isArray(j.fases) || !j.fases.length || j.fases.length > MAX_FASES) return null;
     var num = function (v, a, b) { return typeof v === 'number' && isFinite(v) ? acotar(v, a, b) : null; };
     var salida = { nombre: typeof j.nombre === 'string' ? j.nombre.slice(0, 80) : '', etiquetas: j.etiquetas === 'letra' ? 'letra' : 'num', fases: [], actual: 0 };
+    if (j.defensa === true) salida.defensa = true;      // jugada de defensa: la reproducción no acaba en tiro
     for (var i = 0; i < j.fases.length; i++) {
         var fs = j.fases[i], nf = faseVacia();
         if (!fs || !Array.isArray(fs.piezas) || fs.piezas.length > 30) return null;
