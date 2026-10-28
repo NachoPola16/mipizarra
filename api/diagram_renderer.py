@@ -8,6 +8,12 @@ from solapes import separar_puntos
 
 logger = logging.getLogger(__name__)
 
+# Paleta compartida con el editor de jugadas (tema de impresión de jugadas.js): mismas fichas, flechas y balón.
+TINTA          = "#1b1b1f"
+ATAQUE         = "#e8752c"
+ATAQUE_TXT     = "#15120e"
+BALON          = "#ffd9a8"
+
 ESCALA         = 45
 ANCHO_M        = 15       # court width in meters
 MEDIO_M        = 14       # half-court length in meters
@@ -18,9 +24,9 @@ CATEGORIAS_MINI = ["U8", "U10", "U12", "Prebenjamín", "Benjamín", "Alevín"]
 
 ARROW_DEFS = """<defs>
 <marker id="arr"  markerWidth="8" markerHeight="8" refX="5.5" refY="3" orient="auto">
-  <path d="M0,0 L0,6 L7,3 z" fill="#2d3748"/></marker>
+  <path d="M0,0 L0,6 L7,3 z" fill="#1b1b1f"/></marker>
 <marker id="arrs" markerWidth="8" markerHeight="8" refX="5.5" refY="3" orient="auto">
-  <path d="M0,0 L0,6 L7,3 z" fill="#15803d"/></marker>
+  <path d="M0,0 L0,6 L7,3 z" fill="#1b1b1f"/></marker>
 </defs>"""
 
 
@@ -118,34 +124,34 @@ def _half_court_elements(svg: list, cx: float, base_y: float, pad_x: float,
     # Zona pintada
     if flip:
         svg.append(f'<rect x="{zona_x:.1f}" y="{zona_y:.1f}" width="{zona_w:.1f}" '
-                   f'height="{zona_h:.1f}" fill="none" stroke="#2d3748" stroke-width="2.5"/>')
+                   f'height="{zona_h:.1f}" fill="none" stroke="#666666" stroke-width="2.5"/>')
     else:
         svg.append(f'<rect x="{zona_x:.1f}" y="{zona_y:.1f}" width="{zona_w:.1f}" '
-                   f'height="{zona_h:.1f}" fill="none" stroke="#2d3748" stroke-width="2.5"/>')
+                   f'height="{zona_h:.1f}" fill="none" stroke="#666666" stroke-width="2.5"/>')
 
     # Línea TL
     svg.append(f'<line x1="{zona_x:.1f}" y1="{tl_y:.1f}" '
-               f'x2="{zona_x+zona_w:.1f}" y2="{tl_y:.1f}" stroke="#2d3748" stroke-width="2.5"/>')
+               f'x2="{zona_x+zona_w:.1f}" y2="{tl_y:.1f}" stroke="#666666" stroke-width="2.5"/>')
 
     # Semicírculos TL
     r_tl = 1.8 * ESCALA
     sw0, sw1 = ("0 0 0", "0 0 1") if not flip else ("0 0 1", "0 0 0")
     svg.append(f'<path d="M {zona_x:.1f},{tl_y:.1f} A {r_tl:.1f},{r_tl:.1f} {sw0} {zona_x+zona_w:.1f},{tl_y:.1f}" '
-               f'fill="none" stroke="#2d3748" stroke-width="2.5"/>')
+               f'fill="none" stroke="#666666" stroke-width="2.5"/>')
     svg.append(f'<path d="M {zona_x:.1f},{tl_y:.1f} A {r_tl:.1f},{r_tl:.1f} {sw1} {zona_x+zona_w:.1f},{tl_y:.1f}" '
-               f'fill="none" stroke="#2d3748" stroke-width="2" stroke-dasharray="6,4"/>')
+               f'fill="none" stroke="#666666" stroke-width="2" stroke-dasharray="6,4"/>')
 
     # Canasta
     canasta_y = base_y - s * 1.575 * ESCALA
     # s es la orientación (+1/-1): con -1 el tablero va por debajo de la línea de fondo, y una altura negativa no es válida en SVG
-    svg.append(f'<rect x="{cx-40:.1f}" y="{min(base_y, base_y - s*6):.1f}" width="80" height="{abs(s*6):.1f}" fill="#1a202c"/>')
+    svg.append(f'<rect x="{cx-40:.1f}" y="{min(base_y, base_y - s*6):.1f}" width="80" height="{abs(s*6):.1f}" fill="{TINTA}"/>')
     svg.append(f'<circle cx="{cx:.1f}" cy="{canasta_y:.1f}" r="13" fill="none" stroke="#e53e3e" stroke-width="3.5"/>')
 
     # Tacos rebote — simétricos: ambos pegados al exterior de la línea del área
     for d in [0.85, 1.70, 2.55]:
         ty = base_y - s * d * ESCALA
-        svg.append(f'<rect x="{zona_x-5:.1f}" y="{ty-12:.1f}" width="5" height="24" fill="#2d3748"/>')
-        svg.append(f'<rect x="{zona_x+zona_w:.1f}" y="{ty-12:.1f}" width="5" height="24" fill="#2d3748"/>')
+        svg.append(f'<rect x="{zona_x-5:.1f}" y="{ty-12:.1f}" width="5" height="24" fill="#666666"/>')
+        svg.append(f'<rect x="{zona_x+zona_w:.1f}" y="{ty-12:.1f}" width="5" height="24" fill="#666666"/>')
 
     # Triple FIBA (siempre, todas las categorías)
     r3  = 6.75 * ESCALA
@@ -157,9 +163,9 @@ def _half_court_elements(svg: list, cx: float, base_y: float, pad_x: float,
     ey  = canasta_y - s * dy
     arc_sw = "0 0 1" if not flip else "0 0 0"
     svg.append(f'<path d="M {exl:.1f},{ey:.1f} A {r3:.1f},{r3:.1f} {arc_sw} {exr:.1f},{ey:.1f}" '
-               f'fill="none" stroke="#2d3748" stroke-width="2.5"/>')
-    svg.append(f'<line x1="{exl:.1f}" y1="{ey:.1f}" x2="{exl:.1f}" y2="{base_y:.1f}" stroke="#2d3748" stroke-width="2.5"/>')
-    svg.append(f'<line x1="{exr:.1f}" y1="{ey:.1f}" x2="{exr:.1f}" y2="{base_y:.1f}" stroke="#2d3748" stroke-width="2.5"/>')
+               f'fill="none" stroke="#666666" stroke-width="2.5"/>')
+    svg.append(f'<line x1="{exl:.1f}" y1="{ey:.1f}" x2="{exl:.1f}" y2="{base_y:.1f}" stroke="#666666" stroke-width="2.5"/>')
+    svg.append(f'<line x1="{exr:.1f}" y1="{ey:.1f}" x2="{exr:.1f}" y2="{base_y:.1f}" stroke="#666666" stroke-width="2.5"/>')
     logger.info("  → Triple FIBA 6.75m")
 
     # Triple Minibasket (solo Alevín e inferiores: U8, U10, U12)
@@ -170,11 +176,11 @@ def _half_court_elements(svg: list, cx: float, base_y: float, pad_x: float,
         ml_x  = cx - hw
         mr_x  = cx + hw
         svg.append(f'<line x1="{ml_x:.0f}" y1="{base_y:.0f}" x2="{ml_x:.0f}" y2="{tl_y:.0f}" '
-                   f'stroke="#2d3748" stroke-width="2.5"/>')
+                   f'stroke="#666666" stroke-width="2.5"/>')
         svg.append(f'<line x1="{mr_x:.0f}" y1="{base_y:.0f}" x2="{mr_x:.0f}" y2="{tl_y:.0f}" '
-                   f'stroke="#2d3748" stroke-width="2.5"/>')
+                   f'stroke="#666666" stroke-width="2.5"/>')
         svg.append(f'<line x1="{ml_x:.0f}" y1="{tl_y:.0f}" x2="{mr_x:.0f}" y2="{tl_y:.0f}" '
-                   f'stroke="#2d3748" stroke-width="2.5"/>')
+                   f'stroke="#666666" stroke-width="2.5"/>')
         logger.info("  → Triple MINIBASKET (rectángulo, 4m cada lado hasta línea de tiro libre)")
 
 
@@ -194,6 +200,12 @@ def _posiciones_dibujo(data: dict, tipo_pista: str) -> tuple[list, list, list]:
     return puntos[:n_a], puntos[n_a:n_a + n_d], puntos[n_a + n_d:]
 
 
+def _etiqueta(jid, defensor: bool) -> str:
+    """Mismo rótulo que el editor de jugadas: el atacante, su número; el defensor, X + número."""
+    num = "".join(ch for ch in str(jid) if ch.isdigit()) or str(jid)
+    return "X" + num if defensor else num
+
+
 def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
     tipo_pista = data.get("tipo", "media_pista")
     pos_ataque, pos_defensa, pos_conos = _posiciones_dibujo(data, tipo_pista)
@@ -203,28 +215,31 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
         jid = j["id"]
         posiciones[jid] = p
         x, y = to_px(*p)
-        svg.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{RADIO_JUGADOR}" fill="#ffffff" stroke="#1a202c" stroke-width="3"/>')
-        svg.append(f'<text x="{x:.1f}" y="{y+7:.1f}" text-anchor="middle" font-size="15" font-weight="bold" fill="#1a202c">{html.escape(str(jid))}</text>')
+        svg.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{RADIO_JUGADOR}" fill="{ATAQUE}" stroke="{ATAQUE_TXT}" stroke-width="2"/>')
+        svg.append(f'<text x="{x:.1f}" y="{y+7:.1f}" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="19" font-weight="bold" fill="{ATAQUE_TXT}">{html.escape(_etiqueta(jid, False))}</text>')
 
     for j, p in zip(data.get("jugadores_defensa", []), pos_defensa):
         jid = j["id"]
         posiciones[jid] = p
         x, y = to_px(*p)
-        t = RADIO_JUGADOR * 1.7
-        svg.append(f'<rect x="{x-t/2:.1f}" y="{y-t/2:.1f}" width="{t:.1f}" height="{t:.1f}" '
-                   f'fill="#1a202c" stroke="#ffffff" stroke-width="3" rx="5"/>')
-        svg.append(f'<text x="{x:.1f}" y="{y+7:.1f}" text-anchor="middle" font-size="15" font-weight="bold" fill="#ffffff">{html.escape(str(jid))}</text>')
+        svg.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{RADIO_JUGADOR}" fill="#ffffff" stroke="{TINTA}" stroke-width="3"/>')
+        svg.append(f'<text x="{x:.1f}" y="{y+6.5:.1f}" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="bold" fill="{TINTA}">{html.escape(_etiqueta(jid, True))}</text>')
 
     if "balon_inicio" in data:
         portador = data["balon_inicio"].get("portador")
         if portador in posiciones:
             bx, by = to_px(*posiciones[portador])
-            svg.append(f'<circle cx="{bx+28:.1f}" cy="{by-28:.1f}" r="11" fill="#ff8c00" stroke="#1a202c" stroke-width="2"/>')
+            bx, by = bx + 28, by - 28
+            svg.append(f'<circle cx="{bx:.1f}" cy="{by:.1f}" r="13" fill="{BALON}" stroke="{TINTA}" stroke-width="2"/>')
+            svg.append(f'<path d="M{bx-13:.1f} {by:.1f} H{bx+13:.1f} M{bx:.1f} {by-13:.1f} V{by+13:.1f} '
+                       f'M{bx-9.2:.1f} {by-9.2:.1f} Q{bx-4.3:.1f} {by:.1f} {bx-9.2:.1f} {by+9.2:.1f} '
+                       f'M{bx+9.2:.1f} {by-9.2:.1f} Q{bx+4.3:.1f} {by:.1f} {bx+9.2:.1f} {by+9.2:.1f}" '
+                       f'stroke="{TINTA}" stroke-width="1.3" fill="none" stroke-linecap="round"/>')
 
     for p in pos_conos:
         cx, cy = to_px(*p)
         svg.append(f'<polygon points="{cx:.0f},{cy-16:.0f} {cx-10:.0f},{cy+10:.0f} {cx+10:.0f},{cy+10:.0f}" '
-                   f'fill="#fbbf24" stroke="#1a202c" stroke-width="1.5"/>')
+                   f'fill="{ATAQUE}" stroke="{ATAQUE_TXT}" stroke-width="2"/>')
 
     def shorten(x1, y1, x2, y2, d):
         dx, dy = x2-x1, y2-y1
@@ -266,17 +281,17 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
                 # funda blanca debajo: la onda no se mezcla con las líneas de la pista que cruza
                 svg.append(f'<path d="{path_d}" fill="none" stroke="#ffffff" stroke-width="8" opacity="0.9" '
                            f'stroke-linecap="round" stroke-linejoin="round"/>')
-                svg.append(f'<path d="{path_d}" fill="none" stroke="#334155" stroke-width="3" '
+                svg.append(f'<path d="{path_d}" fill="none" stroke="#1b1b1f" stroke-width="3" '
                            f'stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arr)"/>')
             else:  # desplazamiento — solid line
                 if curvature is not None:
                     cx_ctrl, cy_ctrl = _bezier_ctrl_pt(a, b, c, d2, curvature)
                     path_d = f"M {a:.1f},{b:.1f} Q {cx_ctrl:.1f},{cy_ctrl:.1f} {c:.1f},{d2:.1f}"
-                    svg.append(f'<path d="{path_d}" fill="none" stroke="#334155" stroke-width="3" '
+                    svg.append(f'<path d="{path_d}" fill="none" stroke="#1b1b1f" stroke-width="3" '
                                f'marker-end="url(#arr)"/>')
                 else:
                     svg.append(f'<line x1="{a:.1f}" y1="{b:.1f}" x2="{c:.1f}" y2="{d2:.1f}" '
-                               f'stroke="#334155" stroke-width="3" marker-end="url(#arr)"/>')
+                               f'stroke="#1b1b1f" stroke-width="3" marker-end="url(#arr)"/>')
             posiciones[de] = p
 
         elif tipo == "pase":
@@ -287,11 +302,11 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
                 if curvature is not None:
                     cx_ctrl, cy_ctrl = _bezier_ctrl_pt(a, b, c, d2, curvature)
                     path_d = f"M {a:.1f},{b:.1f} Q {cx_ctrl:.1f},{cy_ctrl:.1f} {c:.1f},{d2:.1f}"
-                    svg.append(f'<path d="{path_d}" fill="none" stroke="#334155" stroke-width="3" '
-                               f'stroke-dasharray="8,4" marker-end="url(#arr)"/>')
+                    svg.append(f'<path d="{path_d}" fill="none" stroke="#1b1b1f" stroke-width="3" '
+                               f'stroke-dasharray="9,7" marker-end="url(#arr)"/>')
                 else:
                     svg.append(f'<line x1="{a:.1f}" y1="{b:.1f}" x2="{c:.1f}" y2="{d2:.1f}" '
-                               f'stroke="#334155" stroke-width="3" stroke-dasharray="8,4" '
+                               f'stroke="#1b1b1f" stroke-width="3" stroke-dasharray="9,7" '
                                f'marker-end="url(#arr)"/>')
 
         elif tipo == "tiro":
@@ -306,11 +321,11 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
             if curvature is not None:
                 cx_ctrl, cy_ctrl = _bezier_ctrl_pt(a, b, c, d2, curvature)
                 path_d = f"M {a:.1f},{b:.1f} Q {cx_ctrl:.1f},{cy_ctrl:.1f} {c:.1f},{d2:.1f}"
-                svg.append(f'<path d="{path_d}" fill="none" stroke="#15803d" stroke-width="3.5" '
+                svg.append(f'<path d="{path_d}" fill="none" stroke="#1b1b1f" stroke-width="3.5" '
                            f'marker-end="url(#arrs)"/>')
             else:
                 svg.append(f'<line x1="{a:.1f}" y1="{b:.1f}" x2="{c:.1f}" y2="{d2:.1f}" '
-                           f'stroke="#15803d" stroke-width="3.5" marker-end="url(#arrs)"/>')
+                           f'stroke="#1b1b1f" stroke-width="3.5" marker-end="url(#arrs)"/>')
 
         elif tipo == "bloqueo" and "a_pos" in mov:
             p = posicion_de(mov["a_pos"], tipo_pista)
@@ -318,21 +333,18 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
             # Línea de recorrido del bloqueador: acortada para que termine en el borde
             # del símbolo del defensor, no en su centro
             a, b, c, d2 = shorten(x1, y1, x2, y2, RADIO_JUGADOR)
-            if curvature is not None:
-                cx_ctrl, cy_ctrl = _bezier_ctrl_pt(a, b, c, d2, curvature)
-                path_d = f"M {a:.1f},{b:.1f} Q {cx_ctrl:.1f},{cy_ctrl:.1f} {c:.1f},{d2:.1f}"
-                svg.append(f'<path d="{path_d}" fill="none" stroke="#dc2626" stroke-width="2.5"/>')
-            else:
-                svg.append(f'<line x1="{a:.1f}" y1="{b:.1f}" x2="{c:.1f}" y2="{d2:.1f}" '
-                           f'stroke="#dc2626" stroke-width="2.5"/>')
-            # Barra perpendicular en el destino (la pantalla física)
+            # Línea recta del borde de la ficha a la marca (la T); nada por detrás de la ficha
             dx, dy = x2 - x1, y2 - y1
             L = math.sqrt(dx**2 + dy**2) or 1.0
+            if L > RADIO_JUGADOR + 6:
+                sx, sy = x1 + dx / L * RADIO_JUGADOR, y1 + dy / L * RADIO_JUGADOR
+                svg.append(f'<line class="bloqueo" x1="{sx:.1f}" y1="{sy:.1f}" x2="{x2:.1f}" y2="{y2:.1f}" '
+                           f'stroke="{TINTA}" stroke-width="3"/>')
             px_u, py_u = -dy / L, dx / L   # perpendicular al movimiento
-            bar = 16                        # semilongitud ~0.7 m a esta escala
-            svg.append(f'<line x1="{x2 - bar*px_u:.1f}" y1="{y2 - bar*py_u:.1f}" '
+            bar = 20                        # semilongitud de la T
+            svg.append(f'<line class="bloqueo" x1="{x2 - bar*px_u:.1f}" y1="{y2 - bar*py_u:.1f}" '
                        f'x2="{x2 + bar*px_u:.1f}" y2="{y2 + bar*py_u:.1f}" '
-                       f'stroke="#dc2626" stroke-width="7"/>')
+                       f'stroke="{TINTA}" stroke-width="5" stroke-linecap="round"/>')
             # El bloqueador queda en a_pos para movimientos posteriores (rol a canasta, etc.)
             posiciones[de] = p
 
@@ -378,11 +390,11 @@ def _render_media_pista(data: dict, edad: str) -> str:
     svg = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SVG_W} {SVG_H}">',
         ARROW_DEFS,
-        f'<rect width="{SVG_W}" height="{SVG_H}" fill="#faf8f0"/>',
-        f'<rect x="{pad}" y="{pad}" width="{W}" height="{H}" fill="none" stroke="#2d3748" stroke-width="3.5"/>',
+        f'<rect width="{SVG_W}" height="{SVG_H}" fill="#ffffff"/>',
+        f'<rect x="{pad}" y="{pad}" width="{W}" height="{H}" fill="none" stroke="#666666" stroke-width="3.5"/>',
         # Solo el semiciclo inferior del centro (la mitad que queda dentro de la media pista)
         f'<path d="M {cx-r_centro:.1f},{pad} A {r_centro:.1f},{r_centro:.1f} 0 0 0 {cx+r_centro:.1f},{pad}" '
-        f'fill="none" stroke="#2d3748" stroke-width="2.5"/>',
+        f'fill="none" stroke="#666666" stroke-width="2.5"/>',
     ]
 
     _half_court_elements(svg, cx, baseline_y, pad, W, edad, flip=False)
@@ -410,13 +422,13 @@ def _render_pista_completa(data: dict, edad: str) -> str:
     svg = [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {SVG_W} {SVG_H}">',
         ARROW_DEFS,
-        f'<rect width="{SVG_W}" height="{SVG_H}" fill="#faf8f0"/>',
+        f'<rect width="{SVG_W}" height="{SVG_H}" fill="#ffffff"/>',
         # Perímetro
-        f'<rect x="{PAD}" y="{PAD}" width="{W}" height="{H}" fill="none" stroke="#2d3748" stroke-width="3.5"/>',
+        f'<rect x="{PAD}" y="{PAD}" width="{W}" height="{H}" fill="none" stroke="#666666" stroke-width="3.5"/>',
         # Línea de medio campo
-        f'<line x1="{PAD}" y1="{mid_y}" x2="{PAD+W}" y2="{mid_y}" stroke="#2d3748" stroke-width="3"/>',
+        f'<line x1="{PAD}" y1="{mid_y}" x2="{PAD+W}" y2="{mid_y}" stroke="#666666" stroke-width="3"/>',
         # Círculo central
-        f'<circle cx="{cx:.1f}" cy="{mid_y}" r="{1.8*ESCALA:.1f}" fill="none" stroke="#2d3748" stroke-width="2.5"/>',
+        f'<circle cx="{cx:.1f}" cy="{mid_y}" r="{1.8*ESCALA:.1f}" fill="none" stroke="#666666" stroke-width="2.5"/>',
     ]
 
     # Attack half (bottom, y ≈ 0–50%)

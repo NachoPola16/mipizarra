@@ -115,10 +115,9 @@ def _centros(svg: str, tipo: str) -> dict[str, list[tuple[float, float]]]:
         return (px - pad) / ancho * 100, (alto_svg - pad - py) / alto * 100
 
     ataque = [a_unidades(float(c.get("cx")), float(c.get("cy")))
-              for c in raiz.iter(f"{SVG_NS}circle") if c.get("fill") == "#ffffff"]
-    defensa = [a_unidades(float(r.get("x")) + float(r.get("width")) / 2,
-                          float(r.get("y")) + float(r.get("height")) / 2)
-               for r in raiz.iter(f"{SVG_NS}rect") if r.get("fill") == "#1a202c" and r.get("rx")]
+              for c in raiz.iter(f"{SVG_NS}circle") if c.get("fill") == "#e8752c" and c.get("r") == "22"]
+    defensa = [a_unidades(float(c.get("cx")), float(c.get("cy")))
+               for c in raiz.iter(f"{SVG_NS}circle") if c.get("fill") == "#ffffff" and c.get("r") == "22"]
     conos = []
     for p in raiz.iter(f"{SVG_NS}polygon"):
         (x0, y0), *_ = [tuple(map(float, v.split(","))) for v in p.get("points").split()]

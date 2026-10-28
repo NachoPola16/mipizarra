@@ -65,8 +65,8 @@ def test_plantilla_renderiza_svg_bien_formado(nombre, n):
     d = generar_plantilla(nombre, n)
     raiz = ET.fromstring(render_diagram(d, edad="U12"))
     assert raiz.tag == f"{SVG_NS}svg"
-    circulos = [c for c in raiz.iter(f"{SVG_NS}circle") if c.get("fill") == "#ffffff"]
-    defensores = [r for r in raiz.iter(f"{SVG_NS}rect") if r.get("fill") == "#1a202c" and r.get("rx")]
+    circulos = [c for c in raiz.iter(f"{SVG_NS}circle") if c.get("fill") == "#e8752c" and c.get("r") == "22"]
+    defensores = [c for c in raiz.iter(f"{SVG_NS}circle") if c.get("fill") == "#ffffff" and c.get("r") == "22"]
     assert len(circulos) == len(d["jugadores_ataque"])
     assert len(defensores) == len(d["jugadores_defensa"])
     assert len(list(raiz.iter(f"{SVG_NS}polygon"))) == len(d["conos"])

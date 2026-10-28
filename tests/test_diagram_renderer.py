@@ -40,9 +40,9 @@ def test_render_biblioteca_svg_bien_formado(ej, edad):
         assert set(d) == {"titulo", "svg"}
         raiz = _parsear_svg(d["svg"])
         diagrama = ej["diagramas"][i] if "diagramas" in ej else ej["diagrama"]
-        # Un círculo blanco por atacante y un rect negro por defensor.
-        circulos = [c for c in raiz.iter(f"{SVG_NS}circle") if c.get("fill") == "#ffffff"]
-        defensores = [r for r in raiz.iter(f"{SVG_NS}rect") if r.get("fill") == "#1a202c" and r.get("rx")]
+        # Un círculo naranja por atacante y uno blanco con borde de tinta por defensor.
+        circulos = [c for c in raiz.iter(f"{SVG_NS}circle") if c.get("fill") == "#e8752c" and c.get("r") == "22"]
+        defensores = [c for c in raiz.iter(f"{SVG_NS}circle") if c.get("fill") == "#ffffff" and c.get("r") == "22"]
         assert len(circulos) == len(diagrama.get("jugadores_ataque", []))
         assert len(defensores) == len(diagrama.get("jugadores_defensa", []))
 
@@ -80,11 +80,9 @@ DIAGRAMA_COMPLETO = {
 def test_render_todos_los_tipos_de_movimiento(tipo, edad):
     svg = render_diagram({**DIAGRAMA_COMPLETO, "tipo": tipo}, edad=edad)
     raiz = _parsear_svg(svg)
-    # Bloqueo: línea roja fina + barra gruesa.
-    rojas = [l for l in raiz.iter(f"{SVG_NS}line") if l.get("stroke") == "#dc2626"]
-    rojas += [p for p in raiz.iter(f"{SVG_NS}path") if p.get("stroke") == "#dc2626"]
-    assert len(rojas) == 2
-    # Tiro: flecha verde.
+    # Bloqueo: línea fina + barra gruesa (la T), en la tinta de las demás flechas.
+    assert len([l for l in raiz.iter(f"{SVG_NS}line") if l.get("class") == "bloqueo"]) == 2
+    # Tiro: flecha con su punta propia.
     assert any(e.get("marker-end") == "url(#arrs)" for e in raiz.iter())
     # Cono.
     assert len(list(raiz.iter(f"{SVG_NS}polygon"))) == 1
