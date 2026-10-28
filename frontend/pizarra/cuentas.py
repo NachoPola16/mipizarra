@@ -94,7 +94,9 @@ def biblioteca_guardar(request, jid):
 
 
 def _clave_intentos(request):
-    return 'login-fallos:' + request.META.get('REMOTE_ADDR', '?')
+    # Detrás de Cloudflare y del proxy, REMOTE_ADDR es siempre el del proxy: se usa la IP real del visitante si Cloudflare la manda.
+    ip = request.META.get('HTTP_CF_CONNECTING_IP') or request.META.get('REMOTE_ADDR', '?')
+    return 'login-fallos:' + ip[:64]
 
 
 class Entrar(vistas_auth.LoginView):

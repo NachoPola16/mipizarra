@@ -133,7 +133,7 @@ def parsear_calentamiento_y_vuelta(texto: str) -> list:
 # que pase por el proxy (NPM lo añade en la config Advanced del proxy host).
 # Si no se setea, el middleware no se activa → no rompe desarrollo local.
 INTERNAL_SECRET = os.environ.get("INTERNAL_SECRET", "")
-PUBLIC_PATHS    = {"/", "/docs", "/openapi.json", "/redoc"}
+PUBLIC_PATHS    = {"/"}      # con secreto, la documentación de la API (/docs, /openapi.json) tampoco es pública
 
 
 class InternalSecretMiddleware(BaseHTTPMiddleware):
