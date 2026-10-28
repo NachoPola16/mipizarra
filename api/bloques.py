@@ -171,7 +171,8 @@ def nombre_de_cabecera(bloque: str) -> str:
     """Nombre que el modelo puso en la cabecera 'Ejercicio N: nombre' (sin comillas). Cadena vacía
     si no puso ninguno o si copió la pista de la plantilla, que va entre paréntesis."""
     primera = bloque.split("\n", 1)[0]
-    nombre = primera.split(":", 1)[1].strip().strip('"') if ":" in primera else ""
+    nombre = primera.split(":", 1)[1].strip() if ":" in primera else ""
+    nombre = nombre.strip(" *_\"'«»“”").strip()     # el modelo a veces pone **"Título"** o «Título»
     return "" if nombre.startswith("(") else nombre
 
 

@@ -606,7 +606,7 @@ def test_los_ejercicios_propuestos_a_partir_del_cuarto_no_se_recortan(sesion_fal
     r = sesion.generar_sesion("U16", 90, "bote")
     for n in (4, 5, 6):
         assert f"Ejercicio {n}: Propuesta {n}" in r["texto"], n
-    assert r["propuestos"] == [4, 5, 6] and r["avisos"] == []
+    assert r["propuestos"] == [4, 5, 6] and len(r["avisos"]) == 3 and all("propuesto la IA" in a for a in r["avisos"])
 
 
 def test_las_paradas_del_modelo_no_incluyen_numeros_de_ejercicio(sesion_falsa):
@@ -707,3 +707,11 @@ def test_si_falla_el_ensamblado_se_conservan_los_avisos_ya_acumulados(sesion_fal
     r = sesion.generar_sesion("U12", 90, "bote")
     assert r["texto"].startswith("**Error generando sesión**")
     assert any("omitido" in a for a in r["avisos"])
+
+
+def test_los_ejercicios_propuestos_por_la_ia_siempre_llevan_aviso():
+    import sesion
+    huecos = [sesion._Hueco(1, {"nombre": "x"}, 10), sesion._Hueco(2, None, 10)]
+    avisos = sesion._avisos_de_propuestos(huecos, [2], {"ej:2": 'Ejercicio 2: **"Corte en V"**\nDuración: 10 min'})
+    assert len(avisos) == 1 and "Ejercicio 2" in avisos[0] and "Corte en V" in avisos[0] and "**" not in avisos[0]
+    assert sesion._avisos_de_propuestos(huecos, [], {}) == []

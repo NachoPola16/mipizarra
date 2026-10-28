@@ -188,3 +188,22 @@ def test_las_fichas_flojas_no_pasan_de_un_tercio_si_otras_nombran_el_tema(ejerci
     for semilla in range(10):
         fichas = elegir_fichas([dict(e) for e in ejercicios], "U16", "bloqueo directo", 5, azar=random.Random(semilla))
         assert sum(1 for f in fichas if f and f.get("_tema", 3) < 3) <= 1
+
+
+# ── conceptos que U8/U10 aún no trabajan ──────────────────────────────────
+
+def test_ayudas_se_quitan_del_objetivo_en_u10_y_se_avisa():
+    from ejercicios import quitar_conceptos_de_otra_edad
+    assert quitar_conceptos_de_otra_edad("defensa 1c1 y ayudas", "U10") == ("defensa 1c1", ["ayudas"])
+
+
+def test_ayudas_se_conservan_en_u14_y_si_es_lo_unico_pedido():
+    from ejercicios import quitar_conceptos_de_otra_edad
+    assert quitar_conceptos_de_otra_edad("defensa 1c1 y ayudas", "U14") == ("defensa 1c1 y ayudas", [])
+    assert quitar_conceptos_de_otra_edad("ayudas", "U10") == ("ayudas", [])
+
+
+def test_titulo_de_la_ia_sin_negritas_ni_comillas():
+    from bloques import nombre_de_cabecera
+    assert nombre_de_cabecera('Ejercicio 3: **"Corte en V y bote"**\nDuración: 10 min') == "Corte en V y bote"
+    assert nombre_de_cabecera("Ejercicio 3: «Corte»") == "Corte"

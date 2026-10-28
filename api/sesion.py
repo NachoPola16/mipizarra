@@ -24,6 +24,7 @@ from contexto import construir_contexto_teoria
 from ejercicios import (
     cargar_ejercicios, elegir_calentamiento as _elegir_calentamiento, elegir_fichas as _elegir_fichas,
     _raiz, _sin_acentos, espacio_pedido, limitar_por_jugadores, nivel_objetivo,
+    quitar_conceptos_de_otra_edad,
 )
 from lineas_rojas import (
     CATEGORIAS_MINIBASKET, aviso_pedido, aviso_pedido_no_incluido, instruccion_prompt, pedidos_presentes,
@@ -46,12 +47,14 @@ def vocabulario_tecnico(edad: str) -> str:
     mini = edad in CATEGORIAS_SIN_POSTE_NI_BLOQUEO
 
     zonas = ("codo TL derecho/izquierdo, cabecera triple, esquina derecha/izquierda, "
-             "baseline, zona pintada, ala derecha/izquierda")
+             "baseline, zona pintada, 45º derecho/izquierdo")
     if not mini:
         zonas += ", poste alto, poste bajo"
 
     defensa = ("posición básica (pies separados, rodillas flexionadas, manos activas), "
                 "deslizamiento lateral, ayuda, rotación, negación, tapping")
+    if mini:
+        defensa = "posición básica (pies separados, rodillas flexionadas, manos activas), deslizamiento lateral, 1c1 con balón"
     conceptos = "caída hacia canasta, corte (en V, puerta atrás), penetración, 1vs1 con bote"
     if not mini:
         defensa += ", defensa al bloqueo directo (pasar por delante/detrás, cambio)"
@@ -590,7 +593,19 @@ def _avisos_de_pedido(permitidos, texto: str, edad: str) -> list[str]:
     return avisos
 
 
+def _avisos_de_propuestos(huecos: list[_Hueco], propuestos: list[int], bloques: dict[str, str]) -> list[str]:
+    """Un aviso por cada ejercicio inventado por el modelo: no sale de la biblioteca y no está revisado."""
+    avisos = []
+    for h in huecos:
+        if h.numero in propuestos:
+            nombre = nombre_de_cabecera(bloques.get(f"ej:{h.numero}", "")) or "ejercicio propuesto"
+            avisos.append(f"Ejercicio {h.numero} ({nombre}) lo ha propuesto la IA porque la biblioteca no tiene "
+                          f"una ficha adecuada: revísalo antes de usarlo")
+    return avisos
+
+
 def generar_sesion(edad: str, duracion: int, objetivo: str, max_jugadores: int | None = None) -> dict:
+    objetivo, quitados = quitar_conceptos_de_otra_edad(objetivo, edad)
     plan = plan_de_tiempos(duracion, edad)
     n = len(plan.duraciones)
     # azar: mismos parámetros, distinta elección de fichas entre los empates (misma calidad y arco)
@@ -634,6 +649,8 @@ def generar_sesion(edad: str, duracion: int, objetivo: str, max_jugadores: int |
                               lineas_ejercicios, plantilla, correccion, max_jugadores)
 
     avisos: list[str] = []      # fuera del try: si la generación falla, los ya acumulados no se pierden
+    if quitados:
+        avisos.append(f"«{', '.join(quitados)}» no se trabaja en {edad}: la sesión se ha centrado en «{objetivo}»")
     try:
         bloques, malas = _redactar_piezas(armar_prompt, inicio_respuesta, huecos, inicios, claves_modelo,
                                           edad, permitidos, num_predict_sesion, num_ctx_sesion, objetivo)
@@ -648,6 +665,7 @@ def generar_sesion(edad: str, duracion: int, objetivo: str, max_jugadores: int |
             bloques["calentamiento"] = bloque_calentamiento(ficha_calent)
         texto, propuestos = _ensamblar(huecos, bloques, t_calent, t_vuelta, t_descanso)
         avisos[:0] = _avisos_de_pedido(permitidos, texto, edad)
+        avisos.extend(_avisos_de_propuestos(huecos, propuestos, bloques))
         for h in huecos:
             ya_avisado = any(a.startswith(f"Ejercicio {h.numero}") for a in avisos)
             if h.ficha is None and h.numero not in propuestos and not ya_avisado:

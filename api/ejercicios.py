@@ -273,6 +273,25 @@ def limitar_por_jugadores(ejercicios: list, max_jugadores: int | None) -> list:
     return [e for e in ejercicios if (e.get("jugadores_minimos") or 1) <= max_jugadores]
 
 
+# Conceptos que no se enseñan en las edades más pequeñas: pedirlos arrastraría fichas ajenas (la palabra
+# «ayuda» sale en descripciones de pivote o contraataque) y haría proponer a la IA ejercicios de otra edad.
+_EDADES_SIN_AYUDAS = {"U8", "U10", "Prebenjamín", "Benjamín"}
+_CONCEPTO_NO_DE_LA_EDAD = re.compile(r"\b(?:ayudas?|rotaci[oó]n(?:es)?|ayudar)\b", re.IGNORECASE)
+
+
+def quitar_conceptos_de_otra_edad(objetivo: str, edad: str) -> tuple[str, list[str]]:
+    """Objetivo sin los conceptos defensivos avanzados (ayudas, rotaciones) cuando la edad aún no los trabaja,
+    y los que se han quitado (para avisar al entrenador)."""
+    if edad not in _EDADES_SIN_AYUDAS:
+        return objetivo, []
+    quitados = [m.group(0).lower() for m in _CONCEPTO_NO_DE_LA_EDAD.finditer(objetivo)]
+    limpio = re.sub(r"\s+", " ", _CONCEPTO_NO_DE_LA_EDAD.sub(" ", objetivo))
+    limpio = re.sub(r"^(?:y|e|con)\s+|\s+(?:y|e|con)$", "", limpio.strip(), flags=re.IGNORECASE).strip(" ,;")
+    if not re.search(r"\w{3,}", limpio):
+        limpio = ""
+    return (limpio, quitados) if limpio else (objetivo, [])
+
+
 def elegir_fichas(ejercicios: list, edad: str, objetivo: str, n: int, solo_directas: bool = False,
                   azar=None) -> list:
     """n fichas de la biblioteca para la parte principal, siguiendo el arco de oposición. Solo entran
