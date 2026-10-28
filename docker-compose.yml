@@ -25,6 +25,9 @@ services:
     build: ./api
     container_name: mipizarra-api
     mem_limit: ${API_MEM_LIMIT:-768m}
+    # sin privilegios extra: el servicio no necesita ninguna capacidad de Linux
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
     restart: "no"
     ports:
       # Por defecto solo en el propio equipo (la API no tiene usuarios: el secreto es la única barrera).
@@ -58,6 +61,9 @@ services:
     build: ./frontend
     container_name: mipizarra-frontend
     mem_limit: ${FRONTEND_MEM_LIMIT:-256m}
+    # sin privilegios extra: el servicio no necesita ninguna capacidad de Linux
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
     restart: "no"
     ports:
       - "${BIND_IP:-127.0.0.1}:8501:8000"
