@@ -11,7 +11,7 @@ import pytest
 from conftest import RAIZ
 from main import parsear_ejercicios_de_sesion
 
-PLANTILLA = RAIZ / "frontend" / "pizarra" / "templates" / "pizarra" / "index.html"
+PLANTILLA = RAIZ / "frontend" / "pizarra" / "static" / "pizarra" / "js" / "index.js"
 pytestmark = pytest.mark.skipif(shutil.which("node") is None, reason="Node no está instalado")
 
 

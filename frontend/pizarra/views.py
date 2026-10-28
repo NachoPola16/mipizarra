@@ -17,9 +17,13 @@ from .entrada_pdf import limpiar_entrada_pdf
 logger = logging.getLogger(__name__)
 
 
-def _api_headers():
-    """Headers para llamadas internas a la API (incluye el secreto si está configurado)."""
+def _api_headers(request=None):
+    """Headers para llamadas internas a la API (incluye el secreto si está configurado y, si se conoce, la cuenta
+    que hace la petición: la API limita por cuenta y no por la IP de este contenedor)."""
     h = {'Content-Type': 'application/json'}
+    usuario = getattr(request, 'user', None)
+    if getattr(usuario, 'is_authenticated', False):
+        h['X-Usuario'] = str(usuario.pk)
     secret = getattr(settings, 'INTERNAL_SECRET', '')
     if secret:
         h['X-Internal-Secret'] = secret
@@ -107,7 +111,7 @@ def generar(request):
         resp = requests.post(
             f"{settings.API_URL}/generar",
             json=data,
-            headers=_api_headers(),
+            headers=_api_headers(request),
             timeout=300,
         )
         resp.raise_for_status()
@@ -126,7 +130,7 @@ def reglamento(request):
         resp = requests.post(
             f"{settings.API_URL}/reglamento",
             json=data,
-            headers=_api_headers(),
+            headers=_api_headers(request),
             timeout=210,      # la primera consulta carga el modelo (35-100 s) y puede haber un reintento
         )
         resp.raise_for_status()
@@ -145,7 +149,7 @@ def reprompt_ejercicio(request):
         resp = requests.post(
             f"{settings.API_URL}/reprompt_ejercicio",
             json=data,
-            headers=_api_headers(),
+            headers=_api_headers(request),
             timeout=120,
         )
         resp.raise_for_status()
@@ -164,7 +168,7 @@ def guardar_feedback(request):
         resp = requests.post(
             f"{settings.API_URL}/guardar_feedback",
             json=data,
-            headers=_api_headers(),
+            headers=_api_headers(request),
             timeout=10,
         )
         resp.raise_for_status()

@@ -149,7 +149,16 @@ class InternalSecretMiddleware(BaseHTTPMiddleware):
 
 # ── Rate limiting ────────────────────────────────────────────────────────────
 # Memory storage: válido para 1 worker uvicorn. Para más workers, usar redis://...
-limiter = Limiter(key_func=get_remote_address)
+def _clave_de_limite(request: Request) -> str:
+    """Quién cuenta para los límites: la cuenta que manda el frontend (solo se fía con INTERNAL_SECRET, que es lo que
+    prueba que la petición viene de él) y, si no, la IP del cliente."""
+    usuario = request.headers.get("X-Usuario", "")
+    if INTERNAL_SECRET and re.fullmatch(r"\d{1,9}", usuario):
+        return f"u{usuario}"
+    return get_remote_address(request)
+
+
+limiter = Limiter(key_func=_clave_de_limite)
 
 app = FastAPI(title="MiPizarra API", version="0.3.0")
 app.state.limiter = limiter

@@ -1,8 +1,8 @@
-django==5.2
+django==5.2.18
 gunicorn==23.0.0
 whitenoise==6.9.0
-requests==2.31.0
-fpdf2==2.7.9
-cairosvg==2.7.1
+requests==2.34.2
+fpdf2==2.8.8
+cairosvg==2.9.1
 cairocffi==1.6.1
-pillow==10.2.0
+pillow==12.3.0

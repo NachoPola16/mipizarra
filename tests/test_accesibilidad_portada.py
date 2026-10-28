@@ -4,7 +4,8 @@ import re
 
 from conftest import RAIZ
 
-HTML = (RAIZ / "frontend" / "pizarra" / "templates" / "pizarra" / "index.html").read_text(encoding="utf-8")
+HTML = ((RAIZ / "frontend" / "pizarra" / "templates" / "pizarra" / "index.html").read_text(encoding="utf-8")
+        + (RAIZ / "frontend" / "pizarra" / "static" / "pizarra" / "js" / "index.js").read_text(encoding="utf-8"))   # plantilla + su script
 
 
 def test_hay_enlace_de_salto_al_contenido():
