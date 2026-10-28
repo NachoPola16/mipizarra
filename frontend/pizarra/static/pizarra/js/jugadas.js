@@ -654,17 +654,35 @@ function borrarFase() {
 var TV = { ENTRADA: 0.5, ESCALON: 0.45, DUR: 1.0, DUR_PASE: 0.75, TRANS: 0.55, PAUSA: 0.45, TIRO: 1.0, PUNTOS: 1.4 };
 function suave(t) { t = acotar(t, 0, 1); return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2; }
 
+// ¿pasa el recorrido de la flecha idx (un corte o un bote) a menos de d del punto q?
+function recorridoCerca(f, idx, q, d) {
+    var a = f.flechas[idx], ini = inicioDe(f, idx), fn = puntoFinal(f, a);
+    if (!ini || !fn || !q) return false;
+    var c = controlDe(ini, fn, a.curva);
+    for (var u = 0; u <= 10; u++) {
+        var p = puntoCurva(ini.x, ini.y, fn.x, fn.y, a.curva ? c.x : undefined, a.curva ? c.y : undefined, u / 10);
+        if (Math.hypot(p.x - q.x, p.y - q.y) < d) return true;
+    }
+    return false;
+}
+// ¿lo usa en esta fase algún otro jugador (un corte o un bote que pasa junto al bloqueo)?
+function bloqueoUsado(f, idx) {
+    var a = f.flechas[idx], q = puntoFinal(f, a);
+    return f.flechas.some(function (m, k) { return k !== idx && m.de !== a.de && (m.tipo === 'corte' || m.tipo === 'bote') && recorridoCerca(f, k, q, 60); });
+}
+
 function construyeLinea() {
     var t = TV.ENTRADA, fases = [];
     estado.fases.forEach(function (f, i) {
         var inicio = t, tt = t, flechas = [];
         var ultimo = {};                      // fin del último movimiento de cada pieza: los tramos encadenados van en fila
         var bloqueos = {};                    // índice de flecha de bloqueo → { t1, fin } una vez programado
-        // Los bloqueos se ponen primero (si la pieza no hace antes otro movimiento) y quien pasa por ellos espera a que lleguen.
+        // Los bloqueos que alguien usa en la misma fase se ponen primero (si la pieza no hace antes otro movimiento) y quien pasa por ellos
+        // espera a que lleguen. Un bloqueo que nadie usa todavía (se aprovecha en la fase siguiente) sigue el orden de la lista.
         var orden = f.flechas.map(function (a, idx) { return idx; });
         var movio = {}, pasa = {}, antes = [], despues = [], llegada = {};   // llegada: cuándo recibe el balón cada jugador
         f.flechas.forEach(function (a, idx) {
-            if (a.tipo === 'bloqueo' && !movio[a.de] && !pasa[a.de]) antes.push(idx); else despues.push(idx);
+            if (a.tipo === 'bloqueo' && !movio[a.de] && !pasa[a.de] && bloqueoUsado(f, idx)) antes.push(idx); else despues.push(idx);
             if (a.tipo !== 'pase') movio[a.de] = true; else pasa[a.de] = true;      // quien pasa antes de bloquear pasa primero
         });
         orden = antes.concat(despues);
@@ -674,13 +692,8 @@ function construyeLinea() {
             var d = a.tipo === 'pase' ? TV.DUR_PASE : ((cadena || haySiguiente(f, idx)) ? 0.6 : TV.DUR);
             var t0 = cadena ? Math.max(tt, ultimo[a.de]) : tt;
             if (a.tipo === 'corte' || a.tipo === 'bote') {          // espera al bloqueador cuyo bloqueo cruza su recorrido
-                var ini = inicioDe(f, idx), fn = puntoFinal(f, a);
                 Object.keys(bloqueos).forEach(function (k) {
-                    var b = bloqueos[k];
-                    if (f.flechas[k].de === a.de || !ini || !fn) return;
-                    var c = controlDe(ini, fn, a.curva), cerca = false;
-                    for (var u = 0; u <= 10; u++) { var q = puntoCurva(ini.x, ini.y, fn.x, fn.y, a.curva ? c.x : undefined, a.curva ? c.y : undefined, u / 10); if (Math.hypot(q.x - b.fin.x, q.y - b.fin.y) < 60) cerca = true; }
-                    if (cerca) t0 = Math.max(t0, b.t1 - 0.15);
+                    if (f.flechas[k].de !== a.de && recorridoCerca(f, idx, bloqueos[k].fin, 60)) t0 = Math.max(t0, bloqueos[k].t1 - 0.15);
                 });
             }
             if (a.tipo === 'pase' && llegada[a.de] !== undefined) t0 = Math.max(t0, llegada[a.de] + 0.05);              // no pasa el balón quien aún no lo ha recibido
