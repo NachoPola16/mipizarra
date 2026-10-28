@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Despliega MiPizarra en el CT 102 desde tu equipo (git pull en el servidor, reinicia la API y reconstruye el frontend).
+# Se niega a desplegar si el servidor tiene ediciones de fichas (pestaña «Fichas») sin subir a git: serían las únicas copias
+# del trabajo (ver docs/administracion-fichas.md). Uso:  bash tools/desplegar.sh
+# Antes de desplegar, sube tus commits (git push): el servidor hace `git pull --ff-only`.
+set -u
+SSH="${MIPIZARRA_SSH:-proxmox}"; CT="${MIPIZARRA_CT:-102}"; DIR="${MIPIZARRA_DIR:-/root/docker/mipizarra}"
+
+en_servidor() { ssh "$SSH" "pct exec $CT -- bash -s" ; }
+
+estado=$(printf 'cd %s && git status --porcelain -- data/exercises.json </dev/null\n' "$DIR" | en_servidor)
+if [ -n "$estado" ]; then
+    cat <<MSG
+NO SE DESPLIEGA: el servidor tiene ediciones de fichas sin subir a git (data/exercises.json distinto del último commit).
+Tráelas primero (revisa el diff antes de subir):
+  ssh $SSH "pct exec $CT -- cat $DIR/data/exercises.json" > data/exercises.json
+  git diff --stat data/exercises.json
+  git add data/exercises.json && git commit -m "fichas: ediciones hechas desde la pestaña Fichas" && git push
+  ssh $SSH "pct exec $CT -- bash -c 'cd $DIR && git checkout -- data/exercises.json'"
+y vuelve a ejecutar este script. (Si esas fichas también cambiaron en git, mézclalas a mano.)
+MSG
+    exit 1
+fi
+
+en_servidor <<SCRIPT
+set -e
+cd $DIR
+git pull --ff-only </dev/null
+docker restart mipizarra-api </dev/null
+docker compose up -d --build frontend </dev/null
+sleep 8
+docker ps --format '{{.Names}} {{.Status}}' </dev/null | grep mipizarra
+git log --oneline -1 </dev/null
+SCRIPT

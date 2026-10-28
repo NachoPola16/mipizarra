@@ -35,6 +35,10 @@ variables de entorno de la API (`FICHAS_COPIAS_MAX=0` y `FICHAS_HISTORIAL_MAX=0`
 
 ### Traer las ediciones a git (importante al desplegar)
 
+**Despliega siempre con `bash tools/desplegar.sh`**: comprueba si el servidor tiene ediciones de fichas sin subir y, si las
+hay, se niega a desplegar e imprime los pasos de abajo; si no, hace el `git pull --ff-only`, reinicia la API y reconstruye
+el frontend. (Un `git pull` a pelo sin esa comprobación solo avisa si el fichero cambió en los dos sitios.)
+
 El servidor puede tener `exercises.json` distinto del de git. Antes de desplegar (`git pull` en el servidor) hay que subir
 esas ediciones, o el `pull` se negará (si ambos tocaron el fichero) o dejará el fichero del servidor como estaba:
 
