@@ -684,13 +684,14 @@ function bloqueoUsado(f, idx) {
 function construyeLinea() {
     var t = TV.ENTRADA, fases = [];
     estado.fases.forEach(function (f, i) {
-        var inicio = t, tt = t, flechas = [];
+        var inicio = t;
+        var tt = t, flechas = [];
         var ultimo = {};                      // fin del último movimiento de cada pieza: los tramos encadenados van en fila
         var bloqueos = {};                    // índice de flecha de bloqueo → { t1, fin } una vez programado
         // Los bloqueos que alguien usa en la misma fase se ponen primero (si la pieza no hace antes otro movimiento) y quien pasa por ellos
         // espera a que lleguen. Un bloqueo que nadie usa todavía (se aprovecha en la fase siguiente) sigue el orden de la lista.
         var orden = f.flechas.map(function (a, idx) { return idx; });
-        var movio = {}, pasa = {}, antes = [], despues = [], llegada = {};   // llegada: cuándo recibe el balón cada jugador
+        var movio = {}, pasa = {}, antes = [], despues = [], llegada = {}, pasaT0 = {};   // llegada: cuándo recibe el balón cada jugador
         f.flechas.forEach(function (a, idx) {
             if (a.tipo === 'bloqueo' && !movio[a.de] && !pasa[a.de] && bloqueoUsado(f, idx)) antes.push(idx); else despues.push(idx);
             if (a.tipo !== 'pase') movio[a.de] = true; else pasa[a.de] = true;      // quien pasa antes de bloquear pasa primero
@@ -706,9 +707,12 @@ function construyeLinea() {
                     if (f.flechas[k].de !== a.de && recorridoCerca(f, idx, bloqueos[k].fin, 60)) t0 = Math.max(t0, bloqueos[k].t1 - 0.15);
                 });
             }
+            if (a.tipo !== 'pase' && pasaT0[a.de] !== undefined) t0 = Math.max(t0, pasaT0[a.de] + 0.1);                  // quien pasa no se mueve hasta soltar el balón
             if (a.tipo === 'pase' && llegada[a.de] !== undefined) t0 = Math.max(t0, llegada[a.de] + 0.05);              // no pasa el balón quien aún no lo ha recibido
-            if (a.tipo === 'pase' && a.aId && ultimo[a.aId] !== undefined) t0 = Math.max(t0, ultimo[a.aId] - d + 0.05);   // el pase llega cuando el receptor ya está
+            if (a.tipo === 'pase' && ultimo[a.de] !== undefined) t0 = Math.max(t0, ultimo[a.de]);                         // si el pasador se movió antes, pasa al acabar
+            if (a.tipo === 'pase' && a.aId && ultimo[a.aId] !== undefined) t0 = Math.max(t0, ultimo[a.aId] - d + 0.05);   // el pase llega cuando el receptor ya está (solo cuentan sus movimientos anteriores en la lista)
             if (a.tipo === 'pase' && a.aId) llegada[a.aId] = t0 + d;
+            if (a.tipo === 'pase' && pasaT0[a.de] === undefined) pasaT0[a.de] = t0;
             flechas.push({ a: a, i: idx, t0: t0, t1: t0 + d });
             if (a.tipo === 'bloqueo' && puntoFinal(f, a)) bloqueos[idx] = { t1: t0 + d, fin: puntoFinal(f, a) };
             if (a.tipo !== 'pase') ultimo[a.de] = t0 + d;
@@ -1290,6 +1294,10 @@ function iniciaBiblioteca() {
             lista.appendChild(b);
         });
         lista.setAttribute('aria-busy', 'false'); vacio.hidden = n > 0;
+        // en minibasket no hay jugadas a propósito: se juega con espacios y se aprende a leer el juego, no se memorizan sistemas
+        vacio.textContent = filtro === 'U10' || filtro === 'U12'
+            ? 'Cero jugadas, y a propósito: a esta edad no se memorizan sistemas, se juega con espacios y se aprende a leer el juego. Para entrenar eso, mira los ejercicios y juegos de la portada.'
+            : 'No hay jugadas para esta categoría.';
     }
     document.querySelectorAll('.bib-filtros .chip').forEach(function (c) {
         c.addEventListener('click', function () {
