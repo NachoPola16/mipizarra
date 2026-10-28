@@ -331,7 +331,8 @@ function dibujaBloqueo(svg, f, c, interactivo, extra, a, i, ini, T, k) {
     }
     if (k >= 0.85) {
         var m = 14 * escalaTrazo;
-        barrasArriba.push({ x1: T.x - u.y * m, y1: T.y + u.x * m, x2: T.x + u.y * m, y2: T.y - u.x * m, stroke: col, 'stroke-width': 4 * escalaTrazo, 'stroke-linecap': 'round', 'pointer-events': 'none', opacity: extra.dim ? '0.35' : '1' });
+        var ub = unit(T.x - ini.x, T.y - ini.y);       // la barra no gira con el jugador mientras se reproduce: se orienta como en el diagrama
+        barrasArriba.push({ x1: T.x - ub.y * m, y1: T.y + ub.x * m, x2: T.x + ub.y * m, y2: T.y - ub.x * m, stroke: col, 'stroke-width': 4 * escalaTrazo, 'stroke-linecap': 'round', 'pointer-events': 'none', opacity: extra.dim ? '0.35' : '1' });
     }
 }
 
