@@ -210,6 +210,7 @@ class RepromptRequest(BaseModel):
     nombre:      str = Field(min_length=1, max_length=200)
     descripcion: str = Field(default="", max_length=2000)
     instruccion: str = Field(min_length=3, max_length=MAX_OBJETIVO_LEN)
+    es_calentamiento: bool = False
 
 
 class ReglamentoRequest(BaseModel):
@@ -635,6 +636,7 @@ async def corregir_ejercicio(request: Request, req: RepromptRequest):
         resultado = reprompt_ejercicio(
             edad=edad, objetivo=req.objetivo, nombre=req.nombre,
             descripcion=req.descripcion, instruccion=req.instruccion,
+            es_calentamiento=req.es_calentamiento,
         )
     except Exception:
         logger.exception("Error en reprompt_ejercicio")

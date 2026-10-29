@@ -560,11 +560,14 @@ def test_los_fundamentos_continuan_la_frase_guia(sesion_falsa):
 
 
 def test_si_el_modelo_no_da_fundamentos_se_componen_con_los_objetivos_tecnicos_de_las_fichas(sesion_falsa):
-    a = dict(FICHA_A, objetivos={"tacticos": ["bote"], "tecnicos": ["agarre del balón", "cambio de mano"]})
-    b = dict(FICHA_B, objetivos={"tacticos": ["bote"], "tecnicos": ["cambio de mano", "bote bajo"]})
+    # solo cuentan los fundamentos que la ficha desarrolla en su texto
+    a = dict(FICHA_A, objetivos={"tacticos": ["bote"], "tecnicos": ["agarre del balón", "cambio de mano"]},
+             descripcion=FICHA_A["descripcion"] + " Agarre del balón y cambio de mano.")
+    b = dict(FICHA_B, objetivos={"tacticos": ["bote"], "tecnicos": ["cambio de mano", "bote bajo"]},
+             descripcion=FICHA_B["descripcion"] + " Cambio de mano con bote bajo.")
     sesion_falsa([a, b, FICHA_C], [CALENTAMIENTO_SOLO, " Estiramientos", ""])
     r = sesion.generar_sesion("U16", 90, "bote")
-    assert r["texto"].rstrip().endswith("**Fundamentos**: bote bajo, cambio de mano, agarre del balón.")
+    assert r["texto"].rstrip().endswith("**Fundamentos**: En esta sesión se trabajan bote bajo, cambio de mano, agarre del balón.")
     assert r["avisos"] == []
 
 

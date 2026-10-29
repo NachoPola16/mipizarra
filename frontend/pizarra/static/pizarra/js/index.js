@@ -415,7 +415,11 @@ function renderBloqueSeccion(texto) {
 function renderResults(data, mostrar = true) {
     document.getElementById('results-heading').textContent = 'Sesión de entrenamiento generada';
     const texto = (data.sesion || data.texto || '').replace(/\[ej_\d+\]\s*/g, '');
-    const diagramas = data.diagramas || [];
+    const todosDiagramas = data.diagramas || [];
+    // El calentamiento lleva sus diagramas aparte: los de los ejercicios se reparten por orden de aparición.
+    const esDiagCalentamiento = d => /^Calentamiento: /.test(d.nombre || '');
+    const diagramas = todosDiagramas.filter(d => !esDiagCalentamiento(d));
+    const diagCalentamiento = todosDiagramas.filter(esDiagCalentamiento);
 
     // Agrupar diagramas por nombre de ejercicio (para multifase)
     const diagGroups = [];
@@ -450,6 +454,25 @@ function renderResults(data, mostrar = true) {
 
     let ejercicioNum = 0;
     bloques.forEach((b, bloqueIdx) => {
+        const mCal = b.texto.match(/^\s*(\*\*CALENTAMIENTO[^\n]*\*\*)\n([\s\S]*?)(\n\s*\*\*PARTE PRINCIPAL\*\*[\s\S]*)?$/i);
+        if (mCal) {
+            const nombre = ((mCal[2].match(/Juego:\s*([^\n]+)/) || [])[1] || 'Calentamiento').trim();
+            currentEjercicios.push({ bloqueIdx, esCalentamiento: true, cabecera: mCal[1], nombre,
+                                     descripcion: mCal[2].trim(), tras: mCal[3] || '',
+                                     diagNombre: diagCalentamiento.length ? diagCalentamiento[0].nombre : 'Calentamiento: ' + nombre });
+            const ejN = currentEjercicios.length - 1;
+            html += `<h2 class='section-title'>${escHtml(mCal[1].replace(/[*]/g, ''))}</h2>`;
+            html += `<div class="ejercicio-block" data-ej-idx="${ejN}">`;
+            html += `<label class="ej-select"><input type="checkbox" class="ej-checkbox" data-ej-idx="${ejN}"> Editar el calentamiento</label>`;
+            for (const d of diagCalentamiento) {
+                if (esPlaceholderDiagrama(d)) continue;
+                if (d.titulo) html += `<div class='diagrama-label'>${escHtml(d.titulo)}</div>`;
+                html += `<div class='diagrama-wrap'>${d.svg}</div>`;
+            }
+            html += `<div class='sesion-card estructurada'>${renderCampos(mCal[2])}</div></div>`;
+            if (mCal[3]) html += renderBloqueSeccion(mCal[3]);
+            return;
+        }
         if (/^\s*Ejercicio \d+/.test(b.texto)) {
             const ls = b.texto.split('\n');
             const titulo = ls[0].trim();
@@ -613,8 +636,9 @@ async function aplicarReprompt() {
                     edad: document.getElementById('edad').value,
                     objetivo: currentObjetivo,
                     nombre: ej.nombre,
-                    descripcion: ej.descripcion,
+                    descripcion: ej.descripcion.slice(0, 2000),
                     instruccion,
+                    es_calentamiento: !!ej.esCalentamiento,
                 }),
             });
             const data = await resp.json().catch(() => ({}));
@@ -625,10 +649,19 @@ async function aplicarReprompt() {
             avisosReprompt.push(...(nuevoEjercicio.avisos || []));
 
             // Sustituir el texto del bloque, conservando la numeración "Ejercicio N".
-            currentBloques[ej.bloqueIdx].texto = formatEjercicioTexto(ej.headerLine, nuevoEjercicio, ej);
+            let nuevoNombre = nuevoEjercicio.nombre || ej.nombre;
+            if (ej.esCalentamiento) {
+                // Mismo formato «Juego:/Reglas:» que el calentamiento original; lo que sigue (parte principal) no cambia.
+                const puntos = Array.isArray(nuevoEjercicio.puntos_clave) && nuevoEjercicio.puntos_clave.length
+                    ? `\nPuntos clave:\n${nuevoEjercicio.puntos_clave.map(p => `- ${p}`).join('\n')}` : '';
+                currentBloques[ej.bloqueIdx].texto = `${ej.cabecera}\nJuego: ${nuevoNombre}\nReglas:\n` +
+                    `${String(nuevoEjercicio.descripcion || '').trim()}${puntos}` + (ej.tras ? `\n${ej.tras.replace(/^\n+/, '\n')}` : '');
+                nuevoNombre = 'Calentamiento: ' + nuevoNombre;
+            } else {
+                currentBloques[ej.bloqueIdx].texto = formatEjercicioTexto(ej.headerLine, nuevoEjercicio, ej);
+            }
 
             // Sustituir sus diagramas en su misma posición (ver reemplazarDiagramas).
-            const nuevoNombre = nuevoEjercicio.nombre || ej.nombre;
             currentResult.diagramas = reemplazarDiagramas(
                 currentResult.diagramas || [], ej.diagNombre, nuevoNombre, nuevasDiagramas);
         } catch (e) {

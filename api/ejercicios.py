@@ -332,7 +332,101 @@ def elegir_fichas(ejercicios: list, edad: str, objetivo: str, n: int, solo_direc
         con_calentamientos = seleccionar_ejercicios(relevantes, n, azar=azar)
         if sum(f is None for f in con_calentamientos) < sum(f is None for f in fichas):
             fichas = con_calentamientos
+    fichas = _cubrir_temas(fichas, relevantes, principales, objetivo)
     return _limitar_flojas(fichas, n, hay_centradas=any(e.get("_tema", 0) >= 3 for e in relevantes))
+
+
+# ─── Cobertura de los temas pedidos ──────────────────────────────────────
+
+# «técnica individual» es el género de la sesión, no un tema: lo que se trabaja es el bote, el tiro, la finalización...
+_PALABRAS_GENERO = {"tecnica", "tecnicas", "individual", "individuales", "fundamentos", "fundamento", "tecnico", "basico",
+                    "basicos", "basica", "basicas"}
+_SEPARADORES_DE_TEMA = re.compile(r"[,;:+/]|\s(?:y|e|con|ademas)\s", re.IGNORECASE)
+
+
+def temas_del_objetivo(objetivo: str) -> list[set[str]]:
+    """Los temas distintos que pide el objetivo («bote y bomba sobre un pie» son dos), cada uno como conjunto de raíces.
+    Las palabras de género («técnica individual») no cuentan como tema."""
+    temas = []
+    for trozo in _SEPARADORES_DE_TEMA.split(_sin_acentos(objetivo)):
+        raices = {_raiz(p) for p in _palabras_significativas(trozo) if p not in _PALABRAS_GENERO and p != "pies"}
+        if raices:
+            temas.append(raices | {_raiz(q) for r in raices for q in _EQUIVALENTES.get(r, ())})
+    return temas
+
+
+def _centrada_en(ficha: dict, tema: set[str], estricta: bool = False) -> bool:
+    """¿Trabaja la ficha el tema de verdad? Aparece en su nombre, tags (tácticos y técnicos) o subcategoría."""
+    objetivos = ficha.get("objetivos", {})
+    # estricta: solo el título, la subcategoría y los tags tácticos (de qué trata la ficha), sin sus fundamentos técnicos
+    texto = _sin_acentos(" ".join([ficha.get("nombre", ""), ficha.get("subcategoria", "").replace("_", " "),
+                                   *objetivos.get("tacticos", []), *([] if estricta else objetivos.get("tecnicos", []))]))
+    return any(re.search(rf"(?<!\w){re.escape(r)}", texto) for r in tema)
+
+
+def temas_sin_cubrir(fichas: list, objetivo: str) -> list[set[str]]:
+    reales = [f for f in fichas if f]
+    return [t for t in temas_del_objetivo(objetivo) if not any(_centrada_en(f, t) for f in reales)]
+
+
+def _cubrir_temas(fichas: list, relevantes: list, principales: list, objetivo: str) -> list:
+    """Si un tema pedido no está centrado en ninguna ficha elegida, una ficha que sí lo trabaja ocupa el hueco donde
+    menos descoloca el arco de oposición (sin quitar la única ficha de otro tema)."""
+    temas = temas_del_objetivo(objetivo)
+    if len(temas) < 1:
+        return fichas
+    fichas = list(fichas)
+    n = len(fichas)
+    for _ in range(len(temas)):
+        pendientes = [t for t in temas if not any(f and _centrada_en(f, t) for f in fichas)]
+        if not pendientes:
+            break
+        tema = pendientes[0]
+        usadas = {id(f) for f in fichas if f}
+        candidatas = [e for e in principales + [r for r in relevantes if r not in principales]
+                      if id(e) not in usadas and _centrada_en(e, tema)]
+        if not candidatas:
+            continue
+        mejor = None
+        for pos in range(n):
+            actual = fichas[pos]
+            if actual is not None and any(
+                    _centrada_en(actual, t) and sum(1 for f in fichas if f and _centrada_en(f, t)) == 1 for t in temas):
+                continue                                   # es la única que cubre otro tema
+            for cand in candidatas:
+                coste = (PESO_NIVEL * abs(_nivel_oposicion(cand) - nivel_objetivo(pos, n))
+                         - (_tema(cand) or int(puntuacion_tema(cand, objetivo)))
+                         + (0 if actual is None else _tema(actual)))
+                if mejor is None or coste < mejor[0]:
+                    mejor = (coste, pos, cand)
+        if mejor:
+            fichas[mejor[1]] = mejor[2]
+    return _equilibrar_temas(fichas, temas, relevantes, principales, objetivo)
+
+
+def _equilibrar_temas(fichas: list, temas: list, relevantes: list, principales: list, objetivo: str) -> list:
+    """Con varios temas pedidos («bote y bomba»), que ninguno acapare la sesión: el tema con menos fichas centradas gana
+    huecos (de fichas centradas solo en el tema más repetido) hasta quedar a una ficha de diferencia."""
+    if len(temas) < 2:
+        return fichas
+    n = len(fichas)
+    for _ in range(n):
+        cuentas = [sum(1 for f in fichas if f and _centrada_en(f, t, True)) for t in temas]
+        flojo, fuerte = cuentas.index(min(cuentas)), cuentas.index(max(cuentas))
+        if cuentas[fuerte] - cuentas[flojo] <= 1:
+            break
+        usadas = {id(f) for f in fichas if f}
+        candidatas = [e for e in principales + [r for r in relevantes if r not in principales]
+                      if id(e) not in usadas and _centrada_en(e, temas[flojo], True)]
+        sustituibles = [i for i, f in enumerate(fichas)
+                        if f and _centrada_en(f, temas[fuerte], True) and not _centrada_en(f, temas[flojo], True)]
+        if not candidatas or not sustituibles:
+            break
+        coste, pos, cand = min(((PESO_NIVEL * abs(_nivel_oposicion(c) - nivel_objetivo(i, n))
+                                 - int(puntuacion_tema(c, objetivo)), i, c)
+                                for i in sustituibles for c in candidatas), key=lambda t: t[0])
+        fichas[pos] = cand
+    return fichas
 
 
 def _limitar_flojas(fichas: list, n: int, hay_centradas: bool = True) -> list:
@@ -368,6 +462,8 @@ def elegir_calentamiento(ejercicios: list, edad: str, objetivo: str, excluir=(),
     # relevancia directa (el objetivo en la propia ficha): con los fundamentos asociados casi todas encajaban y
     # una ficha con muchas palabras (movilidad con balón, pases...) salía en la mayoría de las sesiones
     grupo = [e for e in candidatas if es_relevante(e, objetivo, con_asociados=False)] or candidatas
+    mejor = max(puntuacion_tema(e, objetivo) for e in grupo)
+    grupo = [e for e in grupo if puntuacion_tema(e, objetivo) >= mejor - 1] or grupo     # los que más tratan el tema
     return grupo[0] if azar is None else azar.choice(grupo)
 
 
@@ -447,8 +543,10 @@ def _palabras_significativas(objetivo: str) -> list[str]:
     if "rebot" in texto:
         # «que bloqueen al rival» en una sesión de rebote es bloqueo de rebote, no las fichas de bloqueo directo
         palabras = [p for p in palabras if not p.startswith("bloque") or p in ("bloqueo", "bloqueos")]
-    return [p for p in palabras
-            if p not in _PALABRAS_VACIAS and (len(p) >= 4 or any(c.isdigit() for c in p))]
+    utiles = [p for p in palabras if p not in _PALABRAS_VACIAS and (len(p) >= 4 or any(c.isdigit() for c in p))]
+    # «técnica individual» es el género, no el tema: se quita salvo que sea lo único que dice el objetivo
+    sin_genero = [p for p in utiles if p not in _PALABRAS_GENERO]
+    return sin_genero or utiles
 
 
 def _raices_del_objetivo(objetivo: str) -> set[str]:
@@ -475,6 +573,14 @@ def es_relevante(ej: dict, objetivo: str, con_asociados: bool = True) -> bool:
     return any(re.search(rf"(?<!\w){re.escape(r)}", texto) for r in raices)
 
 
+# Qué fichas son «técnica individual» (bote, finalización, mecánica de tiro...) cuando el entrenador pide ese género.
+SUBCATEGORIAS_DE_TECNICA = {"tecnica_individual", "manejo_balon", "bote", "mecanica", "finalizacion", "ataque_individual"}
+
+
+def _pide_tecnica_individual(objetivo: str) -> bool:
+    return bool(re.search(r"tecnic\w*\s+individual|fundamentos?\s+individual", _sin_acentos(objetivo)))
+
+
 CATEGORIAS_GENERICAS = {"juego_equipo", "calentamiento"}
 
 
@@ -485,6 +591,7 @@ def puntuacion_tema(ej: dict, objetivo: str) -> float:
     categoria = ej.get("categoria", "")
     clase = f"{'' if categoria in CATEGORIAS_GENERICAS else categoria} {ej.get('subcategoria', '')}".replace("_", " ")
     nombre_y_tags = _sin_acentos(f"{ej.get('nombre', '')} {' '.join(ej.get('objetivos', {}).get('tacticos', []))} {clase}")
+    tecnicos = _sin_acentos(" ".join(ej.get("objetivos", {}).get("tecnicos", [])))
     descripcion = _sin_acentos(ej.get("descripcion", ""))
     total = 0.0
     for palabra in _palabras_significativas(objetivo):
@@ -492,8 +599,12 @@ def puntuacion_tema(ej: dict, objetivo: str) -> float:
         raices = {_raiz(palabra), *(_raiz(q) for q in _EQUIVALENTES.get(_raiz(palabra), ()))}
         if any(re.search(rf"(?<!\w){re.escape(r)}", nombre_y_tags) for r in raices):
             total += 3
+        elif any(re.search(rf"(?<!\w){re.escape(r)}", tecnicos) for r in raices):
+            total += 2          # el fundamento figura entre los técnicos de la ficha: se trabaja, aunque no sea su título
         elif any(re.search(rf"(?<!\w){re.escape(r)}", descripcion) for r in raices):
             total += 1
     if ej.get("categoria") in categorias_pedidas(objetivo):
         total += 3
+    if _pide_tecnica_individual(objetivo) and ej.get("subcategoria") in SUBCATEGORIAS_DE_TECNICA:
+        total += 2
     return total + (0.5 if "diagrama" in ej else 0)

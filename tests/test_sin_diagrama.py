@@ -25,7 +25,10 @@ def _ficha(ejercicios, id_):
 
 @pytest.fixture
 def cliente(monkeypatch, ejercicios):
-    fichas = [_ficha(ejercicios, "ej_068"), _ficha(ejercicios, "ej_067")]
+    # ej_068 es de juego libre en este test (en la biblioteca real ya tiene dibujo)
+    libre = {k: v for k, v in _ficha(ejercicios, "ej_068").items() if k not in ("diagrama", "diagramas")}
+    libre["sin_diagrama"] = True
+    fichas = [libre, _ficha(ejercicios, "ej_067")]
     monkeypatch.setattr(main, "generar_sesion",
                         lambda **k: {"texto": TEXTO, "ejercicios_usados": fichas})
     llamadas = []

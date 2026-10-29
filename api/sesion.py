@@ -24,7 +24,7 @@ from contexto import construir_contexto_teoria
 from ejercicios import (
     cargar_ejercicios, elegir_calentamiento as _elegir_calentamiento, elegir_fichas as _elegir_fichas,
     _raiz, _sin_acentos, espacio_pedido, limitar_por_jugadores, nivel_objetivo,
-    quitar_conceptos_de_otra_edad,
+    quitar_conceptos_de_otra_edad, temas_sin_cubrir,
 )
 from lineas_rojas import (
     CATEGORIAS_MINIBASKET, aviso_pedido, aviso_pedido_no_incluido, instruccion_prompt, pedidos_presentes,
@@ -376,7 +376,13 @@ def _fundamentos_de_las_fichas(huecos: list[_Hueco], objetivo: str = "") -> str:
     abra con «bomba sobre un pie» solo porque una ficha de 3c3 la menciona."""
     cuenta: dict[str, int] = {}
     for h in huecos:
-        for tecnico in (h.ficha or {}).get("objetivos", {}).get("tecnicos", []):
+        ficha = h.ficha or {}
+        texto = _sin_acentos(f"{ficha.get('nombre', '')} {ficha.get('descripcion', '')}")
+        for tecnico in ficha.get("objetivos", {}).get("tecnicos", []):
+            # solo lo que la ficha desarrolla de verdad: un fundamento que ni se nombra en su texto no se trabaja
+            claves = [_raiz(p) for p in re.findall(r"\w+", _sin_acentos(tecnico)) if len(p) > 3]
+            if claves and not all(re.search(rf"(?<!\w){re.escape(c)}", texto) for c in claves[:2]):
+                continue
             cuenta[tecnico] = cuenta.get(tecnico, 0) + 1
     raices = {_raiz(p) for p in re.findall(r"\w+", _sin_acentos(objetivo)) if len(p) > 2}
 
@@ -649,6 +655,12 @@ def generar_sesion(edad: str, duracion: int, objetivo: str, max_jugadores: int |
                               lineas_ejercicios, plantilla, correccion, max_jugadores)
 
     avisos: list[str] = []      # fuera del try: si la generación falla, los ya acumulados no se pierden
+    pedidos_de_linea_roja = {_raiz(p) for t in terminos_pedidos(objetivo, edad) for p in re.findall(r"\w+", _sin_acentos(t))}
+    for tema in temas_sin_cubrir(fichas, objetivo):
+        if tema & pedidos_de_linea_roja or any(r.startswith("bloq") for r in tema):
+            continue        # ya lo avisa el aviso de línea roja pedida
+        avisos.append(f"La biblioteca no tiene ejercicios centrados en «{' / '.join(sorted(tema))}» para {edad}: "
+                      f"revisa que la sesión trabaje lo que pedías")
     if quitados:
         avisos.append(f"«{', '.join(quitados)}» no se trabaja en {edad}: la sesión se ha centrado en «{objetivo}»")
     try:
@@ -660,6 +672,11 @@ def generar_sesion(edad: str, duracion: int, objetivo: str, max_jugadores: int |
                           f"{', '.join(encontradas)}")
         if avisos:
             logger.warning("Piezas omitidas tras el reintento: " + " | ".join(avisos))
+
+        # Los fundamentos los componen las fichas, no el modelo: solo lo que de verdad se desarrolla en los ejercicios
+        reserva = _fundamentos_de_las_fichas(huecos, objetivo)
+        if reserva:
+            bloques["fundamentos"] = f"En esta sesión se trabajan {reserva}"
 
         if ficha_calent is not None:
             bloques["calentamiento"] = bloque_calentamiento(ficha_calent)

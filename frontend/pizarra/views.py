@@ -150,7 +150,7 @@ def reprompt_ejercicio(request):
             f"{settings.API_URL}/reprompt_ejercicio",
             json=data,
             headers=_api_headers(request),
-            timeout=120,
+            timeout=600,
         )
         resp.raise_for_status()
         return JsonResponse(resp.json())

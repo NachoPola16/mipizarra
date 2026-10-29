@@ -53,3 +53,6 @@ frontend/secret_key.txt
 
 # cambios del administrador sobre las fichas (solo en el servidor)
 data/cambios/
+
+# Ajustes locales de este PC (modelo grande con GPU); el servidor no lo usa
+docker-compose.override.yml

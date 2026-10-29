@@ -128,7 +128,8 @@ def generar_ejercicio_unico(edad: str, objetivo: str, descripcion: str = "") -> 
         return {}
 
 
-def reprompt_ejercicio(edad: str, objetivo: str, nombre: str, descripcion: str, instruccion: str) -> dict:
+def reprompt_ejercicio(edad: str, objetivo: str, nombre: str, descripcion: str, instruccion: str,
+                       es_calentamiento: bool = False) -> dict:
     """Regenera un ejercicio ya existente aplicando una corrección pedida por el entrenador. Solo viaja ese
     ejercicio (no la sesión entera): el contexto no crece con el número de ejercicios de la sesión."""
     ctx = _contexto(edad, objetivo)
@@ -136,13 +137,17 @@ def reprompt_ejercicio(edad: str, objetivo: str, nombre: str, descripcion: str, 
     prohibido = instruccion_prompt(edad, permitidos)
     prohibido = f"{prohibido}\n\n" if prohibido else ""
 
+    nota_calentamiento = ("Es el CALENTAMIENTO de la sesión: activación progresiva de 8-10 minutos, intensidad baja o media, "
+                          "sin oposición ni competición dura, y que prepare lo que se trabaja después.\n\n"
+                          if es_calentamiento else "")
+
     def construir_prompt(correccion: str = "") -> str:
         # OJO: no usar etiquetas con mayúscula («Nombre:», «Descripción:») para describir el ejercicio actual: el
         # modelo las copiaba como claves del JSON en lugar del esquema real (se observó «Nombre»/«ORGANIZACIÓN»).
         return (
             f"Este ejercicio de baloncesto ya está generado para la categoría {edad}, "
             f"dentro de una sesión con objetivo general: {objetivo}.\n\n"
-            f"ejercicio actual — nombre: {nombre}\n"
+            f"{nota_calentamiento}ejercicio actual — nombre: {nombre}\n"
             f"ejercicio actual — descripción: {descripcion}\n\n"
             f"El entrenador pide este cambio sobre ESTE ejercicio: {instruccion}\n\n"
             "Genera la versión corregida del ejercicio aplicando ese cambio y manteniendo lo demás. "
