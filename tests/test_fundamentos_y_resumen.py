@@ -79,3 +79,16 @@ def test_los_fundamentos_de_reserva_priorizan_el_objetivo_pedido():
     assert texto.startswith("pase de pecho, pase picado")
     assert "bomba sobre un pie" in texto and texto.endswith(".")
     assert len(texto.split(", ")) <= 5
+
+
+def test_defensa_en_el_objetivo_sube_posicion_defensiva_entre_los_fundamentos():
+    from sesion import _fundamentos_de_las_fichas
+
+    def hueco(*tecnicos):
+        return type("H", (), {"ficha": {"nombre": "x", "descripcion": " ".join(tecnicos),
+                                        "objetivos": {"tecnicos": list(tecnicos)}}})()
+
+    huecos = [hueco("bote hacia el aro", "bomba sobre un pie"), hueco("bote hacia el aro", "cambio de mano"),
+              hueco("recoger un balón en movimiento"), hueco("posición defensiva")]
+    texto = _fundamentos_de_las_fichas(huecos, "bote y defensa en desventaja")
+    assert texto.index("posición defensiva") < texto.index("bomba sobre un pie")

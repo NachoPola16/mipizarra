@@ -113,3 +113,12 @@ def test_el_renderer_no_genera_alturas_negativas_en_pista_completa():
          "balon_inicio": {"portador": "A1"}, "movimientos": [], "conos": []}
     svg = render_diagram(d, edad="U12")
     assert not re.findall(r'height="-', svg)
+
+
+def test_el_diagrama_de_una_ficha_de_media_pista_no_se_pasa_a_pista_completa_por_el_texto(monkeypatch, ejercicios):
+    ficha = _ficha(ejercicios, "ej_099")            # media pista; su texto habla de «contraataque»
+    texto = "**PARTE PRINCIPAL**\n\nEjercicio 1: " + ficha["nombre"] + "\nDuración: 10 min\nOrganización: " + ficha["descripcion"] + "\n"
+    monkeypatch.setattr(main, "generar_sesion", lambda **k: {"texto": texto, "ejercicios_usados": [ficha]})
+    r = TestClient(main.app).post("/generar", json={"edad": "U12", "duracion": 60, "objetivo": "contraataque"})
+    assert ficha["diagrama"]["tipo"] == "media_pista"
+    assert 'viewBox="0 0 735 690"' in r.json()["diagramas"][0]["svg"] or "735" in r.json()["diagramas"][0]["svg"][:200]

@@ -471,6 +471,9 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
                 "diagrama":    None if es_variante else ej_db.get("diagrama"),
                 "id":          f"{ej_db.get('id', f'ej_texto_{i}')}{'_variante' if es_variante else ''}",
                 "sin_diagrama": bool(ej_db.get("sin_diagrama")),
+                # el diagrama de una ficha ya trae su tipo de pista: la heurística de «pista completa» por palabras
+                # del texto solo vale para los diagramas que genera el modelo
+                "de_plantilla": bool(ej_db.get("diagrama") and not es_variante),
             })
 
         if not ejercicios_con_descripcion:

@@ -384,11 +384,12 @@ def _fundamentos_de_las_fichas(huecos: list[_Hueco], objetivo: str = "") -> str:
             if claves and not all(re.search(rf"(?<!\w){re.escape(c)}", texto) for c in claves[:2]):
                 continue
             cuenta[tecnico] = cuenta.get(tecnico, 0) + 1
-    raices = {_raiz(p) for p in re.findall(r"\w+", _sin_acentos(objetivo)) if len(p) > 2}
+    # comparación por las 4 primeras letras: «defensa» (objetivo) debe encontrar «posición defensiva» (fundamento)
+    raices = {p[:4] for p in re.findall(r"\w+", _sin_acentos(objetivo)) if len(p) >= 4}
 
     def peso(tecnico: str) -> int:
         palabras = re.findall(r"\w+", _sin_acentos(tecnico))
-        return cuenta[tecnico] + (10 if any(_raiz(p) in raices for p in palabras) else 0)
+        return cuenta[tecnico] + (10 if any(p[:4] in raices for p in palabras if len(p) >= 4) else 0)
 
     ordenados = sorted(cuenta, key=lambda t: -peso(t))      # sorted es estable: a igual peso, el orden de las fichas
     return (", ".join(ordenados[:5]) + ".") if ordenados else ""
