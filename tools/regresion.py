@@ -325,7 +325,9 @@ def evaluar_sesion(caso: dict, status: int, datos: dict | None, latencia: float)
 
     esperados = diagramas_esperados_sesion(texto)
     # Ejercicios con varios diagramas (fases) devuelven varias entradas con el mismo nombre.
-    generados = len({d.get("nombre") for d in diagramas})
+    # La variante «N.2» comparte nombre con su base: cuenta aparte, como en diagramas_esperados_sesion.
+    variantes = len(re.findall(r"^\s*Ejercicio \d+\.2\b", texto or "", re.MULTILINE))
+    generados = len({d.get("nombre") for d in diagramas}) + min(variantes, len(diagramas))
     mal_formados = sum(1 for d in diagramas if not svg_bien_formado(d.get("svg", "")))
     no_disponibles = sum(1 for d in diagramas if PLACEHOLDER_DIAGRAMA in d.get("svg", ""))
     criterios["diagramas"] = _criterio(
