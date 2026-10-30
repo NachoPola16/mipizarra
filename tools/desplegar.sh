@@ -26,7 +26,6 @@ en_servidor <<SCRIPT
 set -e
 cd $DIR
 git pull --ff-only </dev/null
-git --git-dir=.git-datos --work-tree=. pull --ff-only </dev/null
 docker restart mipizarra-api </dev/null
 docker compose up -d --build frontend </dev/null
 sleep 8

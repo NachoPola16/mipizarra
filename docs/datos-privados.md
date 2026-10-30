@@ -44,24 +44,44 @@ git --git-dir=.git-datos --work-tree=. checkout -f main    # writes the three li
 (`tools/gitd status`, `tools/gitd commit -am ...`, `tools/gitd push`). Library changes are committed there; code
 changes are committed in the normal repository.
 
-### Deploying (server)
+### The server
 
-`tools/desplegar.sh` updates both repositories and refuses to deploy if the server has Fichas-tab edits that
-are not yet committed in the private repository. The check and the recovery steps are the ones described in
-[Exercise administration](administracion-fichas.md), with `tools/gitd` instead of `git`.
+The server (CT 102) has the same layout, but its `.git-datos` has **no remote**: it was created from a bundle and is
+only used to detect edits made from the Fichas tab (`tools/desplegar.sh` refuses to deploy while
+`data/exercises.json` differs from the last commit of that repository). The server holds no credentials for the
+private repository on purpose.
 
-**One-time migration of an existing server** (it still has the library as tracked files of the public
-repository; the public history was rewritten, so a plain `git pull` will not work):
+`tools/desplegar.sh` therefore only updates the public repository (`git pull --ff-only`, restart the API,
+rebuild the frontend). To ship **library** changes to the server, bring them over by hand:
+
+```bash
+# on the PC, after committing in the private repository
+tools/gitd bundle create /tmp/datos.bundle --all
+scp /tmp/datos.bundle <proxmox>:/tmp/ && ssh <proxmox> "pct push 102 /tmp/datos.bundle /root/datos.bundle"
+# on the server
+cd <install dir> && git --git-dir=.git-datos fetch /root/datos.bundle main:refs/remotes/bundle/main   && git --git-dir=.git-datos --work-tree=. checkout -f bundle/main -- . 2>/dev/null;   git --git-dir=.git-datos --work-tree=. reset -q --hard bundle/main
+docker restart mipizarra-api && docker compose up -d --build frontend   # the frontend image embeds jugadas.json
+```
+
+To bring Fichas-tab edits back to the PC, use the procedure in [Exercise administration](administracion-fichas.md)
+(`ssh ... cat data/exercises.json`), commit with `tools/gitd`, and then run
+`git --git-dir=.git-datos --work-tree=. checkout -- data/exercises.json` on the server only after shipping the new commit
+as above (so that the server's repository matches again).
+
+**One-time migration of an existing server** (done on 2026-10-31 for CT 102; kept as a reference). The server had the
+library as tracked files of the public repository and the public history was rewritten, so a plain `git pull` does not work:
 
 ```bash
 cd <install dir>
-mkdir -p ../mipizarra-datos-backup && cp -a data/exercises.json data/teoria \
-   frontend/pizarra/static/pizarra/data/jugadas.json ../mipizarra-datos-backup/    # keep the live files
-git fetch origin && git reset --hard origin/main       # deletes the (now untracked-in-history) library files
-cp -a ../mipizarra-datos-backup/exercises.json data/
-cp -a ../mipizarra-datos-backup/teoria/. data/teoria/
-cp -a ../mipizarra-datos-backup/jugadas.json frontend/pizarra/static/pizarra/data/
-# then set up .git-datos as above; `tools/gitd status` should be clean or show only Fichas-tab edits
+mkdir -p ../mipizarra-datos-backup && cp -a data/exercises.json data/teoria    frontend/pizarra/static/pizarra/data/jugadas.json ../mipizarra-datos-backup/     # keep the live files
+git fetch origin && git reset --hard origin/main      # removes the library files tracked by the old history
+# bring the private repository over as a bundle (see above), then:
+git clone --bare /root/datos.bundle .git-datos
+git --git-dir=.git-datos config core.bare false
+git --git-dir=.git-datos config core.worktree "$(pwd)"
+git --git-dir=.git-datos config status.showUntrackedFiles no
+git --git-dir=.git-datos --work-tree=. checkout -f main    # writes the three library paths back
+md5sum data/exercises.json ../mipizarra-datos-backup/exercises.json   # must match unless the library moved on
 docker restart mipizarra-api && docker compose up -d --build frontend
 ```
 
