@@ -43,17 +43,17 @@ pushed and, if so, refuses to deploy and prints the steps below; otherwise it do
 restarts the API and rebuilds the frontend. (A bare `git pull` without that check only warns when the
 file changed on both sides.)
 
-The server may have an `exercises.json` different from git's. Before deploying (`git pull` on the server)
+The exercise library lives in the private repository (see [Public code, private library](datos-privados.md)); use `tools/gitd` where this page says git for it. The server may have an `exercises.json` different from that repository's. Before deploying (`git pull` on the server)
 those edits must be pushed, or the `pull` will refuse (if both touched the file) or leave the server's
 file as it was:
 
 ```bash
-# 1. are there unpushed edits? (on the server: cd <install dir>; git status --short data/exercises.json)
+# 1. are there unpushed edits? (on the server: cd <install dir>; git --git-dir=.git-datos --work-tree=. status --short data/exercises.json)
 # 2. fetch the file, review and push
 ssh <server> "cat <install dir>/data/exercises.json" > data/exercises.json
-git diff --stat data/exercises.json      # check which exercises changed
-git add data/exercises.json && git commit -m "fichas: edits made from the Fichas tab" && git push
-# 3. on the server: git checkout -- data/exercises.json && git pull --ff-only   (it is now identical to the commit)
+tools/gitd diff --stat data/exercises.json      # check which exercises changed
+tools/gitd add data/exercises.json && tools/gitd commit -m "fichas: edits made from the Fichas tab" && tools/gitd push
+# 3. ship the commit to the server (bundle, see docs/datos-privados.md); its file is then identical to the commit
 ```
 
 If an exercise was edited on the server and that same exercise changed in git, merge by hand (`git diff` per exercise).

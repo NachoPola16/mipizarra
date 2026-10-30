@@ -59,21 +59,23 @@ rebuild the frontend). To ship **library** changes to the server, bring them ove
 tools/gitd bundle create /tmp/datos.bundle --all
 scp /tmp/datos.bundle <proxmox>:/tmp/ && ssh <proxmox> "pct push 102 /tmp/datos.bundle /root/datos.bundle"
 # on the server
-cd <install dir> && git --git-dir=.git-datos fetch /root/datos.bundle main:refs/remotes/bundle/main   && git --git-dir=.git-datos --work-tree=. checkout -f bundle/main -- . 2>/dev/null;   git --git-dir=.git-datos --work-tree=. reset -q --hard bundle/main
+cd <install dir>
+git --git-dir=.git-datos fetch /root/datos.bundle main:refs/remotes/bundle/main
+git --git-dir=.git-datos --work-tree=. reset -q --hard bundle/main    # writes the library files into place
 docker restart mipizarra-api && docker compose up -d --build frontend   # the frontend image embeds jugadas.json
 ```
 
 To bring Fichas-tab edits back to the PC, use the procedure in [Exercise administration](administracion-fichas.md)
-(`ssh ... cat data/exercises.json`), commit with `tools/gitd`, and then run
-`git --git-dir=.git-datos --work-tree=. checkout -- data/exercises.json` on the server only after shipping the new commit
-as above (so that the server's repository matches again).
+(`ssh ... cat data/exercises.json`) and commit them with `tools/gitd`. Then ship that commit to the server as above:
+the `reset --hard` makes the server's file identical to the commit, so `tools/desplegar.sh` stops complaining.
 
 **One-time migration of an existing server** (done on 2026-10-31 for CT 102; kept as a reference). The server had the
 library as tracked files of the public repository and the public history was rewritten, so a plain `git pull` does not work:
 
 ```bash
 cd <install dir>
-mkdir -p ../mipizarra-datos-backup && cp -a data/exercises.json data/teoria    frontend/pizarra/static/pizarra/data/jugadas.json ../mipizarra-datos-backup/     # keep the live files
+mkdir -p ../mipizarra-datos-backup && cp -a data/exercises.json data/teoria \
+   frontend/pizarra/static/pizarra/data/jugadas.json ../mipizarra-datos-backup/     # keep the live files
 git fetch origin && git reset --hard origin/main      # removes the library files tracked by the old history
 # bring the private repository over as a bundle (see above), then:
 git clone --bare /root/datos.bundle .git-datos
