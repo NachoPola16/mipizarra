@@ -76,7 +76,9 @@ def _wavy_path(x1, y1, x2, y2, amplitude=7.0, cx=None, cy=None):
         for i in range(N_ARC)
     )
 
-    n_waves = max(2, round(arc / 26))
+    # los tramos cortos (slalom entre conos) llevan una onda pequeña, no el garabato de una larga
+    amplitude = min(amplitude, max(2.0, arc / 7))
+    n_waves = max(1 if arc < 52 else 2, round(arc / 26))
     n_segs  = n_waves * 2   # 2 quadratic half-arcs per full wave
 
     p0x, p0y = _pos(0)
@@ -99,6 +101,94 @@ def _wavy_path(x1, y1, x2, y2, amplitude=7.0, cx=None, cy=None):
         parts.append(f"Q {cp_x:.1f},{cp_y:.1f} {ex:.1f},{ey:.1f}")
 
     return " ".join(parts)
+
+
+def _unir_botes_seguidos(movimientos: list) -> list:
+    """Los botes consecutivos de un mismo jugador (un slalom entre conos, p. ej.) se dibujan como UNA onda continua
+    con una sola flecha, no como trozos sueltos. No se une si algún pase le llega al jugador entre medias (su posición
+    intermedia importa). No modifica los datos de entrada."""
+    resultado: list = []
+    ultimo: dict = {}
+    recibe_pase: set = set()
+    for m in movimientos:
+        de = m.get("de")
+        previo = resultado[ultimo[de]] if de in ultimo else None
+        if (m.get("tipo") == "bote" and "a_pos" in m and previo is not None and previo.get("tipo") == "bote"
+                and "a_pos" in previo and de not in recibe_pase and not m.get("curva") and not previo.get("curva")):
+            previo.setdefault("_ruta", [previo["a_pos"]]).append(m["a_pos"])
+            previo["a_pos"] = m["a_pos"]
+            continue
+        resultado.append(dict(m))
+        ultimo[de] = len(resultado) - 1
+        recibe_pase.discard(de)
+        if m.get("tipo") == "pase" and m.get("a"):
+            recibe_pase.add(m["a"])
+    return resultado
+
+
+def _apartar_de_conos(ruta: list, conos: list, distancia: float = 26.0) -> list:
+    """Un slalom pasa por el lado de los conos, no por encima: los puntos intermedios que caen sobre un cono se
+    apartan en perpendicular, alternando de lado."""
+    resultado, lado = list(ruta), 1
+    for i in range(1, len(ruta) - 1):
+        if any(math.hypot(ruta[i][0] - c[0], ruta[i][1] - c[1]) < 20 for c in conos):
+            dx, dy = ruta[i + 1][0] - ruta[i - 1][0], ruta[i + 1][1] - ruta[i - 1][1]
+            d = math.hypot(dx, dy) or 1.0
+            resultado[i] = (ruta[i][0] - dy / d * distancia * lado, ruta[i][1] + dx / d * distancia * lado)
+            lado = -lado
+    return resultado
+
+
+def _ruta_ondulada(puntos: list, hueco_ini: float, hueco_fin: float, amp: float = 5.0, lam: float = 24.0):
+    """Onda continua que sigue una curva suave (Catmull-Rom) por los puntos en píxeles. Devuelve (path, x, y, dx, dy):
+    el trazo y dónde y hacia dónde va su punta. La onda se aplana en los últimos píxeles para que la flecha encaje."""
+    n = len(puntos)
+    densos = [puntos[0]]
+    for i in range(n - 1):
+        p0, p1, p2, p3 = puntos[max(i - 1, 0)], puntos[i], puntos[i + 1], puntos[min(i + 2, n - 1)]
+        for k in range(1, 13):
+            t = k / 12
+            densos.append(tuple(
+                0.5 * ((2 * p1[j]) + (-p0[j] + p2[j]) * t + (2 * p0[j] - 5 * p1[j] + 4 * p2[j] - p3[j]) * t * t
+                       + (-p0[j] + 3 * p1[j] - 3 * p2[j] + p3[j]) * t ** 3) for j in (0, 1)))
+    acum = [0.0]
+    for a, b in zip(densos, densos[1:]):
+        acum.append(acum[-1] + math.hypot(b[0] - a[0], b[1] - a[1]))
+    total = acum[-1]
+    s_fin = total - hueco_fin
+    if s_fin - hueco_ini < 12:
+        hueco_ini = 0.0
+        s_fin = max(total - min(hueco_fin, total * 0.3), 6.0)
+
+    def base(s):
+        j = max(1, next((k for k, v in enumerate(acum) if v >= s), len(acum) - 1))
+        a, b, f = densos[j - 1], densos[j], (s - acum[j - 1]) / ((acum[j] - acum[j - 1]) or 1.0)
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        d = math.hypot(dx, dy) or 1.0
+        return (a[0] + dx * f, a[1] + dy * f), (dx / d, dy / d)
+
+    partes, s = [], hueco_ini
+    while s < s_fin:
+        (x, y), (ux, uy) = base(s)
+        cola = min(1.0, max(0.0, (s_fin - s) / 14))          # amplitud 0 al llegar a la flecha
+        desvio = amp * cola * min(1.0, (s - hueco_ini) / 8 + 0.15) * math.sin(2 * math.pi * (s - hueco_ini) / lam)
+        partes.append((x - uy * desvio, y + ux * desvio))
+        s += 2.5
+    (xf, yf), (ux, uy) = base(s_fin)
+    partes.append((xf, yf))
+    path = "M " + " L ".join(f"{x:.1f},{y:.1f}" for x, y in partes)
+    return path, xf, yf, ux, uy
+
+
+def _punta_de_flecha(x, y, dx, dy):
+    """Triángulo de punta de flecha en (x, y) apuntando en la dirección (dx, dy); mismo tamaño que el marcador «arr»."""
+    L = math.sqrt(dx**2 + dy**2) or 1.0
+    ux, uy = dx / L, dy / L
+    nx, ny = -uy, ux
+    punta = (x + ux * 4.5, y + uy * 4.5)
+    bx, by = x - ux * 16.5, y - uy * 16.5
+    return (f'<path class="punta" d="M{punta[0]:.1f},{punta[1]:.1f} L{bx + nx * 9:.1f},{by + ny * 9:.1f} '
+            f'L{bx - nx * 9:.1f},{by - ny * 9:.1f} Z" fill="#1b1b1f"/>')
 
 
 def _avanza(x1, y1, x2, y2, r):
@@ -251,7 +341,7 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
         return x1, y1, x1+dx*r, y1+dy*r
 
     portador_balon = (data.get("balon_inicio") or {}).get("portador")
-    movimientos = sorted(data.get("movimientos", []), key=lambda m: m.get("orden", 0))
+    movimientos = _unir_botes_seguidos(sorted(data.get("movimientos", []), key=lambda m: m.get("orden", 0)))
     for mov in movimientos:
         tipo      = mov.get("tipo", "desplazamiento")
         de        = mov.get("de")
@@ -266,6 +356,19 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
             curvature = float(curva_raw)
 
         x1, y1 = to_px(*posiciones[de])
+
+        if tipo == "bote" and "_ruta" in mov:
+            # slalom: varios botes seguidos del mismo jugador, una sola onda continua con una flecha
+            ruta = _apartar_de_conos([(x1, y1)] + [to_px(*posicion_de(p, tipo_pista)) for p in mov["_ruta"]],
+                                     [to_px(*p) for p in pos_conos])
+            path_d, xf, yf, ux, uy = _ruta_ondulada(ruta, RADIO_JUGADOR + (32 if portador_balon == de else 6), 26)
+            svg.append(f'<path d="{path_d}" fill="none" stroke="#ffffff" stroke-width="8" opacity="0.9" '
+                       f'stroke-linecap="round" stroke-linejoin="round"/>')
+            svg.append(f'<path d="{path_d}" fill="none" stroke="#1b1b1f" stroke-width="3" '
+                       f'stroke-linecap="round" stroke-linejoin="round"/>')
+            svg.append(_punta_de_flecha(xf, yf, ux, uy))
+            posiciones[de] = posicion_de(mov["a_pos"], tipo_pista)
+            continue
 
         if tipo in ("desplazamiento", "bote") and "a_pos" in mov:
             p = posicion_de(mov["a_pos"], tipo_pista)
@@ -283,7 +386,14 @@ def _draw_players_and_moves(svg: list, data: dict, to_px) -> None:
                 svg.append(f'<path d="{path_d}" fill="none" stroke="#ffffff" stroke-width="8" opacity="0.9" '
                            f'stroke-linecap="round" stroke-linejoin="round"/>')
                 svg.append(f'<path d="{path_d}" fill="none" stroke="#1b1b1f" stroke-width="3" '
-                           f'stroke-linecap="round" stroke-linejoin="round" marker-end="url(#arr)"/>')
+                           f'stroke-linecap="round" stroke-linejoin="round"/>')
+                # Punta dibujada a mano: con marker-end, el conversor a PNG (PDF) orientaba la punta de las ondas
+                # según su primer tramo y salía girada («mirando al otro lado»).
+                if curvature is not None:
+                    punta_dx, punta_dy = c - cx_ctrl, d2 - cy_ctrl
+                else:
+                    punta_dx, punta_dy = c - a, d2 - b
+                svg.append(_punta_de_flecha(c, d2, punta_dx, punta_dy))
             else:  # desplazamiento — solid line
                 if curvature is not None:
                     cx_ctrl, cy_ctrl = _bezier_ctrl_pt(a, b, c, d2, curvature)
