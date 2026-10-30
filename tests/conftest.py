@@ -18,6 +18,12 @@ RAIZ     = Path(__file__).resolve().parent.parent
 API_DIR  = RAIZ / "api"
 DATA_DIR = RAIZ / "data"
 EXERCISES_JSON = DATA_DIR / "exercises.json"
+# La biblioteca completa (ejercicios, jugadas, teoría) es privada y no viene en el repositorio público
+# (docs/datos-privados.md). Sin ella los tests usan la muestra y se saltan los que dependen del contenido.
+BIBLIOTECA_COMPLETA = EXERCISES_JSON.exists()
+if not BIBLIOTECA_COMPLETA:
+    EXERCISES_JSON = DATA_DIR / "muestra_ejercicios.json"
+REQUIEREN_BIBLIOTECA: set[str] = set()   # módulos de test que necesitan la biblioteca completa
 
 # Antes de importar nada de api/: la biblioteca de ejercicios del repo, no la del
 # contenedor (/app/data/...).
@@ -52,3 +58,12 @@ def ejercicios():
     los dicts con '_fase', así que no se comparte entre tests)."""
     with open(EXERCISES_JSON, encoding="utf-8") as f:
         return json.load(f)
+
+
+def pytest_collection_modifyitems(config, items):
+    if BIBLIOTECA_COMPLETA:
+        return
+    salto = pytest.mark.skip(reason="necesita la biblioteca privada (docs/datos-privados.md)")
+    for item in items:
+        if item.module.__name__.split(".")[-1] in REQUIEREN_BIBLIOTECA:
+            item.add_marker(salto)

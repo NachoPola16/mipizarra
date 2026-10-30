@@ -1,220 +1,221 @@
-# Sistema de coordenadas MiPizarra
+# MiPizarra coordinate system
 
-**Referencia única** para coordenadas de diagramas. Si cambias algo aquí, también hay que
-cambiarlo en los 3 SYSTEM prompts que ven al modelo:
+**Single reference** for diagram coordinates. If you change anything here, it must also be changed in the
+3 SYSTEM prompts the model sees:
 
-- `experimental/generar_dataset.py` → constante `SYSTEM_DIAGRAMA`
-- `api/diagramas.py` → función `generar_coordenadas_ejercicio` (texto del prompt)
-- `experimental/exportar_a_ollama.py` → constante `MODELFILE_TEMPLATE` (SYSTEM del Modelfile)
+- `experimental/generar_dataset.py` → constant `SYSTEM_DIAGRAMA`
+- `api/diagramas.py` → function `generar_coordenadas_ejercicio` (prompt text)
+- `experimental/exportar_a_ollama.py` → constant `MODELFILE_TEMPLATE` (the Modelfile's SYSTEM)
 
-## Convenciones
+Identifiers, position names and JSON values stay in Spanish because they are the data format the model
+and the library use; the explanations are in English.
 
-- Coordenadas normalizadas: `(x, y) ∈ [0, 100]`.
-- **X**: 0 = lateral izquierdo, 100 = lateral derecho, 50 = centro.
-- **Y** (media pista): 0 = línea de fondo (debajo del aro), 100 = línea de medio campo.
-- **Y** (pista completa): 0 = línea de fondo ataque (debajo del aro propio), 100 = línea de fondo defensa
-  (debajo del aro rival). 50 = medio campo.
-- Las coordenadas se mapean a píxeles en `api/diagram_renderer.py:to_px`.
+## Conventions
 
-> **Izquierda/derecha** — los nombres de posición usan la perspectiva del jugador atacante
-> mirando al aro desde la cabecera. Su mano derecha es el lado de x bajas (izquierda del papel
-> impreso). En el diagrama, las posiciones "derechas" aparecen a la izquierda visual.
+- Normalized coordinates: `(x, y) ∈ [0, 100]`.
+- **X**: 0 = left sideline, 100 = right sideline, 50 = center.
+- **Y** (half court): 0 = baseline (under the hoop), 100 = half-court line.
+- **Y** (full court): 0 = attacking baseline (under our own hoop), 100 = defensive baseline (under the
+  opponent's hoop). 50 = half-court line.
+- Coordinates are mapped to pixels in `api/diagram_renderer.py:to_px`.
+
+> **Left/right** — position names use the point of view of the attacking player facing the hoop from the
+> top of the key. Their right hand is the low-x side (the left of the printed paper). In the diagram,
+> "right" positions therefore appear on the visual left.
 
 ## Posiciones canónicas (media pista)
 
-| Posición                    | x  | y   | Notas                                              | Nombre (`pos`)                |
+Canonical positions (half court). The first column is the Spanish label, the last one is the name used in the code.
+
+| Posición                    | x  | y   | Notes                                              | Nombre (`pos`)                |
 |-----------------------------|-----|-----|----------------------------------------------------|-------------------------------|
-| Canasta / aro               | 50 | 11  | Centro del aro                                     | `canasta`                     |
-| Línea de fondo centro       | 50 |  5  | Debajo del aro                                     | `linea_de_fondo_centro`       |
-| Poste bajo derecho          | 38 | 18  | Junto al borde derecho del área, cerca de la línea de fondo | `poste_bajo_derecho`          |
-| Poste bajo izquierdo        | 62 | 18  | Junto al borde izquierdo del área, cerca de la línea de fondo | `poste_bajo_izquierdo`        |
-| Esquina triple derecha      |  6 | 22  | Esquina derecha, triple FIBA                       | `esquina_triple_derecha`      |
-| Esquina triple izquierda    | 94 | 22  | Esquina izquierda, triple FIBA                     | `esquina_triple_izquierda`    |
-| Esquina mini derecha        | 10 | 22  | Esquina derecha, triple minibasket (U8-U12)        | `esquina_mini_derecha`        |
-| Esquina mini izquierda      | 90 | 22  | Esquina izquierda, triple minibasket (U8-U12)      | `esquina_mini_izquierda`      |
-| Poste alto derecho          | 38 | 36  | Borde derecho del área, altura de la línea TL      | `poste_alto_derecho`          |
-| Poste alto izquierdo        | 62 | 36  | Borde izquierdo del área, altura de la línea TL    | `poste_alto_izquierdo`        |
-| Codo derecho                | 35 | 41  | Esquina derecha de la línea de tiros libres        | `codo_derecho`                |
-| Codo izquierdo              | 65 | 41  | Esquina izquierda de la línea de tiros libres      | `codo_izquierdo`              |
-| Línea TL (centro)           | 50 | 41  | Punto de tiro libre                                | `linea_tl_centro`             |
-| Media distancia derecha     | 15 | 50  | Entre el codo derecho y el 45° derecho             | `media_distancia_derecha`     |
-| Media distancia izquierda   | 85 | 50  | Entre el codo izquierdo y el 45° izquierdo         | `media_distancia_izquierda`   |
-| 45° derecho                 | 25 | 50  | A 45° respecto al aro, lado derecho                | `45_derecho`                  |
-| 45° izquierdo               | 75 | 50  | A 45° respecto al aro, lado izquierdo              | `45_izquierdo`                |
-| Arco de triple (frontal)    | 50 | 60  | Tope superior del arco triple FIBA                 | `arco_triple_frontal`         |
-| Cabecera / Frontal          | 50 | 65  | Posición frontal al aro, fuera del triple          | `cabecera`                    |
+| Canasta / aro               | 50 | 11  | Center of the hoop                                 | `canasta`                     |
+| Línea de fondo centro       | 50 |  5  | Under the hoop                                     | `linea_de_fondo_centro`       |
+| Poste bajo derecho          | 38 | 18  | Next to the right edge of the paint, near the baseline | `poste_bajo_derecho`      |
+| Poste bajo izquierdo        | 62 | 18  | Next to the left edge of the paint, near the baseline | `poste_bajo_izquierdo`     |
+| Esquina triple derecha      |  6 | 22  | Right corner, FIBA three-point line                | `esquina_triple_derecha`      |
+| Esquina triple izquierda    | 94 | 22  | Left corner, FIBA three-point line                 | `esquina_triple_izquierda`    |
+| Esquina mini derecha        | 10 | 22  | Right corner, minibasket three-point line (U8-U12) | `esquina_mini_derecha`        |
+| Esquina mini izquierda      | 90 | 22  | Left corner, minibasket three-point line (U8-U12)  | `esquina_mini_izquierda`      |
+| Poste alto derecho          | 38 | 36  | Right edge of the paint, at free-throw-line height | `poste_alto_derecho`          |
+| Poste alto izquierdo        | 62 | 36  | Left edge of the paint, at free-throw-line height  | `poste_alto_izquierdo`        |
+| Codo derecho                | 35 | 41  | Right end of the free-throw line (elbow)           | `codo_derecho`                |
+| Codo izquierdo              | 65 | 41  | Left end of the free-throw line (elbow)            | `codo_izquierdo`              |
+| Línea TL (centro)           | 50 | 41  | Free-throw point                                   | `linea_tl_centro`             |
+| Media distancia derecha     | 15 | 50  | Between the right elbow and the right 45°          | `media_distancia_derecha`     |
+| Media distancia izquierda   | 85 | 50  | Between the left elbow and the left 45°            | `media_distancia_izquierda`   |
+| 45° derecho                 | 25 | 50  | At 45° from the hoop, right side                   | `45_derecho`                  |
+| 45° izquierdo               | 75 | 50  | At 45° from the hoop, left side                    | `45_izquierdo`                |
+| Arco de triple (frontal)    | 50 | 60  | Top of the FIBA three-point arc                    | `arco_triple_frontal`         |
+| Cabecera / Frontal          | 50 | 65  | Straight in front of the hoop, outside the arc     | `cabecera`                    |
 | Medio campo derecha         | 25 | 95  |                                                    | `medio_campo_derecha`         |
 | Medio campo izquierda       | 75 | 95  |                                                    | `medio_campo_izquierda`       |
 | Centro medio campo          | 50 | 100 |                                                    | `centro_medio_campo`          |
 
-### Posiciones con nombre en el JSON
+### Named positions in the JSON
 
-Además de `{"x": .., "y": ..}`, cualquier punto del diagrama puede darse por el nombre de la
-columna «Nombre» de la tabla anterior. El diccionario vive en un único módulo,
-`api/posiciones.py` (`POSICIONES_CANONICAS`), que usan el renderer, el validador y las
-plantillas; `tests/test_posiciones.py` comprueba que coincide con esta tabla.
+Besides `{"x": .., "y": ..}`, any point of the diagram can be given by the name in the "Nombre" column of
+the table above. The dictionary lives in a single module, `api/posiciones.py` (`POSICIONES_CANONICAS`),
+used by the renderer, the validator and the templates; `tests/test_posiciones.py` checks that it matches
+this table.
 
-| Dónde            | Con coordenadas                | Con nombre                          |
+| Where            | With coordinates               | With a name                         |
 |------------------|--------------------------------|-------------------------------------|
-| Jugador          | `{"id": "A1", "x": 35, "y": 41}` | `{"id": "A1", "pos": "codo_derecho"}` |
-| Cono             | `{"x": 94, "y": 22}`           | `{"pos": "esquina_triple_izquierda"}` |
-| `a_pos`          | `{"x": 38, "y": 18}`           | `"poste_bajo_derecho"` o `{"pos": "poste_bajo_derecho"}` |
+| Player           | `{"id": "A1", "x": 35, "y": 41}` | `{"id": "A1", "pos": "codo_derecho"}` |
+| Cone             | `{"x": 94, "y": 22}`           | `{"pos": "esquina_triple_izquierda"}` |
+| `a_pos`          | `{"x": 38, "y": 18}`           | `"poste_bajo_derecho"` or `{"pos": "poste_bajo_derecho"}` |
 
-- Si un punto trae a la vez `x`/`y` y `pos`, mandan `x` e `y`.
-- El nombre se normaliza: da igual mayúsculas, tildes, espacios o guiones
+- If a point carries both `x`/`y` and `pos`, `x` and `y` win.
+- The name is normalized: case, accents, spaces and hyphens do not matter
   (`"Codo derecho"` = `"codo_derecho"`).
-- Un nombre que no está en la tabla es un error claro (`posición desconocida '...'`, con
-  sugerencias si se parece a uno válido): el validador rechaza el diagrama y el renderer
-  lanza `PosicionDesconocida` (un `ValueError`).
-- En `pista_completa` el nombre se sitúa en la mitad de ataque: la `y` de la tabla se divide
-  entre dos (`codo_derecho` → `(35, 20.5)`, `centro_medio_campo` → `(50, 50)`).
+- A name that is not in the table is a clear error (`posición desconocida '...'`, with suggestions if it
+  resembles a valid one): the validator rejects the diagram and the renderer raises
+  `PosicionDesconocida` (a `ValueError`).
+- In `pista_completa` the name is placed in the attacking half: the table's `y` is divided by two
+  (`codo_derecho` → `(35, 20.5)`, `centro_medio_campo` → `(50, 50)`).
 
-Los prompts del modelo y el JSON Schema que se le pide **no** usan todavía los nombres
-(siguen pidiendo `x`/`y`); de momento los nombres sirven para diagramas escritos a mano,
-plantillas y para reparar respuestas del modelo (ver «Reparación en el validador»).
+The model prompts and the JSON Schema it is asked for do **not** use names yet (they still ask for
+`x`/`y`); for now names serve hand-written diagrams, templates and repairing model answers (see
+"Validator repairs").
 
-## Marcadores solapados
+## Overlapping markers
 
-Dos jugadores, o un jugador y un cono, a menos de **8 unidades** se solapan en el dibujo.
-`api/solapes.py` (`separar_puntos`) los separa de forma mínima, estable y determinista:
+Two players, or a player and a cone, closer than **8 units** overlap in the drawing. `api/solapes.py`
+(`separar_puntos`) separates them minimally, stably and deterministically:
 
-- Los puntos se colocan por orden (atacantes, defensores, conos): los primeros no se mueven y
-  el que llega después se aparta hasta la posición válida más cercana (a 8 unidades de todos
-  los ya colocados), dentro de la pista y a no más de 8 unidades de donde estaba.
-- Dos conos juntos no cuentan como solape.
-- Si no hay hueco cerca, el punto se queda donde estaba.
-- Las distancias se miden en unidades 0-100, igual en media pista y en pista completa.
+- Points are placed in order (attackers, defenders, cones): the first ones do not move and each later one
+  moves aside to the nearest valid position (8 units from all those already placed), inside the court and
+  no more than 8 units from where it was.
+- Two cones together do not count as an overlap.
+- If there is no room nearby, the point stays where it was.
+- Distances are measured in 0-100 units, the same in half court and full court.
 
-El **renderer** aplica esta separación solo al dibujar: el JSON guardado no cambia, y un
-diagrama sin solapes se dibuja exactamente igual que antes. Los movimientos de un jugador
-desplazado salen de su posición dibujada.
+The **renderer** applies this separation only when drawing: the stored JSON does not change, and a diagram
+without overlaps is drawn exactly as before. The movements of a displaced player start from its drawn position.
 
-## Reparación en el validador
+## Validator repairs
 
-`_validar_diagrama` (`api/diagramas.py`) arregla en el propio diagrama lo que tiene una
-solución determinista antes de rechazarlo, y registra cada arreglo en el log:
+`_validar_diagrama` (`api/diagramas.py`) fixes in the diagram itself whatever has a deterministic solution
+before rejecting it, and logs every fix:
 
-1. **`a_pos` que falta** en `desplazamiento`, `bote` o `bloqueo`. Solo se rellena cuando el
-   diagrama lo dice sin ambigüedad; nunca se inventan coordenadas:
-   - `a` es una posición: `{"x", "y"}` o un nombre de la tabla (`"a": "codo_derecho"`);
-     se pasa a `a_pos` y se quita `a`.
-   - `bloqueo` con `a` = id de un defensor: `a_pos` es donde está ese defensor en ese momento
-     (teniendo en cuenta sus movimientos anteriores).
-   - El siguiente movimiento del mismo jugador (por `orden`) dice dónde empieza con el campo
-     opcional `desde` (`{"x", "y"}` o nombre): ese punto es el `a_pos`.
+1. **Missing `a_pos`** in `desplazamiento`, `bote` or `bloqueo`. It is only filled when the diagram says it
+   unambiguously; coordinates are never invented:
+   - `a` is a position: `{"x", "y"}` or a name from the table (`"a": "codo_derecho"`); it becomes `a_pos`
+     and `a` is removed.
+   - `bloqueo` with `a` = a defender's id: `a_pos` is where that defender is at that moment (taking its
+     earlier movements into account).
+   - The same player's next movement (by `orden`) says where it starts with the optional `desde` field
+     (`{"x", "y"}` or a name): that point is the `a_pos`.
 
-   `bote`/`desplazamiento` «hacia» otro jugador (`"a": "A1"`) no dice dónde termina y sigue
-   siendo un error (`movimiento 'bote' sin 'a_pos'`), igual que si no hay ninguna pista.
-2. **Jugadores a menos de 8 unidades**: se separan con `separar_puntos` (solo jugadores,
-   el primero declarado se queda). Si alguno no tiene hueco a 8 unidades o menos, no se toca
-   nada y se mantiene el error `demasiado cerca`.
+   A `bote`/`desplazamiento` "toward" another player (`"a": "A1"`) does not say where it ends and remains
+   an error (`movimiento 'bote' sin 'a_pos'`), as does the case with no hint at all.
+2. **Players closer than 8 units**: separated with `separar_puntos` (players only, the first declared stays).
+   If any has no room within 8 units, nothing is touched and the `demasiado cerca` error remains.
 
-## Carriles
+## Lanes
 
-Sistema de referencia para transición, contraataque y repliegue. El campo se divide en franjas
-verticales independientemente de la longitud (aplica igual a media pista y pista completa).
+Reference system for transition, fast break and recovery. The court is divided into vertical strips
+regardless of length (it applies equally to half court and full court).
 
-### 5 carriles
+### 5 lanes
 
-| Nº | Nombre                    | X centro | Franja X |
-|----|---------------------------|----------|----------|
-| 1  | Carril lateral derecho    | 10       | 0 – 20   |
-| 2  | Carril interior derecho   | 30       | 20 – 40  |
-| 3  | Carril central            | 50       | 40 – 60  |
-| 4  | Carril interior izquierdo | 70       | 60 – 80  |
-| 5  | Carril lateral izquierdo  | 90       | 80 – 100 |
+| No. | Name                      | Center X | X strip  |
+|-----|---------------------------|----------|----------|
+| 1   | Right wide lane           | 10       | 0 – 20   |
+| 2   | Right inner lane          | 30       | 20 – 40  |
+| 3   | Central lane              | 50       | 40 – 60  |
+| 4   | Left inner lane           | 70       | 60 – 80  |
+| 5   | Left wide lane            | 90       | 80 – 100 |
 
-Ocupación típica en contraataque: carril central → reboteador/pívot;
-carriles 2 y 4 → jugador con balón; carriles 1 y 5 → tiradores en carrera.
+Typical fast-break occupation: central lane → rebounder/center; lanes 2 and 4 → ball handler; lanes 1 and
+5 → shooters on the run.
 
-### 3 carriles (versión simplificada)
+### 3 lanes (simplified version)
 
-| Nº | Nombre           | X centro | Franja X |
-|----|------------------|----------|----------|
-| A  | Banda derecha    | 17       | 0 – 33   |
-| B  | Carril central   | 50       | 33 – 67  |
-| C  | Banda izquierda  | 83       | 67 – 100 |
+| No. | Name             | Center X | X strip  |
+|-----|------------------|----------|----------|
+| A   | Right wing       | 17       | 0 – 33   |
+| B   | Central lane     | 50       | 33 – 67  |
+| C   | Left wing        | 83       | 67 – 100 |
 
-### Posiciones de referencia en transición (pista completa, y = 0–100)
+### Reference positions in transition (full court, y = 0–100)
 
-En `pista_completa`, y=50 es la línea de medio campo.
-Posiciones clave para situar jugadores en cada carril durante la transición:
+In `pista_completa`, y=50 is the half-court line. Key positions for placing players in each lane during
+transition:
 
-| Posición                          | x  | y  | Notas                          |
+| Position                          | x  | y  | Notes                          |
 |-----------------------------------|----|----|--------------------------------|
-| Línea de fondo lateral derecha    | 10 |  3 | Carril 1, línea de fondo       |
-| Línea de fondo interior derecha   | 30 |  3 | Carril 2                       |
-| Línea de fondo lateral izquierda  | 90 |  3 | Carril 5                       |
-| Línea de fondo interior izquierda | 70 |  3 | Carril 4                       |
-| Primer tercio derecho             | 10 | 33 | Carril 1, primer tercio        |
-| Primer tercio interior derecho    | 30 | 33 | Carril 2                       |
-| Primer tercio central             | 50 | 33 | Carril 3                       |
-| Primer tercio interior izquierdo  | 70 | 33 | Carril 4                       |
-| Primer tercio izquierdo           | 90 | 33 | Carril 5                       |
-| Medio campo lateral derecho       | 10 | 50 | Carril 1, línea de medio campo |
-| Medio campo interior derecho      | 30 | 50 | Carril 2                       |
-| Medio campo central               | 50 | 50 | Carril 3                       |
-| Medio campo interior izquierdo    | 70 | 50 | Carril 4                       |
-| Medio campo lateral izquierdo     | 90 | 50 | Carril 5                       |
+| Right wide, baseline              | 10 |  3 | Lane 1, baseline               |
+| Right inner, baseline             | 30 |  3 | Lane 2                         |
+| Left wide, baseline               | 90 |  3 | Lane 5                         |
+| Left inner, baseline              | 70 |  3 | Lane 4                         |
+| First third, right                | 10 | 33 | Lane 1, first third            |
+| First third, right inner          | 30 | 33 | Lane 2                         |
+| First third, central              | 50 | 33 | Lane 3                         |
+| First third, left inner           | 70 | 33 | Lane 4                         |
+| First third, left                 | 90 | 33 | Lane 5                         |
+| Half court, right wide            | 10 | 50 | Lane 1, half-court line        |
+| Half court, right inner           | 30 | 50 | Lane 2                         |
+| Half court, central               | 50 | 50 | Lane 3                         |
+| Half court, left inner            | 70 | 50 | Lane 4                         |
+| Half court, left wide             | 90 | 50 | Lane 5                         |
 
-## Identificadores de jugadores
+## Player identifiers
 
-- Ataque: `A1`–`A5`. Son etiquetas numéricas para identificar jugadores en el diagrama.
-  El número **no implica rol de juego**: A1 no tiene por qué ser el base ni A5 el pívot.
-  El entrenador asigna a sus jugadores reales a cada etiqueta según el ejercicio.
-- Defensa: `D1`–`D5`. Por convención, el número coincide con el atacante al que defienden
-  (D1 defiende a A1, etc.), aunque no es obligatorio.
-- Conos: sin id, solo `{x, y}`.
+- Offense: `A1`–`A5`. They are numeric labels to identify players in the diagram. The number **does not
+  imply a playing role**: A1 need not be the point guard nor A5 the center. The coach assigns real players
+  to each label according to the exercise.
+- Defense: `D1`–`D5`. By convention the number matches the attacker they guard (D1 guards A1, etc.),
+  although it is not mandatory.
+- Cones: no id, just `{x, y}`.
 
-## Tipos de movimiento
+## Movement types
 
-| Tipo             | Campos obligatorios   | Visual                               | Descripción táctica                             |
+| Type             | Required fields       | Visual                               | Tactical meaning                                |
 |------------------|-----------------------|--------------------------------------|-------------------------------------------------|
-| `desplazamiento` | `de`, `a_pos`, `orden`| Línea continua con flecha            | Jugador se mueve sin balón (corte, reposición)  |
-| `pase`           | `de`, `a`, `orden`    | Línea punteada con flecha            | Pase entre dos jugadores identificados          |
-| `bote`           | `de`, `a_pos`, `orden`| Línea ondulada con flecha            | Jugador avanza botando (penetración, progresión)|
-| `tiro`           | `de`, `orden`         | Flecha verde hacia el aro            | Lanzamiento al aro desde la posición actual     |
-| `bloqueo`        | `de`, `a_pos`, `orden`| Línea roja fina + barra perpendicular gruesa al final | El bloqueador se mueve hasta el defensor y planta el bloqueo |
+| `desplazamiento` | `de`, `a_pos`, `orden`| Solid line with arrow                | Player moves without the ball (cut, reposition) |
+| `pase`           | `de`, `a`, `orden`    | Dotted line with arrow               | Pass between two identified players             |
+| `bote`           | `de`, `a_pos`, `orden`| Wavy line with arrow                 | Player advances dribbling (drive, progression)  |
+| `tiro`           | `de`, `orden`         | Green arrow toward the hoop          | Shot at the hoop from the current position      |
+| `bloqueo`        | `de`, `a_pos`, `orden`| Thin red line + thick perpendicular bar at the end | The screener moves to the defender and sets the screen |
 
-`a_pos` admite también una posición con nombre (ver «Posiciones con nombre en el JSON»).
-Cualquier movimiento puede llevar el campo opcional `desde` (punto donde empieza); el
-renderer no lo dibuja, solo lo usa el validador para deducir el `a_pos` del movimiento
-anterior del mismo jugador.
+`a_pos` also accepts a named position (see "Named positions in the JSON"). Any movement can carry the
+optional `desde` field (the point where it starts); the renderer does not draw it, only the validator uses
+it to deduce the `a_pos` of the same player's previous movement.
 
-Nota sobre `pase`: el campo `a` es el **id** del jugador receptor (ej. `"a": "A3"`),
-no una posición. El jugador emisor no actualiza su posición tras el pase.
-`bote` y `desplazamiento` sí actualizan la posición del jugador para los movimientos siguientes.
+Note on `pase`: the `a` field is the receiving player's **id** (e.g. `"a": "A3"`), not a position. The
+passer does not update their position after the pass. `bote` and `desplazamiento` do update the player's
+position for the following movements.
 
-**Terminología:** usar siempre `bloqueo`, nunca `pantalla` en los outputs.
-El modelo puede reconocer "pantalla" en los prompts de entrada, pero en las respuestas
-y en el JSON siempre escribe `bloqueo`.
+**Terminology:** always use `bloqueo`, never `pantalla`, in outputs. The model may recognize "pantalla" in
+input prompts, but in answers and in the JSON it always writes `bloqueo`.
 
-**Restricciones de bloqueo por categoría de edad:**
+**Screen restrictions by age category:**
 
-| Categoría            | Edades (~años) | Bloqueo directo  | Bloqueo indirecto | 1c1 / mano a mano |
+| Category             | Ages (~years)  | Pick and roll    | Off-ball screen   | 1v1 / hand-off    |
 |----------------------|----------------|------------------|-------------------|-------------------|
 | Prebenjamín/Benjamín | U8, U10        | ✗                | ✗                 | ✓                 |
 | Alevín               | U12            | ✗                | ✗                 | ✓                 |
 | Infantil             | U14 (~13-14)   | ✗                | ✓                 | ✓                 |
-| Cadete en adelante   | U16+ (~15+)    | ✓                | ✓                 | ✓                 |
+| Cadete and above     | U16+ (~15+)    | ✓                | ✓                 | ✓                 |
 
-- **U12 e inferiores**: solo acciones individuales (1c1, mano a mano, bote).
-- **U14 (Infantil)**: bloqueos indirectos con normalidad; bloqueo directo solo de forma puntual (según el nivel del equipo o en una jugada concreta), no como contenido central.
-- **U16 (Cadete) en adelante**: bloqueo directo e indirecto con plena normalidad.
+- **U12 and below**: individual actions only (1v1, hand-off, dribbling).
+- **U14 (Infantil)**: off-ball screens as normal; pick and roll only occasionally (depending on the team's
+  level or in a specific play), not as central content.
+- **U16 (Cadete) and above**: pick and roll and off-ball screens as normal.
 
-**Juego de poste bajo**: no es una acción ilegal en categorías de formación (U8-U12),
-pero no se recomienda enseñarla — no aporta a esas edades. `vocabulario_tecnico()` en
-`sesion.py` ya excluye "poste bajo" y el vocabulario de bloqueos del prompt de
-sesión para estas categorías.
+**Low-post play**: it is not an illegal action in youth categories (U8-U12), but teaching it is not
+recommended — it adds nothing at those ages. `vocabulario_tecnico()` in `sesion.py` already excludes "poste
+bajo" and the screen vocabulary from the session prompt for these categories.
 
-## Plantillas de calentamiento y vuelta a la calma
+## Warm-up and cool-down templates
 
-`api/plantillas.py` genera sin modelo diagramas de media pista para las partes de la sesión
-que no tienen ficha. `generar_plantilla(nombre, n_jugadores, n_conos=None)` devuelve el JSON de
-diagrama de siempre (`x`/`y` numéricos, ids `A1..An` y `D1..Dn`), válido para
-`_validar_diagrama` sin reparaciones y sin marcadores solapados.
+`api/plantillas.py` generates, without a model, half-court diagrams for the parts of the session that have
+no card. `generar_plantilla(nombre, n_jugadores, n_conos=None)` returns the usual diagram JSON (numeric
+`x`/`y`, ids `A1..An` and `D1..Dn`), valid for `_validar_diagrama` without repairs and without overlapping
+markers. The "Moment" values are the ones used in the code.
 
-| Plantilla                 | Momento            | Jugadores | Conos (defecto) |
+| Template                  | Moment             | Players   | Cones (default) |
 |---------------------------|--------------------|-----------|-----------------|
 | `filas_esquinas`          | calentamiento      | 2-12      | 0-2 (0)         |
 | `circuito_conos`          | calentamiento      | 2-12      | 3-10 (6)        |
@@ -229,22 +230,19 @@ diagrama de siempre (`x`/`y` numéricos, ids `A1..An` y `D1..Dn`), válido para
 | `estiramientos_en_lineas` | vuelta a la calma  | 2-12      | 0-2 (0)         |
 | `tiros_libres_rotacion`   | vuelta a la calma  | 2-12      | 0-2 (0)         |
 
-Un nombre desconocido o un número fuera de rango lanza `ValueError`. En el rondo y el
-pilla-pilla los defensores (`D`) son los que roban o pillan. Las plantillas aún no se usan
-en la generación de sesiones.
+An unknown name or an out-of-range number raises `ValueError`. In the rondo and the tag game the defenders
+(`D`) are the ones who steal or tag. The templates are not yet used when generating sessions.
 
-## Campo opcional `curva`
+## Optional `curva` field
 
-`desplazamiento`, `pase`, `bote` y `tiro` aceptan el campo `"curva"`.
-`bloqueo` lo ignora (siempre se dibuja recto).
+`desplazamiento`, `pase`, `bote` and `tiro` accept the `"curva"` field. `bloqueo` ignores it (always drawn straight).
 
-La línea se dibuja como una curva en lugar de recta:
+The line is drawn as a curve instead of straight:
 
-- `"curva": true` → desvío lateral de ~1 metro (valor por defecto, válido para la mayoría de casos)
-- `"curva": 60` → desvío mayor (~1.3 m), para rodear un defensor con más amplitud
-- `"curva": 30` → desvío suave (~0.7 m), para una trayectoria ligeramente curvada
-- `"curva": -40` → misma curvatura pero al lado contrario
+- `"curva": true` → sideways deviation of ~1 meter (default value, valid for most cases)
+- `"curva": 60` → larger deviation (~1.3 m), to go around a defender more widely
+- `"curva": 30` → gentle deviation (~0.7 m), for a slightly curved path
+- `"curva": -40` → same curvature but to the opposite side
 
-El sentido del desvío es relativo al movimiento: positivo curva hacia la izquierda
-del jugador según su dirección de desplazamiento; negativo, hacia su derecha.
-Para `bote`, la onda sinusoidal sigue la curva.
+The direction of the deviation is relative to the movement: positive curves to the left of the player
+according to their direction of travel; negative, to their right. For `bote`, the sine wave follows the curve.

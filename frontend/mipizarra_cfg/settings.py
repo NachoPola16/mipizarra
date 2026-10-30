@@ -86,7 +86,7 @@ CSRF_COOKIE_SAMESITE = 'Lax'
 # Detrás de HTTPS (dominio con proxy) conviene DJANGO_COOKIE_SECURE=True; por HTTP en la LAN debe quedar en False
 # o el navegador descarta la cookie y no se puede iniciar sesión.
 SESSION_COOKIE_SECURE = CSRF_COOKIE_SECURE = os.environ.get('DJANGO_COOKIE_SECURE', 'False') == 'True'
-# Orígenes permitidos para los formularios por HTTPS detrás del proxy (p. ej. https://mipizarra.polacabezon.com).
+# Orígenes permitidos para los formularios por HTTPS detrás del proxy (e.g. https://mipizarra.example.com).
 CSRF_TRUSTED_ORIGINS = os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '').split()
 
 STATIC_URL = '/static/'

@@ -1,43 +1,44 @@
 # MiPizarra
 
-> Trabajo en progreso — proyecto personal de aprendizaje.
+> Work in progress — a personal learning project. The app and its training library are in Spanish
+> (they target Spanish youth basketball); the documentation is in English.
 
-Asistente de entrenamiento de baloncesto con IA 100% local. Dado un objetivo táctico, una categoría de edad y la duración disponible, genera una sesión completa con ejercicios y diagramas tácticos en SVG.
+A basketball coaching assistant running on a 100% local AI. Given a tactical goal, an age category and the available time, it generates a complete training session with exercises and tactical diagrams in SVG.
 
-No usa ninguna API externa: el LLM, los embeddings y la base de datos vectorial corren en tu propio hardware.
+It uses no external API: the LLM, the embeddings and the vector database all run on your own hardware.
 
-## Funcionamiento
+## How it works
 
-1. El usuario describe el objetivo del entrenamiento (ej. "Entrenamiento de tiro, tipos de salidas y contraataque, 90 minutos").
-2. El RAG recupera ejercicios y teoría relevantes de la biblioteca JSON + ChromaDB.
-3. Un LLM local redacta la sesión.
-4. El renderer SVG determinista genera los diagramas tácticos (media pista / pista completa).
+1. The user describes the training goal (e.g. "Shooting, types of exits and fast break, 90 minutes").
+2. RAG retrieves relevant exercises and theory from the JSON library + ChromaDB.
+3. A local LLM writes the session.
+4. A deterministic SVG renderer draws the tactical diagrams (half court / full court).
 
-Además de sesiones completas, permite pedir un ejercicio concreto, corregir ejercicios ya generados y consultar dudas de reglamento.
+Besides complete sessions, it can produce a single exercise on request, correct exercises already generated, and answer rules questions.
 
 ## Stack
 
-- **LLM:** familia Qwen3 (4B) servida con Ollama (el fine-tuning LoRA es experimental, ver `experimental/`)
+- **LLM:** Qwen3 family (4B) served with Ollama (LoRA fine-tuning is experimental, see `experimental/`)
 - **Embeddings:** `nomic-embed-text` via Ollama
-- **RAG:** biblioteca de ejercicios en JSON + ChromaDB
-- **Diagramas:** renderer SVG determinista (Python puro, sin dependencias gráficas)
+- **RAG:** exercise library in JSON + ChromaDB
+- **Diagrams:** deterministic SVG renderer (pure Python, no graphics dependencies)
 - **API:** FastAPI + rate limiting
 - **Frontend:** Django
-- **Infra:** Docker Compose con GPU NVIDIA
+- **Infra:** Docker Compose with an NVIDIA GPU
 
-## Arranque rápido
+## Quick start
 
-Requiere Docker con soporte NVIDIA.
+Requires Docker with NVIDIA support.
 
 ```bash
 cp .env.example .env
-# Edita .env si quieres restringir BIND_IP a tu red local
+# Edit .env if you want to restrict BIND_IP to your local network
 docker compose up -d
 docker exec -it mipizarra-ollama ollama pull qwen3:4b-instruct
 docker exec -it mipizarra-ollama ollama pull nomic-embed-text
 ```
 
-## Uso de la API
+## Using the API
 
 ```bash
 curl -X POST http://localhost:8090/generar \
@@ -45,42 +46,44 @@ curl -X POST http://localhost:8090/generar \
   -d '{"edad":"U16","duracion":90,"objetivo":"bloqueo directo"}'
 ```
 
-## Tests de regresión
+## Regression tests
 
-Dos niveles, para detectar si un cambio de modelo o de prompts empeora la calidad:
+Two levels, to detect whether a model or prompt change makes quality worse:
 
-**Tests offline** (`tests/`, sin Ollama ni red): validador de diagramas, filtrado y
-selección de ejercicios, parseo de sesiones (incluidas variantes N.1/N.2), renderer SVG
-sobre toda la biblioteca e invariantes de `data/exercises.json`.
+**Offline tests** (`tests/`, no Ollama and no network): diagram validator, exercise filtering and
+selection, session parsing (including N.1/N.2 variants), the SVG renderer over the whole library
+and the invariants of `data/exercises.json`.
 
 ```bash
 pip install -r requirements-dev.txt
 pytest
 ```
 
-**Arnés en vivo** (`tools/regresion.py`): lanza 15 casos fijos (6 sesiones, 2 ejercicios
-con diagrama y 7 preguntas de reglamento) contra la API real y comprueba estructura de
-la sesión, diagramas, reglas de edad (≤U12) y que no se citen fuentes. Necesita la API
-levantada con Ollama y GPU.
+**Live harness** (`tools/regresion.py`): runs 15 fixed cases (6 sessions, 2 exercises with a
+diagram and 7 rules questions) against the real API and checks the session structure, the diagrams,
+the age rules (≤U12) and that no sources are cited. It needs the API running with Ollama and a GPU.
 
 ```bash
-python tools/regresion.py                                  # guarda data/regresion/AAAA-MM-DD_HHMM.json
+python tools/regresion.py                                  # saves data/regresion/YYYY-MM-DD_HHMM.json
 python tools/regresion.py --solo sesiones                  # sesiones | ejercicios | reglamento
-python tools/regresion.py --comparar data/regresion/<anterior>.json
+python tools/regresion.py --comparar data/regresion/<previous>.json
 ```
 
-Muestra una tabla en consola y devuelve código de salida 1 si falla algún criterio duro
-o si `--comparar` detecta empeoramientos. Lanza una ejecución de referencia antes de
-cambiar modelo o prompts y compara después. El límite de `/generar` (10/hora por IP)
-solo permite una ejecución completa por hora; reiniciar el contenedor de la API lo
-resetea. Los resultados no se versionan (`data/regresion/` está en `.gitignore`).
+It prints a table to the console and exits with code 1 if any hard criterion fails or if
+`--comparar` detects a regression. Run a reference pass before changing the model or prompts and
+compare afterwards. The `/generar` limit (10/hour per IP) only allows one full run per hour;
+restarting the API container resets it. Results are not versioned (`data/regresion/` is in `.gitignore`).
 
-## Documentación
+## Documentation
 
-- [Arquitectura](docs/arquitectura.md)
-- [Entrenamiento del modelo](ENTRENAMIENTO_MODELO.md) (experimental, no forma parte del flujo actual)
-- [Esquema de ejercicios](docs/esquema-ejercicios.md)
-- [Administración de fichas](docs/administracion-fichas.md) (pestaña «Fichas» para editar fichas y diagramas)
-- [Coordenadas del diagrama](docs/coordenadas.md)
-- [Seguridad y despliegue](SEGURIDAD.md)
-- [Hoja de ruta](docs/fases.md)
+- [Architecture](docs/arquitectura.md)
+- [Model training](MODEL_TRAINING.md) (experimental, not part of the current flow)
+- [Exercise schema](docs/esquema-ejercicios.md)
+- [Exercise administration](docs/administracion-fichas.md) (the "Fichas" tab for editing exercises and diagrams)
+- [Diagram coordinates](docs/coordenadas.md)
+- [Security and deployment](SECURITY.md)
+- [Roadmap](docs/fases.md)
+
+## License
+
+Code: [MIT](LICENSE).

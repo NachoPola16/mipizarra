@@ -56,3 +56,18 @@ data/cambios/
 
 # Ajustes locales de este PC (modelo grande con GPU); el servidor no lo usa
 docker-compose.override.yml
+
+# Local agent/design context (not public)
+.claude/
+AGENTS.md
+CLAUDE.md
+PRODUCT.md
+DESIGN.md
+PLAN_IA.md
+
+# Biblioteca privada (vive en el repo privado mipizarra-data, ver docs/datos-privados.md)
+/.git-datos/
+/data/exercises.json
+/data/teoria/*
+!/data/teoria/.gitkeep
+/frontend/pizarra/static/pizarra/data/jugadas.json

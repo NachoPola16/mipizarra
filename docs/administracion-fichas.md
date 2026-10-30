@@ -1,80 +1,88 @@
-# Administración de fichas (pestaña «Fichas»)
+# Exercise administration (the "Fichas" tab)
 
-Pestaña solo para la cuenta administradora (`JUGADAS_ADMIN`, por defecto `nacho`; la misma del botón de la biblioteca de
-jugadas). Está en `/fichas/` y enseña la pestaña en la cabecera solo a esa cuenta. Permite revisar las fichas una a una y
-cambiar **cualquier campo, diagrama incluido**, sin tocar git ni redesplegar.
+A tab only for the administrator account (`JUGADAS_ADMIN`, `nacho` by default; the same one as the play
+library button). It lives at `/fichas/` and the tab is shown in the header only to that account. It lets
+you review exercises one by one and change **any field, diagram included**, without touching git or
+redeploying.
 
-## Qué se puede hacer
+## What you can do
 
-- Lista con buscador (nombre, id, texto), filtros por edad y categoría y «solo modificadas»; Anterior / Siguiente.
-- Todos los campos del [esquema](esquema-ejercicios.md): nombre, categoría, subcategoría, espacio, edades, duración,
-  intensidad, carga cognitiva, jugadores mínimos, objetivos, descripción, puntos clave, material, consigna, errores,
-  qué observar y progresión.
-- Diagrama: sin diagrama (la IA dibuja uno al generar), juego libre, uno o varios (con título). La vista previa la dibuja el
-  servidor (la misma que verán en las sesiones); se arrastran jugadores, conos y destinos de movimiento sobre ella, hay
-  tablas de jugadores/conos/balón/movimientos y un JSON avanzado.
-- **Deshacer / rehacer** mientras se edita (botones o Ctrl+Z / Ctrl+Y, como en las jugadas): cada paso es una foto del
-  formulario entero (campos y diagrama); lo que se escribe o arrastra seguido cuenta como un paso. Se reinicia al abrir
-  otra ficha o al guardar.
-- Guardar (botón o Ctrl+S), descartar cambios y «Volver a la versión guardada anterior» (pide pulsar dos veces).
+- List with search (name, id, text), filters by age and category and "only modified"; Previous / Next.
+- All fields of the [schema](esquema-ejercicios.md): name, category, subcategory, space, ages, duration,
+  intensity, cognitive load, minimum players, goals, description, key points, material, cue, mistakes,
+  what to observe and progression.
+- Diagram: no diagram (the AI draws one when generating), free play, one or several (with titles). The
+  preview is drawn by the server (the same one that sessions will show); you drag players, cones and
+  movement targets on it, and there are tables for players/cones/ball/movements plus an advanced JSON view.
+- **Undo / redo** while editing (buttons or Ctrl+Z / Ctrl+Y, as in the plays): each step is a snapshot of
+  the whole form (fields and diagram); consecutive typing or dragging counts as one step. It resets when
+  you open another exercise or save.
+- Save (button or Ctrl+S), discard changes and "Go back to the previous saved version" (needs two clicks).
 
-## Dónde se guardan los cambios
+## Where changes are stored
 
-**Directamente en `data/exercises.json`** del servidor (el fichero está montado con permiso de escritura en el contenedor
-de la API). Valen enseguida para generar sesiones. El orden de las claves se conserva para que el `git diff` sea limpio.
+**Directly in the server's `data/exercises.json`** (the file is mounted writable in the API container).
+They take effect immediately for generating sessions. Key order is preserved so `git diff` stays clean.
 
-Red de seguridad **temporal** (`api/fichas_edicion.py`), por si algo sale mal; cuando se vea que no hace falta se apaga con
-variables de entorno de la API (`FICHAS_COPIAS_MAX=0` y `FICHAS_HISTORIAL_MAX=0`):
+A **temporary** safety net (`api/fichas_edicion.py`) in case something goes wrong; once it is clearly not
+needed it can be switched off with API environment variables (`FICHAS_COPIAS_MAX=0` and
+`FICHAS_HISTORIAL_MAX=0`):
 
-- Antes de cada guardado: copia del `exercises.json` entero en `data/cambios/copias/` (se conservan las últimas
-  `FICHAS_COPIAS_MAX`, 20 por defecto).
-- La versión anterior de la ficha va a `data/cambios/ficha_historial.json` (hasta `FICHAS_HISTORIAL_MAX`, 10 por ficha);
-  de ahí sale «Volver a la versión guardada anterior». Sin historial (0) ese botón deja de funcionar.
-- `tools/backup_data.py` incluye `exercises.json` y el historial, porque ahora el fichero del servidor puede ir **por delante
-  de git**.
+- Before every save: a copy of the whole `exercises.json` in `data/cambios/copias/` (the last
+  `FICHAS_COPIAS_MAX` are kept, 20 by default).
+- The previous version of the exercise goes to `data/cambios/ficha_historial.json` (up to
+  `FICHAS_HISTORIAL_MAX`, 10 per exercise); "Go back to the previous saved version" reads from there.
+  Without history (0) that button stops working.
+- `tools/backup_data.py` includes `exercises.json` and the history, because the server's file can now be
+  **ahead of git**.
 
-### Traer las ediciones a git (importante al desplegar)
+### Bringing the edits into git (important when deploying)
 
-**Despliega siempre con `bash tools/desplegar.sh`**: comprueba si el servidor tiene ediciones de fichas sin subir y, si las
-hay, se niega a desplegar e imprime los pasos de abajo; si no, hace el `git pull --ff-only`, reinicia la API y reconstruye
-el frontend. (Un `git pull` a pelo sin esa comprobación solo avisa si el fichero cambió en los dos sitios.)
+**Always deploy with `bash tools/desplegar.sh`**: it checks whether the server has exercise edits not yet
+pushed and, if so, refuses to deploy and prints the steps below; otherwise it does `git pull --ff-only`,
+restarts the API and rebuilds the frontend. (A bare `git pull` without that check only warns when the
+file changed on both sides.)
 
-El servidor puede tener `exercises.json` distinto del de git. Antes de desplegar (`git pull` en el servidor) hay que subir
-esas ediciones, o el `pull` se negará (si ambos tocaron el fichero) o dejará el fichero del servidor como estaba:
+The server may have an `exercises.json` different from git's. Before deploying (`git pull` on the server)
+those edits must be pushed, or the `pull` will refuse (if both touched the file) or leave the server's
+file as it was:
 
 ```bash
-# 1. ¿hay ediciones sin subir? (en el servidor: cd /root/docker/mipizarra; git status --short data/exercises.json)
-# 2. traer el fichero, revisar y subir
-ssh proxmox "pct exec 102 -- cat /root/docker/mipizarra/data/exercises.json" > data/exercises.json
-git diff --stat data/exercises.json      # revisa qué fichas cambiaron
-git add data/exercises.json && git commit -m "fichas: ediciones hechas desde la pestaña Fichas" && git push
-# 3. en el servidor: git checkout -- data/exercises.json && git pull --ff-only   (ya es idéntico al commit)
+# 1. are there unpushed edits? (on the server: cd <install dir>; git status --short data/exercises.json)
+# 2. fetch the file, review and push
+ssh <server> "cat <install dir>/data/exercises.json" > data/exercises.json
+git diff --stat data/exercises.json      # check which exercises changed
+git add data/exercises.json && git commit -m "fichas: edits made from the Fichas tab" && git push
+# 3. on the server: git checkout -- data/exercises.json && git pull --ff-only   (it is now identical to the commit)
 ```
 
-Si se editó una ficha en el servidor y esa misma ficha cambió en git, mezcla a mano (`git diff` por ficha).
+If an exercise was edited on the server and that same exercise changed in git, merge by hand (`git diff` per exercise).
 
-## Validación
+## Validation
 
-Antes de guardar, la API pasa la ficha por `validar_ficha` (esquema, líneas rojas por edad, nombres e ids repetidos,
-límites de duración/intensidad…) y cada diagrama por la validación de diagramas, que además repara lo determinista
-(separar jugadores pegados, deducir `a_pos`): lo que se guarda es lo que se dibuja. Si algo falla no se guarda y la
-respuesta (422) trae la lista de `problemas`. Guardar sin cambios no escribe nada.
+Before saving, the API runs the exercise through `validar_ficha` (schema, age red lines, repeated names and
+ids, duration/intensity limits…) and each diagram through diagram validation, which also repairs what is
+deterministic (separating overlapping players, deducing `a_pos`): what is saved is what is drawn. If
+anything fails nothing is saved and the response (422) carries the list of `problemas`. Saving without
+changes writes nothing.
 
-## API (solo con el secreto interno)
+## API (internal secret only)
 
-| Ruta | Para qué |
+| Route | Purpose |
 |---|---|
-| `GET /admin/fichas` | Todas las fichas e ids con versión anterior (`modificadas`) |
-| `PUT /admin/fichas/{id}` | `{ficha: {...}}` guarda en exercises.json; 422 con `problemas` si no es válida |
-| `DELETE /admin/fichas/{id}` | Vuelve a la versión anterior (404 si no hay) |
-| `POST /admin/diagrama/vista` | `{diagrama}` → `{svg, diagrama}` o 422 con `problemas` |
+| `GET /admin/fichas` | All exercises and the ids that have a previous version (`modificadas`) |
+| `PUT /admin/fichas/{id}` | `{ficha: {...}}` saves to exercises.json; 422 with `problemas` if invalid |
+| `DELETE /admin/fichas/{id}` | Goes back to the previous version (404 if there is none) |
+| `POST /admin/diagrama/vista` | `{diagrama}` → `{svg, diagrama}` or 422 with `problemas` |
 
-La API no tiene usuarios: el permiso lo comprueba la web (`frontend/pizarra/fichas_admin.py`: 404 en la página y 403 en los
-datos para otras cuentas; CSRF obligatorio al guardar) y la API solo acepta llamadas con `X-Internal-Secret`.
+The API has no users: the web app checks the permission (`frontend/pizarra/fichas_admin.py`: 404 on the page
+and 403 on the data for other accounts; CSRF required when saving) and the API only accepts calls with
+`X-Internal-Secret`.
 
+## Batch diagrams (`tools/diagramas_lote.py`)
 
-## Diagramas por lotes (`tools/diagramas_lote.py`)
-
-Para dibujar o revisar varios diagramas de una vez sin pasar por la web: `listar ej_XXX ...` imprime las fichas, `comprobar PARCHE.json`
-valida un parche `{id: {"diagrama": ...}}`, `hoja PARCHE.json HOJA.html` genera una hoja de contactos y `aplicar PARCHE.json` lo escribe en
-`data/exercises.json` (con LF, sin tocar el resto). Una ficha no lleva a la vez `diagrama` y `diagramas`; con `diagramas`, cada uno lleva `titulo`.
+To draw or review several diagrams at once without going through the web: `listar ej_XXX ...` prints the
+exercises, `comprobar PATCH.json` validates a `{id: {"diagrama": ...}}` patch, `hoja PATCH.json SHEET.html`
+generates a contact sheet and `aplicar PATCH.json` writes it to `data/exercises.json` (with LF, leaving the
+rest untouched). An exercise does not carry both `diagrama` and `diagramas`; with `diagramas`, each one has
+a `titulo`.

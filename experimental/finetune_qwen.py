@@ -23,7 +23,7 @@ def main():
     parser.add_argument("--model",        default="Qwen/Qwen3-4B",            help="Modelo base HuggingFace")
     parser.add_argument("--output",       default="outputs/mipizarra-v1",      help="Carpeta de salida")
     parser.add_argument("--steps",        type=int, default=100,
-                        help="Pasos de entrenamiento (100 para ~100-200 ejemplos; ver tabla en ENTRENAMIENTO_MODELO.md)")
+                        help="Pasos de entrenamiento (100 para ~100-200 ejemplos; ver tabla en MODEL_TRAINING.md)")
     parser.add_argument("--rank",         type=int, default=8,
                         help="Rango LoRA (8 con dataset pequeño; 16 con ≥500 ejemplos y ≥12 GB VRAM)")
     parser.add_argument("--seq-len",      type=int, default=2048, help="Longitud máxima de secuencia")

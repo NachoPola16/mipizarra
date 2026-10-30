@@ -1,49 +1,48 @@
-# Esquema de un ejercicio
+# Exercise schema
 
-Cada ejercicio en `data/exercises.json` sigue esta estructura. El administrador puede cambiar cualquier campo (diagrama
-incluido) desde la pestaña «Fichas»: ver [Administración de fichas](administracion-fichas.md).
+Every exercise in `data/exercises.json` follows this structure. The administrator can change any field
+(diagram included) from the "Fichas" tab: see [Exercise administration](administracion-fichas.md).
+Field names and values stay in Spanish, as does the library content.
 
-## Campos obligatorios
+## Required fields
 
-| Campo              | Tipo       | Descripción                                      |
+| Field              | Type       | Description                                      |
 |--------------------|------------|--------------------------------------------------|
-| `id`               | string     | Identificador único. Ej: `"ej_001"`              |
-| `nombre`           | string     | Nombre del ejercicio                             |
-| `categoria`        | string     | Ver categorías más abajo                         |
+| `id`               | string     | Unique identifier. E.g. `"ej_001"`               |
+| `nombre`           | string     | Exercise name                                    |
+| `categoria`        | string     | See categories below                             |
 | `edades`           | string[]   | U12, U14, U16, U18, Senior                       |
-| `duracion_min`     | int        | Duración en minutos                              |
-| `intensidad`       | int 1-5    | Carga física (1=muy baja, 5=máxima)             |
-| `carga_cognitiva`  | int 1-5    | Exigencia de toma de decisiones                  |
-| `objetivos.tacticos` | string[] | Lista de tags tácticos                          |
-| `descripcion`      | string     | Explicación del ejercicio en lenguaje natural    |
+| `duracion_min`     | int        | Duration in minutes                              |
+| `intensidad`       | int 1-5    | Physical load (1=very low, 5=maximum)            |
+| `carga_cognitiva`  | int 1-5    | Decision-making demand                           |
+| `objetivos.tacticos` | string[] | List of tactical tags                            |
+| `descripcion`      | string     | Natural-language explanation of the exercise     |
 
-## Campos opcionales
+## Optional fields
 
-| Campo              | Tipo     | Descripción                                        |
+| Field              | Type     | Description                                        |
 |--------------------|----------|----------------------------------------------------|
-| `subcategoria`     | string   | Refinamiento de la categoría                       |
+| `subcategoria`     | string   | Refinement of the category                         |
 | `fase_temporada`   | string[] | pretemporada, temporada, playoffs                  |
-| `espacio`          | string   | `media_pista` (se juega en una sola canasta), `pista_completa` (hay que ir a la otra canasta o usar toda la pista) o `flexible` (vale cualquiera de las dos). Si el entrenador pide «media pista», las `pista_completa` no se eligen. |
-| `jugadores_minimos`| int      | Mínimo para ejecutarlo                             |
-| `variantes`        | string[] | IDs de ejercicios derivados                        |
-| `puntos_clave`     | string[] | Indicaciones técnicas para el entrenador durante el ejercicio (qué observar, qué corregir, qué enfatizar) |
-| `material`         | string   | Balones, conos, aros y espacio necesarios. Se muestra tal cual en la sesión. |
-| `consigna`         | string   | Frase corta para el jugador (el «mantra» del ejercicio). |
-| `errores_frecuentes` | string[] | Qué corregir con más frecuencia. |
-| `que_observar`     | string[] | Criterios medibles para el entrenador (objetivos operativos). |
-| `progresion`       | object   | `facilitar` y/o `complicar` (texto). Si trae `complicar`, la variante N.2 de la sesión sale de aquí; si no, de la sección PROGRESIÓN/VARIANTES de la descripción. |
-| `diagrama`         | object   | Un único diagrama (ejercicios simples)             |
-| `diagramas`        | object[] | Array de diagramas para ejercicios con varias fases. Cada objeto tiene `titulo` (string, breve) y los campos normales del diagrama. Usar cuando una sola imagen no es suficiente para explicar la jugada (ej. bloqueo directo: fase 1 = pantalla, fase 2 = continuación). |
+| `espacio`          | string   | `media_pista` (played at a single basket), `pista_completa` (needs the other basket or the whole court) or `flexible` (either works). If the coach asks for "half court", `pista_completa` exercises are not chosen. |
+| `jugadores_minimos`| int      | Minimum players to run it                          |
+| `variantes`        | string[] | IDs of derived exercises                           |
+| `puntos_clave`     | string[] | Technical cues for the coach during the exercise (what to watch, what to correct, what to emphasize) |
+| `material`         | string   | Balls, cones, hoops and space needed. Shown as is in the session. |
+| `consigna`         | string   | Short phrase for the player (the exercise's "mantra"). |
+| `errores_frecuentes` | string[] | What most often needs correcting.                |
+| `que_observar`     | string[] | Measurable criteria for the coach (operational goals). |
+| `progresion`       | object   | `facilitar` and/or `complicar` (text). If it has `complicar`, the session's N.2 variant comes from here; otherwise from the PROGRESIÓN/VARIANTES section of the description. |
+| `diagrama`         | object   | A single diagram (simple exercises)                |
+| `diagramas`        | object[] | Array of diagrams for multi-phase exercises. Each object has `titulo` (short string) and the normal diagram fields. Use it when one picture is not enough to explain the play (e.g. pick and roll: phase 1 = screen, phase 2 = continuation). |
 
-## Categorías
+## Categories
 
-- `ventaja_numerica` — 2c1, 3c2, fastbreak
-- `bloqueo_directo` — pick & roll, acción y reacción. Desde U16/Cadete. En U14/Infantil, de forma puntual (nivel del equipo o jugada concreta); en el resto de ocasiones, bloqueos indirectos.
-- `bloqueo_indirecto` — bloqueos alejados, caída hacia canasta. Desde U14 en adelante.
-- `tiro` — mecánica, con oposición, en movimiento
-- `1c1` — individual ofensivo y defensivo (mano a mano, penetración)
-- `juego_equipo` — 5c5, sistemas, sets
-- `fisico` — condición, pliometría, sprints
-- `calentamiento` — movilidad, activación
-
-## Escala de intensidad y carga cognitiva
+- `ventaja_numerica` — 2v1, 3v2, fast break
+- `bloqueo_directo` — pick & roll, action and reaction. From U16/Cadete. In U14/Infantil, only occasionally (team level or a specific play); otherwise, off-ball screens.
+- `bloqueo_indirecto` — off-ball screens, roll toward the basket. From U14 onwards.
+- `tiro` — mechanics, with opposition, on the move
+- `1c1` — individual offense and defense (hand-off, drive)
+- `juego_equipo` — 5v5, systems, sets
+- `fisico` — conditioning, plyometrics, sprints
+- `calentamiento` — mobility, activation

@@ -1,18 +1,18 @@
-# Hoja de ruta
+# Roadmap
 
-## Hecho
-- [x] Infraestructura con Docker Compose + Ollama con GPU
-- [x] Biblioteca de ejercicios con diagramas (`data/exercises.json`)
-- [x] RAG con colecciones separadas (teoría, planificación, reglamento)
-- [x] API: sesión, ejercicio único, corrección de ejercicios, reglamento
-- [x] Renderer SVG de media pista y pista completa
-- [x] Diagramas generados con JSON Schema + validación semántica + reintento
-- [x] Frontend Django con exportación a PDF
-- [x] Pipeline de fine-tuning LoRA y script de evaluación frente al modelo base
+## Done
+- [x] Docker Compose infrastructure + Ollama with GPU
+- [x] Exercise library with diagrams (`data/exercises.json`)
+- [x] RAG with separate collections (theory, planning, rules)
+- [x] API: session, single exercise, exercise correction, rules
+- [x] Half-court and full-court SVG renderer
+- [x] Diagrams generated with JSON Schema + semantic validation + retry
+- [x] Django frontend with PDF export
+- [x] LoRA fine-tuning pipeline and evaluation script against the base model
 
-## Próximos pasos
-- [ ] Evaluar modelos base más recientes frente al actual
-- [ ] Plantillas de diagrama para calentamientos y juegos sin estructura de media pista
-- [ ] Posiciones canónicas nombradas en el schema de diagramas en lugar de coordenadas libres
-- [ ] Conversión de dibujos a mano a JSON de diagrama con un modelo multimodal
-- [ ] Ampliar la biblioteca de ejercicios
+## Next steps
+- [ ] Evaluate newer base models against the current one
+- [ ] Diagram templates for warm-ups and games without a half-court structure
+- [ ] Canonical named positions in the diagram schema instead of free coordinates
+- [ ] Converting hand drawings to diagram JSON with a multimodal model
+- [ ] Grow the exercise library
