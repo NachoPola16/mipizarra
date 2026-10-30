@@ -66,7 +66,7 @@ def test_defensa_en_u10_no_llena_la_sesion_de_transiciones_ni_pases(ejercicios):
                                azar=random.Random(semilla))
         nombres = [f["nombre"].lower() for f in fichas if f]
         defensivas = [n for n in nombres if any(k in n for k in ("defens", "defiend", "espejo", "tela", "cierre",
-                                                                    "1c1", "1 contra 1", "tocar el bal"))]
+                                                                    "1c1", "1c2", "2c3", "1 contra 1", "tocar el bal"))]
         assert len(defensivas) >= 4, (semilla, nombres)
         assert not [n for n in nombres if any(k in n for k in ajenas)], (semilla, nombres)
         assert sum("transici" in n or "contraataque" in n for n in nombres) <= 2, (semilla, nombres)

@@ -517,6 +517,7 @@ _EQUIVALENTES = {
     "bota": ("bote", "botan", "botando"), "pasa": ("pase", "pasar"), "tira": ("tiro",), "tire": ("tiro",),
     "lanz": ("tiro",), "defien": ("defens",), "rebo": ("rebote",), "corr": ("carrera", "contraataque"),
     "fina": ("finaliz",), "driv": ("penetraci",), "pene": ("penetraci",),
+    "desvent": ("inferioridad",), "inferiori": ("desventaja",),
 }
 
 
