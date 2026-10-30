@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# git sobre el repositorio privado de la biblioteca (.git-datos), con el mismo árbol de trabajo. Ver docs/datos-privados.md.
+cd "$(dirname "$0")/.." || exit 1
+exec git --git-dir=.git-datos --work-tree=. "$@"

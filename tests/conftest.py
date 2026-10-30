@@ -23,7 +23,14 @@ EXERCISES_JSON = DATA_DIR / "exercises.json"
 BIBLIOTECA_COMPLETA = EXERCISES_JSON.exists()
 if not BIBLIOTECA_COMPLETA:
     EXERCISES_JSON = DATA_DIR / "muestra_ejercicios.json"
-REQUIEREN_BIBLIOTECA: set[str] = set()   # módulos de test que necesitan la biblioteca completa
+# Módulos de test (o "modulo::test") que necesitan la biblioteca completa.
+REQUIEREN_BIBLIOTECA: set[str] = {
+    "test_admin_fichas", "test_seleccion_ejercicios", "test_relevancia_ejercicios", "test_cobertura_temas", "test_validar_candidatos",
+    "test_bloques_curados", "test_calentamiento_de_biblioteca", "test_validacion_fichas", "test_sin_diagrama",
+    "test_seleccion_n_ejercicios", "test_huecos_biblioteca", "test_exercises_json", "test_evaluar_recuperacion",
+    "test_posiciones::test_la_biblioteca_tiene_diagramas", "test_jugadas::test_el_catalogo_de_jugadas_es_coherente",
+    "test_cuentas::test_cuentas_y_jugadas_guardadas",
+}
 
 # Antes de importar nada de api/: la biblioteca de ejercicios del repo, no la del
 # contenedor (/app/data/...).
@@ -65,5 +72,6 @@ def pytest_collection_modifyitems(config, items):
         return
     salto = pytest.mark.skip(reason="necesita la biblioteca privada (docs/datos-privados.md)")
     for item in items:
-        if item.module.__name__.split(".")[-1] in REQUIEREN_BIBLIOTECA:
+        modulo = item.module.__name__.split(".")[-1]
+        if modulo in REQUIEREN_BIBLIOTECA or f"{modulo}::{item.originalname}" in REQUIEREN_BIBLIOTECA:
             item.add_marker(salto)

@@ -16,3 +16,4 @@
 - [ ] Canonical named positions in the diagram schema instead of free coordinates
 - [ ] Converting hand drawings to diagram JSON with a multimodal model
 - [ ] Grow the exercise library
+- [ ] Bilingual library (Spanish and English versions of every exercise) with a language selector
