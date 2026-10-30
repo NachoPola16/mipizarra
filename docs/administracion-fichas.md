@@ -71,3 +71,10 @@ respuesta (422) trae la lista de `problemas`. Guardar sin cambios no escribe nad
 
 La API no tiene usuarios: el permiso lo comprueba la web (`frontend/pizarra/fichas_admin.py`: 404 en la página y 403 en los
 datos para otras cuentas; CSRF obligatorio al guardar) y la API solo acepta llamadas con `X-Internal-Secret`.
+
+
+## Diagramas por lotes (`tools/diagramas_lote.py`)
+
+Para dibujar o revisar varios diagramas de una vez sin pasar por la web: `listar ej_XXX ...` imprime las fichas, `comprobar PARCHE.json`
+valida un parche `{id: {"diagrama": ...}}`, `hoja PARCHE.json HOJA.html` genera una hoja de contactos y `aplicar PARCHE.json` lo escribe en
+`data/exercises.json` (con LF, sin tocar el resto). Una ficha no lleva a la vez `diagrama` y `diagramas`; con `diagramas`, cada uno lleva `titulo`.
