@@ -86,4 +86,6 @@ restarting the API container resets it. Results are not versioned (`data/regresi
 
 ## License
 
-Code: [MIT](LICENSE).
+The code is licensed under the [GNU AGPL-3.0](LICENSE): if you run a modified version as a network service, you must offer its source to your users.
+
+The training library (exercises, plays and theory documents) is **not** part of this repository and is not covered by that license; see [Public code, private library](docs/datos-privados.md).
