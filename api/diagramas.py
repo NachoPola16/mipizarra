@@ -7,7 +7,7 @@ import re
 import requests
 
 from config import MODEL, OLLAMA_URL
-from ejercicios import _extraer_conteo_nc_m
+from ejercicios import _extraer_conteo_nc_m, _sin_acentos
 from posiciones import posicion_de
 from prompts import SYSTEM_DIAGRAMA
 from solapes import DISTANCIA_MINIMA, separar_puntos
@@ -375,6 +375,27 @@ def _validar_diagrama(diagrama: dict, nombre_ejercicio: str = "") -> str | None:
     return None
 
 
+_SIN_DEFENSORES = re.compile(r"\bsin\s+(?:defensor(?:es)?|defensa|oposicion|rivales?|adversarios?)\b|\b\dc0\b")
+_CON_DEFENSORES = re.compile(r"\bcon\s+(?:un\s+|dos\s+)?defensor(?:es)?\b|\bdefensor(?:es)?\s+(?:activo|que\s+)|\b\dc[1-9]\b")
+
+
+def _sin_defensores_si_no_hay(diagrama: dict, nombre: str, descripcion: str) -> dict:
+    """El modelo pequeño a veces dibuja un defensor en un ejercicio que el texto declara sin oposición («sin defensor»,
+    «1c0»). Si el nombre lo dice, o la descripción lo dice y no menciona defensores en ningún otro momento, se quitan
+    los defensores del dibujo y los movimientos que salen de ellos o les apuntan."""
+    nombre_n, desc_n = _sin_acentos(nombre), _sin_acentos(descripcion)
+    sin_oposicion = _SIN_DEFENSORES.search(nombre_n) or (
+        _SIN_DEFENSORES.search(desc_n) and not _CON_DEFENSORES.search(f"{nombre_n} {desc_n}"))
+    if not sin_oposicion or not diagrama.get("jugadores_defensa"):
+        return diagrama
+    ids = {j.get("id") for j in diagrama["jugadores_defensa"]}
+    limpio = dict(diagrama, jugadores_defensa=[])
+    limpio["movimientos"] = [m for m in diagrama.get("movimientos", [])
+                             if m.get("de") not in ids and m.get("a") not in ids]
+    logger.info(f"  · Defensores quitados del diagrama de '{nombre}' (el texto lo declara sin oposición)")
+    return limpio
+
+
 def generar_coordenadas_ejercicio(descripcion: str, nombre: str) -> dict | None:
     """Genera coordenadas precisas basadas en la descripción del ejercicio.
     JSON Schema restringe la forma (Ollama/XGrammar); _validar_diagrama comprueba
@@ -550,6 +571,7 @@ Genera SOLO el JSON (sin explicaciones):"""
             logger.warning(f"  ✗ Diagrama sigue inválido tras reintento para '{nombre}': {error}")
             return None
 
+    diagrama = _sin_defensores_si_no_hay(diagrama, nombre, descripcion)
     logger.info(
         f"  ✓ Coordenadas generadas: {len(diagrama.get('jugadores_ataque', []))} atacantes, "
         f"{len(diagrama.get('jugadores_defensa', []))} defensores"
