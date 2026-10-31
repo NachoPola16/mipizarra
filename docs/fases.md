@@ -17,5 +17,6 @@
 - [ ] Converting hand drawings to diagram JSON with a multimodal model
 - [ ] Grow the exercise library
 - [ ] Bilingual library (Spanish and English versions of every exercise) with a language selector.
-  Done so far: schema (`i18n`, `origen`), validation, `GET /ejercicios?lang=en`, and a 6-card trial batch (not yet
-  promoted). Left: promote reviewed cards, English prompts/RAG, language selector in the web UI
+  Done so far: schema (`i18n`, `origen`), validation, `GET /ejercicios?lang=en`, and 6 reviewed cards in the
+  library (ej_251-256). A second batch of 12 cards is waiting for review. Left: English prompts/RAG and the
+  language selector in the web UI (design proposed, waiting for approval)
