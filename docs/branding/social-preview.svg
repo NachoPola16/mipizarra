@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="640" viewBox="0 0 1280 640">
+  <defs>
+    <pattern id="scan" width="4" height="4" patternUnits="userSpaceOnUse"><rect width="4" height="2" fill="#000" opacity=".18"/></pattern>
+    <radialGradient id="glow" cx="50%" cy="45%" r="70%"><stop offset="0" stop-color="#2a1c10"/><stop offset="1" stop-color="#0e0b08"/></radialGradient>
+  </defs>
+  <rect width="1280" height="640" fill="#0e0b08"/>
+  <rect x="40" y="40" width="1200" height="560" rx="12" fill="url(#glow)" stroke="#e8752c" stroke-width="4"/>
+  <rect x="40" y="40" width="1200" height="56" rx="12" fill="#e8752c"/>
+  <rect x="40" y="80" width="1200" height="16" fill="#e8752c"/>
+  <text x="66" y="78" font-family="Consolas, Courier New, monospace" font-size="26" font-weight="700" fill="#15120e">nacho@homelab:~/mipizarra</text>
+  <g fill="#15120e"><rect x="1150" y="58" width="18" height="18"/><rect x="1180" y="58" width="18" height="18"/><rect x="1210" y="58" width="18" height="18" opacity=".6"/></g>
+  <g font-family="Consolas, Courier New, monospace">
+    <text x="90" y="190" font-size="34" fill="#9c9186">$ <tspan fill="#f2ede4">./mipizarra</tspan></text>
+    <text x="90" y="290" font-size="104" font-weight="700" fill="#e8752c">MiPizarra</text>
+    <text x="90" y="350" font-size="34" fill="#f2ede4">Basketball coaching assistant</text>
+    <text x="90" y="400" font-size="34" fill="#f2ede4">on a 100% local LLM</text>
+    <text x="90" y="480" font-size="28" fill="#9c9186">Ollama · RAG · SVG diagrams</text>
+    <text x="90" y="525" font-size="28" fill="#9c9186">FastAPI · Django · AGPL-3.0</text>
+    <rect x="526" y="502" width="16" height="28" fill="#e8752c"/>
+  </g>
+  <g transform="translate(790 150) scale(1.55) translate(-850 -112)">
+  <defs>
+    <radialGradient id="bg" cx="35%" cy="30%" r="75%"><stop offset="0" stop-color="#ffc27a"/><stop offset="1" stop-color="#d9651a"/></radialGradient>
+    <marker id="ar" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto"><path d="M0 1.5 L13 7 L0 12.5 z" fill="#e8752c"/></marker>
+  </defs>
+  <g fill="none" stroke="#6b4c2c" stroke-width="2.5">
+    <rect x="850" y="112" width="260" height="243"/>
+    <rect x="930" y="112" width="100" height="100"/>
+    <path d="M949 212 A31 31 0 0 0 1011 212"/>
+    <path d="M949 212 A31 31 0 0 1 1011 212" stroke-dasharray="6 6"/>
+    <path d="M868 112 V142 A112 112 0 0 0 1092 142 V112"/>
+    <path d="M949 355 A31 31 0 0 1 1011 355"/>
+    <path d="M966 126 H994" stroke="#e8752c" stroke-width="3.5"/>
+  </g>
+  <circle cx="980" cy="142" r="8" fill="none" stroke="#e8752c" stroke-width="3"/>
+  <g fill="none" stroke="#e8752c" stroke-width="2.8" stroke-linecap="round">
+    <path d="M965 272 L918 238" stroke-dasharray="8 7" marker-end="url(#ar)"/>
+    <path d="M980 262 L980 184" marker-end="url(#ar)"/>
+    <path d="M906.0 212.0 L907.4 210.5 L909.1 209.1 L910.1 207.4 L909.9 205.0 L908.9 202.2 L908.5 199.6 L910.0 198.2 L913.8 198.0 L917.5 197.8 L919.6 196.7 L919.5 194.3 L917.7 191.0 L915.8 187.7 L915.9 185.5 L918.3 184.5 L921.5 184.0 L923.9 183.1 L924.9 181.3 L925.1 179.1 L925.4 177.0" marker-end="url(#ar)"/>
+    <path d="M1045 240 L1004 268" marker-end="url(#ar)"/>
+    <path d="M1078 158 L1060 184" marker-end="url(#ar)"/>
+  </g>
+  <g fill="#15120e" stroke="#e8752c" stroke-width="3">
+    <circle cx="980" cy="282" r="15"/><circle cx="900" cy="228" r="15"/><circle cx="1060" cy="228" r="15"/>
+    <circle cx="875" cy="144" r="15"/><circle cx="1085" cy="144" r="15"/>
+  </g>
+  <g font-family="Consolas, Courier New, monospace" font-size="18" font-weight="700" fill="#e8752c" text-anchor="middle">
+    <text x="980" y="288">1</text><text x="900" y="234">2</text><text x="1060" y="234">3</text>
+    <text x="875" y="150">4</text><text x="1085" y="150">5</text>
+  </g>
+  <g transform="translate(957 296)"><circle r="10.5" fill="url(#bg)" stroke="#3b2412" stroke-width="1.8"/>
+  <path d="M-10.5 0 H10.5 M0 -10.5 V10.5 M-7.4 -7.4 Q-3.2 0 -7.4 7.4 M7.4 -7.4 Q3.2 0 7.4 7.4" stroke="#4a230c" stroke-width="1.4" fill="none"/>
+  <ellipse cx="-3.5" cy="-4" rx="3" ry="2" fill="#fff" opacity=".35"/></g>
+  </g>
+  <rect x="40" y="40" width="1200" height="560" rx="12" fill="url(#scan)"/>
+</svg>
