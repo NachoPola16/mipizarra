@@ -22,6 +22,7 @@ from rag_engine import (
 )
 from diagram_renderer import render_diagram, render_all_diagrams
 import fichas_edicion
+from i18n_fichas import IDIOMA_BASE, IDIOMAS, localizar
 from fichas_edicion import CAMPOS_DIAGRAMA, CAMPOS_EDITABLES, CAMPOS_OPCIONALES
 from diagramas import _validar_diagrama
 from validacion_fichas import _problemas_de_diagrama, validar_ficha
@@ -256,8 +257,11 @@ def _base_ejercicios() -> list:
 
 @app.get("/ejercicios")
 @limiter.limit("60/minute")
-def listar_ejercicios(request: Request):
-    return _base_ejercicios()
+def listar_ejercicios(request: Request, lang: str = "es"):
+    """La biblioteca. `lang=en` devuelve el texto en inglés de las fichas que lo tienen (el resto, en español)."""
+    if lang not in IDIOMAS:
+        raise HTTPException(status_code=422, detail=f"Idioma no soportado: {lang}")
+    return [localizar(e, lang) for e in _base_ejercicios()] if lang != IDIOMA_BASE else _base_ejercicios()
 
 
 # ── Administración de fichas ─────────────────────────────────────────────────

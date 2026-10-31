@@ -9,6 +9,7 @@ import unicodedata
 
 from diagram_renderer import render_diagram
 from diagramas import _validar_diagrama
+from i18n_fichas import CAMPOS_LISTA, CAMPOS_TEXTO, CAMPOS_TRADUCIBLES, IDIOMA_BASE, IDIOMAS, ORIGEN_TIPOS
 from lineas_rojas import CATEGORIAS_MINIBASKET, violaciones
 
 CATEGORIAS = {"ventaja_numerica", "bloqueo_directo", "bloqueo_indirecto", "tiro", "1c1", "juego_equipo",
@@ -108,9 +109,81 @@ def _problemas_de_campos_opcionales(ficha: dict) -> list[str]:
     return problemas
 
 
-def validar_ficha(ficha, biblioteca=()) -> list[str]:
+def _texto_no_vacio(v) -> bool:
+    return isinstance(v, str) and bool(v.strip())
+
+
+def _problemas_de_origen(ficha: dict, exigir: bool) -> list[str]:
+    """`origen`: de dónde sale la ficha. `original` = redactada y dibujada de cero; `abierta` = adaptada de un material con
+    licencia que lo permite (exige url, autor, licencia y fecha de consulta para poder atribuirlo)."""
+    if "origen" not in ficha:
+        return ["falta el campo «origen» (procedencia de la ficha)"] if exigir else []
+    o = ficha["origen"]
+    if not isinstance(o, dict) or o.get("tipo") not in ORIGEN_TIPOS:
+        return [f"origen: debe ser un objeto con tipo en {', '.join(ORIGEN_TIPOS)}"]
+    problemas = []
+    if o["tipo"] == "abierta":
+        for campo in ("url", "autor", "licencia", "consultado"):
+            if not _texto_no_vacio(o.get(campo)):
+                problemas.append(f"origen: una ficha «abierta» necesita «{campo}»")
+        if _texto_no_vacio(o.get("url")) and not o["url"].startswith("https://"):
+            problemas.append("origen: la url debe empezar por https://")
+    return problemas
+
+
+def _problemas_de_i18n(ficha: dict, exigir: bool) -> list[str]:
+    """`i18n`: traducciones de los textos. Las listas deben ser paralelas a las del español (mismo número de elementos)."""
+    if "i18n" not in ficha:
+        return ["falta el bloque «i18n» con la traducción al inglés"] if exigir else []
+    i18n = ficha["i18n"]
+    if not isinstance(i18n, dict) or not i18n or not set(i18n) <= set(IDIOMAS) - {IDIOMA_BASE}:
+        return [f"i18n: debe ser un objeto con idiomas distintos del español ({', '.join(set(IDIOMAS) - {IDIOMA_BASE})})"]
+    problemas = []
+    for idioma, t in i18n.items():
+        e = f"i18n.{idioma}"
+        if not isinstance(t, dict):
+            problemas.append(f"{e}: debe ser un objeto")
+            continue
+        desconocidos = set(t) - set(CAMPOS_TRADUCIBLES) - {"titulos_diagramas"}
+        if desconocidos:
+            problemas.append(f"{e}: campos no traducibles {sorted(desconocidos)}")
+        for campo in ("nombre", "material", "consigna"):
+            if campo in t and not _texto_no_vacio(t[campo]):
+                problemas.append(f"{e}.{campo}: debe ser un texto no vacío")
+        if "descripcion" in t and not (_texto_no_vacio(t["descripcion"]) and len(t["descripcion"].strip()) >= DESCRIPCION_MINIMA):
+            problemas.append(f"{e}.descripcion: texto de al menos {DESCRIPCION_MINIMA} caracteres")
+        for campo in CAMPOS_LISTA:
+            if campo in t:
+                v, base = t[campo], ficha.get(campo)
+                if not (isinstance(v, list) and v and all(_texto_no_vacio(x) for x in v)):
+                    problemas.append(f"{e}.{campo}: debe ser una lista de textos no vacíos")
+                elif isinstance(base, list) and len(v) != len(base):
+                    problemas.append(f"{e}.{campo}: debe tener {len(base)} elementos, como el español")
+        if "progresion" in t:
+            p, base = t["progresion"], ficha.get("progresion")
+            if not (isinstance(p, dict) and p and all(_texto_no_vacio(v) for v in p.values())):
+                problemas.append(f"{e}.progresion: debe ser {{'facilitar': texto, 'complicar': texto}}")
+            elif isinstance(base, dict) and set(p) != set(base):
+                problemas.append(f"{e}.progresion: debe tener las mismas claves que el español")
+        if "titulos_diagramas" in t:
+            titulos = t["titulos_diagramas"]
+            if not (isinstance(titulos, list) and len(titulos) == len(_diagramas(ficha))
+                    and all(_texto_no_vacio(x) for x in titulos)):
+                problemas.append(f"{e}.titulos_diagramas: un título por diagrama")
+        if exigir:
+            # todo lo que la ficha tiene en español debe estar también en inglés
+            for campo in ("nombre", "descripcion", "puntos_clave", *(c for c in CAMPOS_TRADUCIBLES if c in ficha)):
+                if campo not in t:
+                    problemas.append(f"{e}: falta «{campo}»")
+            if isinstance(ficha.get("diagramas"), list) and "titulos_diagramas" not in t \
+                    and any(isinstance(d, dict) and d.get("titulo") for d in ficha["diagramas"]):
+                problemas.append(f"{e}: falta «titulos_diagramas»")
+    return problemas
+
+
+def validar_ficha(ficha, biblioteca=(), bilingue=False) -> list[str]:
     """Problemas de una ficha (lista vacía si pasa el filtro). `biblioteca` son las demás fichas, para detectar
-    ids y nombres repetidos."""
+    ids y nombres repetidos. Con `bilingue=True` (fichas nuevas) se exigen además `i18n.en` completo y `origen`."""
     if not isinstance(ficha, dict):
         return ["la ficha no es un objeto"]
     problemas: list[str] = []
@@ -181,4 +254,6 @@ def validar_ficha(ficha, biblioteca=()) -> list[str]:
 
     problemas += _problemas_de_diagrama(ficha)
     problemas += _problemas_de_campos_opcionales(ficha)
+    problemas += _problemas_de_i18n(ficha, bilingue)
+    problemas += _problemas_de_origen(ficha, bilingue)
     return problemas

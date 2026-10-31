@@ -33,6 +33,8 @@ def main(argv=None) -> int:
     ap.add_argument("lote", help="fichero JSON con una ficha o una lista de fichas")
     ap.add_argument("--biblioteca", default=str(RAIZ / "data" / "exercises.json"))
     ap.add_argument("--solo-errores", action="store_true", help="oculta las fichas que pasan el filtro")
+    ap.add_argument("--bilingue", action="store_true",
+                    help="exige también i18n.en completo y el campo origen (fichas nuevas de la biblioteca bilingüe)")
     args = ap.parse_args(argv)
 
     try:
@@ -46,7 +48,7 @@ def main(argv=None) -> int:
     for i, ficha in enumerate(candidatas):
         # se contrasta con la biblioteca y con las demás del lote
         otras = biblioteca + [c for j, c in enumerate(candidatas) if j != i and isinstance(c, dict)]
-        problemas = validar_ficha(ficha, otras)
+        problemas = validar_ficha(ficha, otras, bilingue=args.bilingue)
         etiqueta = f"{ficha.get('id', '?')} {str(ficha.get('nombre', ''))[:50]}" if isinstance(ficha, dict) else f"#{i + 1}"
         if problemas:
             con_problemas += 1
