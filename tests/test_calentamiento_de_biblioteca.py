@@ -137,7 +137,7 @@ def test_en_la_biblioteca_real_el_calentamiento_varia_cuando_el_objetivo_no_lo_n
 def test_si_alguna_ficha_nombra_el_objetivo_el_calentamiento_sale_de_esas(ejercicios):
     import random
     vistas = {elegir_calentamiento(ejercicios, "U18", "pase", azar=random.Random(s))["id"] for s in range(80)}
-    assert vistas <= {"ej_112", "ej_114", "ej_115", "ej_119"} and len(vistas) >= 2
+    assert vistas <= {"ej_112", "ej_114", "ej_115", "ej_119", "ej_251"} and len(vistas) >= 2
 
 
 def test_si_el_modelo_repite_la_cabecera_de_fundamentos_no_se_duplica(sesion_falsa, monkeypatch):

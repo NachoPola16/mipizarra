@@ -212,13 +212,9 @@ def _half_court_elements(svg: list, cx: float, base_y: float, pad_x: float,
     zona_y = base_y - s * zona_h
     tl_y   = zona_y
 
-    # Zona pintada
-    if flip:
-        svg.append(f'<rect x="{zona_x:.1f}" y="{zona_y:.1f}" width="{zona_w:.1f}" '
-                   f'height="{zona_h:.1f}" fill="none" stroke="#666666" stroke-width="2.5"/>')
-    else:
-        svg.append(f'<rect x="{zona_x:.1f}" y="{zona_y:.1f}" width="{zona_w:.1f}" '
-                   f'height="{zona_h:.1f}" fill="none" stroke="#666666" stroke-width="2.5"/>')
+    # Zona pintada: va de la línea de fondo a la línea de TL, en el extremo que sea
+    svg.append(f'<rect x="{zona_x:.1f}" y="{min(base_y, zona_y):.1f}" width="{zona_w:.1f}" '
+               f'height="{zona_h:.1f}" fill="none" stroke="#666666" stroke-width="2.5"/>')
 
     # Línea TL
     svg.append(f'<line x1="{zona_x:.1f}" y1="{tl_y:.1f}" '
@@ -226,10 +222,13 @@ def _half_court_elements(svg: list, cx: float, base_y: float, pad_x: float,
 
     # Semicírculos TL
     r_tl = 1.8 * ESCALA
-    sw0, sw1 = ("0 0 0", "0 0 1") if not flip else ("0 0 1", "0 0 0")
-    svg.append(f'<path d="M {zona_x:.1f},{tl_y:.1f} A {r_tl:.1f},{r_tl:.1f} {sw0} {zona_x+zona_w:.1f},{tl_y:.1f}" '
+    # sw0 (continuo) es el arco del lado de la pista; sw1 (discontinuo), el que queda dentro de la zona
+    sw0, sw1 = ("0 0 1", "0 0 0") if not flip else ("0 0 0", "0 0 1")
+    # el círculo mide 3,6 m de diámetro, menos que la zona (4,9 m): no toca sus esquinas
+    c_ini, c_fin = cx - r_tl, cx + r_tl
+    svg.append(f'<path d="M {c_ini:.1f},{tl_y:.1f} A {r_tl:.1f},{r_tl:.1f} {sw0} {c_fin:.1f},{tl_y:.1f}" '
                f'fill="none" stroke="#666666" stroke-width="2.5"/>')
-    svg.append(f'<path d="M {zona_x:.1f},{tl_y:.1f} A {r_tl:.1f},{r_tl:.1f} {sw1} {zona_x+zona_w:.1f},{tl_y:.1f}" '
+    svg.append(f'<path d="M {c_ini:.1f},{tl_y:.1f} A {r_tl:.1f},{r_tl:.1f} {sw1} {c_fin:.1f},{tl_y:.1f}" '
                f'fill="none" stroke="#666666" stroke-width="2" stroke-dasharray="6,4"/>')
 
     # Canasta
