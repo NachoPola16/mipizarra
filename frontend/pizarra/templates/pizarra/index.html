@@ -1,25 +1,25 @@
-{% load static %}
+{% load static ui %}
 <!DOCTYPE html>
-<html lang="es">
+<html lang="{{ lang }}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MiPizarra — Asistente de entrenamiento</title>
-<meta name="description" content="Genera sesiones de entrenamiento de baloncesto y diagramas tácticos con IA local, a partir de la categoría, la duración y el objetivo del entrenamiento.">
+<title>{% t "MiPizarra — Asistente de entrenamiento" %}</title>
+<meta name="description" content="{% t "Genera sesiones de entrenamiento de baloncesto y diagramas tácticos con IA local, a partir de la categoría, la duración y el objetivo del entrenamiento." %}">
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#15120e">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="MiPizarra">
 <meta property="og:title" content="MiPizarra — Asistente de entrenamiento">
-<meta property="og:description" content="Genera sesiones de entrenamiento de baloncesto y diagramas tácticos con IA local, a partir de la categoría, la duración y el objetivo del entrenamiento.">
+<meta property="og:description" content="{% t "Genera sesiones de entrenamiento de baloncesto y diagramas tácticos con IA local, a partir de la categoría, la duración y el objetivo del entrenamiento." %}">
 <meta property="og:url" content="{{ request.build_absolute_uri }}">
 <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'pizarra/brand/og-image.png' %}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:locale" content="es_ES">
+<meta property="og:locale" content="{% if lang == 'en' %}en_US{% else %}es_ES{% endif %}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="MiPizarra — Asistente de entrenamiento">
-<meta name="twitter:description" content="Genera sesiones de entrenamiento de baloncesto y diagramas tácticos con IA local.">
+<meta name="twitter:description" content="{% t "Genera sesiones de entrenamiento de baloncesto y diagramas tácticos con IA local." %}">
 <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'pizarra/brand/og-image.png' %}">
 <link rel="icon" type="image/svg+xml" href="{% static 'pizarra/brand/favicon.svg' %}">
 <link rel="alternate icon" href="{% static 'pizarra/brand/favicon.ico' %}">
@@ -301,11 +301,11 @@ main:focus { outline: none; }
 </style>
 </head>
 <body>
-<a class="skip" href="#contenido">Saltar al contenido</a>
+<a class="skip" href="#contenido">{% t "Saltar al contenido" %}</a>
 <div class="app">
 
 <header class="topbar">
-    <a class="brand" href="{% url 'index' %}" aria-label="Ir al inicio de MiPizarra">
+    <a class="brand" href="{% url 'index' %}" aria-label="{% t "Ir al inicio de MiPizarra" %}">
         <svg class="brand-mark" viewBox="0 0 512 512" role="img" aria-label="MiPizarra">
             <rect width="512" height="512" rx="114" fill="#15120e"/>
             <rect x="224" y="80" width="64" height="48" rx="14" fill="#e8752c"/>
@@ -316,17 +316,18 @@ main:focus { outline: none; }
         </svg>
         <span>Mi<em>Pizarra</em></span>
     </a>
-    <div class="mode-tabs" role="group" aria-label="Secciones">
-        <button class="mode-tab active" data-mode="sesion" aria-pressed="true"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2.5" width="12" height="9" rx="1.5"/><path d="M5 14h6M8 11.5V14M5 5.5h6M5 8h3.5"/></svg>Sesión</button>
-        <button class="mode-tab" data-mode="reglamento" aria-pressed="false"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3.5C6.7 2.7 5 2.5 2.5 2.5v9c2.5 0 4.2.2 5.5 1 1.3-.8 3-1 5.5-1v-9C11 2.5 9.3 2.7 8 3.5zM8 3.5v9"/></svg>Reglamento</button>
-        <a class="mode-tab mode-link" href="{% url 'jugadas' %}"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="4" cy="11.5" r="1.6"/><circle cx="12" cy="4.5" r="1.6"/><path d="M5.4 10.6C7 8 9 6.5 10.6 5.3" stroke-dasharray="2 2"/></svg>Jugadas</a>
-        {% if es_admin %}<a class="mode-tab mode-link" href="{% url 'fichas' %}"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2" width="11" height="12" rx="1.5"/><path d="M5 5.5h6M5 8h6M5 10.5h3.5"/></svg>Fichas</a>{% endif %}
+    <div class="mode-tabs" role="group" aria-label="{% t "Secciones" %}">
+        <button class="mode-tab active" data-mode="sesion" aria-pressed="true"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2.5" width="12" height="9" rx="1.5"/><path d="M5 14h6M8 11.5V14M5 5.5h6M5 8h3.5"/></svg>{% t "Sesión" %}</button>
+        <button class="mode-tab" data-mode="reglamento" aria-pressed="false"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3.5C6.7 2.7 5 2.5 2.5 2.5v9c2.5 0 4.2.2 5.5 1 1.3-.8 3-1 5.5-1v-9C11 2.5 9.3 2.7 8 3.5zM8 3.5v9"/></svg>{% t "Reglamento" %}</button>
+        <a class="mode-tab mode-link" href="{% url 'jugadas' %}"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="4" cy="11.5" r="1.6"/><circle cx="12" cy="4.5" r="1.6"/><path d="M5.4 10.6C7 8 9 6.5 10.6 5.3" stroke-dasharray="2 2"/></svg>{% t "Jugadas" %}</a>
+        {% if es_admin %}<a class="mode-tab mode-link" href="{% url 'fichas' %}"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2" width="11" height="12" rx="1.5"/><path d="M5 5.5h6M5 8h6M5 10.5h3.5"/></svg>{% t "Fichas" %}</a>{% endif %}
         {% if user.is_authenticated %}
-        <form method="post" action="{% url 'salir' %}" class="form-salir">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button type="submit" class="mode-tab mode-link" aria-label="Cerrar sesión de {{ user.get_username }}"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5"/><path d="M3 13.500c.5-2.500 2.500-3.800 5-3.800s4.500 1.300 5 3.800"/></svg>Salir ({{ user.get_username }})</button></form>
+        <form method="post" action="{% url 'salir' %}" class="form-salir">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button type="submit" class="mode-tab mode-link" aria-label="{% t "Cerrar sesión de" %} {{ user.get_username }}"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5"/><path d="M3 13.500c.5-2.500 2.500-3.800 5-3.800s4.500 1.300 5 3.800"/></svg>{% t "Salir" %} ({{ user.get_username }})</button></form>
         {% else %}
-        <a class="mode-tab mode-link" href="{% url 'entrar' %}?next={{ request.path|urlencode }}"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5"/><path d="M3 13.500c.5-2.500 2.500-3.800 5-3.800s4.500 1.300 5 3.800"/></svg>Entrar</a>
+        <a class="mode-tab mode-link" href="{% url 'entrar' %}?next={{ request.path|urlencode }}"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5"/><path d="M3 13.500c.5-2.500 2.500-3.800 5-3.800s4.500 1.300 5 3.800"/></svg>{% t "Entrar" %}</a>
         {% endif %}
     </div>
+    <nav class="idioma" aria-label="{% t "Idioma" %}"><a href="{{ idioma_urls.es }}" lang="es" hreflang="es"{% if lang == 'es' %} aria-current="true"{% endif %}>ES</a><a href="{{ idioma_urls.en }}" lang="en" hreflang="en"{% if lang == 'en' %} aria-current="true"{% endif %}>EN</a></nav>
 </header>
 
 <main class="content" id="contenido" tabindex="-1">
@@ -337,46 +338,46 @@ main:focus { outline: none; }
     <!-- ── Sesión: estado inicial ── -->
     <div id="form-sesion" class="prompt-section">
         <div class="center-heading">
-            <h1 class="center-title">¿Qué quieres trabajar hoy?</h1>
-            <div class="center-sub">Describe el objetivo y genera una sesión completa con ejercicios y diagramas tácticos.</div>
+            <h1 class="center-title">{% t "¿Qué quieres trabajar hoy?" %}</h1>
+            <div class="center-sub">{% t "Describe el objetivo y genera una sesión completa con ejercicios y diagramas tácticos." %}</div>
         </div>
 
         <div class="pill-row">
-            <div class="dd" id="dd-edad" data-prefix="Categoría">
+            <div class="dd" id="dd-edad" data-prefix="{% t "Categoría" %}">
                 <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false">
                     <svg class="dd-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a5 5 0 1 0 0 10A5 5 0 0 0 8 1Z"/></svg>
-                    <span class="dd-label">Categoría: sin especificar</span>
+                    <span class="dd-label">{% t "Categoría: sin especificar" %}</span>
                     <svg class="dd-caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>
                 </button>
-                <ul class="dd-list" role="listbox" aria-label="Categoría">
-                    <li class="dd-opt selected" role="option" aria-selected="true" tabindex="-1" data-value="">Sin especificar</li>
-                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U8">Prebenjamín (U8)</li>
-                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U10">Benjamín (U10)</li>
-                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U12">Alevín (U12)</li>
-                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U14">Infantil (U14)</li>
-                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U16">Cadete (U16)</li>
-                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U18">Junior (U18)</li>
+                <ul class="dd-list" role="listbox" aria-label="{% t "Categoría" %}">
+                    <li class="dd-opt selected" role="option" aria-selected="true" tabindex="-1" data-value="">{% t "Sin especificar" %}</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U8">{% t "Prebenjamín (U8)" %}</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U10">{% t "Benjamín (U10)" %}</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U12">{% t "Alevín (U12)" %}</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U14">{% t "Infantil (U14)" %}</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U16">{% t "Cadete (U16)" %}</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="U18">{% t "Junior (U18)" %}</li>
                     <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="Senior">Senior</li>
                 </ul>
                 <select id="edad" class="dd-native" tabindex="-1" aria-hidden="true">
-                    <option value="">Sin especificar</option>
-                    <option value="U8">Prebenjamín (U8)</option>
-                    <option value="U10">Benjamín (U10)</option>
-                    <option value="U12">Alevín (U12)</option>
-                    <option value="U14">Infantil (U14)</option>
-                    <option value="U16">Cadete (U16)</option>
-                    <option value="U18">Junior (U18)</option>
+                    <option value="">{% t "Sin especificar" %}</option>
+                    <option value="U8">{% t "Prebenjamín (U8)" %}</option>
+                    <option value="U10">{% t "Benjamín (U10)" %}</option>
+                    <option value="U12">{% t "Alevín (U12)" %}</option>
+                    <option value="U14">{% t "Infantil (U14)" %}</option>
+                    <option value="U16">{% t "Cadete (U16)" %}</option>
+                    <option value="U18">{% t "Junior (U18)" %}</option>
                     <option value="Senior">Senior</option>
                 </select>
             </div>
-            <div class="dd" id="dd-duracion" data-prefix="Duración">
+            <div class="dd" id="dd-duracion" data-prefix="{% t "Duración" %}">
                 <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false">
                     <svg class="dd-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a7 7 0 1 0 0 14A7 7 0 0 0 8 1Zm.5 3v4.3l3 1.8-.5.9-3.5-2.1V4h1Z"/></svg>
-                    <span class="dd-label">Duración: flexible</span>
+                    <span class="dd-label">{% t "Duración: flexible" %}</span>
                     <svg class="dd-caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>
                 </button>
-                <ul class="dd-list" role="listbox" aria-label="Duración">
-                    <li class="dd-opt selected" role="option" aria-selected="true" tabindex="-1" data-value="">Flexible</li>
+                <ul class="dd-list" role="listbox" aria-label="{% t "Duración" %}">
+                    <li class="dd-opt selected" role="option" aria-selected="true" tabindex="-1" data-value="">{% t "Flexible" %}</li>
                     <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="45">45 min</li>
                     <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="60">60 min</li>
                     <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="75">75 min</li>
@@ -385,7 +386,7 @@ main:focus { outline: none; }
                     <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="120">120 min</li>
                 </ul>
                 <select id="duracion" class="dd-native" tabindex="-1" aria-hidden="true">
-                    <option value="">Flexible</option>
+                    <option value="">{% t "Flexible" %}</option>
                     <option value="45">45 min</option>
                     <option value="60">60 min</option>
                     <option value="75">75 min</option>
@@ -394,40 +395,40 @@ main:focus { outline: none; }
                     <option value="120">120 min</option>
                 </select>
             </div>
-            <div class="dd" id="dd-jugadores" data-prefix="Jugadores">
+            <div class="dd" id="dd-jugadores" data-prefix="{% t "Jugadores" %}">
                 <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false">
                     <svg class="dd-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><circle cx="5.5" cy="5" r="2.5"/><circle cx="11" cy="6" r="2"/><path d="M1 13c0-2.5 2-4 4.5-4S10 10.500 10 13zM10.500 9.200c2.300 0 4.500 1.200 4.500 3.800h-3.800c0-1.500-.4-2.800-.7-3.800z"/></svg>
-                    <span class="dd-label">Jugadores: sin límite</span>
+                    <span class="dd-label">{% t "Jugadores: sin límite" %}</span>
                     <svg class="dd-caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>
                 </button>
-                <ul class="dd-list" role="listbox" aria-label="Número máximo de jugadores">
-                    <li class="dd-opt selected" role="option" aria-selected="true" tabindex="-1" data-value="">Sin límite</li>
-                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="4">Hasta 4</li>
-                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="6">Hasta 6</li>
-                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="8">Hasta 8</li>
-                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="10">Hasta 10</li>
-                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="12">Hasta 12</li>
-                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="14">Hasta 14</li>
-                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="16">Hasta 16</li>
+                <ul class="dd-list" role="listbox" aria-label="{% t "Número máximo de jugadores" %}">
+                    <li class="dd-opt selected" role="option" aria-selected="true" tabindex="-1" data-value="">{% t "Sin límite" %}</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="4">{% t "Hasta 4" %}</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="6">{% t "Hasta 6" %}</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="8">{% t "Hasta 8" %}</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="10">{% t "Hasta 10" %}</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="12">{% t "Hasta 12" %}</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="14">{% t "Hasta 14" %}</li>
+                    <li class="dd-opt" role="option" aria-selected="false" tabindex="-1" data-value="16">{% t "Hasta 16" %}</li>
                 </ul>
                 <select id="max-jugadores" class="dd-native" tabindex="-1" aria-hidden="true">
-                    <option value="">Sin límite</option>
-                    <option value="4">Hasta 4</option>
-                    <option value="6">Hasta 6</option>
-                    <option value="8">Hasta 8</option>
-                    <option value="10">Hasta 10</option>
-                    <option value="12">Hasta 12</option>
-                    <option value="14">Hasta 14</option>
-                    <option value="16">Hasta 16</option>
+                    <option value="">{% t "Sin límite" %}</option>
+                    <option value="4">{% t "Hasta 4" %}</option>
+                    <option value="6">{% t "Hasta 6" %}</option>
+                    <option value="8">{% t "Hasta 8" %}</option>
+                    <option value="10">{% t "Hasta 10" %}</option>
+                    <option value="12">{% t "Hasta 12" %}</option>
+                    <option value="14">{% t "Hasta 14" %}</option>
+                    <option value="16">{% t "Hasta 16" %}</option>
                 </select>
             </div>
         </div>
 
         <div class="prompt-box">
-            <textarea id="objetivo" aria-label="Descripción del entrenamiento" placeholder="Ej: Tiro en suspensión y defensa de bloqueo directo…" rows="3"></textarea>
+            <textarea id="objetivo" aria-label="{% t "Descripción del entrenamiento" %}" placeholder="{% t "Ej: Tiro en suspensión y defensa de bloqueo directo…" %}" rows="3"></textarea>
             <div class="prompt-actions">
-                <label class="diag-toggle"><input type="checkbox" id="gen-diagramas" checked> Generar diagramas</label>
-                <button class="btn-send" id="btn-generar"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8l1.5 4 4 1.5-4 1.5L8 12.8 6.5 8.8 2.5 7.3l4-1.5z"/></svg>Generar sesión</button>
+                <label class="diag-toggle"><input type="checkbox" id="gen-diagramas" checked> {% t "Generar diagramas" %}</label>
+                <button class="btn-send" id="btn-generar"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8l1.5 4 4 1.5-4 1.5L8 12.8 6.5 8.8 2.5 7.3l4-1.5z"/></svg>{% t "Generar sesión" %}</button>
             </div>
         </div>
 
@@ -438,24 +439,25 @@ main:focus { outline: none; }
             <button type="button" class="chip" data-fill="Manejo de balón">Manejo de balón</button>
         </div>
 
-        <div class="btn-hint">Enter para generar · Shift+Enter para nueva línea</div>
+        <div class="btn-hint">{% t "Enter para generar · Shift+Enter para nueva línea" %}</div>
+        {% if lang == 'en' %}<p class="btn-hint" lang="en">{% t "De momento las sesiones, las respuestas del reglamento y los ejercicios se generan en español: escribe el objetivo en español. El inglés llegará por fases." %}</p>{% endif %}
     </div><!-- /form-sesion -->
 
     <!-- ── Reglamento: estado inicial ── -->
     <div id="form-reglamento" class="prompt-section" style="display:none">
         <div class="center-heading">
-            <h1 class="center-title">¿Qué quieres saber del reglamento?</h1>
-            <div class="center-sub">Pregunta sobre reglas, tiempos, categorías o cualquier duda arbitral.</div>
+            <h1 class="center-title">{% t "¿Qué quieres saber del reglamento?" %}</h1>
+            <div class="center-sub">{% t "Pregunta sobre reglas, tiempos, categorías o cualquier duda arbitral." %}</div>
         </div>
 
         <div class="pill-row" style="margin-bottom:.9rem">
-            <div class="dd" id="dd-ambito" data-prefix="Ámbito">
+            <div class="dd" id="dd-ambito" data-prefix="{% t "Ámbito" %}">
                 <button type="button" class="dd-btn" aria-haspopup="listbox" aria-expanded="false">
                     <svg class="dd-icon" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 1a5 5 0 1 0 0 10A5 5 0 0 0 8 1Z"/></svg>
-                    <span class="dd-label">Ámbito: {{ ambitos.0.nombre }}</span>
+                    <span class="dd-label">{% t "Ámbito" %}: {{ ambitos.0.nombre }}</span>
                     <svg class="dd-caret" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M2.5 4.5L6 8l3.5-3.5"/></svg>
                 </button>
-                <ul class="dd-list" role="listbox" aria-label="Ámbito del reglamento">
+                <ul class="dd-list" role="listbox" aria-label="{% t "Ámbito del reglamento" %}">
                     {% for a in ambitos %}<li class="dd-opt{% if forloop.first %} selected{% endif %}" role="option" aria-selected="{% if forloop.first %}true{% else %}false{% endif %}" tabindex="-1" data-value="{{ a.id }}">{{ a.nombre }}</li>
                     {% endfor %}
                 </ul>
@@ -468,9 +470,9 @@ main:focus { outline: none; }
         <p class="ambito-hint" id="ambito-hint" aria-live="polite"></p>
 
         <div class="prompt-box">
-            <textarea id="pregunta" aria-label="Tu pregunta sobre el reglamento" placeholder="Ej: ¿Es falta técnica si el entrenador entra a la pista?" style="min-height:120px" rows="3"></textarea>
+            <textarea id="pregunta" aria-label="{% t "Tu pregunta sobre el reglamento" %}" placeholder="{% t "Ej: ¿Es falta técnica si el entrenador entra a la pista?" %}" style="min-height:120px" rows="3"></textarea>
             <div class="prompt-actions" style="justify-content:flex-end;">
-                <button class="btn-send" id="btn-reglamento"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>Consultar</button>
+                <button class="btn-send" id="btn-reglamento"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5L14 14"/></svg>{% t "Consultar" %}</button>
             </div>
         </div>
 
@@ -480,21 +482,21 @@ main:focus { outline: none; }
             <button type="button" class="chip" data-fill-pregunta="¿En qué categorías aplica el saque rápido?">Saque rápido, ¿en qué categorías?</button>
         </div>
 
-        <div class="btn-hint">Enter para consultar · Shift+Enter para nueva línea</div>
+        <div class="btn-hint">{% t "Enter para consultar · Shift+Enter para nueva línea" %}</div>
     </div><!-- /form-reglamento -->
 
     <!-- Respuestas del reglamento: apiladas, la última arriba; cada consulta es independiente -->
-    <section id="reglamento-hilo" class="rg-hilo" style="display:none" aria-label="Respuestas sobre el reglamento">
+    <section id="reglamento-hilo" class="rg-hilo" style="display:none" aria-label="{% t "Respuestas sobre el reglamento" %}">
         <div class="rg-hilo-cab">
-            <h2 class="rg-hilo-titulo" id="rg-hilo-titulo">Respuestas</h2>
-            <button type="button" class="btn-dl" id="btn-rg-limpiar">Limpiar</button>
+            <h2 class="rg-hilo-titulo" id="rg-hilo-titulo">{% t "Respuestas" %}</h2>
+            <button type="button" class="btn-dl" id="btn-rg-limpiar">{% t "Limpiar" %}</button>
         </div>
         <div id="rg-lista" aria-live="polite"></div>
     </section>
 
     <div class="loading" id="loading" role="status" aria-live="polite">
         <div class="spinner"></div>
-        <div class="loading-text" id="loading-text">Generando sesión… (puede tardar hasta 2 minutos)</div>
+        <div class="loading-text" id="loading-text">{% t "Generando sesión… (puede tardar hasta 2 minutos)" %}</div>
         <!-- aria-hidden: los mensajes rotan solos y un lector de pantalla los leería cada pocos segundos -->
         <div class="loading-tip" id="loading-tip" aria-hidden="true"></div>
     </div>
@@ -503,61 +505,61 @@ main:focus { outline: none; }
         <div class="listo-card">
             <div class="listo-titulo">
                 <svg class="listo-check" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3.2L13 4.8"/></svg>
-                <span id="listo-titulo-texto">Sesión lista</span>
+                <span id="listo-titulo-texto">{% t "Sesión lista" %}</span>
             </div>
             <p class="listo-meta" id="listo-meta"></p>
             <p class="listo-aviso" id="listo-aviso"></p>
             <div class="listo-acciones">
-                <button type="button" class="btn-send" id="listo-ver">Ver en la web</button>
-                <button type="button" class="btn-dl" id="listo-pdf">Descargar PDF</button>
+                <button type="button" class="btn-send" id="listo-ver">{% t "Ver en la web" %}</button>
+                <button type="button" class="btn-dl" id="listo-pdf">{% t "Descargar PDF" %}</button>
             </div>
         </div>
     </div>
 
     <div class="results" id="results" aria-live="polite">
-        <h1 id="results-heading" class="sr-only">Resultado</h1>
+        <h1 id="results-heading" class="sr-only">{% t "Resultado" %}</h1>
         <div class="results-bar">
-            <button type="button" class="btn-dl" id="btn-nueva"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg><span id="btn-nueva-txt">Nueva sesión</span></button>
+            <button type="button" class="btn-dl" id="btn-nueva"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg><span id="btn-nueva-txt">{% t "Nueva sesión" %}</span></button>
             <div class="results-bar-dl">
                 <button type="button" class="btn-dl" id="btn-txt-top"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v8M4.8 7.5L8 10.7l3.2-3.2M3 13.5h10"/></svg>.txt</button>
-                <button type="button" class="btn-dl" id="btn-pdf-top"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.8h5l3 3v9.4H4z"/><path d="M9 1.8v3h3M6 8h4M6 10.5h4"/></svg><span class="btn-txt-pdf">Descargar PDF</span></button>
+                <button type="button" class="btn-dl" id="btn-pdf-top"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.8h5l3 3v9.4H4z"/><path d="M9 1.8v3h3M6 8h4M6 10.5h4"/></svg><span class="btn-txt-pdf">{% t "Descargar PDF" %}</span></button>
             </div>
         </div>
 
         <div id="resultado-contenido"></div>
 
         <details class="consultados" id="consultados-wrap" style="display:none">
-            <summary id="consultados-title">Ejercicios consultados</summary>
+            <summary id="consultados-title">{% t "Ejercicios consultados" %}</summary>
             <div class="consultados-body" id="consultados-body"></div>
         </details>
 
         <div class="downloads">
-            <button class="btn-dl" id="btn-txt"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v8M4.8 7.5L8 10.7l3.2-3.2M3 13.5h10"/></svg>Descargar .txt</button>
-            <button class="btn-dl" id="btn-pdf"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.8h5l3 3v9.4H4z"/><path d="M9 1.8v3h3M6 8h4M6 10.5h4"/></svg><span class="btn-txt-pdf">Descargar PDF</span></button>
+            <button class="btn-dl" id="btn-txt"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v8M4.8 7.5L8 10.7l3.2-3.2M3 13.5h10"/></svg>{% t "Descargar .txt" %}</button>
+            <button class="btn-dl" id="btn-pdf"><svg class="ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 1.8h5l3 3v9.4H4z"/><path d="M9 1.8v3h3M6 8h4M6 10.5h4"/></svg><span class="btn-txt-pdf">{% t "Descargar PDF" %}</span></button>
         </div>
 
         <div class="feedback">
-            <div class="feedback-title">¿Usaste esta sesión en un entrenamiento real?</div>
+            <div class="feedback-title">{% t "¿Usaste esta sesión en un entrenamiento real?" %}</div>
             <div class="feedback-row">
-                <textarea id="fb-cambios" placeholder="Ej: Quité el 3c2 porque solo había 8 jugadores." rows="3" aria-label="Cambios realizados sobre la sesión"></textarea>
-                <select id="fb-rating" aria-label="Valoración de la sesión">
-                    <option value="1">1 de 5</option>
-                    <option value="2">2 de 5</option>
-                    <option value="3" selected>3 de 5</option>
-                    <option value="4">4 de 5</option>
-                    <option value="5">5 de 5</option>
+                <textarea id="fb-cambios" placeholder="{% t "Ej: Quité el 3c2 porque solo había 8 jugadores." %}" rows="3" aria-label="{% t "Cambios realizados sobre la sesión" %}"></textarea>
+                <select id="fb-rating" aria-label="{% t "Valoración de la sesión" %}">
+                    <option value="1">{% t "1 de 5" %}</option>
+                    <option value="2">{% t "2 de 5" %}</option>
+                    <option value="3" selected>{% t "3 de 5" %}</option>
+                    <option value="4">{% t "4 de 5" %}</option>
+                    <option value="5">{% t "5 de 5" %}</option>
                 </select>
             </div>
-            <button class="btn-fb" id="btn-feedback">Guardar sesión usada</button>
+            <button class="btn-fb" id="btn-feedback">{% t "Guardar sesión usada" %}</button>
             <div class="feedback-msg" id="fb-msg"></div>
         </div>
 
         <div class="reprompt-bar" id="reprompt-bar" style="display:none;">
-            <span class="reprompt-count" id="reprompt-count">0 ejercicios seleccionados</span>
-            <textarea id="reprompt-instruccion" rows="1" aria-label="Qué quieres cambiar de los ejercicios seleccionados" placeholder="¿Qué quieres cambiar? Ej: sin defensor, más dinámico…"></textarea>
+            <span class="reprompt-count" id="reprompt-count">{% t "0 ejercicios seleccionados" %}</span>
+            <textarea id="reprompt-instruccion" rows="1" aria-label="{% t "Qué quieres cambiar de los ejercicios seleccionados" %}" placeholder="{% t "¿Qué quieres cambiar? Ej: sin defensor, más dinámico…" %}"></textarea>
             <button type="button" class="btn-send" id="btn-reprompt">
                 <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2.5v3.2h-3.2"/></svg>
-                Aplicar cambio
+                {% t "Aplicar cambio" %}
             </button>
         </div>
     </div>
@@ -567,13 +569,14 @@ main:focus { outline: none; }
 
 <form style="display:none" data-reprompt="{% url 'reprompt' %}">{% csrf_token %}</form>
 
+{{ ui_js|json_script:"ui-t" }}
 <script src="{% static 'pizarra/js/index.js' %}"></script>
 
 <footer class="legal-footer">
     <span>MiPizarra &copy; {% now "Y" %}</span>
-    <a href="{% url 'privacidad' %}">Política de privacidad</a>
-    <a href="{% url 'aviso_legal' %}">Aviso legal</a>
-    <a href="https://github.com/NachoPola16/mipizarra" rel="noopener">Código fuente (AGPL-3.0)</a>
+    <a href="{% url 'privacidad' %}">{% t "Política de privacidad" %}</a>
+    <a href="{% url 'aviso_legal' %}">{% t "Aviso legal" %}</a>
+    <a href="https://github.com/NachoPola16/mipizarra" rel="noopener">{% t "Código fuente (AGPL-3.0)" %}</a>
 </footer>
 </body>
 </html>

@@ -18,5 +18,7 @@
 - [ ] Grow the exercise library
 - [ ] Bilingual library (Spanish and English versions of every exercise) with a language selector.
   Done so far: schema (`i18n`, `origen`), validation, `GET /ejercicios?lang=en`, and 6 reviewed cards in the
-  library (ej_251-256). A second batch of 12 cards is waiting for review. Left: English prompts/RAG and the
-  language selector in the web UI (design proposed, waiting for approval)
+  library (ej_251-256). A second batch of 12 cards is waiting for review. Web UI: language selector (ES|EN,
+  `?lang=en` + cookie) with the header, home page and sign-in page translated (`frontend/pizarra/idioma.py`,
+  `textos_en.py`; add a string with `{% t "..." %}` / `tr('...')` and its English entry, a test checks the catalog).
+  Left: Plays, Cards and the rest of the UI, English sessions, prompts and RAG per language

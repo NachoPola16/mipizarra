@@ -39,3 +39,9 @@ input, textarea { caret-color: var(--accent); }
 @media (prefers-reduced-motion: no-preference) {
     @view-transition { navigation: auto; }
 }
+
+/* Selector de idioma de la cabecera */
+.idioma { display: inline-flex; gap: 2px; border: 1px solid var(--border); border-radius: 8px; padding: 2px; font-size: .75rem; font-weight: 700; }
+.idioma a { padding: .3rem .55rem; border-radius: 6px; color: var(--muted); text-decoration: none; }
+.idioma a:hover { color: var(--text); }
+.idioma a[aria-current] { background: var(--accent); color: var(--bg); }

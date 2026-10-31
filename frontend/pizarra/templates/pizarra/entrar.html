@@ -1,9 +1,9 @@
-{% load static %}<!DOCTYPE html>
-<html lang="es">
+{% load static ui %}<!DOCTYPE html>
+<html lang="{{ lang }}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Entrar — MiPizarra</title>
+<title>{% t "Entrar — MiPizarra" %}</title>
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#15120e">
 <link rel="icon" type="image/svg+xml" href="{% static 'pizarra/brand/favicon.svg' %}">
@@ -13,26 +13,27 @@
 </head>
 <body>
 <header class="topbar">
-    <a class="brand" href="{% url 'index' %}" aria-label="MiPizarra, ir al inicio">
+    <a class="brand" href="{% url 'index' %}" aria-label="{% t "MiPizarra, ir al inicio" %}">
         <img class="brand-mark" src="{% static 'pizarra/brand/favicon.svg' %}" alt="" width="26" height="26">
         <span>Mi<em>Pizarra</em></span>
     </a>
+    <nav class="idioma" aria-label="{% t "Idioma" %}"><a href="{{ idioma_urls.es }}" lang="es" hreflang="es"{% if lang == 'es' %} aria-current="true"{% endif %}>ES</a><a href="{{ idioma_urls.en }}" lang="en" hreflang="en"{% if lang == 'en' %} aria-current="true"{% endif %}>EN</a></nav>
 </header>
 <main style="max-width:420px;">
-    <h1>Entrar</h1>
-    <p class="sub">Acceso privado: entra con tu cuenta para usar MiPizarra.</p>
+    <h1>{% t "Entrar" %}</h1>
+    <p class="sub">{% t "Acceso privado: entra con tu cuenta para usar MiPizarra." %}</p>
     <form method="post" class="caja" autocomplete="on">
         {% csrf_token %}
         {% if form.non_field_errors %}<p role="alert" class="nota" style="color:#d98a6f;">{{ form.non_field_errors.0 }}</p>{% endif %}
-        <label for="id_username">Usuario</label>
+        <label for="id_username">{% t "Usuario" %}</label>
         <input type="text" name="username" id="id_username" autocomplete="username" autocapitalize="none" required autofocus>
-        <label for="id_password" style="margin-top:.6rem;">Contraseña</label>
+        <label for="id_password" style="margin-top:.6rem;">{% t "Contraseña" %}</label>
         <div class="campo-clave">
             <input type="password" name="password" id="id_password" autocomplete="current-password" required>
-            <button type="button" id="ver-clave" class="ver-clave" aria-pressed="false" aria-controls="id_password">Mostrar</button>
+            <button type="button" id="ver-clave" class="ver-clave" aria-pressed="false" aria-controls="id_password">{% t "Mostrar" %}</button>
         </div>
         <input type="hidden" name="next" value="{{ next|default:'/' }}">
-        <div class="fila"><button type="submit" class="primario" style="width:100%;">Entrar</button></div>
+        <div class="fila"><button type="submit" class="primario" style="width:100%;">{% t "Entrar" %}</button></div>
     </form>
 </main>
 <script src="{% static 'pizarra/js/entrar.js' %}"></script>

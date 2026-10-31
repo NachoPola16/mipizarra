@@ -1,5 +1,5 @@
-{% load static %}<header class="topbar">
-    <a class="brand" href="{% url 'index' %}" aria-label="Ir al inicio de MiPizarra">
+{% load static ui %}<header class="topbar">
+    <a class="brand" href="{% url 'index' %}" aria-label="{% t "Ir al inicio de MiPizarra" %}">
         <svg class="brand-mark" viewBox="0 0 512 512" role="img" aria-label="MiPizarra">
             <rect width="512" height="512" rx="114" fill="#15120e"/>
             <rect x="224" y="80" width="64" height="48" rx="14" fill="#e8752c"/>
@@ -10,15 +10,16 @@
         </svg>
         <span>Mi<em>Pizarra</em></span>
     </a>
-    <nav class="mode-tabs" aria-label="Secciones">
-        <a class="mode-tab mode-link" href="{% url 'index' %}"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2.5" width="12" height="9" rx="1.5"/><path d="M5 14h6M8 11.5V14M5 5.5h6M5 8h3.5"/></svg>Sesión</a>
-        <a class="mode-tab mode-link" href="{% url 'index' %}#reglamento"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3.5C6.7 2.7 5 2.5 2.5 2.5v9c2.5 0 4.2.2 5.5 1 1.3-.8 3-1 5.5-1v-9C11 2.5 9.3 2.7 8 3.5zM8 3.5v9"/></svg>Reglamento</a>
-        <a class="mode-tab mode-link{% if seccion == 'jugadas' %} active{% endif %}" href="{% url 'jugadas' %}"{% if seccion == 'jugadas' %} aria-current="page"{% endif %}><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="4" cy="11.5" r="1.6"/><circle cx="12" cy="4.5" r="1.6"/><path d="M5.4 10.6C7 8 9 6.5 10.6 5.3" stroke-dasharray="2 2"/></svg>Jugadas</a>
-        {% if es_admin %}<a class="mode-tab mode-link{% if seccion == 'fichas' %} active{% endif %}" href="{% url 'fichas' %}"{% if seccion == 'fichas' %} aria-current="page"{% endif %}><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2" width="11" height="12" rx="1.5"/><path d="M5 5.5h6M5 8h6M5 10.5h3.5"/></svg>Fichas</a>{% endif %}
+    <nav class="mode-tabs" aria-label="{% t "Secciones" %}">
+        <a class="mode-tab mode-link" href="{% url 'index' %}"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2.5" width="12" height="9" rx="1.5"/><path d="M5 14h6M8 11.5V14M5 5.5h6M5 8h3.5"/></svg>{% t "Sesión" %}</a>
+        <a class="mode-tab mode-link" href="{% url 'index' %}#reglamento"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3.5C6.7 2.7 5 2.5 2.5 2.5v9c2.5 0 4.2.2 5.5 1 1.3-.8 3-1 5.5-1v-9C11 2.5 9.3 2.7 8 3.5zM8 3.5v9"/></svg>{% t "Reglamento" %}</a>
+        <a class="mode-tab mode-link{% if seccion == 'jugadas' %} active{% endif %}" href="{% url 'jugadas' %}"{% if seccion == 'jugadas' %} aria-current="page"{% endif %}><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="4" cy="11.5" r="1.6"/><circle cx="12" cy="4.5" r="1.6"/><path d="M5.4 10.6C7 8 9 6.5 10.6 5.3" stroke-dasharray="2 2"/></svg>{% t "Jugadas" %}</a>
+        {% if es_admin %}<a class="mode-tab mode-link{% if seccion == 'fichas' %} active{% endif %}" href="{% url 'fichas' %}"{% if seccion == 'fichas' %} aria-current="page"{% endif %}><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><rect x="2.5" y="2" width="11" height="12" rx="1.5"/><path d="M5 5.5h6M5 8h6M5 10.5h3.5"/></svg>{% t "Fichas" %}</a>{% endif %}
         {% if user.is_authenticated %}
-        <form method="post" action="{% url 'salir' %}" class="form-salir">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button type="submit" class="mode-tab mode-link" aria-label="Cerrar sesión de {{ user.get_username }}"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5"/><path d="M3 13.500c.5-2.500 2.500-3.800 5-3.800s4.500 1.300 5 3.800"/></svg>Salir ({{ user.get_username }})</button></form>
+        <form method="post" action="{% url 'salir' %}" class="form-salir">{% csrf_token %}<input type="hidden" name="next" value="{{ request.path }}"><button type="submit" class="mode-tab mode-link" aria-label="{% t "Cerrar sesión de" %} {{ user.get_username }}"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5"/><path d="M3 13.500c.5-2.500 2.500-3.800 5-3.800s4.500 1.300 5 3.800"/></svg>{% t "Salir" %} ({{ user.get_username }})</button></form>
         {% else %}
-        <a class="mode-tab mode-link" href="{% url 'entrar' %}?next={{ request.path|urlencode }}"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5"/><path d="M3 13.500c.5-2.500 2.500-3.800 5-3.800s4.500 1.300 5 3.800"/></svg>Entrar</a>
+        <a class="mode-tab mode-link" href="{% url 'entrar' %}?next={{ request.path|urlencode }}"><svg class="tab-ico" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="5.5" r="2.5"/><path d="M3 13.500c.5-2.500 2.500-3.800 5-3.800s4.500 1.300 5 3.800"/></svg>{% t "Entrar" %}</a>
         {% endif %}
     </nav>
+    <nav class="idioma" aria-label="{% t "Idioma" %}"><a href="{{ idioma_urls.es }}" lang="es" hreflang="es"{% if lang == 'es' %} aria-current="true"{% endif %}>ES</a><a href="{{ idioma_urls.en }}" lang="en" hreflang="en"{% if lang == 'en' %} aria-current="true"{% endif %}>EN</a></nav>
 </header>

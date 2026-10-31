@@ -9,6 +9,16 @@ let currentBloques = [];
 let currentEjercicios = [];
 let selectedEjercicios = new Set();
 
+// ── Textos de la interfaz: en español están en el propio código; en inglés vienen del catálogo del servidor ──
+const UI_T = (() => {
+    try { return JSON.parse(document.getElementById('ui-t').textContent); } catch (e) { return {}; }
+})();
+function tr(clave, vars) {
+    let s = UI_T[clave] || clave;
+    if (vars) Object.keys(vars).forEach(k => { s = s.split('{' + k + '}').join(vars[k]); });
+    return s;
+}
+
 // ── Cuenta atrás cuando se alcanza el límite de peticiones ───────────────────────────────────────
 // El servidor limita las consultas por minuto/hora para no saturar el modelo; en vez de dejar el botón a ciegas, se
 // bloquea y se cuenta cuánto falta (como máximo: la ventana del límite).
@@ -21,7 +31,7 @@ function iniciarCuentaAtras(segundos) {
         const falta = Math.ceil((hasta - Date.now()) / 1000);
         if (falta <= 0) { detenerCuentaAtras(); clearFormError(); return; }
         const t = falta >= 90 ? `${Math.ceil(falta / 60)} min` : `${falta} s`;
-        showFormError(`Has hecho muchas peticiones seguidas. Podrás volver a probar en ${t}.`);
+        showFormError(tr('Has hecho muchas peticiones seguidas. Podrás volver a probar en {t}.', { t }));
         botones.forEach(b => { b.disabled = true; });
     };
     pintar();
@@ -34,7 +44,7 @@ function detenerCuentaAtras() {
 // Error de una petición: si es el límite (429) con tiempo conocido, cuenta atrás; si no, el mensaje de siempre.
 function errorDePeticion(data, status) {
     if (status === 429 && data && data.retry_after) { iniciarCuentaAtras(data.retry_after); return null; }
-    return data && data.error ? data.error : `Error del servidor (${status})`;
+    return data && data.error ? data.error : tr('Error del servidor ({status})', { status });
 }
 
 // ── Errores en línea (sin alert() bloqueante) ────────────────────────────────
@@ -196,14 +206,14 @@ function rgNuevoItem(pregunta, ambitoTxt) {
 function rgAmbitoTexto(ambito) {
     const opt = Array.from(document.querySelectorAll('#dd-ambito .dd-opt')).find(o => o.dataset.value === ambito);
     const nombre = opt ? opt.textContent.trim() : '';
-    return ambito === 'general' || !nombre ? 'Reglamento general' : `${nombre} y reglamento general`;
+    return ambito === 'general' || !nombre ? tr('Reglamento general') : tr('{nombre} y reglamento general', { nombre });
 }
 
 async function consultarReglamento() {
     if (_rgEnCurso) return;
     const caja = document.getElementById('pregunta');
     const pregunta = caja.value.trim();
-    if (!pregunta) { showFormError('Escribe una pregunta.'); return; }
+    if (!pregunta) { showFormError(tr('Escribe una pregunta.')); return; }
     clearFormError();
 
     const ambito = document.getElementById('ambito').value || 'general';
@@ -214,8 +224,8 @@ async function consultarReglamento() {
     const txt = cuerpo.querySelector('.rg-espera-txt');
     const pintarEspera = () => {
         const seg = Math.round((Date.now() - t0) / 1000);
-        txt.textContent = seg < 8 ? 'Consultando el reglamento…'
-            : `Consultando el reglamento… ${seg} s (la primera consulta puede tardar hasta 2 minutos)`;
+        txt.textContent = seg < 8 ? tr('Consultando el reglamento…')
+            : tr('Consultando el reglamento… {seg} s (la primera consulta puede tardar hasta 2 minutos)', { seg });
     };
     pintarEspera();
     const reloj = setInterval(pintarEspera, 1000);
@@ -236,15 +246,15 @@ async function consultarReglamento() {
         const data = await resp.json().catch(() => ({}));
         if (!resp.ok) {
             const msg = errorDePeticion(data, resp.status);
-            if (msg === null) throw new Error('Demasiadas consultas seguidas: espera a que termine la cuenta atrás.');
+            if (msg === null) throw new Error(tr('Demasiadas consultas seguidas: espera a que termine la cuenta atrás.'));
             throw new Error(msg);
         }
         const respuesta = data.respuesta || data.texto || '';
-        if (!respuesta.trim()) throw new Error('El reglamento no devolvió una respuesta. Prueba a reformular la pregunta.');
+        if (!respuesta.trim()) throw new Error(tr('El reglamento no devolvió una respuesta. Prueba a reformular la pregunta.'));
         cuerpo.innerHTML = `<div class='reglamento-card'>${reglamentoHtml(respuesta)}</div>`;
         caja.value = '';
     } catch (e) {
-        const msg = e.name === 'AbortError' ? 'La consulta tardó demasiado. Inténtalo de nuevo.' : e.message;
+        const msg = e.name === 'AbortError' ? tr('La consulta tardó demasiado. Inténtalo de nuevo.') : e.message;
         cuerpo.replaceChildren();
         const err = document.createElement('div');
         err.className = 'rg-error';
@@ -267,7 +277,7 @@ document.getElementById('btn-rg-limpiar').addEventListener('click', () => {
 
 async function generar() {
     const objetivo = document.getElementById('objetivo').value.trim();
-    if (!objetivo) { showFormError('Describe qué quieres trabajar en el entrenamiento.'); return; }
+    if (!objetivo) { showFormError(tr('Describe qué quieres trabajar en el entrenamiento.')); return; }
     clearFormError();
 
     const edad = document.getElementById('edad').value;
@@ -306,7 +316,7 @@ async function generar() {
     } catch (e) {
         hideLoading();
         showEmpty();
-        showFormError('Error: ' + e.message);
+        showFormError(tr('Error: {msg}', { msg: e.message }));
     }
 }
 
@@ -331,8 +341,8 @@ function actualizarHintAmbito() {
     if (!sel || !hint) return;
     const nombre = sel.options[sel.selectedIndex] ? sel.options[sel.selectedIndex].text : '';
     hint.textContent = (sel.value && sel.value !== 'general')
-        ? `Se responde con la normativa de ${nombre} y, en todo lo que no regule, con el reglamento general de FIBA y de la federación española.`
-        : 'Reglamento de FIBA y de la federación española, válido en todas las comunidades.';
+        ? tr('Se responde con la normativa de {nombre} y, en todo lo que no regule, con el reglamento general de FIBA y de la federación española.', { nombre })
+        : tr('Reglamento de FIBA y de la federación española, válido en todas las comunidades.');
 }
 document.getElementById('ambito').addEventListener('change', actualizarHintAmbito);
 actualizarHintAmbito();
@@ -554,7 +564,7 @@ function actualizarBarraReprompt() {
     }
     bar.style.display = '';
     document.getElementById('reprompt-count').textContent =
-        n === 1 ? '1 ejercicio seleccionado' : `${n} ejercicios seleccionados`;
+        n === 1 ? tr('1 ejercicio seleccionado') : tr('{n} ejercicios seleccionados', { n });
 }
 
 function formatEjercicioTexto(headerLine, ej, ejOriginal) {
@@ -616,7 +626,7 @@ document.getElementById('btn-reprompt').addEventListener('click', aplicarRepromp
 
 async function aplicarReprompt() {
     const instruccion = document.getElementById('reprompt-instruccion').value.trim();
-    if (!instruccion) { showFormError('Describe qué quieres cambiar.'); return; }
+    if (!instruccion) { showFormError(tr('Describe qué quieres cambiar.')); return; }
     if (!currentResult || selectedEjercicios.size === 0) return;
     clearFormError();
 
@@ -627,7 +637,7 @@ async function aplicarReprompt() {
 
     for (const idx of idxs) {
         const ej = currentEjercicios[idx];
-        btn.textContent = `Corrigiendo ${idxs.indexOf(idx) + 1}/${idxs.length}…`;
+        btn.textContent = tr('Corrigiendo {i}/{n}…', { i: idxs.indexOf(idx) + 1, n: idxs.length });
         try {
             const resp = await fetch(document.querySelector('[data-reprompt]').dataset.reprompt, {
                 method: 'POST',
@@ -665,7 +675,7 @@ async function aplicarReprompt() {
             currentResult.diagramas = reemplazarDiagramas(
                 currentResult.diagramas || [], ej.diagNombre, nuevoNombre, nuevasDiagramas);
         } catch (e) {
-            showFormError(`Error corrigiendo "${ej.nombre}": ${e.message}`);
+            showFormError(tr('Error corrigiendo "{nombre}": {msg}', { nombre: ej.nombre, msg: e.message }));
         }
     }
 
@@ -676,7 +686,7 @@ async function aplicarReprompt() {
     repromptTextarea.value = '';
     repromptTextarea.style.height = 'auto';
     btn.disabled = false;
-    btn.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2.5v3.2h-3.2"/></svg> Aplicar cambio';
+    btn.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2.5v3.2h-3.2"/></svg> ' + tr('Aplicar cambio');
     renderResults(currentResult);
     const aviso = textoAvisos(avisosReprompt);
     if (aviso) showFormAviso(aviso);
@@ -700,9 +710,9 @@ document.getElementById('btn-txt').addEventListener('click', () => {
 
 // Pide el PDF y lo descarga; sirve para el botón de los resultados y para el aviso compacto.
 async function descargarPdf(btn) {
-    if (!currentResult) return { ok: false, error: 'No hay sesión' };
+    if (!currentResult) return { ok: false, error: tr('No hay sesión') };
     const htmlOriginal = btn.innerHTML;       // conserva el icono
-    btn.textContent = 'Generando PDF…';
+    btn.textContent = tr('Generando PDF…');
     btn.disabled = true;
     try {
         const resp = await fetch('/pdf/', {
@@ -716,7 +726,7 @@ async function descargarPdf(btn) {
                 diagramas: currentResult.diagramas || [],
             }),
         });
-        if (!resp.ok) throw new Error('Error generando PDF');
+        if (!resp.ok) throw new Error(tr('Error generando PDF'));
         const blob = await resp.blob();
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
@@ -736,7 +746,7 @@ document.getElementById('btn-pdf').addEventListener('click', async () => {
     const r = await descargarPdf(document.getElementById('btn-pdf'));
     if (!r.ok) {
         const msgEl = document.getElementById('fb-msg');
-        msgEl.textContent = 'Error generando PDF: ' + r.error;
+        msgEl.textContent = tr('Error generando PDF: {msg}', { msg: r.error });
         msgEl.className = 'feedback-msg err';
     }
 });
@@ -744,7 +754,7 @@ document.getElementById('btn-pdf').addEventListener('click', async () => {
 document.getElementById('btn-txt-top').addEventListener('click', () => document.getElementById('btn-txt').click());
 document.getElementById('btn-pdf-top').addEventListener('click', async () => {
     const r = await descargarPdf(document.getElementById('btn-pdf-top'));
-    if (!r.ok) showFormError('Error generando PDF: ' + r.error);
+    if (!r.ok) showFormError(tr('Error generando PDF: {msg}', { msg: r.error }));
 });
 
 // Aviso compacto: ver la sesión en la web (con sus avisos) o descargar el PDF sin abrirla.
@@ -755,7 +765,7 @@ document.getElementById('listo-ver').addEventListener('click', () => {
 document.getElementById('listo-pdf').addEventListener('click', async () => {
     const r = await descargarPdf(document.getElementById('listo-pdf'));
     const el = document.getElementById('listo-aviso');
-    el.textContent = r.ok ? 'PDF descargado. También puedes ver la sesión en la web.' : 'Error generando PDF: ' + r.error;
+    el.textContent = r.ok ? tr('PDF descargado. También puedes ver la sesión en la web.') : tr('Error generando PDF: {msg}', { msg: r.error });
 });
 
 // ── Feedback ───────────────────────────────────────────────────────────────
@@ -763,7 +773,7 @@ document.getElementById('btn-feedback').addEventListener('click', async () => {
     const cambios = document.getElementById('fb-cambios').value.trim();
     const msgEl = document.getElementById('fb-msg');
     if (!cambios) {
-        msgEl.textContent = 'Describe brevemente qué cambiaste.';
+        msgEl.textContent = tr('Describe brevemente qué cambiaste.');
         msgEl.className = 'feedback-msg err';
         return;
     }
@@ -785,13 +795,13 @@ document.getElementById('btn-feedback').addEventListener('click', async () => {
             }),
         });
         if (resp.ok) {
-            msgEl.textContent = '✓ Sesión guardada. ¡Gracias!';
+            msgEl.textContent = tr('✓ Sesión guardada. ¡Gracias!');
             msgEl.className = 'feedback-msg ok';
         } else {
             throw new Error();
         }
     } catch {
-        msgEl.textContent = 'Error guardando. Inténtalo de nuevo.';
+        msgEl.textContent = tr('Error guardando. Inténtalo de nuevo.');
         msgEl.className = 'feedback-msg err';
     }
 });

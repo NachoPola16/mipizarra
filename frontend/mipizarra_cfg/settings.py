@@ -44,6 +44,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'pizarra.idioma.IdiomaMiddleware',
     'mipizarra_cfg.middleware.LoginRequiredMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -60,6 +61,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'pizarra.context.admin',
+                'pizarra.idioma.contexto',
             ],
         },
     },
