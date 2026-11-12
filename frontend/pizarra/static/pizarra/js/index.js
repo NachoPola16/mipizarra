@@ -832,6 +832,7 @@ const MENSAJES_ESPERA = {
         'Dato: el minibasket se juega con balón de talla 5, de unos 70 cm de perímetro.',
         'Pensando en las progresiones: de más fácil a más difícil.',
         'Dato: la línea de tres puntos llegó a las competiciones FIBA en 1984.',
+        'Pases horizontales, peligros verticales.',
     ],
     reglamento: [
         'Hojeando el reglamento…',
@@ -854,12 +855,12 @@ function iniciarMensajes(modo) {
     if (!el || !lista.length) return;
     _tipIdx = Math.floor(Math.random() * lista.length);
     el.classList.remove('oculto');
-    el.textContent = lista[_tipIdx];
+    el.textContent = tr(lista[_tipIdx]);
     _tipTimer = setInterval(() => {
         el.classList.add('oculto');
         setTimeout(() => {
             _tipIdx = (_tipIdx + 1) % lista.length;
-            el.textContent = lista[_tipIdx];
+            el.textContent = tr(lista[_tipIdx]);
             el.classList.remove('oculto');
         }, 350);
     }, 6500);
@@ -872,7 +873,7 @@ function showLoading(modo) {
     document.getElementById('reglamento-hilo').style.display = 'none';
     document.getElementById('results').classList.remove('visible');
     document.getElementById('listo').classList.remove('visible');
-    document.getElementById('loading-text').textContent = 'Generando sesión… (puede tardar hasta 2 minutos)';
+    document.getElementById('loading-text').textContent = tr('Generando sesión… (puede tardar hasta 2 minutos)');
     document.getElementById('loading').classList.add('visible');
     document.getElementById('btn-generar').disabled = true;
     document.getElementById('btn-reglamento').disabled = true;

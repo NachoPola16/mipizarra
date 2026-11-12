@@ -131,4 +131,29 @@ JS_EN = {
     "Describe brevemente qué cambiaste.": "Briefly describe what you changed.",
     "✓ Sesión guardada. ¡Gracias!": "✓ Session saved. Thank you!",
     "Error guardando. Inténtalo de nuevo.": "Error saving. Try again.",
+    "Generando sesión… (puede tardar hasta 2 minutos)": "Generating session… (it can take up to 2 minutes)",
+    # waiting messages (MENSAJES_ESPERA in index.js); FIBA figures stay metric
+    "Colocando los conos… que luego nadie recogerá.": "Setting out the cones… that nobody will pick up afterwards.",
+    "Dato: el baloncesto lo inventó James Naismith en 1891, con una cesta de melocotones como canasta.":
+        "Fact: James Naismith invented basketball in 1891, with a peach basket as the hoop.",
+    "Revisando que ningún ejercicio deje a nadie en una fila esperando.": "Checking that no drill leaves anyone waiting in line.",
+    "Dato: al principio había que sacar el balón de la cesta a mano, porque no tenía el fondo abierto.":
+        "Fact: at first the ball had to be taken out of the basket by hand, because the bottom was closed.",
+    "Contando los pasos del pívot… y esta vez no hay pasos.": "Counting the center's steps… and this time it's not a travel.",
+    "Dato: el tablero se creó para que el público de las gradas no desviara los tiros.":
+        "Fact: the backboard was introduced to stop spectators in the stands from deflecting shots.",
+    "Ajustando la intensidad a la edad de cada grupo.": "Matching the intensity to each age group.",
+    "Dato: el aro mide 45 cm de diámetro y está a 3,05 m del suelo, en todas las categorías de FIBA.":
+        "Fact: the rim is 45 cm across and 3.05 m above the floor, in every FIBA category.",
+    "Buscando el balón que siempre falta en la bolsa.": "Looking for the ball that is always missing from the bag.",
+    "Dato: el minibasket se juega con balón de talla 5, de unos 70 cm de perímetro.":
+        "Fact: mini-basketball is played with a size 5 ball, about 70 cm around.",
+    "Pensando en las progresiones: de más fácil a más difícil.": "Thinking through the progressions: from easier to harder.",
+    "Dato: la línea de tres puntos llegó a las competiciones FIBA en 1984.": "Fact: the three-point line came to FIBA competitions in 1984.",
+    "Pases horizontales, peligros verticales.": "Pass east-west, attack north-south.",
+    "Hojeando el reglamento…": "Leafing through the rulebook…",
+    "Buscando el artículo exacto, no uno parecido.": "Finding the exact article, not a similar one.",
+    "Comprobando si la norma cambia en tu categoría.": "Checking whether the rule changes in your age group.",
+    "Dato: el aro mide 45 cm de diámetro y está a 3,05 m del suelo.": "Fact: the rim is 45 cm across and 3.05 m above the floor.",
+    "Contrastando la respuesta con el texto del reglamento.": "Checking the answer against the text of the rules.",
 }

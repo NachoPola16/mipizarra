@@ -100,6 +100,11 @@ def test_el_catalogo_cubre_la_interfaz():
     for clave in _claves(js, r"tr\('((?:[^'\\]|\\.)*)'"):
         if clave not in JS_EN:
             faltan.append(("index.js", clave))
+    # the rotating waiting messages go through tr() at display time, so each one needs its translation too
+    bloque = re.search(r"const MENSAJES_ESPERA = \{(.*?)\n\};", js, re.S).group(1)
+    mensajes = _claves(bloque, r"(?m)^\s+'((?:[^'\\]|\\.)*)',$")
+    assert len(mensajes) >= 17 and "Pases horizontales, peligros verticales." in mensajes
+    faltan += [("MENSAJES_ESPERA", m) for m in mensajes if m not in JS_EN]
     assert not faltan, faltan
     # los huecos {x} de cada traducción son los mismos que los del texto original
     for catalogo in (TEXTOS_EN, JS_EN):
