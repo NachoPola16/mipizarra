@@ -123,3 +123,38 @@ def test_cuentas_y_jugadas_guardadas():
     r = subprocess.run([sys.executable, "-c", GUION], capture_output=True, text=True, encoding="utf-8", errors="replace",
                        env=entorno, cwd=str(RAIZ / "frontend"), timeout=120)
     assert r.returncode == 0 and r.stdout.strip().endswith("OK"), r.stdout + r.stderr
+
+
+GUION_FRENO = textwrap.dedent('''
+    import django
+    django.setup()
+    from django.core.management import call_command
+    from django.contrib.auth import get_user_model
+    from django.test import Client
+    call_command("migrate", verbosity=0)
+    get_user_model().objects.create_user("alicia", password="clave-de-prueba-1")
+    H = {"HTTP_HOST": "localhost"}
+    # the same account attacked from a different IP each time (rotating or spoofed CF-Connecting-IP): the per-account counter stops it
+    codigos = []
+    for i in range(20):
+        c = Client()
+        r = c.post("/cuenta/entrar/", {"username": "Alicia", "password": "mala"}, HTTP_CF_CONNECTING_IP=f"10.0.0.{i}", **H)
+        codigos.append(r.status_code)
+    assert 429 in codigos, codigos
+    # even the right password is refused while the account is locked, from a fresh IP
+    r = Client().post("/cuenta/entrar/", {"username": "alicia", "password": "clave-de-prueba-1"}, HTTP_CF_CONNECTING_IP="10.9.9.9", **H)
+    assert r.status_code == 429, r.status_code
+    # another account from another IP is not affected
+    get_user_model().objects.create_user("beto", password="clave-de-prueba-2")
+    r = Client().post("/cuenta/entrar/", {"username": "beto", "password": "clave-de-prueba-2"}, HTTP_CF_CONNECTING_IP="10.8.8.8", **H)
+    assert r.status_code == 302, r.status_code
+    print("OK")
+''')
+
+
+def test_freno_de_login_por_cuenta():
+    entorno = {**os.environ, "DJANGO_SETTINGS_MODULE": "mipizarra_cfg.settings", "DJANGO_DB_PATH": ":memory:",
+               "DJANGO_DEBUG": "True", "DJANGO_SECRET_KEY": "clave-solo-para-tests", "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1", "PYTHONPATH": str(RAIZ / "frontend")}
+    r = subprocess.run([sys.executable, "-c", GUION_FRENO], capture_output=True, text=True, encoding="utf-8", errors="replace",
+                       env=entorno, cwd=str(RAIZ / "frontend"), timeout=120)
+    assert r.returncode == 0 and r.stdout.strip().endswith("OK"), r.stdout + r.stderr

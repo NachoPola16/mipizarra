@@ -99,13 +99,20 @@ def _clave_intentos(request):
     return 'login-fallos:' + ip[:64]
 
 
+def _clave_usuario(request):
+    # Second counter per account name, so rotating IPs (or a spoofed CF-Connecting-IP) does not bypass the brake.
+    nombre = (request.POST.get('username') or '').strip().lower()
+    return 'login-fallos-u:' + nombre[:64]
+
+
 class Entrar(vistas_auth.LoginView):
     """Inicio de sesión con un freno sencillo contra la fuerza bruta (por IP)."""
     template_name = 'pizarra/entrar.html'
     redirect_authenticated_user = True
 
     def post(self, request, *args, **kwargs):
-        if cache.get(_clave_intentos(request), 0) >= INTENTOS_MAX:
+        if (cache.get(_clave_intentos(request), 0) >= INTENTOS_MAX
+                or cache.get(_clave_usuario(request), 0) >= INTENTOS_MAX * 2):
             form = self.get_form()
             form.add_error(None, 'Demasiados intentos fallidos. Espera unos minutos y vuelve a probar.')
             return self.render_to_response(self.get_context_data(form=form), status=429)
@@ -114,10 +121,13 @@ class Entrar(vistas_auth.LoginView):
     def form_invalid(self, form):
         clave = _clave_intentos(self.request)
         cache.set(clave, cache.get(clave, 0) + 1, VENTANA_S)
+        clave_u = _clave_usuario(self.request)
+        cache.set(clave_u, cache.get(clave_u, 0) + 1, VENTANA_S)
         return super().form_invalid(form)
 
     def form_valid(self, form):
         cache.delete(_clave_intentos(self.request))
+        cache.delete(_clave_usuario(self.request))
         return super().form_valid(form)
 
 

@@ -1,5 +1,6 @@
 # api/main.py
 import copy
+import hmac
 import datetime
 import json
 import logging
@@ -148,7 +149,7 @@ class InternalSecretMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
         if request.url.path in PUBLIC_PATHS:
             return await call_next(request)
-        if request.headers.get("X-Internal-Secret") != INTERNAL_SECRET:
+        if not hmac.compare_digest(request.headers.get("X-Internal-Secret", "").encode(), INTERNAL_SECRET.encode()):
             return JSONResponse(status_code=401, content={"detail": "Unauthorized"})
         return await call_next(request)
 
