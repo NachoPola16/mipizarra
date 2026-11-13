@@ -20,7 +20,7 @@ HISTORIAL_MAX = int(os.environ.get("FICHAS_HISTORIAL_MAX", "10"))     # 0 = no g
 CAMPOS_EDITABLES = (
     "nombre", "categoria", "subcategoria", "espacio", "edades", "duracion_min", "intensidad", "carga_cognitiva",
     "jugadores_minimos", "objetivos", "descripcion", "puntos_clave", "material", "consigna", "errores_frecuentes",
-    "que_observar", "progresion", "diagrama", "diagramas", "sin_diagrama",
+    "que_observar", "progresion", "diagrama", "diagramas", "sin_diagrama", "i18n",
 )
 CAMPOS_OPCIONALES = ("material", "consigna", "errores_frecuentes", "que_observar", "progresion")
 # Un guardado solo sustituye el diagrama de la ficha si trae alguno de estos campos (el editor manda siempre
@@ -119,6 +119,30 @@ def guardar(ruta: str, ficha_id: str, campos: dict) -> dict | None:
         lista[i] = nueva
         _escribir_en_sitio(ruta, lista)
         return nueva
+
+
+def guardar_lote(ruta: str, nuevas: dict) -> list:
+    """Escribe varias fichas (id → ficha completa, ya validada) con UNA sola copia del fichero y una sola escritura,
+    y una versión anterior en el historial de cada una (se pueden deshacer una a una). Devuelve los ids que cambiaron.
+    Una copia por ficha rotaría pronto las copias guardadas y se perdería la de antes de la operación."""
+    with _cerrojo:
+        lista = leer(ruta)
+        cambios = [(n, f) for n, f in enumerate(lista) if f.get("id") in nuevas and nuevas[f["id"]] != f]
+        if not cambios:
+            return []
+        _instantanea(ruta)
+        if HISTORIAL_MAX > 0:
+            historial = _leer_historial()
+            fecha = f"{datetime.datetime.now():%Y-%m-%d %H:%M:%S}"
+            for _, viejo in cambios:
+                versiones = historial.setdefault(viejo["id"], [])
+                versiones.append({"fecha": fecha, "ficha": viejo})
+                historial[viejo["id"]] = versiones[-HISTORIAL_MAX:]
+            _escribir_historial(historial)
+        for n, viejo in cambios:
+            lista[n] = nuevas[viejo["id"]]
+        _escribir_en_sitio(ruta, lista)
+        return [viejo["id"] for _, viejo in cambios]
 
 
 def volver_atras(ruta: str, ficha_id: str) -> dict | None:

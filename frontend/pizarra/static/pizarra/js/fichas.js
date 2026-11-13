@@ -6,6 +6,8 @@
     var URL_DATOS = document.body.getAttribute('data-url-datos');
     var URL_FICHA = document.body.getAttribute('data-url-ficha');
     var URL_VISTA = document.body.getAttribute('data-url-vista');
+    var URL_AVISOS = document.body.getAttribute('data-url-avisos');
+    var URL_REEMPLAZAR = document.body.getAttribute('data-url-reemplazar');
     var editorDiagrama = null;   // se crea la primera vez que se abre una ficha
     var CATEGORIAS = ['juego_equipo', '1c1', 'ventaja_numerica', 'calentamiento', 'tiro', 'fisico', 'bloqueo_directo', 'bloqueo_indirecto'];
     var ESPACIOS = ['media_pista', 'pista_completa', 'flexible'];
@@ -140,6 +142,7 @@
         pr.appendChild(campo('Progresión: facilitar', 'opcional', pf = area('c-fac', p.facilitar), 'p_facilitar', function () { return pf.value.trim(); }));
         pr.appendChild(campo('Progresión: complicar', 'opcional', pd = area('c-comp', p.complicar), 'p_complicar', function () { return pd.value.trim(); }));
         cont.appendChild(pr);
+        construyeIngles(f);
         cont.addEventListener('input', cambio); cont.addEventListener('change', cambio);
         if (!editorDiagrama) editorDiagrama = new window.EditorDiagrama($('fi-diagrama'), { api: api, urlVista: URL_VISTA, onCambio: cambio });
         editorDiagrama.cargar(f);
@@ -152,9 +155,117 @@
         v.objetivos = { tacticos: g('o_tacticos'), tecnicos: g('o_tecnicos'), fisicos: g('o_fisicos') };
         v.progresion = { facilitar: g('p_facilitar'), complicar: g('p_complicar') };
         if (editorDiagrama) Object.assign(v, editorDiagrama.leer());
+        var en = leeIngles();
+        if (Object.keys(en).length) v.i18n = { en: en };
         return v;
     }
+
+    // ── Inglés (pestaña English) ─────────────────────────────────────────────
+    // Los mismos campos que en español, con el texto español de referencia encima de cada uno. Se guarda en
+    // ficha.i18n.en; las listas deben tener los mismos elementos que en español (la API lo comprueba).
+    var camposEn = {}, refsEn = [], contadoresEn = [], esAlAbrir = '';
+    var ORDEN_EN = ['nombre', 'descripcion', 'material', 'consigna', 'puntos_clave', 'errores_frecuentes', 'que_observar', 'progresion', 'titulos_diagramas'];
+    function campoEn(titulo, ayuda, control, nombre, lector, leerEs, esLista) {
+        var d = el('div', 'fi-campo'), l = el('label', null, titulo);
+        if (control.id) l.setAttribute('for', control.id);
+        if (ayuda) l.appendChild(el('span', 'fi-ayuda', ayuda));
+        if (esLista) { var n = el('span', 'fi-ayuda fi-cuenta-en'); l.appendChild(n); contadoresEn.push({ nodo: n, esN: function () { return leerEs().split('\n').filter(Boolean).length; }, enN: function () { return lector().length; } }); }
+        d.appendChild(l);
+        if (leerEs) {
+            var r = el('div', 'fi-ref'), t = el('span', 'fi-ref-txt');
+            r.appendChild(el('span', 'fi-ref-et', 'Español')); r.appendChild(t); d.appendChild(r);
+            refsEn.push({ nodo: t, leer: leerEs });
+        }
+        d.appendChild(control);
+        camposEn[nombre] = lector;
+        return d;
+    }
+    function construyeIngles(f) {
+        var cont = $('fi-ingles'); cont.textContent = ''; camposEn = {}; refsEn = []; contadoresEn = [];
+        var en = ((f.i18n || {}).en) || {}, p = en.progresion || {}, c;
+        var aviso = el('p', 'fi-aviso-es'); aviso.id = 'fi-en-aviso'; aviso.hidden = true; cont.appendChild(aviso);
+        cont.appendChild(el('p', 'nota', 'La versión inglesa que ve quien use la web en inglés. Los números, los ids y el diagrama son los mismos en los dos idiomas; las listas deben tener los mismos elementos que en español.'));
+        var lector = function (ctl) { return function () { return ctl.value.trim(); }; };
+        var lectorLineas = function (ctl) { return function () { return lineas(ctl); }; };
+        var es = function (k) { return function () { var v = campos[k] ? campos[k]() : ''; return Array.isArray(v) ? v.join('\n') : v; }; };
+        cont.appendChild(campoEn('Name', '', c = texto('e-nombre', en.nombre), 'nombre', lector(c), es('nombre')));
+        cont.appendChild(campoEn('Description', '', c = area('e-desc', en.descripcion, true), 'descripcion', lector(c), es('descripcion')));
+        if (f.material || en.material) cont.appendChild(campoEn('Material', '', c = area('e-mat', en.material), 'material', lector(c), es('material')));
+        if (f.consigna || en.consigna) cont.appendChild(campoEn('Cue', '', c = texto('e-cons', en.consigna), 'consigna', lector(c), es('consigna')));
+        cont.appendChild(campoEn('Key points', 'one per line', c = area('e-pc', (en.puntos_clave || []).join('\n')), 'puntos_clave', lectorLineas(c), es('puntos_clave'), true));
+        if ((f.errores_frecuentes || []).length || en.errores_frecuentes) cont.appendChild(campoEn('Common mistakes', 'one per line', c = area('e-err', (en.errores_frecuentes || []).join('\n')), 'errores_frecuentes', lectorLineas(c), es('errores_frecuentes'), true));
+        if ((f.que_observar || []).length || en.que_observar) cont.appendChild(campoEn('What to look for', 'one per line', c = area('e-obs', (en.que_observar || []).join('\n')), 'que_observar', lectorLineas(c), es('que_observar'), true));
+        if ((f.progresion || {}).facilitar || p.facilitar) cont.appendChild(campoEn('Progression: easier', '', c = area('e-fac', p.facilitar), 'p_facilitar', lector(c), es('p_facilitar')));
+        if ((f.progresion || {}).complicar || p.complicar) cont.appendChild(campoEn('Progression: harder', '', c = area('e-comp', p.complicar), 'p_complicar', lector(c), es('p_complicar')));
+        var titulosEs = (f.diagramas || []).map(function (d) { return d.titulo || ''; });
+        if (titulosEs.some(Boolean) || en.titulos_diagramas) cont.appendChild(campoEn('Diagram titles', 'one per line, one per diagram', c = area('e-tit', (en.titulos_diagramas || []).join('\n')), 'titulos_diagramas', lectorLineas(c), function () { return titulosEs.join('\n'); }, true));
+    }
+    function leeIngles() {
+        var o = {}, g = function (k) { return camposEn[k] ? camposEn[k]() : undefined; }, pf = g('p_facilitar'), pc = g('p_complicar');
+        ORDEN_EN.forEach(function (k) {
+            if (k === 'progresion') {
+                if (pf || pc) { o.progresion = {}; if (pf) o.progresion.facilitar = pf; if (pc) o.progresion.complicar = pc; }
+                return;
+            }
+            var v = g(k);
+            if (v && (!Array.isArray(v) || v.length)) o[k] = v;
+        });
+        return o;
+    }
+    function textosEs() {
+        var o = {};
+        ['nombre', 'descripcion', 'puntos_clave', 'material', 'consigna', 'errores_frecuentes', 'que_observar', 'p_facilitar', 'p_complicar'].forEach(function (k) { if (campos[k]) o[k] = campos[k](); });
+        return JSON.stringify(o);
+    }
+    function refrescaIngles() {
+        refsEn.forEach(function (r) { r.nodo.textContent = r.leer(); });
+        contadoresEn.forEach(function (c) {
+            var a = c.esN(), b = c.enN();
+            c.nodo.textContent = ' · ES ' + a + ' / EN ' + b;
+            c.nodo.classList.toggle('fi-cuenta-mal', a !== b);
+        });
+        var av = $('fi-en-aviso');
+        if (av) {
+            var cambiado = textosEs() !== esAlAbrir;
+            av.hidden = !cambiado;
+            av.textContent = cambiado ? 'Has cambiado el español en esta sesión: comprueba que el inglés sigue diciendo lo mismo.' : '';
+        }
+    }
+    function muestraPestana(ingles) {
+        $('fi-tab-es').setAttribute('aria-selected', ingles ? 'false' : 'true');
+        $('fi-tab-en').setAttribute('aria-selected', ingles ? 'true' : 'false');
+        $('fi-pane-es').hidden = ingles; $('fi-ingles').hidden = !ingles;
+        if (ingles) refrescaIngles();
+    }
+
+    // ── Avisos automáticos (los mismos de tools/revisar_diagramas.py) ───────────
+    var temporizadorAvisos = null, numeroAviso = 0;
+    var ETIQUETAS_AVISO = { BALL: 'Balón', LABEL: 'Jugador citado', DEF: 'Defensores', RANGE: 'Fuera de pista', ORDER: 'Orden de movimientos', CONES: 'Conos', VALIDADOR: 'Validación', SIN: 'Diagrama' };
+    function programaAvisos() { clearTimeout(temporizadorAvisos); temporizadorAvisos = setTimeout(pideAvisos, 900); }
+    function pideAvisos() {
+        clearTimeout(temporizadorAvisos);
+        if (!actual) return;
+        var mio = ++numeroAviso, id = actual.id;
+        api(URL_AVISOS.replace('__ID__', id), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ficha: lee() }) })
+            .then(function (r) { if (mio === numeroAviso && actual && actual.id === id) pintaAvisos(r.ok ? (r.cuerpo.avisos || []) : []); })
+            .catch(function () {});
+    }
+    function pintaAvisos(lista) {
+        var c = $('fi-avisos'); c.textContent = '';
+        if (!lista.length) { c.hidden = true; return; }
+        c.appendChild(el('strong', null, 'Avisos automáticos (' + lista.length + '): son pistas, no impiden guardar'));
+        var ul = el('ul');
+        lista.forEach(function (a) {
+            var li = el('li');
+            li.appendChild(el('span', 'fi-av-tipo', ETIQUETAS_AVISO[a.tipo] || a.tipo));
+            li.appendChild(document.createTextNode(' ' + a.texto));
+            ul.appendChild(li);
+        });
+        c.appendChild(ul); c.hidden = false;
+    }
     function cambio() {
+        programaAvisos();
+        if (!$('fi-ingles').hidden) refrescaIngles();
         if (!aplicando) programaRegistro();
         var sucio = JSON.stringify(lee()) !== instantanea;
         $('fi-guardar').disabled = !sucio; $('fi-descartar').disabled = !sucio;
@@ -214,6 +325,7 @@
         $('fi-restaurar').hidden = !modificadas[f.id]; $('fi-restaurar').textContent = 'Volver a la versión guardada anterior';
         construye(f);
         instantanea = JSON.stringify(lee()); reiniciaPasos();
+        esAlAbrir = textosEs(); muestraPestana(false); pideAvisos();
         $('fi-guardar').disabled = true; $('fi-descartar').disabled = true;
         muestraErrores(null); estado('');
         pintaLista();
@@ -257,6 +369,86 @@
         }).catch(function () { estado('No se pudo restaurar: sin conexión con el servidor.'); });
     }
 
+    // ── Buscar y reemplazar en toda la biblioteca ────────────────────────────
+    var confirmaAplicar = false;
+    function reEstado(t) { $('re-estado').textContent = t || ''; }
+    function reiniciaConfirmacion() { confirmaAplicar = false; $('re-aplicar').textContent = 'Aplicar a las marcadas'; }
+    function cuerpoReemplazo(aplicar, ids) {
+        return { buscar: $('re-buscar').value, reemplazar: $('re-nuevo').value, ambito: $('re-ambito').value,
+            palabra: $('re-palabra').checked, mayusculas: $('re-mayus').checked, aplicar: !!aplicar, ids: ids || null };
+    }
+    function mensajeError(r, porDefecto) {
+        var d = r.cuerpo && r.cuerpo.detail;
+        return (r.cuerpo && r.cuerpo.error) || (typeof d === 'string' ? d : porDefecto);
+    }
+    function marcadas() {
+        return Array.prototype.slice.call(document.querySelectorAll('#re-resultado input[data-id]:checked')).map(function (i) { return i.getAttribute('data-id'); });
+    }
+    function pintaReemplazo(cuerpo) {
+        var c = $('re-resultado'); c.textContent = ''; reiniciaConfirmacion();
+        var lista = cuerpo.fichas || [];
+        if (!lista.length) { c.hidden = true; reEstado('No hay coincidencias.'); $('re-aplicar').disabled = true; return; }
+        reEstado(lista.length + ' fichas, ' + cuerpo.total_cambios + ' cambios. Desmarca las que no quieras tocar.');
+        var todas = el('button', null, 'Marcar / desmarcar todas'); todas.type = 'button';
+        todas.addEventListener('click', function () {
+            var cajas = c.querySelectorAll('input[data-id]'), hay = Array.prototype.some.call(cajas, function (i) { return i.checked; });
+            Array.prototype.forEach.call(cajas, function (i) { i.checked = !hay; }); reiniciaConfirmacion();
+        });
+        c.appendChild(todas);
+        lista.forEach(function (f) {
+            var det = el('div', 'fi-reemp-ficha'), lab = el('label'), caja = el('input');
+            caja.type = 'checkbox'; caja.checked = true; caja.setAttribute('data-id', f.id);
+            caja.addEventListener('change', reiniciaConfirmacion);
+            lab.appendChild(caja); lab.appendChild(document.createTextNode(' '));
+            lab.appendChild(el('strong', null, f.id)); lab.appendChild(document.createTextNode(' ' + f.nombre + ' (' + f.cambios.length + ')'));
+            det.appendChild(lab);
+            var ul = el('ul');
+            f.cambios.forEach(function (x) {
+                var li = el('li');
+                li.appendChild(el('span', 'fi-av-tipo', x.campo));
+                li.appendChild(el('span', 'fi-antes', x.antes));
+                li.appendChild(document.createTextNode(' → '));
+                li.appendChild(el('span', 'fi-despues', x.despues));
+                ul.appendChild(li);
+            });
+            det.appendChild(ul); c.appendChild(det);
+        });
+        c.hidden = false; $('re-aplicar').disabled = false;
+    }
+    function reemplazoVer() {
+        if (!$('re-buscar').value) { reEstado('Escribe qué buscar.'); return; }
+        reEstado('Buscando…'); $('re-aplicar').disabled = true;
+        api(URL_REEMPLAZAR, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpoReemplazo(false)) })
+            .then(function (r) {
+                if (!r.ok) { reEstado(mensajeError(r, 'No se pudo buscar.')); return; }
+                pintaReemplazo(r.cuerpo);
+            }).catch(function () { reEstado('No se pudo buscar: sin conexión con el servidor.'); });
+    }
+    function reemplazoAplicar() {
+        if (haySinGuardar()) { reEstado('Guarda o descarta antes los cambios de la ficha abierta.'); return; }
+        var ids = marcadas();
+        if (!ids.length) { reEstado('No hay fichas marcadas.'); return; }
+        if (!confirmaAplicar) { confirmaAplicar = true; $('re-aplicar').textContent = 'Pulsa otra vez para confirmar (' + ids.length + ' fichas)'; return; }
+        reiniciaConfirmacion(); $('re-aplicar').disabled = true; reEstado('Aplicando…');
+        api(URL_REEMPLAZAR, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(cuerpoReemplazo(true, ids)) })
+            .then(function (r) {
+                if (!r.ok) { reEstado(mensajeError(r, 'No se pudo aplicar.')); $('re-aplicar').disabled = false; return; }
+                var om = r.cuerpo.omitidas || [], txt = 'Cambiadas ' + (r.cuerpo.guardadas || []).length + ' fichas.';
+                if (om.length) txt += ' No se han tocado por no quedar válidas: ' + om.map(function (o) { return o.id; }).join(', ') + '.';
+                $('re-resultado').textContent = ''; $('re-resultado').hidden = true;
+                recarga().then(function () { reEstado(txt); });
+            }).catch(function () { reEstado('No se pudo aplicar: sin conexión con el servidor.'); $('re-aplicar').disabled = false; });
+    }
+    function recarga() {
+        return api(URL_DATOS).then(function (r) {
+            if (!r.ok) return;
+            fichas = r.cuerpo.fichas || []; modificadas = {};
+            (r.cuerpo.modificadas || []).forEach(function (id) { modificadas[id] = true; });
+            filtra();
+            if (actual) abre(actual.id, true);
+        });
+    }
+
     // ── Arranque ─────────────────────────────────────────────────────────────
     function rellenaFiltros() {
         var edades = {}, cats = {};
@@ -273,6 +465,16 @@
     }).catch(function () { $('fi-ul').textContent = 'No se pudieron cargar las fichas.'; });
 
     ['fi-buscar', 'fi-edad', 'fi-cat', 'fi-mod'].forEach(function (id) { $(id).addEventListener('input', filtra); $(id).addEventListener('change', filtra); });
+    $('fi-tab-es').addEventListener('click', function () { muestraPestana(false); });
+    $('fi-tab-en').addEventListener('click', function () { muestraPestana(true); });
+    $('fi-ingles').addEventListener('input', cambio); $('fi-ingles').addEventListener('change', cambio);
+    $('re-ver').addEventListener('click', reemplazoVer);
+    $('re-aplicar').addEventListener('click', reemplazoAplicar);
+    ['re-buscar', 're-nuevo', 're-ambito', 're-palabra', 're-mayus'].forEach(function (id) {
+        $(id).addEventListener('input', function () { reiniciaConfirmacion(); $('re-aplicar').disabled = true; });
+        $(id).addEventListener('change', function () { reiniciaConfirmacion(); $('re-aplicar').disabled = true; });
+    });
+    $('re-buscar').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); reemplazoVer(); } });
     $('fi-form').addEventListener('submit', guarda);
     $('fi-descartar').addEventListener('click', function () { if (actual) abre(actual.id, true); });
     $('fi-restaurar').addEventListener('click', restaura);

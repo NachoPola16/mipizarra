@@ -214,3 +214,88 @@ def test_el_orden_de_las_claves_se_conserva_para_que_el_diff_de_git_sea_limpio(a
     f = _ficha(api)
     api.put("/admin/fichas/ej_176", json={"ficha": {**f, "intensidad": 2}})
     assert list(_ficha(api)) == list(f)
+
+
+# ── Inglés editable, avisos mecánicos y buscar/reemplazar ─────────────────────────────────────────
+def test_se_puede_editar_el_ingles_y_no_se_pisa_el_resto(api):
+    f = _ficha(api, "ej_204")
+    assert f["i18n"]["en"]["nombre"]
+    en = {**f["i18n"]["en"], "nombre": "Slalom dribble against a defender (edited)"}
+    r = api.put("/admin/fichas/ej_204", json={"ficha": {**f, "i18n": {"en": en}}})
+    assert r.status_code == 200, r.text
+    despues = _ficha(api, "ej_204")
+    assert despues["i18n"]["en"]["nombre"].endswith("(edited)")
+    assert despues["nombre"] == f["nombre"] and despues["descripcion"] == f["descripcion"]
+    assert api.get("/ejercicios?lang=en").json() and next(e for e in api.get("/ejercicios?lang=en").json() if e["id"] == "ej_204")["nombre"].endswith("(edited)")
+
+
+def test_el_ingles_debe_seguir_el_espanol_en_las_listas(api):
+    f = _ficha(api, "ej_204")
+    en = {**f["i18n"]["en"], "puntos_clave": f["i18n"]["en"]["puntos_clave"] + ["one more"]}
+    r = api.put("/admin/fichas/ej_204", json={"ficha": {**f, "i18n": {"en": en}}})
+    assert r.status_code == 422 and any("puntos_clave" in p for p in r.json()["problemas"])
+    en2 = {**f["i18n"]["en"], "campo_raro": "x"}
+    assert api.put("/admin/fichas/ej_204", json={"ficha": {**f, "i18n": {"en": en2}}}).status_code == 422
+    assert _ficha(api, "ej_204")["i18n"] == f["i18n"]
+
+
+def test_los_avisos_salen_de_la_ficha_tal_como_esta_en_el_editor(api):
+    f = _ficha(api, "ej_003")
+    sin = api.post("/admin/fichas/ej_003/avisos", json={"ficha": f}).json()["avisos"]
+    con = api.post("/admin/fichas/ej_003/avisos", json={"ficha": {**f, "descripcion": f["descripcion"] + " Entonces A9 tira."}}).json()["avisos"]
+    assert any(a["tipo"] == "LABEL" and "A9" in a["texto"] for a in con)
+    assert not any(a["tipo"] == "LABEL" and "A9" in a["texto"] for a in sin)
+    assert api.post("/admin/fichas/ej_9999x/avisos", json={"ficha": f}).status_code == 400
+    assert api.post("/admin/fichas/ej_9999/avisos", json={"ficha": f}).status_code == 404
+    assert _ficha(api, "ej_003")["descripcion"] == f["descripcion"]            # no guarda nada
+
+
+def _con_texto(api, texto):
+    return [f["id"] for f in api.get("/admin/fichas").json()["fichas"] if texto.lower() in json.dumps({k: v for k, v in f.items() if k not in ("diagrama", "diagramas", "i18n")}, ensure_ascii=False).lower()]
+
+
+def test_reemplazar_primero_enseña_y_no_toca_nada(api):
+    antes = api.ruta.read_text(encoding="utf-8")
+    r = api.post("/admin/reemplazar", json={"buscar": "reverso", "reemplazar": "giro", "ambito": "es"})
+    assert r.status_code == 200
+    ids = {x["id"] for x in r.json()["fichas"]}
+    assert {"ej_193", "ej_216"} <= ids and r.json()["total_cambios"] >= 5
+    assert all({"campo", "antes", "despues"} <= set(c) for x in r.json()["fichas"] for c in x["cambios"])
+    assert api.ruta.read_text(encoding="utf-8") == antes
+
+
+def test_reemplazar_solo_en_las_fichas_marcadas_con_una_copia_y_una_version_anterior_cada_una(api, tmp_path):
+    r = api.post("/admin/reemplazar", json={"buscar": "reverso", "reemplazar": "giro", "ambito": "es", "aplicar": True, "ids": ["ej_216"]})
+    assert r.status_code == 200 and r.json()["guardadas"] == ["ej_216"] and r.json()["omitidas"] == []
+    assert "reverso" not in json.dumps(_ficha(api, "ej_216")["descripcion"]).lower()
+    assert "reverso" in _ficha(api, "ej_193")["nombre"].lower()                   # la no marcada no cambia
+    assert api.get("/admin/fichas").json()["modificadas"] == ["ej_216"]
+    assert len(list((tmp_path / "cambios" / "copias").iterdir())) == 1
+    assert api.delete("/admin/fichas/ej_216").status_code == 200                  # se puede deshacer una a una
+    assert "reverso" in _ficha(api, "ej_216")["nombre"].lower()
+
+
+def test_reemplazar_conserva_la_mayuscula_inicial_y_respeta_palabra_entera(api):
+    r = api.post("/admin/reemplazar", json={"buscar": "reverso", "reemplazar": "giro", "ambito": "es"}).json()
+    nombre = next(c for x in r["fichas"] if x["id"] == "ej_216" for c in x["cambios"] if c["campo"] == "nombre")
+    assert nombre["antes"].startswith("Reverso") and nombre["despues"].startswith("Giro")
+    parcial = api.post("/admin/reemplazar", json={"buscar": "revers", "reemplazar": "X", "ambito": "es", "palabra": True}).json()
+    assert parcial["fichas"] == []                                                # «revers» no es una palabra entera
+    exacto = api.post("/admin/reemplazar", json={"buscar": "Reverso", "reemplazar": "giro", "ambito": "es", "mayusculas": True}).json()
+    assert {x["id"] for x in exacto["fichas"]} == {"ej_216"} or {"ej_216"} <= {x["id"] for x in exacto["fichas"]}
+
+
+def test_reemplazar_en_ingles_y_entradas_no_validas(api):
+    r = api.post("/admin/reemplazar", json={"buscar": "floater", "reemplazar": "floaters", "ambito": "en"}).json()
+    assert r["fichas"] and all(c["campo"].startswith("EN ") for x in r["fichas"] for c in x["cambios"])
+    assert api.post("/admin/reemplazar", json={"buscar": "", "reemplazar": "x"}).status_code == 422
+    assert api.post("/admin/reemplazar", json={"buscar": "a", "ambito": "fr"}).status_code == 400
+    assert api.post("/admin/reemplazar", json={"buscar": "a", "aplicar": True}).status_code == 400
+    assert api.post("/admin/reemplazar", json={"buscar": "a", "aplicar": True, "ids": ["no"]}).status_code == 400
+
+
+def test_un_reemplazo_que_deja_una_ficha_invalida_la_omite_sin_parar_las_demas(api):
+    # quitar «bandeja» de un nombre no es problema; vaciar el nombre sí: esa ficha se omite
+    r = api.post("/admin/reemplazar", json={"buscar": _ficha(api, "ej_216")["nombre"], "reemplazar": "", "ambito": "es", "aplicar": True, "ids": ["ej_216", "ej_193"]})
+    assert r.status_code == 200
+    assert r.json()["guardadas"] == [] and [o["id"] for o in r.json()["omitidas"]] == ["ej_216"]

@@ -23,6 +23,8 @@ from rag_engine import (
 )
 from diagram_renderer import render_diagram, render_all_diagrams
 import fichas_edicion
+import reemplazo_fichas
+from revision_mecanica import revisar as revisar_ficha
 from i18n_fichas import IDIOMA_BASE, IDIOMAS, localizar
 from fichas_edicion import CAMPOS_DIAGRAMA, CAMPOS_EDITABLES, CAMPOS_OPCIONALES
 from diagramas import _validar_diagrama
@@ -420,6 +422,76 @@ def admin_restaurar_ficha(request: Request, ficha_id: str):
     if anterior is None:
         raise HTTPException(status_code=404, detail="Esa ficha no tiene una versión anterior")
     return {"ok": True, "ficha": anterior}
+
+
+@app.post("/admin/fichas/{ficha_id}/avisos")
+@limiter.limit("120/minute")
+def admin_avisos_ficha(request: Request, ficha_id: str, req: FichaCambioRequest):
+    """Avisos mecánicos (balón, jugadores citados que no están, defensores...) de la ficha tal como está en el editor.
+    No guarda nada ni bloquea el guardado: son pistas."""
+    if not ID_FICHA.match(ficha_id):
+        raise HTTPException(status_code=400, detail="Identificador de ficha no válido")
+    if len(json.dumps(req.ficha, ensure_ascii=False)) > MAX_BYTES_FICHA:
+        raise HTTPException(status_code=413, detail="La ficha es demasiado grande")
+    base = _base_ejercicios()
+    original = next((f for f in base if f.get("id") == ficha_id), None)
+    if original is None:
+        raise HTTPException(status_code=404, detail="No existe esa ficha")
+    candidata = fichas_edicion.combinar(original, _limpiar_campos_de_ficha(req.ficha))
+    try:
+        avisos = revisar_ficha(candidata, [f for f in base if f.get("id") != ficha_id])
+    except Exception as e:           # una ficha a medias puede romper alguna comprobación: no es motivo para fallar
+        logger.warning("Revisión mecánica de %s: %s", ficha_id, e)
+        avisos = []
+    return {"avisos": [{"tipo": t, "texto": x} for t, x in avisos]}
+
+
+class ReemplazoRequest(BaseModel):
+    buscar: str = Field(min_length=1, max_length=reemplazo_fichas.MAX_PATRON)
+    reemplazar: str = Field(default="", max_length=reemplazo_fichas.MAX_PATRON)
+    ambito: str = "es"
+    palabra: bool = False
+    mayusculas: bool = False
+    aplicar: bool = False
+    ids: Optional[list[str]] = None      # al aplicar: solo estas fichas (las que el administrador dejó marcadas)
+
+
+@app.post("/admin/reemplazar")
+@limiter.limit("30/minute")
+def admin_reemplazar(request: Request, req: ReemplazoRequest):
+    """Buscar y reemplazar en el texto de las fichas. Sin `aplicar`: solo enseña qué cambiaría. Con `aplicar` y `ids`:
+    guarda esas fichas (una copia del fichero y una versión anterior por ficha)."""
+    if req.ambito not in reemplazo_fichas.AMBITOS:
+        raise HTTPException(status_code=400, detail="Ámbito no válido")
+    if req.aplicar and not req.ids:
+        raise HTTPException(status_code=400, detail="Indica las fichas a cambiar")
+    if req.ids is not None and not all(ID_FICHA.match(i) for i in req.ids):
+        raise HTTPException(status_code=400, detail="Identificador de ficha no válido")
+    base = _base_ejercicios()
+    elegidas = set(req.ids) if req.ids is not None else None
+    encontradas = []
+    try:
+        for f in base:
+            if elegidas is not None and f.get("id") not in elegidas:
+                continue
+            nueva, cambios = reemplazo_fichas.reemplazar_en_ficha(f, req.buscar, req.reemplazar, req.ambito, req.palabra, req.mayusculas)
+            if cambios:
+                encontradas.append((f, nueva, cambios))
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    resumen = [{"id": f["id"], "nombre": f.get("nombre", ""), "cambios": cambios} for f, _, cambios in encontradas]
+    if not req.aplicar:
+        return {"fichas": resumen, "total_cambios": sum(len(r["cambios"]) for r in resumen)}
+    omitidas, validas = [], {}
+    for f, nueva, _ in encontradas:
+        otras = [x for x in base if x.get("id") != f["id"]]
+        problemas = validar_ficha(nueva, otras)
+        if problemas:
+            omitidas.append({"id": f["id"], "problemas": problemas})
+        else:
+            validas[f["id"]] = nueva
+    guardadas = fichas_edicion.guardar_lote(EXERCISES_PATH, validas)
+    return {"ok": True, "guardadas": guardadas, "omitidas": omitidas}
 
 
 @app.post("/generar")

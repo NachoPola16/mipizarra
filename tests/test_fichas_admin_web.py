@@ -50,7 +50,10 @@ GUION = textwrap.dedent('''
         assert put(beto, "ej_001", {}).status_code == 403
         assert beto.delete("/fichas/ej_001/", **H).status_code == 403
         assert beto.post("/fichas/diagrama/vista/", data="{}", content_type="application/json", **H).status_code == 403
-        assert not rq.get.called and not rq.put.called and not rq.delete.called
+        assert beto.post("/fichas/ej_001/avisos/", data="{}", content_type="application/json", **H).status_code == 403
+        assert beto.post("/fichas/reemplazar/", data="{}", content_type="application/json", **H).status_code == 403
+        assert anon.post("/fichas/reemplazar/", data="{}", content_type="application/json", **H).status_code == 401
+        assert not rq.get.called and not rq.put.called and not rq.delete.called and not rq.post.called
     # la pestaña solo se ve para el administrador
     assert b"/fichas/" not in beto.get("/", **H).content and b"/fichas/" in nacho.get("/", **H).content
     assert b"/fichas/" not in beto.get("/jugadas/", **H).content and b"/fichas/" in nacho.get("/jugadas/", **H).content
@@ -74,6 +77,16 @@ GUION = textwrap.dedent('''
     with mock.patch("pizarra.fichas_admin.requests.post", return_value=Resp(422, {"detail": "x", "problemas": ["mal"]})):
         r = nacho.post("/fichas/diagrama/vista/", data="{}", content_type="application/json", **H)
         assert r.status_code == 422 and r.json()["problemas"] == ["mal"]
+    # avisos mecánicos y buscar/reemplazar: pasan a la API con el cuerpo tal cual
+    with mock.patch("pizarra.fichas_admin.requests.post", return_value=Resp(200, {"avisos": [{"tipo": "BALL", "texto": "x"}]})) as v:
+        r = nacho.post("/fichas/ej_001/avisos/", data=json.dumps({"ficha": {"nombre": "x"}}), content_type="application/json", **H)
+        assert r.status_code == 200 and r.json()["avisos"][0]["tipo"] == "BALL" and v.call_args.args[0].endswith("/admin/fichas/ej_001/avisos")
+    with mock.patch("pizarra.fichas_admin.requests.post", return_value=Resp(200, {"fichas": [], "total_cambios": 0})) as v:
+        r = nacho.post("/fichas/reemplazar/", data=json.dumps({"buscar": "a", "reemplazar": "b"}), content_type="application/json", **H)
+        assert r.status_code == 200 and v.call_args.args[0].endswith("/admin/reemplazar") and json.loads(v.call_args.kwargs["data"])["buscar"] == "a"
+    with mock.patch("pizarra.fichas_admin.requests.post", return_value=Resp(400, {"detail": "Indica las fichas a cambiar"})):
+        r = nacho.post("/fichas/reemplazar/", data=json.dumps({"buscar": "a", "aplicar": True}), content_type="application/json", **H)
+        assert r.status_code == 400 and r.json()["error"] == "Indica las fichas a cambiar"
     # API caída
     import requests
     with mock.patch("pizarra.fichas_admin.requests.get", side_effect=requests.ConnectionError()):

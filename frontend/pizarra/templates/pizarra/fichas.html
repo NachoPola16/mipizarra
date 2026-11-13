@@ -13,13 +13,32 @@
 <link rel="stylesheet" href="{% static 'pizarra/css/jugadas.css' %}">
 <link rel="stylesheet" href="{% static 'pizarra/css/fichas.css' %}">
 </head>
-<body data-url-datos="{% url 'fichas_datos' %}" data-url-ficha="/fichas/__ID__/" data-url-vista="{% url 'fichas_vista' %}">
+<body data-url-datos="{% url 'fichas_datos' %}" data-url-ficha="/fichas/__ID__/" data-url-vista="{% url 'fichas_vista' %}" data-url-avisos="/fichas/__ID__/avisos/" data-url-reemplazar="{% url 'fichas_reemplazar' %}">
 <a class="skip" href="#editor">Ir al editor</a>
 {% include 'pizarra/_cabecera.html' with seccion='fichas' %}
 
 <main id="contenido">
     <h1>Fichas de ejercicios</h1>
     <p class="sub">Solo para ti. Revisa las fichas una a una y cambia cualquier campo (también el diagrama: arrastra jugadores, conos y destinos). Al guardar, el cambio se escribe en la ficha del servidor y vale enseguida para generar sesiones. Mientras editas puedes deshacer y rehacer (Ctrl+Z / Ctrl+Y); después de guardar, «Volver a la versión guardada anterior» recupera la ficha como estaba.</p>
+
+    <details class="fi-reemp" id="fi-reemp">
+        <summary>Buscar y reemplazar en todas las fichas</summary>
+        <p class="nota">Para cambios de vocabulario (por ejemplo un término que quieres unificar). Primero «Ver cambios»: no se toca nada hasta que pulses «Aplicar» y solo en las fichas que dejes marcadas. Cada ficha cambiada se puede deshacer con «Volver a la versión guardada anterior». No toca números, ids ni diagramas.</p>
+        <div class="fi-fila">
+            <div class="fi-campo"><label for="re-buscar">Buscar</label><input type="text" id="re-buscar" maxlength="200" autocomplete="off"></div>
+            <div class="fi-campo"><label for="re-nuevo">Reemplazar por</label><input type="text" id="re-nuevo" maxlength="200" autocomplete="off"></div>
+            <div class="fi-campo"><label for="re-ambito">Dónde</label>
+                <select id="re-ambito"><option value="es">Español</option><option value="en">Inglés</option><option value="ambos">Los dos</option></select></div>
+        </div>
+        <div class="barra">
+            <label class="rep-op"><input type="checkbox" id="re-palabra"> Palabra entera</label>
+            <label class="rep-op"><input type="checkbox" id="re-mayus"> Distinguir mayúsculas</label>
+            <button type="button" id="re-ver">Ver cambios</button>
+            <button type="button" id="re-aplicar" class="primario" disabled>Aplicar a las marcadas</button>
+            <span id="re-estado" class="nota" style="margin:0;" role="status" aria-live="polite"></span>
+        </div>
+        <div id="re-resultado" class="fi-reemp-res" hidden></div>
+    </details>
 
     <div class="fi-barra">
         <label class="sr-only" for="fi-buscar">Buscar</label>
@@ -49,8 +68,16 @@
                         <button type="button" id="fi-sig">Siguiente ▶</button>
                     </div>
                 </div>
-                <div id="fi-campos"></div>
-                <div id="fi-diagrama" class="fi-campo"></div>
+                <div class="fi-tabs" role="tablist" aria-label="Idioma de la ficha">
+                    <button type="button" role="tab" id="fi-tab-es" aria-selected="true" aria-controls="fi-pane-es">Español</button>
+                    <button type="button" role="tab" id="fi-tab-en" aria-selected="false" aria-controls="fi-ingles">English</button>
+                </div>
+                <div id="fi-pane-es">
+                    <div id="fi-campos"></div>
+                    <div id="fi-diagrama" class="fi-campo"></div>
+                </div>
+                <div id="fi-ingles" role="tabpanel" hidden></div>
+                <div id="fi-avisos" class="fi-avisos" hidden aria-live="polite"></div>
                 <div id="fi-errores" class="fi-errores" role="alert" hidden></div>
                 <div class="barra fi-acciones">
                     <button type="submit" id="fi-guardar" class="primario" disabled>Guardar</button>

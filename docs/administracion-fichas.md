@@ -18,6 +18,19 @@ redeploying.
   the whole form (fields and diagram); consecutive typing or dragging counts as one step. It resets when
   you open another exercise or save.
 - Save (button or Ctrl+S), discard changes and "Go back to the previous saved version" (needs two clicks).
+- **English tab** (`i18n.en`): the same fields as the Spanish card, with the Spanish text shown above each one for
+  reference and a counter for the lists (they must have the same number of items as in Spanish; the API checks it).
+  If you change the Spanish text in the same session, the English tab warns you to re-check it. The diagram and the
+  numbers are shared between languages.
+- **Automatic warnings** under the form (the same checks as `tools/revisar_diagramas.py`, in `api/revision_mecanica.py`):
+  ball holder, players quoted in the text that are not in the diagram, defenders contradicting the text, players out of
+  the court, repeated move numbers. They are hints and never block saving. They refresh while you edit.
+- **Find and replace** (the panel above the list): for vocabulary changes across the whole library, in Spanish,
+  English or both, optionally whole word and case sensitive. First "Ver cambios" shows every change (field, before →
+  after) without touching anything; then "Aplicar a las marcadas" changes only the cards you left ticked (second click to
+  confirm). It makes ONE copy of the whole file and one previous version per card, so each card can still be undone
+  with "Go back to the previous saved version". Cards that would end up invalid are skipped and listed. It never touches
+  numbers, ids or diagrams. Without case sensitivity the capital initial is kept («Reversa» → «Reverso»).
 
 ## Where changes are stored
 

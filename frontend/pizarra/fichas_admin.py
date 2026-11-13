@@ -85,3 +85,34 @@ def guardar(request, ficha_id):
         logger.exception('No se pudo guardar la ficha %s en la API', ficha_id)
         return JsonResponse({'error': 'No se pudo hablar con la API.'}, status=502)
     return _respuesta(resp)
+
+
+@require_http_methods(['POST'])
+def avisos(request, ficha_id):
+    """POST {ficha}: avisos mecánicos de la ficha tal como está en el editor (no guarda nada)."""
+    if not _es_admin(request):
+        return _sin_permiso()
+    if len(request.body) > 100_000:
+        return JsonResponse({'error': 'La ficha es demasiado grande.'}, status=413)
+    try:
+        resp = requests.post(f"{settings.API_URL}/admin/fichas/{ficha_id}/avisos", data=request.body, headers=_api_headers(request), timeout=TIMEOUT)
+    except requests.RequestException:
+        logger.exception('No se pudieron pedir los avisos de la ficha %s a la API', ficha_id)
+        return JsonResponse({'error': 'No se pudo hablar con la API.'}, status=502)
+    return _respuesta(resp)
+
+
+@require_http_methods(['POST'])
+def reemplazar(request):
+    """POST {buscar, reemplazar, ambito, palabra, mayusculas, aplicar, ids}: buscar y reemplazar en las fichas
+    (sin `aplicar` solo enseña los cambios)."""
+    if not _es_admin(request):
+        return _sin_permiso()
+    if len(request.body) > 100_000:
+        return JsonResponse({'error': 'La petición es demasiado grande.'}, status=413)
+    try:
+        resp = requests.post(f"{settings.API_URL}/admin/reemplazar", data=request.body, headers=_api_headers(request), timeout=60)
+    except requests.RequestException:
+        logger.exception('No se pudo hacer el reemplazo en la API')
+        return JsonResponse({'error': 'No se pudo hablar con la API.'}, status=502)
+    return _respuesta(resp)
