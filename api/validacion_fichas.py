@@ -9,7 +9,7 @@ import unicodedata
 
 from diagram_renderer import render_diagram
 from diagramas import _validar_diagrama
-from i18n_fichas import CAMPOS_LISTA, CAMPOS_TEXTO, CAMPOS_TRADUCIBLES, IDIOMA_BASE, IDIOMAS, ORIGEN_TIPOS
+from i18n_fichas import CAMPOS_LISTA, CAMPOS_TEXTO, CAMPOS_TRADUCIBLES, CLAVE_SINCRONIA, IDIOMA_BASE, IDIOMAS, ORIGEN_TIPOS
 from lineas_rojas import CATEGORIAS_MINIBASKET, violaciones
 
 CATEGORIAS = {"ventaja_numerica", "bloqueo_directo", "bloqueo_indirecto", "tiro", "1c1", "juego_equipo",
@@ -144,7 +144,9 @@ def _problemas_de_i18n(ficha: dict, exigir: bool) -> list[str]:
         if not isinstance(t, dict):
             problemas.append(f"{e}: debe ser un objeto")
             continue
-        desconocidos = set(t) - set(CAMPOS_TRADUCIBLES) - {"titulos_diagramas"}
+        desconocidos = set(t) - set(CAMPOS_TRADUCIBLES) - {"titulos_diagramas", CLAVE_SINCRONIA}
+        if CLAVE_SINCRONIA in t and not (isinstance(t[CLAVE_SINCRONIA], str) and re.fullmatch(r"[0-9a-f]{12}", t[CLAVE_SINCRONIA])):
+            problemas.append(f"{e}.{CLAVE_SINCRONIA}: huella de 12 caracteres hexadecimales")
         if desconocidos:
             problemas.append(f"{e}: campos no traducibles {sorted(desconocidos)}")
         for campo in ("nombre", "material", "consigna"):

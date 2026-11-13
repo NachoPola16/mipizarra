@@ -22,6 +22,13 @@ redeploying.
   reference and a counter for the lists (they must have the same number of items as in Spanish; the API checks it).
   If you change the Spanish text in the same session, the English tab warns you to re-check it. The diagram and the
   numbers are shared between languages.
+  **Stale English across sessions:** the English block keeps `i18n.en.es_hash`, a fingerprint of the Spanish text it was
+  reviewed against (set by the API, never trusted from the browser). When the Spanish changes and the English does not,
+  the card is flagged "● inglés desfasado" in the list (there is a filter for it) and the English tab shows a banner with a
+  button "El inglés está al día" that stamps the current Spanish and is saved with the card. Saving a change to the English
+  also stamps it. A vocabulary replacement in Spanish keeps an up-to-date card up to date. Cards without a stamp are never
+  flagged; `python tools/marcar_ingles_al_dia.py [--aplicar]` reports or stamps them. The stamp is never sent to the public
+  `/ejercicios?lang=en`.
 - **Automatic warnings** under the form (the same checks as `tools/revisar_diagramas.py`, in `api/revision_mecanica.py`):
   ball holder, players quoted in the text that are not in the diagram, defenders contradicting the text, players out of
   the court, repeated move numbers. They are hints and never block saving. They refresh while you edit.

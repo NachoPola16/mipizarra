@@ -5,6 +5,8 @@ Los campos de nivel raíz (`nombre`, `descripcion`...) son siempre el texto en e
 código. `i18n` solo añade idiomas: `{"i18n": {"en": {"nombre": ..., "descripcion": ..., ...}}}`. Los números, el
 diagrama, las edades y las variantes se comparten entre idiomas. Si falta el idioma pedido o un campo concreto, se
 cae al español."""
+import hashlib
+import json
 from copy import deepcopy
 
 IDIOMAS = ("es", "en")
@@ -14,6 +16,22 @@ CAMPOS_TEXTO = ("nombre", "descripcion", "material", "consigna")
 CAMPOS_LISTA = ("puntos_clave", "errores_frecuentes", "que_observar")
 CAMPOS_TRADUCIBLES = CAMPOS_TEXTO + CAMPOS_LISTA + ("progresion",)
 ORIGEN_TIPOS = ("original", "abierta")
+CLAVE_SINCRONIA = "es_hash"       # dentro de `i18n.<idioma>`: huella del español con el que se revisó esa traducción
+
+
+def hash_es(ficha: dict) -> str:
+    """Huella (12 hex) de los textos en español de la ficha: los campos traducibles y los títulos de sus diagramas."""
+    base = {c: ficha.get(c) for c in CAMPOS_TRADUCIBLES}
+    base["titulos"] = [d.get("titulo") for d in (ficha.get("diagramas") or []) if isinstance(d, dict)]
+    texto = json.dumps(base, ensure_ascii=False, sort_keys=True)
+    return hashlib.sha1(texto.encode("utf-8")).hexdigest()[:12]
+
+
+def ingles_desfasado(ficha: dict) -> bool:
+    """True si el español cambió después de la última vez que se revisó el inglés. Sin huella guardada, no se sabe: False."""
+    en = (ficha.get("i18n") or {}).get("en")
+    marca = en.get(CLAVE_SINCRONIA) if isinstance(en, dict) else None
+    return bool(marca) and marca != hash_es(ficha)
 
 
 def localizar(ficha: dict, idioma: str = IDIOMA_BASE) -> dict:

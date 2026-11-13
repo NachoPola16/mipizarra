@@ -25,7 +25,7 @@ from diagram_renderer import render_diagram, render_all_diagrams
 import fichas_edicion
 import reemplazo_fichas
 from revision_mecanica import revisar as revisar_ficha
-from i18n_fichas import IDIOMA_BASE, IDIOMAS, localizar
+from i18n_fichas import CLAVE_SINCRONIA, IDIOMA_BASE, IDIOMAS, hash_es, ingles_desfasado, localizar
 from fichas_edicion import CAMPOS_DIAGRAMA, CAMPOS_EDITABLES, CAMPOS_OPCIONALES
 from diagramas import _validar_diagrama
 from validacion_fichas import _problemas_de_diagrama, validar_ficha
@@ -278,13 +278,34 @@ class FichaCambioRequest(BaseModel):
     ficha: dict
 
 
+def _marcar_sincronia_del_ingles(original: dict, candidata: dict, revisado: bool) -> None:
+    """La traducción guarda con qué español se revisó (`i18n.en.es_hash`). Se actualiza cuando el inglés cambia en este
+    guardado o cuando el administrador lo da por revisado; si solo cambió el español, la huella antigua se conserva y la
+    ficha queda marcada como «inglés desfasado». Modifica `candidata` en sitio (comparte el dict con lo que se guarda)."""
+    en_nuevo = (candidata.get("i18n") or {}).get("en")
+    if not isinstance(en_nuevo, dict):
+        return
+    en_viejo = (original.get("i18n") or {}).get("en") or {}
+
+    def sin_marca(d):
+        return {k: v for k, v in d.items() if k != CLAVE_SINCRONIA}
+
+    if revisado or sin_marca(en_nuevo) != sin_marca(en_viejo):
+        en_nuevo[CLAVE_SINCRONIA] = hash_es(candidata)
+    elif en_viejo.get(CLAVE_SINCRONIA):
+        en_nuevo[CLAVE_SINCRONIA] = en_viejo[CLAVE_SINCRONIA]
+    else:
+        en_nuevo.pop(CLAVE_SINCRONIA, None)
+
+
 @app.get("/admin/fichas")
 @limiter.limit("60/minute")
 def admin_listar_fichas(request: Request):
     base = _base_ejercicios()
     ids = {f.get("id") for f in base}
     # «modificadas»: las que tienen una versión anterior a la que volver (ver fichas_edicion.py)
-    return {"fichas": base, "modificadas": [i for i in fichas_edicion.ids_con_historial() if i in ids]}
+    return {"fichas": base, "modificadas": [i for i in fichas_edicion.ids_con_historial() if i in ids],
+            "desfasadas": [f["id"] for f in base if ingles_desfasado(f)]}      # español cambiado tras revisar el inglés
 
 
 def _limpiar_campos_de_ficha(crudo: dict) -> dict:
@@ -383,6 +404,7 @@ def admin_guardar_ficha(request: Request, ficha_id: str, req: FichaCambioRequest
             campos["diagrama"], malos = _diagrama_valido(campos["diagrama"])
             problemas += malos
     candidata = fichas_edicion.combinar(original, campos)
+    _marcar_sincronia_del_ingles(original, candidata, bool(req.ficha.get("ingles_revisado")))
     if not problemas:
         otras = [f for f in base if f.get("id") != ficha_id]
         problemas = validar_ficha(candidata, otras)
@@ -392,7 +414,8 @@ def admin_guardar_ficha(request: Request, ficha_id: str, req: FichaCambioRequest
     if problemas:
         return JSONResponse(status_code=422, content={"detail": "La ficha no es válida", "problemas": problemas})
     guardada = fichas_edicion.guardar(EXERCISES_PATH, ficha_id, campos)
-    return {"ok": True, "ficha": guardada if guardada is not None else candidata}
+    resultado = guardada if guardada is not None else candidata
+    return {"ok": True, "ficha": resultado, "desfasada": ingles_desfasado(resultado)}
 
 
 class DiagramaVistaRequest(BaseModel):
@@ -421,7 +444,7 @@ def admin_restaurar_ficha(request: Request, ficha_id: str):
     anterior = fichas_edicion.volver_atras(EXERCISES_PATH, ficha_id)
     if anterior is None:
         raise HTTPException(status_code=404, detail="Esa ficha no tiene una versión anterior")
-    return {"ok": True, "ficha": anterior}
+    return {"ok": True, "ficha": anterior, "desfasada": ingles_desfasado(anterior)}
 
 
 @app.post("/admin/fichas/{ficha_id}/avisos")
@@ -484,6 +507,10 @@ def admin_reemplazar(request: Request, req: ReemplazoRequest):
         return {"fichas": resumen, "total_cambios": sum(len(r["cambios"]) for r in resumen)}
     omitidas, validas = [], {}
     for f, nueva, _ in encontradas:
+        # un cambio de vocabulario en español no es un cambio de sentido: si el inglés estaba al día, lo sigue estando
+        en_f, en_n = (f.get("i18n") or {}).get("en"), (nueva.get("i18n") or {}).get("en")
+        if isinstance(en_f, dict) and isinstance(en_n, dict) and en_f.get(CLAVE_SINCRONIA) == hash_es(f):
+            en_n[CLAVE_SINCRONIA] = hash_es(nueva)
         otras = [x for x in base if x.get("id") != f["id"]]
         problemas = validar_ficha(nueva, otras)
         if problemas:

@@ -15,6 +15,8 @@
 
     var fichas = [];          // todas, con los cambios aplicados
     var modificadas = {};     // id → true
+    var desfasadas = {};      // id → true: el español cambió después de la última revisión del inglés
+    var inglesRevisado = false;   // «el inglés está al día» pulsado en la ficha abierta (se guarda con ella)
     var visibles = [];        // las que pasan el filtro
     var actual = null;        // ficha abierta
     var instantanea = '';     // estado del formulario al abrir/guardar, para saber si hay cambios
@@ -46,10 +48,10 @@
         return norm([f.id, f.nombre, f.categoria, f.subcategoria, f.descripcion, (f.puntos_clave || []).join(' ')].join(' '));
     }
     function filtra() {
-        var q = norm($('fi-buscar').value.trim()), edad = $('fi-edad').value, cat = $('fi-cat').value, solo = $('fi-mod').checked;
+        var q = norm($('fi-buscar').value.trim()), edad = $('fi-edad').value, cat = $('fi-cat').value, solo = $('fi-mod').checked, soloDesf = $('fi-desf').checked;
         visibles = fichas.filter(function (f) {
             return (!q || textoDe(f).indexOf(q) >= 0) && (!edad || (f.edades || []).indexOf(edad) >= 0) &&
-                (!cat || f.categoria === cat) && (!solo || modificadas[f.id]);
+                (!cat || f.categoria === cat) && (!solo || modificadas[f.id]) && (!soloDesf || desfasadas[f.id]);
         });
         pintaLista();
     }
@@ -61,6 +63,7 @@
             b.appendChild(el('span', 'fi-l-id', f.id));
             b.appendChild(document.createTextNode(f.nombre));
             if (modificadas[f.id]) b.appendChild(el('span', 'fi-l-mod', '● modificada'));
+            if (desfasadas[f.id]) b.appendChild(el('span', 'fi-l-mod', '● inglés desfasado'));
             meta = el('span', 'fi-l-meta', (f.edades || []).join(' ') + ' · ' + f.categoria + ' · ' + f.duracion_min + ' min');
             b.appendChild(meta);
             if (actual && actual.id === f.id) b.setAttribute('aria-current', 'true');
@@ -157,6 +160,7 @@
         if (editorDiagrama) Object.assign(v, editorDiagrama.leer());
         var en = leeIngles();
         if (Object.keys(en).length) v.i18n = { en: en };
+        if (inglesRevisado) v.ingles_revisado = true;
         return v;
     }
 
@@ -183,7 +187,12 @@
     function construyeIngles(f) {
         var cont = $('fi-ingles'); cont.textContent = ''; camposEn = {}; refsEn = []; contadoresEn = [];
         var en = ((f.i18n || {}).en) || {}, p = en.progresion || {}, c;
-        var aviso = el('p', 'fi-aviso-es'); aviso.id = 'fi-en-aviso'; aviso.hidden = true; cont.appendChild(aviso);
+        var aviso = el('div', 'fi-aviso-es'); aviso.id = 'fi-en-aviso'; aviso.hidden = true;
+        aviso.appendChild(el('span', null, '')); aviso.firstChild.id = 'fi-en-aviso-txt';
+        var alDia = el('button', null, 'El inglés está al día'); alDia.type = 'button'; alDia.id = 'fi-en-aldia'; alDia.hidden = true;
+        alDia.title = 'Marca el inglés como revisado contra el español actual (se guarda con la ficha)';
+        alDia.addEventListener('click', function () { inglesRevisado = true; cambio(); refrescaIngles(); });
+        aviso.appendChild(alDia); cont.appendChild(aviso);
         cont.appendChild(el('p', 'nota', 'La versión inglesa que ve quien use la web en inglés. Los números, los ids y el diagrama son los mismos en los dos idiomas; las listas deben tener los mismos elementos que en español.'));
         var lector = function (ctl) { return function () { return ctl.value.trim(); }; };
         var lectorLineas = function (ctl) { return function () { return lineas(ctl); }; };
@@ -226,9 +235,13 @@
         });
         var av = $('fi-en-aviso');
         if (av) {
-            var cambiado = textosEs() !== esAlAbrir;
-            av.hidden = !cambiado;
-            av.textContent = cambiado ? 'Has cambiado el español en esta sesión: comprueba que el inglés sigue diciendo lo mismo.' : '';
+            var cambiado = textosEs() !== esAlAbrir, guardado = actual && desfasadas[actual.id], t = '';
+            if (inglesRevisado) t = 'Marcado como revisado: se guardará con la ficha.';
+            else if (cambiado) t = 'Has cambiado el español en esta sesión: comprueba que el inglés sigue diciendo lo mismo.';
+            else if (guardado) t = 'El español de esta ficha cambió después de la última revisión del inglés.';
+            av.hidden = !t;
+            $('fi-en-aviso-txt').textContent = t + ' ';
+            $('fi-en-aldia').hidden = inglesRevisado || !(cambiado || guardado);
         }
     }
     function muestraPestana(ingles) {
@@ -287,7 +300,7 @@
     }
     function vuelveA(estado) {
         aplicando = true;
-        try { construye(JSON.parse(estado)); } finally { aplicando = false; }
+        try { var f = JSON.parse(estado); inglesRevisado = !!f.ingles_revisado; construye(f); } finally { aplicando = false; }
         ultimoEstado = estado; cambio(); botonesPasos();
     }
     function deshacer() {
@@ -318,7 +331,7 @@
         if (!forzar && haySinGuardar() && actual && actual.id !== id) { estado('Tienes cambios sin guardar: guarda o descarta antes de cambiar de ficha.'); return; }
         var f = fichas.find(function (x) { return x.id === id; });
         if (!f) return;
-        actual = f; confirmaRestaurar = false;
+        actual = f; confirmaRestaurar = false; inglesRevisado = false;
         $('fi-vacio').hidden = true; $('fi-form').hidden = false;
         $('fi-id').textContent = f.id;
         $('fi-mod-etq').hidden = !modificadas[f.id];
@@ -337,6 +350,7 @@
     }
 
     // ── Guardar y restaurar ──────────────────────────────────────────────────
+    function marcaDesfasada(id, valor) { if (valor) desfasadas[id] = true; else delete desfasadas[id]; }
     function reemplaza(nueva, esModificada) {
         var i = fichas.findIndex(function (f) { return f.id === nueva.id; });
         if (i >= 0) fichas[i] = nueva;
@@ -353,7 +367,7 @@
                     muestraErrores(r.cuerpo.problemas || [r.cuerpo.error || 'Error al guardar.']);
                     estado(''); $('fi-guardar').disabled = false; return;
                 }
-                reemplaza(r.cuerpo.ficha, true);
+                reemplaza(r.cuerpo.ficha, true); marcaDesfasada(id, r.cuerpo.desfasada);
                 abre(id, true); filtra();
                 estado('Guardada. Ya vale para generar sesiones.');
             }).catch(function () { estado('No se pudo guardar: sin conexión con el servidor.'); $('fi-guardar').disabled = false; });
@@ -364,7 +378,7 @@
         var id = actual.id;
         api(URL_FICHA.replace('__ID__', id), { method: 'DELETE' }).then(function (r) {
             if (!r.ok) { muestraErrores([r.cuerpo.error || 'No se pudo restaurar.']); return; }
-            reemplaza(r.cuerpo.ficha, false);
+            reemplaza(r.cuerpo.ficha, false); marcaDesfasada(id, r.cuerpo.desfasada);
             abre(id, true); filtra(); estado('Ficha devuelta a la versión anterior.');
         }).catch(function () { estado('No se pudo restaurar: sin conexión con el servidor.'); });
     }
@@ -442,8 +456,9 @@
     function recarga() {
         return api(URL_DATOS).then(function (r) {
             if (!r.ok) return;
-            fichas = r.cuerpo.fichas || []; modificadas = {};
+            fichas = r.cuerpo.fichas || []; modificadas = {}; desfasadas = {};
             (r.cuerpo.modificadas || []).forEach(function (id) { modificadas[id] = true; });
+            (r.cuerpo.desfasadas || []).forEach(function (id) { desfasadas[id] = true; });
             filtra();
             if (actual) abre(actual.id, true);
         });
@@ -460,11 +475,12 @@
         if (!r.ok) { $('fi-ul').textContent = r.cuerpo.error || 'No se pudieron cargar las fichas.'; return; }
         fichas = r.cuerpo.fichas || [];
         (r.cuerpo.modificadas || []).forEach(function (id) { modificadas[id] = true; });
+        (r.cuerpo.desfasadas || []).forEach(function (id) { desfasadas[id] = true; });
         rellenaFiltros(); filtra();
         if (visibles.length) abre(visibles[0].id, true);
     }).catch(function () { $('fi-ul').textContent = 'No se pudieron cargar las fichas.'; });
 
-    ['fi-buscar', 'fi-edad', 'fi-cat', 'fi-mod'].forEach(function (id) { $(id).addEventListener('input', filtra); $(id).addEventListener('change', filtra); });
+    ['fi-buscar', 'fi-edad', 'fi-cat', 'fi-mod', 'fi-desf'].forEach(function (id) { $(id).addEventListener('input', filtra); $(id).addEventListener('change', filtra); });
     $('fi-tab-es').addEventListener('click', function () { muestraPestana(false); });
     $('fi-tab-en').addEventListener('click', function () { muestraPestana(true); });
     $('fi-ingles').addEventListener('input', cambio); $('fi-ingles').addEventListener('change', cambio);

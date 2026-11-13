@@ -299,3 +299,73 @@ def test_un_reemplazo_que_deja_una_ficha_invalida_la_omite_sin_parar_las_demas(a
     r = api.post("/admin/reemplazar", json={"buscar": _ficha(api, "ej_216")["nombre"], "reemplazar": "", "ambito": "es", "aplicar": True, "ids": ["ej_216", "ej_193"]})
     assert r.status_code == 200
     assert r.json()["guardadas"] == [] and [o["id"] for o in r.json()["omitidas"]] == ["ej_216"]
+
+
+# ── «Inglés desfasado»: el inglés recuerda con qué español se revisó (i18n.en.es_hash) ────────────────
+def _desfasadas(api):
+    return api.get("/admin/fichas").json()["desfasadas"]
+
+
+def test_hash_del_espanol_cambia_con_el_espanol_y_no_con_el_ingles():
+    from i18n_fichas import hash_es, ingles_desfasado
+    f = next(e for e in json.load(open(RAIZ / "data" / "exercises.json", encoding="utf-8")) if e["id"] == "ej_204")
+    h = hash_es(f)
+    assert len(h) == 12 and hash_es({**f, "i18n": {"en": {"nombre": "otro"}}}) == h
+    assert hash_es({**f, "nombre": f["nombre"] + "!"}) != h
+    assert not ingles_desfasado(f)                                             # sin huella guardada no se sabe: no avisa
+    marcada = {**f, "i18n": {"en": {**f["i18n"]["en"], "es_hash": h}}}
+    assert not ingles_desfasado(marcada) and ingles_desfasado({**marcada, "nombre": f["nombre"] + "!"})
+
+
+def test_cambiar_solo_el_espanol_marca_el_ingles_como_desfasado_y_revisarlo_lo_arregla(api):
+    f = _ficha(api, "ej_204")
+    assert _desfasadas(api) == []
+    # guardar el inglés cambiado fija la huella del español actual
+    en = {**f["i18n"]["en"], "nombre": f["i18n"]["en"]["nombre"] + " (rev)"}
+    r = api.put("/admin/fichas/ej_204", json={"ficha": {**f, "i18n": {"en": en}}})
+    assert r.status_code == 200 and r.json()["desfasada"] is False and _desfasadas(api) == []
+    guardada = _ficha(api, "ej_204")
+    assert len(guardada["i18n"]["en"]["es_hash"]) == 12
+    # solo cambia el español (el editor reenvía el mismo inglés): queda desfasado
+    r = api.put("/admin/fichas/ej_204", json={"ficha": {**guardada, "nombre": guardada["nombre"] + " (nuevo)"}})
+    assert r.status_code == 200 and r.json()["desfasada"] is True and _desfasadas(api) == ["ej_204"]
+    # darlo por revisado sin tocar el texto
+    r = api.put("/admin/fichas/ej_204", json={"ficha": {**_ficha(api, "ej_204"), "ingles_revisado": True}})
+    assert r.status_code == 200 and r.json()["desfasada"] is False and _desfasadas(api) == []
+    # la huella no se filtra a quien lee la web en inglés
+    pub = next(e for e in api.get("/ejercicios?lang=en").json() if e["id"] == "ej_204")
+    assert "es_hash" not in json.dumps(pub) and "i18n" not in pub
+
+
+def test_volver_atras_recalcula_si_el_ingles_esta_desfasado(api):
+    f = _ficha(api, "ej_204")
+    en = {**f["i18n"]["en"], "nombre": f["i18n"]["en"]["nombre"] + " (rev)"}
+    api.put("/admin/fichas/ej_204", json={"ficha": {**f, "i18n": {"en": en}}})
+    g = _ficha(api, "ej_204")
+    api.put("/admin/fichas/ej_204", json={"ficha": {**g, "nombre": g["nombre"] + " (nuevo)"}})
+    assert _desfasadas(api) == ["ej_204"]
+    r = api.delete("/admin/fichas/ej_204")
+    assert r.status_code == 200 and r.json()["desfasada"] is False and _desfasadas(api) == []
+
+
+def test_la_api_no_se_fia_de_la_huella_que_manda_el_cliente_y_el_validador_la_exige_bien_formada(api):
+    f = _ficha(api, "ej_204")
+    r = api.put("/admin/fichas/ej_204", json={"ficha": {**f, "i18n": {"en": {**f["i18n"]["en"], "es_hash": "0123456789ab"}}}})
+    # sin cambios en el inglés: se conserva la marca que ya tenía (o ninguna), nunca la que manda el navegador
+    assert r.status_code == 200 and _ficha(api, "ej_204")["i18n"]["en"].get("es_hash") == f["i18n"]["en"].get("es_hash") != "0123456789ab"
+    from validacion_fichas import validar_ficha
+    mala = {**f, "i18n": {"en": {**f["i18n"]["en"], "es_hash": "xx"}}}
+    assert any("es_hash" in p for p in validar_ficha(mala))
+
+
+def test_reemplazar_en_espanol_no_desfasa_un_ingles_que_estaba_al_dia_pero_no_arregla_uno_desfasado(api):
+    # dos fichas con «reverso»: ej_193 con el inglés revisado, ej_216 con el inglés desfasado
+    a, b = _ficha(api, "ej_193"), _ficha(api, "ej_216")
+    api.put("/admin/fichas/ej_193", json={"ficha": {**a, "ingles_revisado": True}})
+    api.put("/admin/fichas/ej_216", json={"ficha": {**b, "ingles_revisado": True}})
+    b2 = _ficha(api, "ej_216")
+    api.put("/admin/fichas/ej_216", json={"ficha": {**b2, "consigna": "Protege, gira y sal (nuevo)"}})
+    assert _desfasadas(api) == ["ej_216"]
+    r = api.post("/admin/reemplazar", json={"buscar": "reverso", "reemplazar": "giro", "ambito": "es", "aplicar": True, "ids": ["ej_193", "ej_216"]})
+    assert r.status_code == 200 and set(r.json()["guardadas"]) == {"ej_193", "ej_216"}
+    assert _desfasadas(api) == ["ej_216"]
