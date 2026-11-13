@@ -150,7 +150,7 @@ JS_EN = {
         "Fact: mini-basketball is played with a size 5 ball, about 70 cm around.",
     "Pensando en las progresiones: de más fácil a más difícil.": "Thinking through the progressions: from easier to harder.",
     "Dato: la línea de tres puntos llegó a las competiciones FIBA en 1984.": "Fact: the three-point line came to FIBA competitions in 1984.",
-    "Pases horizontales, peligros verticales.": "Pass east-west, attack north-south.",
+    "Pases horizontales, peligros verticales.": "Horizontal passes, vertical threats.",
     "Hojeando el reglamento…": "Leafing through the rulebook…",
     "Buscando el artículo exacto, no uno parecido.": "Finding the exact article, not a similar one.",
     "Comprobando si la norma cambia en tu categoría.": "Checking whether the rule changes in your age group.",
