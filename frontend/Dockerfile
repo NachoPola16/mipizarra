@@ -18,7 +18,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 ENV DJANGO_SETTINGS_MODULE=mipizarra_cfg.settings
-RUN python manage.py collectstatic --no-input
+# jugadas.json is the private play library: the login-protected view in pizarra/cuentas.py reads it from the app
+# directory, so it must NOT be collected into STATIC_ROOT (WhiteNoise would serve it to anyone, no login).
+RUN python manage.py collectstatic --no-input --ignore jugadas.json
 
 EXPOSE 8000
 
