@@ -4,7 +4,8 @@ services:
     image: ollama/ollama:latest
     container_name: mipizarra-ollama
     mem_limit: ${OLLAMA_MEM_LIMIT:-4g}
-    restart: "no"
+    # Reintenta tras una caída, pero pocas veces: con poca RAM un bucle de reinicios es peor que quedarse parado.
+    restart: "on-failure:3"
     ports:
       # Solo en el propio equipo: la API llega a Ollama por la red de Docker (http://ollama:11434) y Ollama
       # no tiene autenticación, así que no se publica en la LAN. Para depurar desde otra máquina, túnel SSH.
@@ -13,6 +14,9 @@ services:
       - ./ollama:/root/.ollama
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
+      # Sin caché de prompts en la RAM del equipo: guarda ~300 MB por prompt distinto y, con sesiones seguidas, acaba
+      # matando el contenedor por memoria (OOM 16-11-2026). Entre sesiones distintas apenas se reutiliza nada.
+      - LLAMA_ARG_CACHE_RAM=0
     deploy:
       resources:
         reservations:
