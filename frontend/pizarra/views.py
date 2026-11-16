@@ -7,6 +7,7 @@ from pathlib import Path
 
 import requests
 from django.conf import settings
+from django.core.cache import cache
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
@@ -178,8 +179,30 @@ def guardar_feedback(request):
         return _error_respuesta(e, 'No se pudo guardar. Inténtalo de nuevo.')
 
 
+PDF_MAX, PDF_VENTANA_S = 20, 600       # PDF por cuenta cada 10 minutos (la generación gasta CPU)
+
+
+def _pdf_sobre_el_limite(request):
+    """Cuenta el PDF de este usuario. Devuelve los segundos de espera si ya agotó el cupo, o 0 si puede seguir."""
+    clave = 'pdf:' + (request.user.get_username() if request.user.is_authenticated else 'anon')[:64]
+    # add() fija la ventana solo la primera vez: el cupo se renueva a los 10 min del primer PDF, no se alarga con cada uno
+    cache.add(clave, 0, PDF_VENTANA_S)
+    try:
+        usados = cache.incr(clave)
+    except ValueError:                  # la clave caducó entre add() e incr()
+        cache.set(clave, 1, PDF_VENTANA_S)
+        usados = 1
+    return PDF_VENTANA_S if usados > PDF_MAX else 0
+
+
 @require_POST
 def descargar_pdf(request):
+    espera = _pdf_sobre_el_limite(request)
+    if espera:
+        resp = JsonResponse({'error': 'Has descargado muchos PDF seguidos. Espera unos minutos.',
+                             'retry_after': espera}, status=429)
+        resp['Retry-After'] = str(espera)
+        return resp
     try:
         data = json.loads(request.body)
         sesion_texto, edad, objetivo, duracion, diagramas = limpiar_entrada_pdf(data)

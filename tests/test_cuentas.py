@@ -118,7 +118,7 @@ GUION = textwrap.dedent('''
 
 
 def test_cuentas_y_jugadas_guardadas():
-    entorno = {**os.environ, "DJANGO_SETTINGS_MODULE": "mipizarra_cfg.settings", "DJANGO_DB_PATH": ":memory:",
+    entorno = {**os.environ, "JUGADAS_ADMIN": "nacho", "DJANGO_SETTINGS_MODULE": "mipizarra_cfg.settings", "DJANGO_DB_PATH": ":memory:",
                "DJANGO_DEBUG": "True", "DJANGO_SECRET_KEY": "clave-solo-para-tests", "PYTHONIOENCODING": "utf-8", "PYTHONUTF8": "1", "PYTHONPATH": str(RAIZ / "frontend")}
     r = subprocess.run([sys.executable, "-c", GUION], capture_output=True, text=True, encoding="utf-8", errors="replace",
                        env=entorno, cwd=str(RAIZ / "frontend"), timeout=120)

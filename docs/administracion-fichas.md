@@ -1,6 +1,6 @@
 # Exercise administration (the "Fichas" tab)
 
-A tab only for the administrator account (`JUGADAS_ADMIN`, `nacho` by default; the same one as the play
+A tab only for the administrator account (the user name set in `JUGADAS_ADMIN` in `.env`; empty means nobody is administrator; the same one as the play
 library button). It lives at `/fichas/` and the tab is shown in the header only to that account. It lets
 you review exercises one by one and change **any field, diagram included**, without touching git or
 redeploying.

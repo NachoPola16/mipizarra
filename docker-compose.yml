@@ -81,6 +81,8 @@ services:
       - DJANGO_DB_PATH=/data/db.sqlite3
       - DJANGO_COOKIE_SECURE=${DJANGO_COOKIE_SECURE:-False}
       - DJANGO_CSRF_TRUSTED_ORIGINS=${DJANGO_CSRF_TRUSTED_ORIGINS:-}
+      # Cuenta administradora (pestaña Fichas y editor de la biblioteca de jugadas). Vacío = nadie es administrador.
+      - JUGADAS_ADMIN=${JUGADAS_ADMIN:-}
     volumes:
       - ./data/frontend:/data
     depends_on:
