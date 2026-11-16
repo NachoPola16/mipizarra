@@ -173,10 +173,6 @@ def test_comprobaciones_de_sesion():
     f = regresion.comprobaciones_propias
     assert f("sesion", {"comprueba": ["aviso_linea_roja"]}, 200, {"avisos": ["Has pedido una línea roja."]})["aviso_linea_roja"]["ok"]
     assert not f("sesion", {"comprueba": ["aviso_linea_roja"]}, 200, {"avisos": []})["aviso_linea_roja"]["ok"]
-    texto = "Ejercicio 1: a\nDuración: 60 min\nEjercicio 2: b\nDuración: 70 min\n"
-    caso = {"comprueba": ["minutos"], "duracion": 120}
-    assert not f("sesion", caso, 200, {"sesion": texto})["minutos"]["ok"]
-    assert f("sesion", {**caso, "duracion": 180}, 200, {"sesion": texto})["minutos"]["ok"]
     resumen = {"comprueba": ["objetivo_resumen_corto"]}
     assert f("sesion", resumen, 200, {"objetivo_resumen": "bote y pase"})["objetivo_resumen_corto"]["ok"]
     assert not f("sesion", resumen, 200, {"objetivo_resumen": "x" * 111})["objetivo_resumen_corto"]["ok"]
@@ -199,3 +195,55 @@ def test_aplicar_caso_quita_los_criterios_eximidos():
     ev = {"criterios": {"reglas_edad": {"ok": False, "detalle": "x"}, "http_200": {"ok": True, "detalle": ""}}}
     caso = {"sin_criterios": ["reglas_edad"]}
     assert "reglas_edad" not in regresion.aplicar_caso(ev, "sesion", caso, 200, {})["criterios"]
+
+
+# ─── ARN-03: criterios generales nuevos ──────────────────────────────────────
+
+def test_idioma_sospechoso():
+    f = regresion.idioma_sospechoso
+    assert f("Cada jugador bota entre los conos y termina con una bandeja por la derecha.") == ""
+    assert f("Each player must dribble through the cones and then finish, and the coach will check their form.")
+    assert f("热身：每个人运球")
+    assert f("") == ""
+    # una o dos palabras sueltas en inglés (pick and roll) no bastan
+    assert f("Trabajamos el pick and roll con el balón y los dos jugadores del lado débil.") == ""
+
+
+def test_bloques_incompletos():
+    f = regresion.bloques_incompletos
+    org = "Filas en el medio campo; el primero sale con balón y el resto espera su turno detrás del cono."
+    bueno = f"Ejercicio 1: A\nDuración: 10 min\nOrganización: {org}\nPuntos clave:\n- Uno.\n- Dos.\n"
+    assert f(bueno) == []
+    assert f(bueno.replace("- Dos.\n", "")) == ["Ejercicio 1"]                    # un solo punto clave
+    assert f(bueno.replace(org, "Corta.")) == ["Ejercicio 1"]                      # organización corta
+    variante = bueno + 'Ejercicio 1.2 (variante de "A"):\nDuración: 5 min\nOrganización: Igual.\n'
+    assert f(variante) == []                                                        # las N.2 están exentas
+    dos = bueno + bueno.replace("Ejercicio 1", "Ejercicio 2").replace("- Dos.\n", "")
+    assert f(dos) == ["Ejercicio 2"]
+
+
+def test_minutos_de_sesion():
+    assert regresion.minutos_de_sesion("Duración: 10 min\nDuración: 15 min") == 25
+    assert regresion.minutos_de_sesion("") == 0
+
+
+def test_la_sesion_buena_pasa_y_sin_teoria_o_pasada_de_minutos_falla():
+    from test_regresion_arnes import sesion_buena
+    caso = {"id": "x", "edad": "U12", "duracion": 75, "objetivo": "1c1"}
+    ok = regresion.evaluar_sesion(caso, 200, sesion_buena("U12", "1c1", 75), 1.0)
+    assert all(c["ok"] for c in ok["criterios"].values()), {n: c for n, c in ok["criterios"].items() if not c["ok"]}
+    sin_rag = dict(sesion_buena("U12", "1c1", 75), teoria_usada=False)
+    assert not regresion.evaluar_sesion(caso, 200, sin_rag, 1.0)["criterios"]["rag_vivo"]["ok"]
+    larga = dict(sesion_buena("U12", "1c1", 75))
+    larga["sesion"] = larga["sesion"] + "\nDuración: 90 min\n"
+    assert not regresion.evaluar_sesion(caso, 200, larga, 1.0)["criterios"]["minutos"]["ok"]
+
+
+# ─── ARN-04: el arnés suma la guardia de la API ──────────────────────────────
+
+def test_el_arnes_detecta_lo_que_veta_la_api():
+    assert regresion._LINEAS_ROJAS is not None
+    for texto in ("Trabajamos el juego de poste bajo con los dos jugadores.", "Hacemos un mano a mano en la banda."):
+        assert regresion.buscar_contenido_prohibido(texto, "U10"), texto
+    assert regresion.buscar_contenido_prohibido("Sin poste bajo ni mano a mano: solo pase y bote.", "U10") == []
+    assert regresion.buscar_contenido_prohibido("Trabajamos el poste bajo.", "U16") == []

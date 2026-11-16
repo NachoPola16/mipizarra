@@ -52,14 +52,17 @@ SVG_NO_DISPONIBLE = ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 2
 FORMACION = {"U8", "U10", "U12"}
 
 
-def _bloque(n, nombre, partido):
+ORGANIZACION = "Filas en el medio campo; el primero sale con balón y el resto espera su turno detrás del cono."
+
+
+def _bloque(n, nombre, partido, minutos=15):
     if not partido:
-        return (f"Ejercicio {n}: {nombre}\nDuración: 15 min\n"
-                f"Organización: Filas en el medio campo; el primero sale con balón.\n"
+        return (f"Ejercicio {n}: {nombre}\nDuración: {minutos} min\n"
+                f"Organización: {ORGANIZACION}\n"
                 f"Puntos clave:\n- Mirada arriba.\n- Cambio de ritmo.\n")
-    return (f"Ejercicio {n}.1: {nombre}\nDuración: 10 min\n"
-            f"Organización: Filas en el medio campo; el primero sale con balón.\n"
-            f"Puntos clave:\n- Mirada arriba.\n\n"
+    return (f"Ejercicio {n}.1: {nombre}\nDuración: {minutos - 5} min\n"
+            f"Organización: {ORGANIZACION}\n"
+            f"Puntos clave:\n- Mirada arriba.\n- Cambio de ritmo.\n\n"
             f'Ejercicio {n}.2 (variante de "{nombre}" — mismo ejercicio con un cambio o regla nueva, '
             f"no lo repitas igual):\nDuración: 5 min\n"
             f"Qué cambia respecto a {n}.1: Se añade un defensor pasivo.\n"
@@ -87,14 +90,14 @@ def sesion_buena(edad, objetivo, duracion=90):
     for i in range(1, n + 1):
         nombre = NOMBRES_EJERCICIOS[(i - 1) % len(NOMBRES_EJERCICIOS)]
         con_variante = partido and i == 1
-        partes.append(_bloque(i, nombre, con_variante) + NL)
+        partes.append(_bloque(i, nombre, con_variante, plan.duraciones[i - 1]) + NL)
         nombres += [nombre, nombre + " (variante)"] if con_variante else [nombre]
         if i == (n + 1) // 2:
             partes.append("**DESCANSO (3 min)**" + NL + NL)
     # la sesión acaba con un ejercicio más, sin bloque de vuelta a la calma (plan_sesion.CON_VUELTA_A_LA_CALMA)
     partes.append(f"**Fundamentos**: {contenido}.")
     nombres += ["Calentamiento: Cazadores"]
-    return {"sesion": "".join(partes), "diagramas": [{"id": f"d{i}", "nombre": nom, "titulo": "", "svg": SVG_OK}
+    return {"sesion": "".join(partes), "teoria_usada": True, "avisos": [], "diagramas": [{"id": f"d{i}", "nombre": nom, "titulo": "", "svg": SVG_OK}
                                                      for i, nom in enumerate(nombres)]}
 
 
