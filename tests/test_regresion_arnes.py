@@ -116,6 +116,7 @@ class ApiSimulada(BaseHTTPRequestHandler):
     petición de reglamento devuelve 429 ('429')."""
     modo = "bueno"
     peticiones = []
+    usuarios = []          # cabecera X-Usuario de cada petición
     ya_429 = False
 
     def log_message(self, *args):
@@ -138,6 +139,7 @@ class ApiSimulada(BaseHTTPRequestHandler):
         largo = int(self.headers.get("Content-Length", 0))
         req = json.loads(self.rfile.read(largo) or b"{}")
         type(self).peticiones.append((self.path, req))
+        type(self).usuarios.append(self.headers.get("X-Usuario"))
         malo = type(self).modo == "malo"
 
         if self.path == "/generar":
@@ -194,6 +196,7 @@ class ApiSimulada(BaseHTTPRequestHandler):
 def api():
     ApiSimulada.modo = "bueno"
     ApiSimulada.peticiones = []
+    ApiSimulada.usuarios = []
     ApiSimulada.ya_429 = False
     servidor = ThreadingHTTPServer(("localhost", 0), ApiSimulada)
     hilo = threading.Thread(target=servidor.serve_forever, daemon=True)
