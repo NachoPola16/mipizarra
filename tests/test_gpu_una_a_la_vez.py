@@ -3,9 +3,18 @@
 import threading
 import time
 
+import pytest
 from fastapi.testclient import TestClient
 
 import main
+
+
+@pytest.fixture(autouse=True)
+def _limites_limpios():
+    # /generar admite 3 por minuto: que estos tests no gasten el cupo de los que van después
+    main.limiter.reset()
+    yield
+    main.limiter.reset()
 
 
 def test_la_api_sigue_respondiendo_mientras_se_genera(monkeypatch):

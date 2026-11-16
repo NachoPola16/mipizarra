@@ -617,6 +617,7 @@ def generar_entrenamiento(request: Request, req: SesionRequest):
                 # el diagrama de una ficha ya trae su tipo de pista: la heurística de «pista completa» por palabras
                 # del texto solo vale para los diagramas que genera el modelo
                 "de_plantilla": bool((ej_db.get("diagrama") or ej_db.get("diagramas")) and not es_variante),
+                "origen":      "biblioteca" if (ej_db.get("diagrama") or ej_db.get("diagramas")) and not es_variante else None,
             })
 
         if not ejercicios_con_descripcion:
@@ -638,6 +639,7 @@ def generar_entrenamiento(request: Request, req: SesionRequest):
                     "diagramas":    ficha_cal.get("diagramas"),
                     "sin_diagrama": bool(ficha_cal.get("sin_diagrama")),
                     "de_plantilla": True,       # diagrama ya curado: no se le aplica la heurística de pista completa
+                    "origen":       "biblioteca",
                     "id":           momento,
                 })
                 continue
@@ -647,6 +649,7 @@ def generar_entrenamiento(request: Request, req: SesionRequest):
                 "descripcion": extra["descripcion"],
                 "diagrama":    de_plantilla,
                 "de_plantilla": de_plantilla is not None,
+                "origen":      "plantilla" if de_plantilla is not None else None,
                 "id":          momento,
             })
 
@@ -668,6 +671,7 @@ def generar_entrenamiento(request: Request, req: SesionRequest):
                             "id":     ej.get("id", f"ej_{idx}"),
                             "nombre": nombre,
                             "titulo": d["titulo"],
+                            "origen": ej.get("origen") or "biblioteca",
                             "svg":    d["svg"],
                         })
                 except Exception:
@@ -676,6 +680,7 @@ def generar_entrenamiento(request: Request, req: SesionRequest):
                         "id":     ej.get("id", f"ej_{idx}"),
                         "nombre": nombre,
                         "titulo": "",
+                        "origen": "no_disponible",
                         "svg":    _svg_diagrama_no_disponible(),
                     })
                 continue
@@ -686,13 +691,16 @@ def generar_entrenamiento(request: Request, req: SesionRequest):
                     "id":     ej.get("id", f"ej_{idx}"),
                     "nombre": nombre,
                     "titulo": "",
+                    "origen": "sin_diagrama",
                     "svg":    _svg_sin_diagrama(),
                 })
                 continue
 
             # Ejercicio con un único diagrama (o sin diagrama → generar automático)
             diagrama_data = ej.get("diagrama")
+            origen = ej.get("origen") or "biblioteca"
             if not diagrama_data:
+                origen = "modelo"
                 texto_para_diagrama = desc if desc else nombre
                 logger.info(f"→ Generando diagrama automático para: {nombre}")
                 diagrama_data = generar_coordenadas_ejercicio(texto_para_diagrama, nombre)
@@ -712,6 +720,7 @@ def generar_entrenamiento(request: Request, req: SesionRequest):
                     "id":     ej.get("id", f"ej_{idx}"),
                     "nombre": nombre,
                     "titulo": "",
+                    "origen": origen if "no disponible" not in svg[:300] else "no_disponible",
                     "svg":    svg,
                 })
             else:
@@ -720,6 +729,7 @@ def generar_entrenamiento(request: Request, req: SesionRequest):
                     "id":     ej.get("id", f"ej_{idx}"),
                     "nombre": nombre,
                     "titulo": "",
+                    "origen": "no_disponible",
                     "svg":    _svg_diagrama_no_disponible(),
                 })
 

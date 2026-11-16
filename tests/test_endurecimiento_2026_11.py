@@ -8,6 +8,14 @@ from fastapi.testclient import TestClient
 
 import main
 
+
+@pytest.fixture(autouse=True)
+def _limites_limpios():
+    # /generar admite 3 por minuto: que estos tests no gasten el cupo de los que van después
+    main.limiter.reset()
+    yield
+    main.limiter.reset()
+
 EDADES_WEB = ["U8", "U10", "U12", "U14", "U16", "U18", "Senior"]
 
 

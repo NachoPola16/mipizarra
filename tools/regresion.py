@@ -497,6 +497,8 @@ def evaluar_sesion(caso: dict, status: int, datos: dict | None, latencia: float)
 
     metricas.update({
         "propuestos_ia": len(re.findall(r"Propuesto por la IA", texto)),
+        "diagramas_modelo": sum(1 for d in diagramas if d.get("origen") == "modelo"),
+        "diagramas_modelo_no_disponibles": sum(1 for d in diagramas if d.get("origen") == "no_disponible"),
         "avisos": len((datos or {}).get("avisos", []) or []),
         "ejercicios": n_ej,
         "bloques_ejercicio": n_bloques,

@@ -247,3 +247,13 @@ def test_el_arnes_detecta_lo_que_veta_la_api():
         assert regresion.buscar_contenido_prohibido(texto, "U10"), texto
     assert regresion.buscar_contenido_prohibido("Sin poste bajo ni mano a mano: solo pase y bote.", "U10") == []
     assert regresion.buscar_contenido_prohibido("Trabajamos el poste bajo.", "U16") == []
+
+
+def test_la_metrica_de_origen_de_diagramas():
+    from test_regresion_arnes import SVG_OK, sesion_buena
+    caso = {"id": "x", "edad": "U12", "duracion": 75, "objetivo": "1c1"}
+    datos = sesion_buena("U12", "1c1", 75)
+    for d, o in zip(datos["diagramas"], ["modelo", "modelo", "no_disponible"]):
+        d["origen"] = o
+    m = regresion.evaluar_sesion(caso, 200, datos, 1.0)["metricas"]
+    assert m["diagramas_modelo"] == 2 and m["diagramas_modelo_no_disponibles"] == 1
