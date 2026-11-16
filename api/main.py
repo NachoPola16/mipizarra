@@ -6,11 +6,12 @@ import json
 import logging
 import os
 import re
-from typing import Any, Optional
+import secrets
+from typing import Annotated, Any, Literal, Optional
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, BeforeValidator, Field, field_validator
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -191,25 +192,38 @@ MAX_DURACION      = 180       # min
 MAX_FEEDBACK_BYTES = 64 * 1024  # 64 KB por feedback
 
 
+# Valores cerrados: «edad» y «categoria» entran en el prompt y en el log, así que no pueden ser texto libre.
+# La web manda "" cuando está en «Sin especificar»: se trata como ausente.
+def _vacio_a_none(v):
+    return None if v == "" else v
+
+
+Edad = Annotated[Optional[Literal["U8", "U10", "U12", "U14", "U16", "U18", "U20", "Senior"]], BeforeValidator(_vacio_a_none)]
+Categoria = Annotated[
+    Optional[Literal["Prebenjamín", "Benjamín", "Alevín", "Infantil", "Cadete", "Junior", "Senior"]],
+    BeforeValidator(_vacio_a_none),
+]
+
+
 class SesionRequest(BaseModel):
-    categoria:         Optional[str] = None
-    edad:              Optional[str] = None
-    duracion:          int  = Field(default=90, ge=MIN_DURACION, le=MAX_DURACION)
+    categoria:         Categoria = None
+    edad:              Edad = None
+    duracion:         int  = Field(default=90, ge=MIN_DURACION, le=MAX_DURACION)
     objetivo:          str  = Field(default="defensa", min_length=1, max_length=MAX_OBJETIVO_LEN)
     generar_diagramas: bool = True
     max_jugadores:     Optional[int] = Field(default=None, ge=2, le=40)   # solo fichas que se puedan hacer con tantos o menos
 
 
 class EjercicioRequest(BaseModel):
-    categoria:  Optional[str] = None
-    edad:       Optional[str] = None
+    categoria:  Categoria = None
+    edad:       Edad = None
     objetivo:   str = Field(default="tiro", min_length=1, max_length=MAX_OBJETIVO_LEN)
     descripcion: Optional[str] = Field(default=None, max_length=1000)
 
 
 class RepromptRequest(BaseModel):
-    categoria:   Optional[str] = None
-    edad:        Optional[str] = None
+    categoria:   Categoria = None
+    edad:        Edad = None
     objetivo:    str = Field(default="", max_length=MAX_OBJETIVO_LEN)
     nombre:      str = Field(min_length=1, max_length=200)
     descripcion: str = Field(default="", max_length=2000)
@@ -573,11 +587,13 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
                 "nombre":      ej_texto["nombre"],
                 "descripcion": ej_texto["descripcion"] or ("" if es_variante else ej_db.get("descripcion", "")),
                 "diagrama":    None if es_variante else ej_db.get("diagrama"),
+                # fichas con varias fases: sus dibujos curados, no uno inventado por el modelo
+                "diagramas":   None if es_variante else ej_db.get("diagramas"),
                 "id":          f"{ej_db.get('id', f'ej_texto_{i}')}{'_variante' if es_variante else ''}",
                 "sin_diagrama": bool(ej_db.get("sin_diagrama")),
                 # el diagrama de una ficha ya trae su tipo de pista: la heurística de «pista completa» por palabras
                 # del texto solo vale para los diagramas que genera el modelo
-                "de_plantilla": bool(ej_db.get("diagrama") and not es_variante),
+                "de_plantilla": bool((ej_db.get("diagrama") or ej_db.get("diagramas")) and not es_variante),
             })
 
         if not ejercicios_con_descripcion:
@@ -793,9 +809,10 @@ async def guardar_feedback(request: Request, feedback: FeedbackRequest):
         raise HTTPException(status_code=413, detail="Feedback demasiado grande")
 
     os.makedirs(FEEDBACK_DIR, exist_ok=True)
-    ts = feedback.timestamp or datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    # ts ya validado por Pydantic con regex AAAAMMDD_HHMMSS → no admite '/', '..', etc.
-    filepath = os.path.join(FEEDBACK_DIR, f"sesion_{ts}.json")
+    # El nombre lo fija el servidor (hora + sufijo aleatorio): la marca del cliente queda dentro del JSON, pero
+    # no decide el fichero, así que nadie puede sobrescribir el feedback de otro enviando la misma marca.
+    ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    filepath = os.path.join(FEEDBACK_DIR, f"sesion_{ts}_{secrets.token_hex(4)}.json")
 
     # Defensa en profundidad: comprobar que la ruta resuelta cae dentro de FEEDBACK_DIR
     if os.path.commonpath([os.path.realpath(filepath), os.path.realpath(FEEDBACK_DIR)]) != os.path.realpath(FEEDBACK_DIR):
@@ -815,7 +832,7 @@ async def listar_sesiones_guardadas(request: Request):
     for filename in sorted(os.listdir(FEEDBACK_DIR), reverse=True):
         if not filename.endswith(".json"):
             continue
-        if not re.fullmatch(r"sesion_\d{8}_\d{6}\.json", filename):
+        if not re.fullmatch(r"sesion_\d{8}_\d{6}(?:_[0-9a-f]{8})?\.json", filename):
             continue
         filepath = os.path.join(FEEDBACK_DIR, filename)
         try:
