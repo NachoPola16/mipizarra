@@ -257,3 +257,24 @@ def test_la_metrica_de_origen_de_diagramas():
         d["origen"] = o
     m = regresion.evaluar_sesion(caso, 200, datos, 1.0)["metricas"]
     assert m["diagramas_modelo"] == 2 and m["diagramas_modelo_no_disponibles"] == 1
+
+
+def test_la_organizacion_de_una_ficha_va_en_varias_lineas():
+    # en las fichas, «Organización:» es una frase corta y el detalle va en SECUENCIA, ROTACIÓN y PROGRESIÓN
+    texto = ("Ejercicio 1: A\nDuración: 10 min\nOrganización:\ntríos con un balón.\n"
+             "SECUENCIA: el que tiene el balón bota por la pista y los otros dos se colocan donde pueda verlos.\n"
+             "ROTACIÓN: cada minuto cambian los tríos.\nPuntos clave:\n- Uno.\n- Dos.\n")
+    assert regresion.bloques_incompletos(texto) == []
+    assert regresion.bloques_incompletos(texto.replace("SECUENCIA", "S").replace("ROTACIÓN", "R")
+                                         .replace("el que tiene el balón bota por la pista y los otros dos se colocan donde pueda verlos.", "x")) == ["Ejercicio 1"]
+
+
+def test_la_abstencion_reconoce_las_formas_habituales_del_modelo():
+    casos = {c["id"]: c for c in regresion.CASOS_ORO_REGLAMENTO}
+    for respuesta in ("No se proporciona información sobre el costo de la licencia.",
+                      "Por tanto, **no se puede determinar el precio** con la información disponible.",
+                      "No consta ese dato."):
+        ev = regresion.evaluar_reglamento(casos["oro_reg_fuera_de_tema"], 200, {"respuesta": respuesta}, 1.0)
+        assert ev["criterios"]["palabras_clave"]["ok"], respuesta
+    ev = regresion.evaluar_reglamento(casos["oro_reg_fuera_de_tema"], 200, {"respuesta": "Ganó el Real Madrid."}, 1.0)
+    assert not ev["criterios"]["palabras_clave"]["ok"]
