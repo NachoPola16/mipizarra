@@ -61,6 +61,11 @@ def _error_respuesta(e, generico):
             'error': 'Demasiadas peticiones seguidas. Espera un momento e inténtalo de nuevo.',
             'retry_after': _segundos_de_espera(resp),
         }, status=429)
+    if status == 503 and resp.headers.get('Retry-After'):      # la API está generando otra cosa: misma cuenta atrás
+        return JsonResponse({
+            'error': 'El servidor está ocupado con otra sesión. Se reintentará en un momento.',
+            'retry_after': _segundos_de_espera(resp),
+        }, status=429)
     if status and 400 <= status < 500:
         try:
             detalle = resp.json().get('detail')

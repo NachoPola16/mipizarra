@@ -48,6 +48,20 @@ GUION = textwrap.dedent('''
     rf = RequestFactory().get("/")
     rf.user = U.objects.get(username="nacho")
     assert cuentas._es_admin(rf) is False
+    # un 503 de la API (ocupada con otra generación) llega al navegador como cuenta atrás, igual que un 429
+    class _R:
+        status_code = 503
+        headers = {"Retry-After": "60"}
+    class _E(Exception):
+        response = _R()
+    r = views._error_respuesta(_E(), "x")
+    assert r.status_code == 429 and json.loads(r.content)["retry_after"] == 60
+    class _R2:
+        status_code = 503
+        headers = {}
+    class _E2(Exception):
+        response = _R2()
+    assert views._error_respuesta(_E2(), "x").status_code == 502      # sin Retry-After sigue siendo un error genérico
     print("OK")
 ''')
 

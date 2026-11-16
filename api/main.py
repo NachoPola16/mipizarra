@@ -2,11 +2,13 @@
 import copy
 import hmac
 import datetime
+import functools
 import json
 import logging
 import os
 import re
 import secrets
+import threading
 from typing import Annotated, Any, Literal, Optional
 
 from fastapi import FastAPI, HTTPException, Request
@@ -256,6 +258,26 @@ class FeedbackRequest(BaseModel):
         if not re.fullmatch(r"\d{8}_\d{6}", v):
             raise ValueError("timestamp debe ser AAAAMMDD_HHMMSS")
         return v
+
+
+# Una sola generación a la vez (la GPU es una): las demás esperan aquí, no dentro de Ollama con su reloj corriendo,
+# y si no hay hueco en un tiempo razonable se contesta 503 con Retry-After. Los endpoints que usan el modelo son
+# síncronos a propósito: FastAPI los ejecuta en un hilo y el resto de la API (portada, ámbitos, fichas) sigue respondiendo.
+_GPU = threading.BoundedSemaphore(1)
+GPU_ESPERA_S = 90
+
+
+def _con_gpu(fn):
+    @functools.wraps(fn)
+    def envoltorio(*args, **kwargs):
+        if not _GPU.acquire(timeout=GPU_ESPERA_S):
+            raise HTTPException(status_code=503, detail="El servidor está ocupado. Inténtalo en un minuto.",
+                                headers={"Retry-After": "60"})
+        try:
+            return fn(*args, **kwargs)
+        finally:
+            _GPU.release()
+    return envoltorio
 
 
 @app.get("/")
@@ -537,7 +559,8 @@ def admin_reemplazar(request: Request, req: ReemplazoRequest):
 
 @app.post("/generar")
 @limiter.limit("10/hour;3/minute")
-async def generar_entrenamiento(request: Request, req: SesionRequest):
+@_con_gpu
+def generar_entrenamiento(request: Request, req: SesionRequest):
     if req.edad:
         edad = req.edad
     elif req.categoria:
@@ -725,7 +748,8 @@ async def generar_entrenamiento(request: Request, req: SesionRequest):
 
 @app.post("/ejercicio")
 @limiter.limit("20/hour;5/minute")
-async def generar_ejercicio(request: Request, req: EjercicioRequest):
+@_con_gpu
+def generar_ejercicio(request: Request, req: EjercicioRequest):
     """Modo 2: genera un único ejercicio con diagrama."""
     edad = req.edad or (CATEGORIA_A_EDAD.get(req.categoria, "U16") if req.categoria else "U16")
     logger.info(f"Generando ejercicio: edad={edad}, objetivo={req.objetivo[:60]}")
@@ -750,7 +774,8 @@ async def generar_ejercicio(request: Request, req: EjercicioRequest):
 
 @app.post("/reprompt_ejercicio")
 @limiter.limit("20/hour;5/minute")
-async def corregir_ejercicio(request: Request, req: RepromptRequest):
+@_con_gpu
+def corregir_ejercicio(request: Request, req: RepromptRequest):
     """Regenera un ejercicio ya existente de una sesión aplicando una corrección
     pedida por el entrenador (texto y/o diagrama), sin tocar el resto de la sesión."""
     edad = req.edad or (CATEGORIA_A_EDAD.get(req.categoria, "U16") if req.categoria else "U16")
@@ -781,7 +806,8 @@ async def corregir_ejercicio(request: Request, req: RepromptRequest):
 
 @app.post("/reglamento")
 @limiter.limit("30/hour;10/minute")
-async def consulta_reglamento(request: Request, req: ReglamentoRequest):
+@_con_gpu
+def consulta_reglamento(request: Request, req: ReglamentoRequest):
     """Modo 3: responde dudas de reglamento y fundamentos técnicos."""
     ambito = normalizar_ambito(req.ambito)
     logger.info(f"Consulta reglamento [{ambito}]: {req.pregunta[:80]}")
