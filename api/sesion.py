@@ -246,9 +246,11 @@ def _limpiar_respuesta(texto: str) -> str:
 
     # ── 4. Truncar al final natural (tras Fundamentos) ────────────────────
     # Acepta: **Fundamentos**: texto | Fundamentos\ntexto | FUNDAMENTOS: texto
+    # Solo la CABECERA (principio de línea, seguida de «:» o sola en su línea): la palabra «fundamentos» dentro de
+    # una frase de un ejercicio no corta nada.
     match_fund = re.search(
-        r'(?:\*\*)?(?:Fundamentos|FUNDAMENTOS)(?:\*\*)?:?\s*\n?[^\n]+',
-        texto, re.IGNORECASE
+        r'^[ \t]*(?:\*\*fundamentos\*\*[ \t]*:?|\*\*fundamentos:\*\*|fundamentos[ \t]*:|fundamentos[ \t]*$)[ \t]*\n?[^\n]+',
+        texto, re.IGNORECASE | re.MULTILINE
     )
     if match_fund:
         texto = texto[:match_fund.end()].strip()
