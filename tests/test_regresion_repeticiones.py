@@ -278,3 +278,11 @@ def test_la_abstencion_reconoce_las_formas_habituales_del_modelo():
         assert ev["criterios"]["palabras_clave"]["ok"], respuesta
     ev = regresion.evaluar_reglamento(casos["oro_reg_fuera_de_tema"], 200, {"respuesta": "Ganó el Real Madrid."}, 1.0)
     assert not ev["criterios"]["palabras_clave"]["ok"]
+
+
+def test_caso_limita_la_ejecucion_a_los_ids_pedidos(api, tmp_path):
+    salida = tmp_path / "c.json"
+    assert regresion.main(["--api", api, "--solo", "reglamento", "--caso", "reg_8_segundos", "--caso", "reg_aro_minibasket",
+                           "--salida", str(salida)]) == 0
+    assert len(ApiSimulada.peticiones) == 2
+    assert {r["id"] for r in _leer(salida)["resultados"]} == {"reg_8_segundos", "reg_aro_minibasket"}

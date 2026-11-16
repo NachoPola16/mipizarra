@@ -113,7 +113,8 @@ def bloque_variante_curada(numero, ej: dict, duracion: int) -> str | None:
 _CAB_CALENTAMIENTO = re.compile(r"^\*{0,2}\s*CALENTAMIENTO", re.IGNORECASE)
 _CAB_VUELTA = re.compile(r"^\*{0,2}\s*VUELTA A LA CALMA", re.IGNORECASE)
 _CAB_FIN = re.compile(r"^\*{0,2}\s*(?:PARTE PRINCIPAL|DESCANSO)", re.IGNORECASE)
-_CAB_EJERCICIO = re.compile(r"^Ejercicio\s+(\d+(?:\.\d+)?)\b")
+# el modelo a veces pone la cabecera entera en negrita: «**Ejercicio 3: nombre**»
+_CAB_EJERCICIO = re.compile(r"^\*{0,2}\s*Ejercicio\s+(\d+(?:\.\d+)?)\b")
 _CAB_FUNDAMENTOS = re.compile(r"^(?:\*{2}fundamentos\*{2}|fundamentos)\s*:?\s*(.*)$", re.IGNORECASE)
 
 

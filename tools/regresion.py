@@ -729,7 +729,8 @@ def peticion_del_caso(tipo: str, caso: dict) -> dict:
     return peticion
 
 
-def ejecutar(api: str, solo: str | None, validador=None, repeticiones: int = 1, conjunto: str = "fijo") -> list[dict]:
+def ejecutar(api: str, solo: str | None, validador=None, repeticiones: int = 1, conjunto: str = "fijo",
+             casos_ids: list[str] | None = None) -> list[dict]:
     cabeceras = {}
     if os.environ.get("INTERNAL_SECRET"):
         cabeceras["X-Internal-Secret"] = os.environ["INTERNAL_SECRET"]
@@ -748,7 +749,7 @@ def ejecutar(api: str, solo: str | None, validador=None, repeticiones: int = 1, 
             if not por_tipo[tipo]:
                 continue
             print(TITULOS[tipo])
-            for caso in por_tipo[tipo]:
+            for caso in [c for c in por_tipo[tipo] if not casos_ids or c["id"] in casos_ids]:
                 peticion = peticion_del_caso(tipo, caso)
                 enviadas = dict(cabeceras)
                 if cabeceras:
@@ -911,6 +912,8 @@ def main(argv: list[str] | None = None) -> int:
                         help="fijo: los 15 casos de siempre; oro: casos que fallan a veces; todo: los dos")
     parser.add_argument("--repeticiones", type=int, default=1, metavar="N",
                         help="repite todos los casos N veces (con 6 se separa el azar de un cambio real)")
+    parser.add_argument("--caso", action="append", default=None, metavar="ID",
+                        help="solo este caso (se puede repetir); útil para medir un cambio concreto")
     parser.add_argument("--minimo-por-caso", type=int, default=None, metavar="K",
                         help="aprobados mínimos por caso (por defecto N si N=1; si no, el 80 %%: 5 de 6)")
     args = parser.parse_args(argv)
@@ -933,7 +936,7 @@ def main(argv: list[str] | None = None) -> int:
 
     validador = _cargar_validador() if args.solo in (None, "ejercicios", "reprompt") else None
     inicio = datetime.datetime.now()
-    resultados = ejecutar(args.api, args.solo, validador, args.repeticiones, args.conjunto)
+    resultados = ejecutar(args.api, args.solo, validador, args.repeticiones, args.conjunto, args.caso)
     imprimir_tabla(resultados)
     resumen_casos = resumir(resultados)
     minimo = minimo_por_caso(args.repeticiones, args.minimo_por_caso)

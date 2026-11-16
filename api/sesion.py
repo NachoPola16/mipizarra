@@ -330,7 +330,7 @@ _CABECERA_PROPIA = {
     "calentamiento": re.compile(r"\s*\*{0,2}\s*CALENTAMIENTO", re.IGNORECASE),
     "vuelta":        re.compile(r"\s*\*{0,2}\s*VUELTA A LA CALMA", re.IGNORECASE),
     "fundamentos":   re.compile(r"\s*\*{0,2}\s*fundamentos", re.IGNORECASE),
-    "ej":            re.compile(r"\s*Ejercicio\s+\d"),
+    "ej":            re.compile(r"\s*\*{0,2}\s*Ejercicio\s+\d"),
 }
 _ABRE_SECCION = re.compile(r"\s*(?:\*\*|Ejercicio\s+\d)")
 
