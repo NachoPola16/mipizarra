@@ -30,9 +30,9 @@ class SecurityHeadersMiddleware:
 
 class LoginRequiredMiddleware:
     """Toda la web exige iniciar sesión: sin cuenta no se usa nada. Públicas: la pantalla de entrada y las páginas
-    legales (aviso legal y privacidad); los estáticos los sirve WhiteNoise antes de llegar aquí. Las páginas redirigen
+    legales (aviso legal y privacidad) y el service worker (/sw.js, sin nada privado); los estáticos los sirve WhiteNoise antes de llegar aquí. Las páginas redirigen
     al login; las llamadas del navegador (POST, /guardadas/, peticiones que piden JSON) reciben un 401 en JSON."""
-    PUBLICAS = ('/cuenta/entrar/', '/privacidad/', '/aviso-legal/')
+    PUBLICAS = ('/cuenta/entrar/', '/privacidad/', '/aviso-legal/', '/sw.js')
 
     def __init__(self, get_response):
         self.get_response = get_response

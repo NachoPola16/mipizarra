@@ -11,7 +11,7 @@ from django.core.cache import cache
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_GET, require_POST
 
 from .entrada_pdf import limpiar_entrada_pdf
 
@@ -637,3 +637,20 @@ def _generar_pdf(sesion_texto, edad, objetivo, duracion, diagramas):
             pdf.ln(3)
 
     return bytes(pdf.output())
+
+
+_SERVICE_WORKER = """/* Service worker mínimo: solo para que el navegador ofrezca instalar MiPizarra como app.
+   NO guarda nada en caché: fetch va siempre a la red (las sesiones son privadas). */
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', (e) => e.waitUntil(self.clients.claim()));
+self.addEventListener('fetch', () => { /* sin caché: lo gestiona la red */ });
+"""
+
+
+@require_GET
+def service_worker(request):
+    """/sw.js en la raíz (ámbito «/»), público y siempre fresco."""
+    resp = HttpResponse(_SERVICE_WORKER, content_type='application/javascript')
+    resp['Cache-Control'] = 'no-cache'
+    resp['Service-Worker-Allowed'] = '/'
+    return resp

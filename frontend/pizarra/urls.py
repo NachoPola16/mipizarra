@@ -21,6 +21,7 @@ urlpatterns = [
     path('jugadas/biblioteca/<str:jid>/', cuentas.biblioteca_guardar, name='biblioteca_guardar'),
     path('cuenta/entrar/', cuentas.Entrar.as_view(), name='entrar'),
     path('cuenta/salir/', cuentas.salir, name='salir'),
+    path('sw.js', views.service_worker, name='service_worker'),
     path('privacidad/', views.privacidad, name='privacidad'),
     path('aviso-legal/', views.aviso_legal, name='aviso_legal'),
 ]

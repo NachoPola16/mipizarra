@@ -2,21 +2,41 @@
   "name": "MiPizarra - Asistente de entrenamiento",
   "short_name": "MiPizarra",
   "description": "Genera sesiones de entrenamiento de baloncesto y diagramas tácticos con IA local.",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#15120e",
   "theme_color": "#15120e",
   "icons": [
     {
-      "src": "/static/pizarra/brand/mark.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "src": "/static/pizarra/brand/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/static/pizarra/brand/favicon.svg",
+      "src": "/static/pizarra/brand/icon-512.png",
       "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/pizarra/brand/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/static/pizarra/brand/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/static/pizarra/brand/mark.svg",
+      "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
     }
